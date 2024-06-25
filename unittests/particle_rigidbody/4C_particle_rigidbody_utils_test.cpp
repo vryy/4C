@@ -34,7 +34,7 @@ namespace
     FOUR_C_EXPECT_ITERABLE_NEAR(q1, q2, 4, 1.0e-14);
   }
 
-  TEST(QuaternionTest, Invert)
+  TEST(QuaternionTest, invert)
   {
     double q1[4] = {0.0, 0.0, 0.0, 1.0};
     const double q2[4] = {1.0, 2.0, 3.0, 4.0};

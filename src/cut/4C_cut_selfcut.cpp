@@ -918,7 +918,7 @@ void Core::Geo::Cut::SelfCut::determine_self_cut_position()
           Core::LinAlg::Matrix<3, 1> normal;
           Core::LinAlg::Matrix<2, 1> center(true);
           anotherselfcutside->Normal(center, normal, false);
-          double norm = normal.Norm2();
+          double norm = normal.norm2();
           if (norm > 1e-8)
           {
             otherselfcutside = anotherselfcutside;
@@ -949,16 +949,16 @@ void Core::Geo::Cut::SelfCut::determine_self_cut_position()
       Core::LinAlg::Matrix<3, 1> oncut_cord_loc;
       Core::LinAlg::Matrix<2, 1> oncut_cord_loc2;
       Core::LinAlg::Matrix<3, 1> otherSideNormal;
-      onselfcutedgenode->point()->Coordinates(oncut_cord.A());
+      onselfcutedgenode->point()->Coordinates(oncut_cord.data());
       otherselfcutside->local_coordinates(oncut_cord, oncut_cord_loc, false);
       oncut_cord_loc2(0) = oncut_cord_loc(0);
       oncut_cord_loc2(1) = oncut_cord_loc(1);
       otherselfcutside->Normal(oncut_cord_loc2, otherSideNormal);
       Core::LinAlg::Matrix<3, 1> undecidedpointcoordinates;
       Core::LinAlg::Matrix<3, 1> differencebetweenpoints;
-      undecidednode->point()->Coordinates(undecidedpointcoordinates.A());
-      differencebetweenpoints.Update(1.0, oncut_cord, -1.0, undecidedpointcoordinates);
-      double norm = differencebetweenpoints.Norm2();
+      undecidednode->point()->Coordinates(undecidedpointcoordinates.data());
+      differencebetweenpoints.update(1.0, oncut_cord, -1.0, undecidedpointcoordinates);
+      double norm = differencebetweenpoints.norm2();
       if (norm < SELF_CUT_POS_TOL)
       {
         std::cout << "==| WARNING: Avoided this point with distance norm of " << norm << " ( "
@@ -966,9 +966,9 @@ void Core::Geo::Cut::SelfCut::determine_self_cut_position()
         continue;
       }
       else
-        differencebetweenpoints.Scale(1. / norm);
+        differencebetweenpoints.scale(1. / norm);
       Core::LinAlg::Matrix<1, 1> innerproduct;
-      innerproduct.MultiplyTN(differencebetweenpoints, otherSideNormal);
+      innerproduct.multiply_tn(differencebetweenpoints, otherSideNormal);
       if (innerproduct(0) > 0 and fabs(innerproduct(0)) > SELF_CUT_POS_TOL)
       {
         undecidednode->SelfCutPosition(Point::inside);
@@ -1542,7 +1542,7 @@ void Core::Geo::Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
     {
       file << "ST (";
       Core::LinAlg::Matrix<3, 3> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -1557,7 +1557,7 @@ void Core::Geo::Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
     {
       file << "SQ (";
       Core::LinAlg::Matrix<3, 4> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -1597,7 +1597,7 @@ void Core::Geo::Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
     file.precision(16);
     file << "SL (";
     Core::LinAlg::Matrix<3, 2> cutsideedgecoordinates;
-    cutsideedge->Coordinates(cutsideedgecoordinates.A());
+    cutsideedge->Coordinates(cutsideedgecoordinates.data());
     for (int i = 0; i < 2; ++i)
     {
       if (i > 0)
@@ -1631,7 +1631,7 @@ void Core::Geo::Cut::SelfCut::cutted_side_status_gmsh(const std::string& name)
     file.precision(16);
     file << "SP (";
     Core::LinAlg::Matrix<3, 1> cutsidenodecoordinates;
-    cutsidenode->Coordinates(cutsidenodecoordinates.A());
+    cutsidenode->Coordinates(cutsidenodecoordinates.data());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
     file << "){";
@@ -1713,7 +1713,7 @@ void Core::Geo::Cut::SelfCut::WallGmsh(const std::string& name)
     {
       file << "ST (";
       Core::LinAlg::Matrix<3, 3> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -1728,7 +1728,7 @@ void Core::Geo::Cut::SelfCut::WallGmsh(const std::string& name)
     {
       file << "SQ (";
       Core::LinAlg::Matrix<3, 4> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -1777,7 +1777,7 @@ void Core::Geo::Cut::SelfCut::WallGmsh(const std::string& name)
     file.precision(16);
     file << "SL (";
     Core::LinAlg::Matrix<3, 2> cutsideedgecoordinates;
-    cutsideedge->Coordinates(cutsideedgecoordinates.A());
+    cutsideedge->Coordinates(cutsideedgecoordinates.data());
     for (int i = 0; i < 2; ++i)
     {
       if (i > 0)
@@ -1821,7 +1821,7 @@ void Core::Geo::Cut::SelfCut::WallGmsh(const std::string& name)
     file.precision(16);
     file << "SP (";
     Core::LinAlg::Matrix<3, 1> cutsidenodecoordinates;
-    cutsidenode->Coordinates(cutsidenodecoordinates.A());
+    cutsidenode->Coordinates(cutsidenodecoordinates.data());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
     file << "){";
@@ -1854,7 +1854,7 @@ void Core::Geo::Cut::SelfCut::WallGmsh(const std::string& name)
     {
       file << "ST (";
       Core::LinAlg::Matrix<3, 3> cutsidecoordinates;
-      cuttingside->Coordinates(cutsidecoordinates.A());
+      cuttingside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -1869,7 +1869,7 @@ void Core::Geo::Cut::SelfCut::WallGmsh(const std::string& name)
     {
       file << "SQ (";
       Core::LinAlg::Matrix<3, 4> cutsidecoordinates;
-      cuttingside->Coordinates(cutsidecoordinates.A());
+      cuttingside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -1918,7 +1918,7 @@ void Core::Geo::Cut::SelfCut::WallGmsh(const std::string& name)
     file.precision(16);
     file << "SP (";
     Core::LinAlg::Matrix<3, 1> cutsidenodecoordinates;
-    selfcutnode->Coordinates(cutsidenodecoordinates.A());
+    selfcutnode->Coordinates(cutsidenodecoordinates.data());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
     file << "){";
@@ -1948,7 +1948,7 @@ void Core::Geo::Cut::SelfCut::WallGmsh(const std::string& name)
     file.precision(16);
     file << "SL (";
     Core::LinAlg::Matrix<3, 2> cutsideedgecoordinates;
-    selfcutedge->Coordinates(cutsideedgecoordinates.A());
+    selfcutedge->Coordinates(cutsideedgecoordinates.data());
     for (int i = 0; i < 2; ++i)
     {
       if (i > 0)
@@ -2007,9 +2007,9 @@ void Core::Geo::Cut::SelfCut::WallGmsh(const std::string& name)
       }
       file << "SL (";
       Core::LinAlg::Matrix<3, 1> elementfacetpoint1coordinates;
-      elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.A());
+      elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.data());
       Core::LinAlg::Matrix<3, 1> elementfacetpoint2coordinates;
-      elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.A());
+      elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.data());
       file << elementfacetpoint1coordinates(0, 0) << "," << elementfacetpoint1coordinates(1, 0)
            << "," << elementfacetpoint1coordinates(2, 0) << ","
            << elementfacetpoint2coordinates(0, 0) << "," << elementfacetpoint2coordinates(1, 0)
@@ -2099,7 +2099,7 @@ void Core::Geo::Cut::SelfCut::SCObjectsGmsh(const std::string& name)
     {
       file << "ST (";
       Core::LinAlg::Matrix<3, 3> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -2114,7 +2114,7 @@ void Core::Geo::Cut::SelfCut::SCObjectsGmsh(const std::string& name)
     {
       file << "SQ (";
       Core::LinAlg::Matrix<3, 4> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -2164,7 +2164,7 @@ void Core::Geo::Cut::SelfCut::SCObjectsGmsh(const std::string& name)
     file.precision(16);
     file << "SL (";
     Core::LinAlg::Matrix<3, 2> cutsideedgecoordinates;
-    cutsideedge->Coordinates(cutsideedgecoordinates.A());
+    cutsideedge->Coordinates(cutsideedgecoordinates.data());
     for (int i = 0; i < 2; ++i)
     {
       if (i > 0)
@@ -2208,7 +2208,7 @@ void Core::Geo::Cut::SelfCut::SCObjectsGmsh(const std::string& name)
     file.precision(16);
     file << "SP (";
     Core::LinAlg::Matrix<3, 1> cutsidenodecoordinates;
-    cutsidenode->Coordinates(cutsidenodecoordinates.A());
+    cutsidenode->Coordinates(cutsidenodecoordinates.data());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
     file << "){";
@@ -2232,7 +2232,7 @@ void Core::Geo::Cut::SelfCut::SCObjectsGmsh(const std::string& name)
     {
       file << "ST (";
       Core::LinAlg::Matrix<3, 3> selfcutsidecoordinates;
-      selfcutside->Coordinates(selfcutsidecoordinates.A());
+      selfcutside->Coordinates(selfcutsidecoordinates.data());
       for (int i = 0; i < selfcutsidetype; ++i)
       {
         if (i > 0)
@@ -2247,7 +2247,7 @@ void Core::Geo::Cut::SelfCut::SCObjectsGmsh(const std::string& name)
     {
       file << "SQ (";
       Core::LinAlg::Matrix<3, 4> selfcutsidecoordinates;
-      selfcutside->Coordinates(selfcutsidecoordinates.A());
+      selfcutside->Coordinates(selfcutsidecoordinates.data());
       for (int i = 0; i < selfcutsidetype; ++i)
       {
         if (i > 0)
@@ -2286,7 +2286,7 @@ void Core::Geo::Cut::SelfCut::SCObjectsGmsh(const std::string& name)
     file.precision(16);
     file << "SL (";
     Core::LinAlg::Matrix<3, 2> selfcutedgecoordinates;
-    selfcutedge->Coordinates(selfcutedgecoordinates.A());
+    selfcutedge->Coordinates(selfcutedgecoordinates.data());
     for (int i = 0; i < 2; ++i)
     {
       if (i > 0)
@@ -2319,7 +2319,7 @@ void Core::Geo::Cut::SelfCut::SCObjectsGmsh(const std::string& name)
     file.precision(16);
     file << "SP (";
     Core::LinAlg::Matrix<3, 1> selfcutnodecoordinates;
-    selfcutnode->Coordinates(selfcutnodecoordinates.A());
+    selfcutnode->Coordinates(selfcutnodecoordinates.data());
     file << selfcutnodecoordinates(0, 0) << "," << selfcutnodecoordinates(1, 0) << ","
          << selfcutnodecoordinates(2, 0);
     file << "){";
@@ -2403,7 +2403,7 @@ void Core::Geo::Cut::SelfCut::SCmgmGmsh(const std::string& name)
     {
       file << "ST (";
       Core::LinAlg::Matrix<3, 3> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -2418,7 +2418,7 @@ void Core::Geo::Cut::SelfCut::SCmgmGmsh(const std::string& name)
     {
       file << "SQ (";
       Core::LinAlg::Matrix<3, 4> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -2467,7 +2467,7 @@ void Core::Geo::Cut::SelfCut::SCmgmGmsh(const std::string& name)
     file.precision(16);
     file << "SL (";
     Core::LinAlg::Matrix<3, 2> cutsideedgecoordinates;
-    cutsideedge->Coordinates(cutsideedgecoordinates.A());
+    cutsideedge->Coordinates(cutsideedgecoordinates.data());
     for (int i = 0; i < 2; ++i)
     {
       if (i > 0)
@@ -2510,7 +2510,7 @@ void Core::Geo::Cut::SelfCut::SCmgmGmsh(const std::string& name)
     file.precision(16);
     file << "SP (";
     Core::LinAlg::Matrix<3, 1> cutsidenodecoordinates;
-    cutsidenode->Coordinates(cutsidenodecoordinates.A());
+    cutsidenode->Coordinates(cutsidenodecoordinates.data());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
     file << "){";
@@ -2542,7 +2542,7 @@ void Core::Geo::Cut::SelfCut::SCmgmGmsh(const std::string& name)
     {
       file << "ST (";
       Core::LinAlg::Matrix<3, 3> cutsidecoordinates;
-      cuttingside->Coordinates(cutsidecoordinates.A());
+      cuttingside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -2557,7 +2557,7 @@ void Core::Geo::Cut::SelfCut::SCmgmGmsh(const std::string& name)
     {
       file << "SQ (";
       Core::LinAlg::Matrix<3, 4> cutsidecoordinates;
-      cuttingside->Coordinates(cutsidecoordinates.A());
+      cuttingside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -2606,7 +2606,7 @@ void Core::Geo::Cut::SelfCut::SCmgmGmsh(const std::string& name)
     file.precision(16);
     file << "SP (";
     Core::LinAlg::Matrix<3, 1> cutsidenodecoordinates;
-    selfcutnode->Coordinates(cutsidenodecoordinates.A());
+    selfcutnode->Coordinates(cutsidenodecoordinates.data());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
     file << "){";
@@ -2635,7 +2635,7 @@ void Core::Geo::Cut::SelfCut::SCmgmGmsh(const std::string& name)
     file.precision(16);
     file << "SL (";
     Core::LinAlg::Matrix<3, 2> cutsideedgecoordinates;
-    selfcutedge->Coordinates(cutsideedgecoordinates.A());
+    selfcutedge->Coordinates(cutsideedgecoordinates.data());
     for (int i = 0; i < 2; ++i)
     {
       if (i > 0)
@@ -2693,9 +2693,9 @@ void Core::Geo::Cut::SelfCut::SCmgmGmsh(const std::string& name)
       }
       file << "SL (";
       Core::LinAlg::Matrix<3, 1> elementfacetpoint1coordinates;
-      elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.A());
+      elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.data());
       Core::LinAlg::Matrix<3, 1> elementfacetpoint2coordinates;
-      elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.A());
+      elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.data());
       file << elementfacetpoint1coordinates(0, 0) << "," << elementfacetpoint1coordinates(1, 0)
            << "," << elementfacetpoint1coordinates(2, 0) << ","
            << elementfacetpoint2coordinates(0, 0) << "," << elementfacetpoint2coordinates(1, 0)
@@ -2813,7 +2813,7 @@ void Core::Geo::Cut::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     {
       file << "ST (";
       Core::LinAlg::Matrix<3, 3> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -2828,7 +2828,7 @@ void Core::Geo::Cut::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     {
       file << "SQ (";
       Core::LinAlg::Matrix<3, 4> cutsidecoordinates;
-      cutside->Coordinates(cutsidecoordinates.A());
+      cutside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -2877,7 +2877,7 @@ void Core::Geo::Cut::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     file.precision(16);
     file << "SL (";
     Core::LinAlg::Matrix<3, 2> cutsideedgecoordinates;
-    cutsideedge->Coordinates(cutsideedgecoordinates.A());
+    cutsideedge->Coordinates(cutsideedgecoordinates.data());
     for (int i = 0; i < 2; ++i)
     {
       if (i > 0)
@@ -2920,7 +2920,7 @@ void Core::Geo::Cut::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     file.precision(16);
     file << "SP (";
     Core::LinAlg::Matrix<3, 1> cutsidenodecoordinates;
-    cutsidenode->Coordinates(cutsidenodecoordinates.A());
+    cutsidenode->Coordinates(cutsidenodecoordinates.data());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
     file << "){";
@@ -2952,7 +2952,7 @@ void Core::Geo::Cut::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     {
       file << "ST (";
       Core::LinAlg::Matrix<3, 3> cutsidecoordinates;
-      cuttingside->Coordinates(cutsidecoordinates.A());
+      cuttingside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -2967,7 +2967,7 @@ void Core::Geo::Cut::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     {
       file << "SQ (";
       Core::LinAlg::Matrix<3, 4> cutsidecoordinates;
-      cuttingside->Coordinates(cutsidecoordinates.A());
+      cuttingside->Coordinates(cutsidecoordinates.data());
       for (int i = 0; i < cutsidetype; ++i)
       {
         if (i > 0)
@@ -3016,7 +3016,7 @@ void Core::Geo::Cut::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     file.precision(16);
     file << "SP (";
     Core::LinAlg::Matrix<3, 1> cutsidenodecoordinates;
-    selfcutnode->Coordinates(cutsidenodecoordinates.A());
+    selfcutnode->Coordinates(cutsidenodecoordinates.data());
     file << cutsidenodecoordinates(0, 0) << "," << cutsidenodecoordinates(1, 0) << ","
          << cutsidenodecoordinates(2, 0);
     file << "){";
@@ -3045,7 +3045,7 @@ void Core::Geo::Cut::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     file.precision(16);
     file << "SL (";
     Core::LinAlg::Matrix<3, 2> cutsideedgecoordinates;
-    selfcutedge->Coordinates(cutsideedgecoordinates.A());
+    selfcutedge->Coordinates(cutsideedgecoordinates.data());
     for (int i = 0; i < 2; ++i)
     {
       if (i > 0)
@@ -3103,9 +3103,9 @@ void Core::Geo::Cut::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
       }
       file << "SL (";
       Core::LinAlg::Matrix<3, 1> elementfacetpoint1coordinates;
-      elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.A());
+      elementfacetpoint1->Coordinates(elementfacetpoint1coordinates.data());
       Core::LinAlg::Matrix<3, 1> elementfacetpoint2coordinates;
-      elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.A());
+      elementfacetpoint2->Coordinates(elementfacetpoint2coordinates.data());
       file << elementfacetpoint1coordinates(0, 0) << "," << elementfacetpoint1coordinates(1, 0)
            << "," << elementfacetpoint1coordinates(2, 0) << ","
            << elementfacetpoint2coordinates(0, 0) << "," << elementfacetpoint2coordinates(1, 0)
@@ -3326,7 +3326,7 @@ void Core::Geo::Cut::SelfCut::SidePlotHead()
 void Core::Geo::Cut::SelfCut::PointPlot(Point& point)
 {
   Core::LinAlg::Matrix<3, 1> pointcoordinates;
-  point.Coordinates(pointcoordinates.A());
+  point.Coordinates(pointcoordinates.data());
   std::cout << std::setprecision(16) << pointcoordinates(0) << "\t" << std::setprecision(16)
             << pointcoordinates(1) << "\t" << std::setprecision(16) << pointcoordinates(2) << "\t# "
             << point.Id();

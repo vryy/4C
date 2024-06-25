@@ -564,10 +564,10 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       evaluate_iso_visco_modified(stressisomodisovisco, stressisomodvolvisco, cmatisomodisovisco,
           cmatisomodvolvisco, prinv, modinv, modmu, modxi, C_strain, id2, iC_stress, id4,
           modrcgrate);
-      stress->Update(1.0, stressisomodisovisco, 1.0);
-      stress->Update(1.0, stressisomodvolvisco, 1.0);
-      cmat->Update(1.0, cmatisomodisovisco, 1.0);
-      cmat->Update(1.0, cmatisomodvolvisco, 1.0);
+      stress->update(1.0, stressisomodisovisco, 1.0);
+      stress->update(1.0, stressisomodvolvisco, 1.0);
+      cmat->update(1.0, cmatisomodisovisco, 1.0);
+      cmat->update(1.0, cmatisomodvolvisco, 1.0);
     }
 
     if (summandProperties_.isoprinc)
@@ -576,8 +576,8 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressisovisco(true);
       Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatisovisco(true);
       evaluate_iso_visco_principal(stressisovisco, cmatisovisco, mu, xi, id4sharp, scgrate);
-      stress->Update(1.0, stressisovisco, 1.0);
-      cmat->Update(1.0, cmatisovisco, 1.0);
+      stress->update(1.0, stressisovisco, 1.0);
+      cmat->update(1.0, cmatisovisco, 1.0);
     }
   }
 
@@ -587,8 +587,8 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(true);  // artificial viscous stress
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(true);
     evaluate_visco_gen_max(stress, cmat, Q, cmatq, params, gp);
-    stress->Update(1.0, Q, 1.0);
-    cmat->Update(1.0, cmatq, 1.0);
+    stress->update(1.0, Q, 1.0);
+    cmat->update(1.0, cmatq, 1.0);
   }
 
   // add contribution of generalized Maxwell model
@@ -597,8 +597,8 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(true);
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(true);
     evaluate_visco_generalized_gen_max(Q, cmatq, params, glstrain, gp, eleGID);
-    stress->Update(1.0, Q, 1.0);
-    cmat->Update(1.0, cmatq, 1.0);
+    stress->update(1.0, Q, 1.0);
+    cmat->update(1.0, cmatq, 1.0);
   }
 
   // add contribution of viscofract-material
@@ -607,8 +607,8 @@ void Mat::ViscoElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(true);  // artificial viscous stress
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatq(true);
     evaluate_visco_fract(*stress, *cmat, Q, cmatq, params, gp);
-    stress->Update(1.0, Q, 1.);
-    cmat->Update(1.0, cmatq, 1.);
+    stress->update(1.0, Q, 1.);
+    cmat->update(1.0, cmatq, 1.);
   }
 
 
@@ -652,7 +652,7 @@ void Mat::ViscoElastHyper::evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rc
 
   // modrcg : \overline{C} = J^{-\frac{2}{3}} C
   const double modscale = std::pow(prinv(2), -1. / 3.);
-  modrcg.Update(modscale, rcg);
+  modrcg.update(modscale, rcg);
 
   // read history
   Core::LinAlg::Matrix<6, 1> scglast(histscglast_->at(gp));
@@ -664,14 +664,14 @@ void Mat::ViscoElastHyper::evaluate_kin_quant_vis(Core::LinAlg::Matrix<6, 1>& rc
 
   // rate of Cauchy-Green Tensor
   // REMARK: strain-like 6-Voigt vector
-  scgrate.Update(1.0, scg, 1.0);  // principal material: \dot{C} = \frac{C^n - C^{n-1}}{\Delta t}
-  scgrate.Update(-1.0, scglast, 1.0);
-  scgrate.Scale(1 / dt);
+  scgrate.update(1.0, scg, 1.0);  // principal material: \dot{C} = \frac{C^n - C^{n-1}}{\Delta t}
+  scgrate.update(-1.0, scglast, 1.0);
+  scgrate.scale(1 / dt);
 
-  modrcgrate.Update(1.0, modrcg, 1.0);  // decoupled material: \overline{\dot{C}} =
+  modrcgrate.update(1.0, modrcg, 1.0);  // decoupled material: \overline{\dot{C}} =
                                         // \frac{\overline{C}^n - \overline{C}^{n-1}}{\Delta t}
-  modrcgrate.Update(-1.0, modrcglast, 1.0);
-  modrcgrate.Scale(1 / dt);
+  modrcgrate.update(-1.0, modrcglast, 1.0);
+  modrcgrate.scale(1 / dt);
 
   // invariants
   // -------------------------------------------------------------------
@@ -749,10 +749,10 @@ void Mat::ViscoElastHyper::evaluate_iso_visco_principal(Core::LinAlg::Matrix<6, 
     Core::LinAlg::Matrix<6, 1>& scgrate)
 {
   // contribution: \dot{C}
-  stress.Update(mu(2), scgrate, 1.0);
+  stress.update(mu(2), scgrate, 1.0);
 
   // contribution: id4sharp_{ijkl} = 1/2 (\delta_{ik}\delta_{jl} + \delta_{il}\delta_{jk})
-  cmat.Update(xi(2), id4sharp, 1.0);
+  cmat.update(xi(2), id4sharp, 1.0);
 
   return;
 }
@@ -777,14 +777,14 @@ void Mat::ViscoElastHyper::evaluate_iso_visco_modified(
 
   // isochoric contribution
   Core::LinAlg::Matrix<6, 1> modstress(true);
-  modstress.Update(modmu(1), id2);
-  modstress.Update(modmu(2), modrcgrate, 1.0);
+  modstress.update(modmu(1), id2);
+  modstress.update(modmu(2), modrcgrate, 1.0);
   // build 4-tensor for projection as 6x6 tensor
   Core::LinAlg::Matrix<6, 6> Projection;
-  Projection.MultiplyNT(1. / 3., icg, rcg);
-  Projection.Update(1.0, id4, -1.0);
+  Projection.multiply_nt(1. / 3., icg, rcg);
+  Projection.update(1.0, id4, -1.0);
   // isochoric stress
-  stressisomodisovisco.MultiplyNN(modscale, Projection, modstress, 1.0);
+  stressisomodisovisco.multiply_nn(modscale, Projection, modstress, 1.0);
 
   // volumetric contribution:
   // with visco_isoratedep: no volumetric part added --> always 0
@@ -797,25 +797,25 @@ void Mat::ViscoElastHyper::evaluate_iso_visco_modified(
   Core::LinAlg::Matrix<6, 6> modcmat(true);
   Core::LinAlg::Matrix<6, 6> modcmat2(true);
   // contribution:  Id \otimes \overline{\dot{C}} + \overline{\dot{C}} \otimes Id
-  modcmat.MultiplyNT(modxi(1), id2, modrcgrate);
-  modcmat.MultiplyNT(modxi(1), modrcgrate, id2, 1.0);
+  modcmat.multiply_nt(modxi(1), id2, modrcgrate);
+  modcmat.multiply_nt(modxi(1), modrcgrate, id2, 1.0);
   // contribution: Id4
-  modcmat.Update(modxi(2), id4, 1.0);
+  modcmat.update(modxi(2), id4, 1.0);
   // scaling
-  modcmat.Scale(std::pow(modinv(2), -4. / 3.));
+  modcmat.scale(std::pow(modinv(2), -4. / 3.));
   // contribution: P:\overline{C}:P
-  modcmat2.MultiplyNN(Projection, modcmat);
-  cmatisomodisovisco.MultiplyNT(1.0, modcmat2, Projection, 1.0);
+  modcmat2.multiply_nn(Projection, modcmat);
+  cmatisomodisovisco.multiply_nt(1.0, modcmat2, Projection, 1.0);
   // contribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
   modcmat.clear();
-  modcmat.MultiplyNT(-1.0 / 3.0, icg, icg);
+  modcmat.multiply_nt(-1.0 / 3.0, icg, icg);
   add_holzapfel_product(modcmat, icg, 1.0);
   Core::LinAlg::Matrix<1, 1> tracemat;
-  tracemat.MultiplyTN(2. / 3. * std::pow(modinv(2), -2. / 3.), modstress, rcg);
-  cmatisomodisovisco.Update(tracemat(0, 0), modcmat, 1.0);
+  tracemat.multiply_tn(2. / 3. * std::pow(modinv(2), -2. / 3.), modstress, rcg);
+  cmatisomodisovisco.update(tracemat(0, 0), modcmat, 1.0);
   // contribution: -2/3 (Cinv \otimes S_iso^v + S_iso^v \otimes Cinv)
-  cmatisomodisovisco.MultiplyNT(-2. / 3., icg, stressisomodisovisco, 1.0);
-  cmatisomodisovisco.MultiplyNT(-2. / 3., stressisomodisovisco, icg, 1.0);
+  cmatisomodisovisco.multiply_nt(-2. / 3., icg, stressisomodisovisco, 1.0);
+  cmatisomodisovisco.multiply_nt(-2. / 3., stressisomodisovisco, icg, 1.0);
 
   // volumetric contribution:
   // with visco_isoratedep: no volumetric part added --> always 0
@@ -881,10 +881,10 @@ void Mat::ViscoElastHyper::evaluate_visco_gen_max(Core::LinAlg::Matrix<6, 1>* st
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(histartstresslast_->at(gp));
 
     // calculate artificial viscous stresses Q
-    Q.Update(lambdascalar2, Q_n, 1.0);
-    Q.Update(beta, *stress, 1.0);
-    Q.Update(-beta, S_n, 1.0);
-    Q.Scale(lambdascalar1);  // Q^(n+1) = lambdascalar1* [lambdascalar2* Q^n + beta*(S^(n+1) - S^n)]
+    Q.update(lambdascalar2, Q_n, 1.0);
+    Q.update(beta, *stress, 1.0);
+    Q.update(-beta, S_n, 1.0);
+    Q.scale(lambdascalar1);  // Q^(n+1) = lambdascalar1* [lambdascalar2* Q^n + beta*(S^(n+1) - S^n)]
 
 
     // update history
@@ -893,7 +893,7 @@ void Mat::ViscoElastHyper::evaluate_visco_gen_max(Core::LinAlg::Matrix<6, 1>* st
 
     // viscous constitutive tensor
     // contribution : Cmat_vis = Cmat_inf*deltascalar
-    cmatq.Update(deltascalar, *cmat, 1.0);
+    cmatq.update(deltascalar, *cmat, 1.0);
   }
   else if (solve == "CONVOL")
   {
@@ -916,9 +916,9 @@ void Mat::ViscoElastHyper::evaluate_visco_gen_max(Core::LinAlg::Matrix<6, 1>* st
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(histartstresslast_->at(gp));
 
     // calculate artificial viscous stresses Q
-    Q.Update(xiscalar1, Q_n, 1.0);
-    Q.Update(xiscalar2, *stress, 1.0);
-    Q.Update(-xiscalar2, S_n, 1.0);  // Q_(n+1) = xiscalar1* Q_n + xiscalar2*(S_(n+1) - S_n)
+    Q.update(xiscalar1, Q_n, 1.0);
+    Q.update(xiscalar2, *stress, 1.0);
+    Q.update(-xiscalar2, S_n, 1.0);  // Q_(n+1) = xiscalar1* Q_n + xiscalar2*(S_(n+1) - S_n)
 
     // update history
     histstresscurr_->at(gp) = *stress;
@@ -926,7 +926,7 @@ void Mat::ViscoElastHyper::evaluate_visco_gen_max(Core::LinAlg::Matrix<6, 1>* st
 
     // viscous constitutive tensor
     // contribution : Cmat_vis = Cmat_inf*beta*exp(-dt/(2*tau))
-    cmatq.Update(xiscalar2, *cmat, 1.0);
+    cmatq.update(xiscalar2, *cmat, 1.0);
   }
   else
     FOUR_C_THROW("Invalid input. Try valid input OST or CONVOL");
@@ -1034,8 +1034,8 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressiso(true);
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatiso(true);
     ElastHyperAddIsotropicStressCmat(stressiso, cmatiso, C_strain, iC_strain, prinv, dPI, ddPII);
-    S.at(i).Update(1.0, stressiso, 1.0);
-    cmatqbranch.Update(1.0, cmatiso, 1.0);
+    S.at(i).update(1.0, stressiso, 1.0);
+    cmatqbranch.update(1.0, cmatiso, 1.0);
 
     // get Parameter of ViscoGeneralizedGenMax
     for (unsigned int q = 0; q < branchpotsum.size(); ++q)
@@ -1081,10 +1081,10 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
 
       // calculate artificial viscous stresses Q
       // Q_(n+1) = lambdascalar1*[lamdascalar2* Q_n + (Sa_(n+1) - Sa_n)]
-      Qbranch.at(i).Update(lambdascalar2, Q_n.at(i), 1.0);
-      Qbranch.at(i).Update(1.0, S.at(i), 1.0);
-      Qbranch.at(i).Update(-1.0, S_n.at(i), 1.0);
-      Qbranch.at(i).Scale(lambdascalar1);
+      Qbranch.at(i).update(lambdascalar2, Q_n.at(i), 1.0);
+      Qbranch.at(i).update(1.0, S.at(i), 1.0);
+      Qbranch.at(i).update(-1.0, S_n.at(i), 1.0);
+      Qbranch.at(i).scale(lambdascalar1);
     }
     else if (solve == "CONVOL")
     {
@@ -1100,16 +1100,16 @@ void Mat::ViscoElastHyper::evaluate_visco_generalized_gen_max(Core::LinAlg::Matr
 
       // calculate artificial stresses Q
       // Q_(n+1) = xiscalar1* Q_n + xiscalar2*(Sa_(n+1) - Sa_n)
-      Qbranch.at(i).Update(xiscalar1, Q_n.at(i), 1.0);
-      Qbranch.at(i).Update(xiscalar2, S.at(i), 1.0);
-      Qbranch.at(i).Update(-xiscalar2, S_n.at(i), 1.0);
+      Qbranch.at(i).update(xiscalar1, Q_n.at(i), 1.0);
+      Qbranch.at(i).update(xiscalar2, S.at(i), 1.0);
+      Qbranch.at(i).update(-xiscalar2, S_n.at(i), 1.0);
     }
     else
       FOUR_C_THROW("Invalid input. Try valid input THETA or CONVOL");
 
     // sum up branches
-    Q.Update(1.0, Qbranch.at(i), 1.0);
-    cmatq.Update(deltascalar, cmatqbranch, 1.0);
+    Q.update(1.0, Qbranch.at(i), 1.0);
+    cmatq.update(deltascalar, cmatqbranch, 1.0);
 
   }  // end for loop over branches
 
@@ -1175,7 +1175,7 @@ void Mat::ViscoElastHyper::evaluate_visco_fract(Core::LinAlg::Matrix<6, 1> stres
 
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Qj(
         histfractartstresslastall_->at(gp).at(hs - j));  //(hs-1) correlates with last entry = n
-    Qq.Update(bj, Qj, 1.0);
+    Qq.update(bj, Qj, 1.0);
   }
 
 
@@ -1198,8 +1198,8 @@ void Mat::ViscoElastHyper::evaluate_visco_fract(Core::LinAlg::Matrix<6, 1> stres
   double lambdascalar1 = dtalpha / (dtalpha + taualpha);
   double lambdascalar2 = -1. * taualpha / (dtalpha + taualpha);
 
-  Q.Update(lambdascalar1 * beta, stress, 0.);
-  Q.Update(lambdascalar2, Qq, 1.);
+  Q.update(lambdascalar1 * beta, stress, 0.);
+  Q.update(lambdascalar2, Qq, 1.);
 
 
   // update history for next step
@@ -1210,11 +1210,11 @@ void Mat::ViscoElastHyper::evaluate_visco_fract(Core::LinAlg::Matrix<6, 1> stres
   // S = elastic stress of Psi
   // S_2 = S ; S_1 = beta*S ; Q = Q(S1) = Q(beta*S)
   // S_final = S + beta*S - Q(beta*S)
-  Q.Update(beta, stress, -1.);
+  Q.update(beta, stress, -1.);
 
   // viscos constitutive tensor
-  cmatq.Update(lambdascalar1 * beta, cmat, 0.);  // contribution of Q
-  cmatq.Update(beta, cmat, -1.);
+  cmatq.update(lambdascalar1 * beta, cmat, 0.);  // contribution of Q
+  cmatq.update(beta, cmat, -1.);
 
 
   return;

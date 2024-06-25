@@ -145,21 +145,21 @@ double Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem
 {
   // gauss point displacements
   Core::LinAlg::Matrix<nsd_, 1> dispint(false);
-  dispint.Multiply(my::edispnp_, my::funct_);
+  dispint.multiply(my::edispnp_, my::funct_);
 
   // transposed jacobian "dX/ds"
   Core::LinAlg::Matrix<nsd_, nsd_> xjm0;
-  xjm0.MultiplyNT(my::deriv_, poro::xyze0_);
+  xjm0.multiply_nt(my::deriv_, poro::xyze0_);
 
   // inverse of transposed jacobian "ds/dX"
   Core::LinAlg::Matrix<nsd_, nsd_> xji0(true);
-  xji0.Invert(xjm0);
+  xji0.invert(xjm0);
 
   // inverse of transposed jacobian "ds/dX"
-  const double det0 = xjm0.Determinant();
+  const double det0 = xjm0.determinant();
 
-  my::xjm_.MultiplyNT(my::deriv_, my::xyze_);
-  const double det = my::xjm_.Determinant();
+  my::xjm_.multiply_nt(my::deriv_, my::xyze_);
+  const double det = my::xjm_.determinant();
 
   // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
   const double J = det / det0;
@@ -167,12 +167,12 @@ double Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem
   // ----------------------compute derivatives N_XYZ_ at gp w.r.t. material coordinates
   /// first derivatives of shape functions w.r.t. material coordinates
   Core::LinAlg::Matrix<nsd_, nen_> N_XYZ;
-  N_XYZ.Multiply(xji0, my::deriv_);
+  N_XYZ.multiply(xji0, my::deriv_);
 
   // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ *
   // N_XYZ_^T
   static Core::LinAlg::Matrix<nsd_, nsd_> defgrd(false);
-  defgrd.MultiplyNT(my::xyze_, N_XYZ);
+  defgrd.multiply_nt(my::xyze_, N_XYZ);
 
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
   static Core::LinAlg::Matrix<6, 1> glstrain(true);
@@ -181,7 +181,7 @@ double Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem
   {
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<nsd_, nsd_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     if (nsd_ == 3)
@@ -205,7 +205,7 @@ double Discret::ELEMENTS::ScaTraEleCalcPoroReacECM<distype>::compute_struct_chem
   }
 
   // fluid pressure at gauss point
-  const double pres = my::eprenp_.Dot(my::funct_);
+  const double pres = my::eprenp_.dot(my::funct_);
 
   double pot = 0.0;
 

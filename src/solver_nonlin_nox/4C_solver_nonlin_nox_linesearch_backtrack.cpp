@@ -303,7 +303,7 @@ void NOX::Nln::LineSearch::Backtrack::print_update(std::ostream& os) const
   {
     os << ::NOX::Utils::fill(72, '-') << "\n";
     os << "-- Inner Status Test Results --\n";
-    inner_tests_ptr_->Print(os);
+    inner_tests_ptr_->print(os);
     os << ::NOX::Utils::fill(72, '-') << "\n";
   }
   // Print the final parameter values of the status test
@@ -311,7 +311,7 @@ void NOX::Nln::LineSearch::Backtrack::print_update(std::ostream& os) const
   {
     os << ::NOX::Utils::fill(72, '-') << "\n";
     os << "-- Final Inner Status Test Results --\n";
-    inner_tests_ptr_->Print(os);
+    inner_tests_ptr_->print(os);
     os << ::NOX::Utils::fill(72, '-') << "\n";
   }
 }

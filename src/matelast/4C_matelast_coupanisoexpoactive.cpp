@@ -87,7 +87,7 @@ void Mat::Elastic::CoupAnisoExpoActive::AddStrainEnergy(double& psi,
   rcg(4) = 2.0 * glstrain(4);
   rcg(5) = 2.0 * glstrain(5);
 
-  double I4 = anisotropy_extension_.get_structural_tensor_stress(gp, 0).Dot(glstrain);
+  double I4 = anisotropy_extension_.get_structural_tensor_stress(gp, 0).dot(glstrain);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -146,21 +146,21 @@ void Mat::Elastic::CoupAnisoExpoActive::evaluate_active_stress_cmat_aniso(
 
   T dPIact_T = 0.0;
   dPIact_T = d_p_iact_;
-  stress.Update(dPIact_T * 1. / lambda_sq, Av_T, 0.0);
-  cmat.MultiplyNT(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq), Av_T, Av_T, 0.0);
+  stress.update(dPIact_T * 1. / lambda_sq, Av_T, 0.0);
+  cmat.multiply_nt(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq), Av_T, Av_T, 0.0);
 }
 
 void Mat::Elastic::CoupAnisoExpoActive::add_active_stress_cmat_aniso(
     Core::LinAlg::Matrix<3, 3> const& CM, Core::LinAlg::Matrix<6, 6>& cmat,
     Core::LinAlg::Matrix<6, 1>& stress, const int gp, const int eleGID) const
 {
-  double lambda_sq = CM.Dot(anisotropy_extension_.get_structural_tensor(gp, 0));
+  double lambda_sq = CM.dot(anisotropy_extension_.get_structural_tensor(gp, 0));
 
   double dPIact_T = 0.0;
   dPIact_T = d_p_iact_;
-  stress.Update(
+  stress.update(
       dPIact_T * 1. / lambda_sq, anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
-  cmat.MultiplyNT(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq),
+  cmat.multiply_nt(-2.0 * dPIact_T * 1. / (lambda_sq * lambda_sq),
       anisotropy_extension_.get_structural_tensor_stress(gp, 0),
       anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
 }
@@ -169,7 +169,7 @@ void Mat::Elastic::CoupAnisoExpoActive::evaluate_first_derivatives_aniso(
     Core::LinAlg::Matrix<2, 1>& dPI_aniso, Core::LinAlg::Matrix<3, 3> const& rcg, int gp,
     int eleGID)
 {
-  double I4 = anisotropy_extension_.get_structural_tensor(gp, 0).Dot(rcg);
+  double I4 = anisotropy_extension_.get_structural_tensor(gp, 0).dot(rcg);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -187,7 +187,7 @@ void Mat::Elastic::CoupAnisoExpoActive::evaluate_second_derivatives_aniso(
     Core::LinAlg::Matrix<3, 1>& ddPII_aniso, Core::LinAlg::Matrix<3, 3> const& rcg, int gp,
     int eleGID)
 {
-  double I4 = anisotropy_extension_.get_structural_tensor(gp, 0).Dot(rcg);
+  double I4 = anisotropy_extension_.get_structural_tensor(gp, 0).dot(rcg);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -216,7 +216,7 @@ void Mat::Elastic::CoupAnisoExpoActive::GetDerivativesAniso(
   AM(2, 1) = AM(1, 2) = anisotropy_extension_.get_structural_tensor_stress(gp, 0)(4);
   AM(0, 2) = AM(2, 0) = anisotropy_extension_.get_structural_tensor_stress(gp, 0)(5);
 
-  I4 = AM.Dot(rcg);
+  I4 = AM.dot(rcg);
 
   T k1 = params_->k1_;
   T k2 = params_->k2_;
@@ -242,7 +242,7 @@ void Mat::Elastic::CoupAnisoExpoActive::add_stress_aniso_principal(
     Core::LinAlg::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
-  double I4 = anisotropy_extension_.get_structural_tensor_stress(gp, 0).Dot(rcg);
+  double I4 = anisotropy_extension_.get_structural_tensor_stress(gp, 0).dot(rcg);
 
   double k1 = params_->k1_;
   double k2 = params_->k2_;
@@ -254,11 +254,11 @@ void Mat::Elastic::CoupAnisoExpoActive::add_stress_aniso_principal(
   }
 
   double gamma = 2. * (k1 * (I4 - 1.) * exp(k2 * (I4 - 1.) * (I4 - 1.)));
-  stress.Update(gamma, anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
+  stress.update(gamma, anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
 
   double delta =
       2. * (1. + 2. * k2 * (I4 - 1.) * (I4 - 1.)) * 2. * k1 * exp(k2 * (I4 - 1.) * (I4 - 1.));
-  cmat.MultiplyNT(delta, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
+  cmat.multiply_nt(delta, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
       anisotropy_extension_.get_structural_tensor_stress(gp, 0), 1.0);
 }
 

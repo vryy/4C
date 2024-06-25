@@ -168,14 +168,14 @@ Core::Elements::Element::Element(const Element& old)
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& element)
 {
-  element.Print(os);
+  element.print(os);
   return os;
 }
 
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 11/06|
  *----------------------------------------------------------------------*/
-void Core::Elements::Element::Print(std::ostream& os) const
+void Core::Elements::Element::print(std::ostream& os) const
 {
   os << std::setw(12) << Id() << " Owner " << std::setw(5) << Owner() << " ";
   const int nnode = num_node();

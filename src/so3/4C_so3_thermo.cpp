@@ -114,10 +114,10 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::unpack(const std::vector<ch
  | print this element (public)                               dano 08/12 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::print(std::ostream& os) const
 {
   os << "So3_Thermo ";
-  Core::Elements::Element::Print(os);
+  Core::Elements::Element::print(os);
   return;
 }
 

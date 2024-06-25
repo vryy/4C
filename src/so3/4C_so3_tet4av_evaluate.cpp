@@ -258,7 +258,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
   {
     Core::FE::shape_function<Core::FE::CellType::tet4>(xsi_[gp], shapefct);
     Core::FE::shape_function_deriv1<Core::FE::CellType::tet4>(xsi_[gp], deriv);
-    jac.Multiply(deriv, xrefe);
+    jac.multiply(deriv, xrefe);
 
     // material/reference co-ordinates of Gauss point
     if (havefunct)
@@ -283,7 +283,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate_neumann(Teuchos::ParameterList& params
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOTET4av; ++nodid)
@@ -330,10 +330,10 @@ void Discret::ELEMENTS::SoTet4av::init_jacobian_mapping()
 
     Core::FE::shape_function_deriv1<Core::FE::CellType::tet4>(xsi_[gp], deriv);
 
-    invJ_[gp].Multiply(deriv, xrefe);
+    invJ_[gp].multiply(deriv, xrefe);
 
     // xij_ = ds/dx
-    detJ_[gp] = invJ_[gp].Invert();
+    detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] < 1.0E-16) FOUR_C_THROW("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", detJ_[gp]);
   }
 
@@ -401,17 +401,17 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], deriv);
+    N_XYZ.multiply(invJ_[gp], deriv);
     const double detJ = detJ_[gp];
-    defgrd.MultiplyTT(xcurr, N_XYZ);
+    defgrd.multiply_tt(xcurr, N_XYZ);
     Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> invdefgrd;
-    const double detF = invdefgrd.Invert(defgrd);
-    const double intNodalVol = shapefct.Dot(nodalVol);
+    const double detF = invdefgrd.invert(defgrd);
+    const double intNodalVol = shapefct.dot(nodalVol);
     if (intNodalVol < 0.) FOUR_C_THROW("intNodalVol < 0");
     if (detF < 0.) FOUR_C_THROW("detF < 0");
     const double fbar_fac = std::pow(intNodalVol / detF, 1. / 3.);
-    defgrd_bar.Update(fbar_fac, defgrd, 0.);
-    rcg_bar.MultiplyTN(defgrd_bar, defgrd_bar);
+    defgrd_bar.update(fbar_fac, defgrd, 0.);
+    rcg_bar.multiply_tn(defgrd_bar, defgrd_bar);
     for (int i = 0; i < NUMDIM_SOTET4av; ++i) gl_bar(i) = .5 * (rcg_bar(i, i) - 1.);
     gl_bar(3) = rcg_bar(0, 1);
     gl_bar(4) = rcg_bar(1, 2);
@@ -433,7 +433,7 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
       case Inpar::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
-        const double detF_bar = defgrd_bar.Determinant();
+        const double detF_bar = defgrd_bar.determinant();
 
         Core::LinAlg::Matrix<3, 3> pkstress_bar;
         pkstress_bar(0, 0) = pk2(0);
@@ -448,8 +448,8 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
 
         Core::LinAlg::Matrix<3, 3> temp;
         Core::LinAlg::Matrix<3, 3> cauchystress_bar;
-        temp.Multiply(1.0 / detF_bar, defgrd_bar, pkstress_bar);
-        cauchystress_bar.MultiplyNT(temp, defgrd_bar);
+        temp.multiply(1.0 / detF_bar, defgrd_bar, pkstress_bar);
+        cauchystress_bar.multiply_nt(temp, defgrd_bar);
 
         (*elestress)(gp, 0) = cauchystress_bar(0, 0);
         (*elestress)(gp, 1) = cauchystress_bar(1, 1);
@@ -487,7 +487,7 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
 
     if (force != nullptr)
     {
-      force->MultiplyTN(detJ_w / fbar_fac, bop, pk2, 1.0);
+      force->multiply_tn(detJ_w / fbar_fac, bop, pk2, 1.0);
 
       if (gp == 0)
         for (int i = 0; i < NUMNOD_SOTET4av; ++i)
@@ -499,12 +499,12 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOTET4av> cb;
-      cb.Multiply(cmat, bop);
-      stiffmatrix->MultiplyTN(detJ_w * fbar_fac, bop, cb, 1.0);
+      cb.multiply(cmat, bop);
+      stiffmatrix->multiply_tn(detJ_w * fbar_fac, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       Core::LinAlg::Matrix<6, 1> sfac(pk2);  // auxiliary integrated stress
-      sfac.Scale(detJ_w / fbar_fac);         // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      sfac.scale(detJ_w / fbar_fac);         // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       std::vector<double> SmB_L(3);          // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod = 0; inod < NUMNOD_SOTET4av; ++inod)
@@ -525,7 +525,7 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
 
       // integrate additional fbar matrix
       Core::LinAlg::Matrix<NUMDIM_SOTET4av, NUMDIM_SOTET4av> cauchygreen;
-      cauchygreen.MultiplyTN(defgrd, defgrd);
+      cauchygreen.multiply_tn(defgrd, defgrd);
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> cauchygreenvector;
       cauchygreenvector(0) = cauchygreen(0, 0);
       cauchygreenvector(1) = cauchygreen(1, 1);
@@ -541,14 +541,14 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
       for (int i = 0; i < 4; ++i) htensor(i * 4 + 3) += shapefct(i) / detF;
 
       Core::LinAlg::Matrix<4 * 4, 1> bops;
-      bops.MultiplyTN(bop, pk2);
-      stiffmatrix->MultiplyNT(-1. / 3. * std::pow(fbar_fac, -4.) * detJ_w, bops, htensor, 1.);
+      bops.multiply_tn(bop, pk2);
+      stiffmatrix->multiply_nt(-1. / 3. * std::pow(fbar_fac, -4.) * detJ_w, bops, htensor, 1.);
 
       Core::LinAlg::Matrix<6, 1> ccg;
-      ccg.Multiply(cmat, cauchygreenvector);
+      ccg.multiply(cmat, cauchygreenvector);
       Core::LinAlg::Matrix<4 * 4, 1> bopccg;
-      bopccg.MultiplyTN(bop, ccg);
-      stiffmatrix->MultiplyNT(detJ_w * std::pow(fbar_fac, -2.) / 3., bopccg, htensor, 1.);
+      bopccg.multiply_tn(bop, ccg);
+      stiffmatrix->multiply_nt(detJ_w * std::pow(fbar_fac, -2.) / 3., bopccg, htensor, 1.);
 
       if (gp == 0)
         for (int inod = 0; inod < 4; ++inod)

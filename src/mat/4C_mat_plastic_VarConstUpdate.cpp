@@ -245,8 +245,8 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
 
     Core::LinAlg::Matrix<3, 3> tmp33;
     Core::LinAlg::Matrix<3, 3> strWithPlast;
-    tmp33.Multiply(last_plastic_defgrd_inverse_[gp], checkStrMat);
-    strWithPlast.MultiplyNT(tmp33, last_plastic_defgrd_inverse_[gp]);
+    tmp33.multiply(last_plastic_defgrd_inverse_[gp], checkStrMat);
+    strWithPlast.multiply_nt(tmp33, last_plastic_defgrd_inverse_[gp]);
 
     plastic_defgrd_inverse_[gp] = last_plastic_defgrd_inverse_[gp];
     delta_alpha_i_[gp] = 0.;
@@ -258,13 +258,13 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
     const int maxiter = 200;
 
     Core::LinAlg::Matrix<3, 3> devMandelStr_direction(devMandelStr);
-    devMandelStr_direction.Scale(1. / devMandelStr.Norm2());
+    devMandelStr_direction.scale(1. / devMandelStr.norm2());
 
     Core::LinAlg::Matrix<5, 5> iH;
 
     double plastMulti = 1.e-8;
     Core::LinAlg::Matrix<3, 3> dLpStart;
-    dLpStart.Update(plastMulti, devMandelStr_direction);
+    dLpStart.update(plastMulti, devMandelStr_direction);
 
     Core::LinAlg::Matrix<5, 1> beta;
     beta(0) = dLpStart(0, 0);
@@ -315,9 +315,9 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
       ce2nd_deriv(defgrd, last_plastic_defgrd_inverse_[gp], dLp, d2ced2lpVoigt);
 
       Core::LinAlg::Matrix<6, 6> cpart_tmp;
-      cpart_tmp.Multiply(elastCmat, dcedlp);
+      cpart_tmp.multiply(elastCmat, dcedlp);
       Core::LinAlg::Matrix<6, 6> cpart;
-      cpart.MultiplyTN(.25, dcedlp, cpart_tmp);
+      cpart.multiply_tn(.25, dcedlp, cpart_tmp);
 
       Core::LinAlg::Matrix<6, 6> spart6x6;
       for (int A = 0; A < 6; ++A)
@@ -329,12 +329,12 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
               spart6x6(B, C) += 1. * elastStress(A) * d2ced2lpVoigt[A](B, C);
 
       Core::LinAlg::Matrix<6, 6> hessElast6x6(spart6x6);
-      hessElast6x6.Update(1., cpart, 1.);
+      hessElast6x6.update(1., cpart, 1.);
 
       Core::LinAlg::Matrix<6, 5> tmp65;
-      tmp65.Multiply(hessElast6x6, P);
+      tmp65.multiply(hessElast6x6, P);
       Core::LinAlg::Matrix<5, 5> hessElast;
-      hessElast.MultiplyTN(P, tmp65);
+      hessElast.multiply_tn(P, tmp65);
 
       Core::LinAlg::Matrix<5, 1> dlp_vec;
       dlp_vec(0) = 2. * beta(0) + beta(1);
@@ -349,28 +349,28 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
       hess_a(0, 1) = 1.;
       hess_a(1, 0) = 1.;
       Core::LinAlg::Matrix<5, 5> hess_aiso(hess_a);
-      hess_a.Scale(1. / dLp.Norm2());
+      hess_a.scale(1. / dLp.norm2());
       Core::LinAlg::Matrix<5, 5> tmpSummandIdentity(hess_a);
       double hess_aisoScalar = Isohard();
-      hess_aisoScalar *= last_alpha_isotropic_[gp] / dLp.Norm2();
+      hess_aisoScalar *= last_alpha_isotropic_[gp] / dLp.norm2();
       hess_aisoScalar += Isohard();
-      hess_aiso.Scale(hess_aisoScalar);
+      hess_aiso.scale(hess_aisoScalar);
 
-      hess_a.MultiplyNT((-1.) / (dLp.Norm2() * dLp.Norm2() * dLp.Norm2()), dlp_vec, dlp_vec, 1.);
+      hess_a.multiply_nt((-1.) / (dLp.norm2() * dLp.norm2() * dLp.norm2()), dlp_vec, dlp_vec, 1.);
       Core::LinAlg::Matrix<5, 5> tmpSummandDlpVec;
-      tmpSummandDlpVec.MultiplyNT(
-          (-1.) / (dLp.Norm2() * dLp.Norm2() * dLp.Norm2()), dlp_vec, dlp_vec);
-      tmpSummandDlpVec.Scale(sqrt(2. / 3.) * Inityield());
-      tmpSummandIdentity.Scale(sqrt(2. / 3.) * Inityield());
-      hess_a.Scale(sqrt(2. / 3.) * Inityield());
+      tmpSummandDlpVec.multiply_nt(
+          (-1.) / (dLp.norm2() * dLp.norm2() * dLp.norm2()), dlp_vec, dlp_vec);
+      tmpSummandDlpVec.scale(sqrt(2. / 3.) * Inityield());
+      tmpSummandIdentity.scale(sqrt(2. / 3.) * Inityield());
+      hess_a.scale(sqrt(2. / 3.) * Inityield());
 
       Core::LinAlg::Matrix<5, 5> tmp55;
-      tmp55.MultiplyNT(dlp_vec, dlp_vec);
-      tmp55.Scale((sqrt(2. / 3.) * last_alpha_isotropic_[gp] * Isohard()) /
-                  (dLp.Norm2() * dLp.Norm2() * dLp.Norm2()));
+      tmp55.multiply_nt(dlp_vec, dlp_vec);
+      tmp55.scale((sqrt(2. / 3.) * last_alpha_isotropic_[gp] * Isohard()) /
+                  (dLp.norm2() * dLp.norm2() * dLp.norm2()));
 
-      hess_aiso.Update(-1., tmp55, 1.);
-      hess_aiso.Scale(sqrt(2. / 3.));
+      hess_aiso.update(-1., tmp55, 1.);
+      hess_aiso.scale(sqrt(2. / 3.));
 
       // Hessian matrix for nonlinear iso hardening
       Core::LinAlg::Matrix<5, 5> hessIsoNL;
@@ -378,45 +378,45 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
       hessIsoNL(0, 1) = 1.;
       hessIsoNL(1, 0) = 1.;
       double hessIsoNLscalar = Isohard();
-      double new_ai = last_alpha_isotropic_[gp] + sqrt(2. / 3.) * dLp.Norm2();
+      double new_ai = last_alpha_isotropic_[gp] + sqrt(2. / 3.) * dLp.norm2();
       double k = Infyield() - Inityield();
       hessIsoNLscalar *= new_ai;
       hessIsoNLscalar += k;
       hessIsoNLscalar -= k * std::exp(-1. * Expisohard() * new_ai);
-      hessIsoNL.Scale(hessIsoNLscalar / dLp.Norm2());
+      hessIsoNL.scale(hessIsoNLscalar / dLp.norm2());
       Core::LinAlg::Matrix<5, 5> tmpNL55;
-      tmpNL55.MultiplyNT(dlp_vec, dlp_vec);
+      tmpNL55.multiply_nt(dlp_vec, dlp_vec);
       Core::LinAlg::Matrix<5, 5> tmp2(tmpNL55);
-      tmpNL55.Scale(hessIsoNLscalar / (dLp.Norm2() * dLp.Norm2() * dLp.Norm2()));
-      hessIsoNL.Update(-1., tmpNL55, 1.);
+      tmpNL55.scale(hessIsoNLscalar / (dLp.norm2() * dLp.norm2() * dLp.norm2()));
+      hessIsoNL.update(-1., tmpNL55, 1.);
       double tmp2scalar = Isohard();
       tmp2scalar += Expisohard() * k * std::exp(-1. * Expisohard() * new_ai);
-      tmp2.Scale((sqrt(2. / 3.) * tmp2scalar) / (dLp.Norm2() * dLp.Norm2()));
-      hessIsoNL.Update(1., tmp2, 1.);
-      hessIsoNL.Scale(sqrt(2. / 3.));
+      tmp2.scale((sqrt(2. / 3.) * tmp2scalar) / (dLp.norm2() * dLp.norm2()));
+      hessIsoNL.update(1., tmp2, 1.);
+      hessIsoNL.scale(sqrt(2. / 3.));
 
       // Compose the hessian matrix
       Core::LinAlg::Matrix<5, 5> hess_analyt(hessElast);
-      hess_analyt.Update(1., hess_a, 1.);
-      hess_analyt.Update(1., hessIsoNL, 1.);  // For nonlinear isotropic hardening
+      hess_analyt.update(1., hess_a, 1.);
+      hess_analyt.update(1., hessIsoNL, 1.);  // For nonlinear isotropic hardening
 
-      if (rhs.Norm2() < 1.0e-12) converged = true;
+      if (rhs.norm2() < 1.0e-12) converged = true;
 
       iH = hess_analyt;
       Core::LinAlg::FixedSizeSerialDenseSolver<5, 5, 1> solver;
       solver.SetMatrix(iH);
-      if (solver.Invert() != 0) FOUR_C_THROW("Inversion failed");
+      if (solver.invert() != 0) FOUR_C_THROW("Inversion failed");
 
       Core::LinAlg::Matrix<5, 1> beta_incr;
-      beta_incr.Multiply(-1., iH, rhs, 0.);
+      beta_incr.multiply(-1., iH, rhs, 0.);
 
-      beta.Update(1., beta_incr, 1.);
+      beta.update(1., beta_incr, 1.);
 
       //      // Backtracking Line Search Method
       //      double damping_fac=1.;
       //
       //      Core::LinAlg::Matrix<5,1> beta_test(beta);
-      //      beta_test.Update(damping_fac,beta_incr,1.);
+      //      beta_test.update(damping_fac,beta_incr,1.);
       //
       //      Core::LinAlg::Matrix<3,3> dLp_test;
       //      dLp_test(0,0) = beta_test(0);
@@ -447,7 +447,7 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
       //        {
       //          damping_fac *= 0.5;
       //          beta_corr=beta;
-      //          beta_corr.Update(damping_fac,beta_incr,1.);
+      //          beta_corr.update(damping_fac,beta_incr,1.);
       //
       //          Core::LinAlg::Matrix<3,3> dLp_corr;
       //          dLp_corr(0,0) = beta_corr(0);
@@ -468,7 +468,7 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
       //          dampIter++;
       //        }
       //        if (dampIter==maxDampIter)
-      //          beta.Update(1.,beta_incr,1.);
+      //          beta.update(1.,beta_incr,1.);
       //        else
       //          beta = beta_corr;
       //      }
@@ -489,14 +489,14 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
 
     // Get exp, Dexp and DDexp
     Core::LinAlg::Matrix<3, 3> input_dLp(dLp);
-    input_dLp.Scale(-1.);
+    input_dLp.scale(-1.);
     Core::LinAlg::Matrix<3, 3> expOut(input_dLp);
     Core::LinAlg::Matrix<6, 6> dexpOut_mat;
     matrix_exponential_derivative_sym3x3(input_dLp, dexpOut_mat);
     matrix_exponential3x3(expOut);
 
-    plastic_defgrd_inverse_[gp].Multiply(last_plastic_defgrd_inverse_[gp], expOut);
-    delta_alpha_i_[gp] = sqrt(2. / 3.) * dLp.Norm2();
+    plastic_defgrd_inverse_[gp].multiply(last_plastic_defgrd_inverse_[gp], expOut);
+    delta_alpha_i_[gp] = sqrt(2. / 3.) * dLp.norm2();
 
     // Compute the total stresses
     Core::LinAlg::Matrix<6, 6> tangent_elast;
@@ -506,21 +506,21 @@ void Mat::PlasticElastHyperVCU::evaluate(const Core::LinAlg::Matrix<3, 3>* defgr
     dpk2d_fpi(gp, eleGID, defgrd, &plastic_defgrd_inverse_[gp], dPK2dFpinvIsoprinc);
 
     Core::LinAlg::Matrix<6, 6> mixedDeriv;
-    mixedDeriv.Multiply(dPK2dFpinvIsoprinc, dFpiDdeltaDp);
+    mixedDeriv.multiply(dPK2dFpinvIsoprinc, dFpiDdeltaDp);
 
 
     Core::LinAlg::Matrix<6, 5> tmp2;
-    tmp2.Multiply(mixedDeriv, P);
+    tmp2.multiply(mixedDeriv, P);
 
     Core::LinAlg::Matrix<6, 5> mixDerivInvHess;
-    mixDerivInvHess.Multiply(tmp2, iH);
+    mixDerivInvHess.multiply(tmp2, iH);
 
     Core::LinAlg::Matrix<6, 6> cmat_summand1;
-    cmat_summand1.Update(1., tangent_elast);
+    cmat_summand1.update(1., tangent_elast);
     Core::LinAlg::Matrix<6, 6> cmat_summand2;
-    cmat_summand2.MultiplyNT(-1., mixDerivInvHess, tmp2);
+    cmat_summand2.multiply_nt(-1., mixDerivInvHess, tmp2);
 
-    cmat->Update(cmat_summand1, cmat_summand2);
+    cmat->update(cmat_summand1, cmat_summand2);
   }
 
   return;
@@ -554,16 +554,16 @@ void Mat::PlasticElastHyperVCU::eval_dce_dlp(const Core::LinAlg::Matrix<3, 3> fp
   Core::LinAlg::Matrix<3, 3> id2;
   for (int i = 0; i < 3; i++) id2(i, i) += 1.0;
   Core::LinAlg::Matrix<3, 3> next_fpi;
-  next_fpi.Multiply(fpi, explp);
+  next_fpi.multiply(fpi, explp);
   Core::LinAlg::Matrix<3, 3> rcg;
-  rcg.MultiplyTN(*defgrd, *defgrd);
+  rcg.multiply_tn(*defgrd, *defgrd);
   Core::LinAlg::Matrix<3, 3> inputB;
-  inputB.Multiply(next_fpi, rcg);
+  inputB.multiply(next_fpi, rcg);
 
   Core::LinAlg::Matrix<6, 9> dcedfpi;
 
   Core::LinAlg::Matrix<3, 3> tmp;
-  tmp.MultiplyTN(next_fpi, rcg);
+  tmp.multiply_tn(next_fpi, rcg);
   add_right_non_symmetric_holzapfel_product(dcedfpi, tmp, id2, 1.0);
 
   // Derivative of inverse plastic deformation gradient
@@ -580,7 +580,7 @@ void Mat::PlasticElastHyperVCU::eval_dce_dlp(const Core::LinAlg::Matrix<3, 3> fp
                 2. * fpi(A, b) *
                 Dexp(vmap::symmetric_tensor_to_voigt6_index(b, a), i);  // fixme factor 2
 
-  dceDdeltalp.Multiply(dcedfpi, dFpiDdeltaDp);
+  dceDdeltalp.multiply(dcedfpi, dFpiDdeltaDp);
 
   for (int i = 3; i < 6; ++i)
     for (int j = 0; j < 6; ++j) dceDdeltalp(i, j) *= 2.;
@@ -606,8 +606,8 @@ void Mat::PlasticElastHyperVCU::yield_function(const double last_ai,
 
   Core::LinAlg::Matrix<3, 3> ce;
   Core::LinAlg::Matrix<3, 3> tmp;
-  tmp.Multiply(cetr, ExpEqui);
-  ce.Multiply(ExpEqui, tmp);
+  tmp.multiply(cetr, ExpEqui);
+  ce.multiply(ExpEqui, tmp);
 
   // Compute the deviator of mandelStr, then its norm
   Core::LinAlg::Matrix<3, 3> devMandelStrSumm2;
@@ -626,10 +626,10 @@ void Mat::PlasticElastHyperVCU::yield_function(const double last_ai,
   for (int i = 0; i < 3; i++) id2(i, i) = 1.0;
   double trMandelStr = 0.0;
   for (int i = 0; i < 3; i++) trMandelStr += MandelStr(i, i);
-  devMandelStrSumm2.Update(-trMandelStr / 3.0, id2);
-  devMandelStr.Update(MandelStr, devMandelStrSumm2);
+  devMandelStrSumm2.update(-trMandelStr / 3.0, id2);
+  devMandelStr.update(MandelStr, devMandelStrSumm2);
 
-  double NormDevMandelStr = devMandelStr.Norm2();
+  double NormDevMandelStr = devMandelStr.norm2();
 
   // Compose the yield function
   double yf = 0.0;
@@ -647,21 +647,21 @@ void Mat::PlasticElastHyperVCU::comp_elast_quant(const Core::LinAlg::Matrix<3, 3
 
 {
   Core::LinAlg::Matrix<3, 3> fetrial;
-  fetrial.Multiply(*defgrd, fpi);
+  fetrial.multiply(*defgrd, fpi);
   Core::LinAlg::Matrix<3, 3> cetr;
-  cetr.MultiplyTN(fetrial, fetrial);
+  cetr.multiply_tn(fetrial, fetrial);
   *cetrial = cetr;
 
   Core::LinAlg::Matrix<3, 3> tmp;
-  tmp.Multiply(MatExp, cetr);
+  tmp.multiply(MatExp, cetr);
   Core::LinAlg::Matrix<3, 3> next_ce;
-  next_ce.Multiply(tmp, MatExp);
+  next_ce.multiply(tmp, MatExp);
 
   // Compute Ee_n+1 (first in 3x3 then map to 6x1 VOIGT)
   Core::LinAlg::Matrix<3, 3> id2int;
   for (int i = 0; i < 3; i++) id2int(i, i) = 1.0;
   Core::LinAlg::Matrix<3, 3> next_ee3x3;
-  next_ee3x3.Update(0.5, next_ce, -0.5, id2int);
+  next_ee3x3.update(0.5, next_ce, -0.5, id2int);
   Core::LinAlg::Matrix<6, 1> next_ee;
   for (int i = 0; i < 3; i++) next_ee(i) = next_ee3x3(i, i);
   next_ee(3) = 2. * next_ee3x3(0, 1);
@@ -738,7 +738,7 @@ void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3x6(
   // increment
   ++k;
   akm = exp;
-  ak.Multiply(1. / (double)k, akm, MatrixIn);
+  ak.multiply(1. / (double)k, akm, MatrixIn);
   akd[0](0, 0) = 1.;
   akd[1](1, 1) = 1.;
   akd[2](2, 2) = 1.;
@@ -749,38 +749,38 @@ void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3x6(
   do
   {
     // add summand
-    exp.Update(1., ak, 1.);
+    exp.update(1., ak, 1.);
 
     // increment
     ++k;
-    akm.Update(ak);
-    ak.Multiply(1. / (double)k, akm, MatrixIn);
+    akm.update(ak);
+    ak.multiply(1. / (double)k, akm, MatrixIn);
 
     // 1st derivatives
     for (int i = 0; i < 6; i++)
     {
-      MatrixExp1stDeriv[i].Update(1., akd[i], 1.);
+      MatrixExp1stDeriv[i].update(1., akd[i], 1.);
       // increment
-      akmd[i].Update(akd[i]);
-      akd[i].Multiply(1. / (double)k, akm, da[i]);
-      akd[i].Multiply(1. / (double)k, akmd[i], MatrixIn, 1.);
+      akmd[i].update(akd[i]);
+      akd[i].multiply(1. / (double)k, akm, da[i]);
+      akd[i].multiply(1. / (double)k, akmd[i], MatrixIn, 1.);
     }
 
     // 2nd derivatives
     for (int i = 0; i < 6; i++)
-      for (int j = i; j < 6; j++) MatrixExp2ndDeriv[i][j].Update(1., akdd[i][j], 1.);
+      for (int j = i; j < 6; j++) MatrixExp2ndDeriv[i][j].update(1., akdd[i][j], 1.);
 
     for (int i = 0; i < 6; i++)
       for (int j = i; j < 6; j++)
       {
         // increment
         akmdd[i][j] = akdd[i][j];
-        akdd[i][j].Multiply(1. / ((double)k), akmd[i], da[j]);
-        akdd[i][j].Multiply(1. / ((double)k), akmd[j], da[i], 1.);
-        akdd[i][j].Multiply(1. / ((double)k), akmdd[i][j], MatrixIn, 1.);
+        akdd[i][j].multiply(1. / ((double)k), akmd[i], da[j]);
+        akdd[i][j].multiply(1. / ((double)k), akmd[j], da[i], 1.);
+        akdd[i][j].multiply(1. / ((double)k), akmdd[i][j], MatrixIn, 1.);
       }
 
-  } while (k < kmax && ak.Norm2() > 1.e-16);
+  } while (k < kmax && ak.norm2() > 1.e-16);
 
   if (k == kmax)
   {
@@ -863,44 +863,44 @@ void Mat::PlasticElastHyperVCU::matrix_exponential_second_derivative_sym3x3(
   // increment
   ++k;
   akm = exp;
-  ak.Multiply(1. / (double)k, akm, MatrixIn);
+  ak.multiply(1. / (double)k, akm, MatrixIn);
   akd = da;
 
   do
   {
     // add summand
-    exp.Update(1., ak, 1.);
+    exp.update(1., ak, 1.);
 
     // increment
     ++k;
-    akm.Update(ak);
-    ak.Multiply(1. / (double)k, akm, MatrixIn);
+    akm.update(ak);
+    ak.multiply(1. / (double)k, akm, MatrixIn);
 
     // 1st derivatives
     for (int i = 0; i < 5; i++)
     {
-      MatrixExp1stDeriv[i].Update(1., akd[i], 1.);
+      MatrixExp1stDeriv[i].update(1., akd[i], 1.);
       // increment
-      akmd[i].Update(akd[i]);
-      akd[i].Multiply(1. / (double)k, akm, da[i]);
-      akd[i].Multiply(1. / (double)k, akmd[i], MatrixIn, 1.);
+      akmd[i].update(akd[i]);
+      akd[i].multiply(1. / (double)k, akm, da[i]);
+      akd[i].multiply(1. / (double)k, akmd[i], MatrixIn, 1.);
     }
 
     // 2nd derivatives
     for (int i = 0; i < 5; i++)
-      for (int j = 0; j < 5; j++) MatrixExp2ndDeriv[i][j].Update(1., akdd[i][j], 1.);
+      for (int j = 0; j < 5; j++) MatrixExp2ndDeriv[i][j].update(1., akdd[i][j], 1.);
 
     for (int i = 0; i < 5; i++)
       for (int j = 0; j < 5; j++)
       {
         // increment
         akmdd[i][j] = akdd[i][j];
-        akdd[i][j].Multiply(1. / ((double)k), akmd[i], da[j]);
-        akdd[i][j].Multiply(1. / ((double)k), akmd[j], da[i], 1.);
-        akdd[i][j].Multiply(1. / ((double)k), akmdd[i][j], MatrixIn, 1.);
+        akdd[i][j].multiply(1. / ((double)k), akmd[i], da[j]);
+        akdd[i][j].multiply(1. / ((double)k), akmd[j], da[i], 1.);
+        akdd[i][j].multiply(1. / ((double)k), akmdd[i][j], MatrixIn, 1.);
       }
 
-  } while (k < kmax && ak.Norm2() > 1.e-16);
+  } while (k < kmax && ak.norm2() > 1.e-16);
 
   if (k == kmax)
   {
@@ -924,29 +924,29 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
 
   // Get exp, Dexp and DDexp
   Core::LinAlg::Matrix<3, 3> dLpIn(dLp);
-  dLpIn.Scale(-1.);
+  dLpIn.scale(-1.);
   Core::LinAlg::Matrix<3, 3> expOut(dLpIn);
   matrix_exponential3x3(expOut);
   Core::LinAlg::Matrix<6, 6> dexpOut_mat;
   matrix_exponential_derivative_sym3x3(dLpIn, dexpOut_mat);
 
   Core::LinAlg::Matrix<3, 3> fpi_incr(dLp);
-  fpi_incr.Scale(-1.);
+  fpi_incr.scale(-1.);
   Core::LinAlg::Matrix<6, 6> derivExpMinusLP;
   matrix_exponential_derivative_sym3x3(fpi_incr, derivExpMinusLP);
   matrix_exponential3x3(fpi_incr);
 
   Core::LinAlg::Matrix<3, 3> fetrial;
-  fetrial.Multiply(defgrd, last_plastic_defgrd_inverse_[gp]);
+  fetrial.multiply(defgrd, last_plastic_defgrd_inverse_[gp]);
   Core::LinAlg::Matrix<3, 3> cetrial;
-  cetrial.MultiplyTN(fetrial, fetrial);
+  cetrial.multiply_tn(fetrial, fetrial);
 
   Core::LinAlg::Matrix<3, 3> fpi;
-  fpi.Multiply(last_plastic_defgrd_inverse_[gp], expOut);
+  fpi.multiply(last_plastic_defgrd_inverse_[gp], expOut);
   Core::LinAlg::Matrix<3, 3> fe;
-  fe.Multiply(defgrd, fpi);
+  fe.multiply(defgrd, fpi);
   Core::LinAlg::Matrix<3, 3> ce;
-  ce.MultiplyTN(fe, fe);
+  ce.multiply_tn(fe, fe);
 
   for (int i = 0; i < 3; ++i) eeOut(i) = 0.5 * (ce(i, i) - 1.);
   eeOut(3) = ce(0, 1);
@@ -969,19 +969,19 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
   dLp_vec(5) = 2. * dLp(0, 2);
 
 
-  double new_ai = last_alpha_isotropic_[gp] + sqrt(2. / 3.) * dLp.Norm2();
+  double new_ai = last_alpha_isotropic_[gp] + sqrt(2. / 3.) * dLp.norm2();
   double k = Infyield() - Inityield();
   double rhsPlastScalar = Isohard();
   rhsPlastScalar *= new_ai;
   rhsPlastScalar += k;
   rhsPlastScalar -= k * std::exp(-1. * Expisohard() * new_ai);
-  rhs6.Update((rhsPlastScalar * sqrt(2. / 3.)) / dLp.Norm2(), dLp_vec,
+  rhs6.update((rhsPlastScalar * sqrt(2. / 3.)) / dLp.norm2(), dLp_vec,
       1.);  // plastic component, nonlinear iso hardening
 
 
-  rhs6.Update((Inityield() * sqrt(2. / 3.)) / dLp.Norm2(), dLp_vec, 1.);  // dissipative component
+  rhs6.update((Inityield() * sqrt(2. / 3.)) / dLp.norm2(), dLp_vec, 1.);  // dissipative component
 
-  rhs6.MultiplyTN(0.5, dcedlp, se, 1.);  // elastic component
+  rhs6.multiply_tn(0.5, dcedlp, se, 1.);  // elastic component
   Core::LinAlg::Matrix<6, 1> rhs6Elast(
       rhs6);  // rhs6Elast is the elastic part of the right hand side. We
               // need this to build the hessian numerically
@@ -997,8 +997,8 @@ void Mat::PlasticElastHyperVCU::evaluate_rhs(const int gp, const Core::LinAlg::M
   dAlphadBeta(5, 4) = 1.;
 
   // Outputs
-  rhs.MultiplyTN(1., dAlphadBeta, rhs6, 0.);
-  rhsElast.MultiplyTN(1., dAlphadBeta, rhs6Elast, 0.);
+  rhs.multiply_tn(1., dAlphadBeta, rhs6, 0.);
+  rhsElast.multiply_tn(1., dAlphadBeta, rhs6Elast, 0.);
 
   return;
 }
@@ -1013,15 +1013,15 @@ void Mat::PlasticElastHyperVCU::EvaluatePlast(Core::LinAlg::Matrix<6, 9>& dPK2dF
   // derivative of PK2 w.r.t. inverse plastic deformation gradient
   add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2, Fpi, gamma(0));
   add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, CpiC, Fpi, gamma(1));
-  dPK2dFpinvIsoprinc.MultiplyNT(delta(0), Cpi, CFpi, 1.);
-  dPK2dFpinvIsoprinc.MultiplyNT(delta(1), Cpi, CFpiCe, 1.);
-  dPK2dFpinvIsoprinc.MultiplyNT(delta(1), CpiCCpi, CFpi, 1.);
-  dPK2dFpinvIsoprinc.MultiplyNT(delta(2), Cpi, CFpiCei, 1.);
-  dPK2dFpinvIsoprinc.MultiplyNT(delta(2), ircg, CFpi, 1.);
-  dPK2dFpinvIsoprinc.MultiplyNT(delta(3), CpiCCpi, CFpiCe, 1.);
-  dPK2dFpinvIsoprinc.MultiplyNT(delta(4), CpiCCpi, CFpiCei, 1.);
-  dPK2dFpinvIsoprinc.MultiplyNT(delta(4), ircg, CFpiCe, 1.);
-  dPK2dFpinvIsoprinc.MultiplyNT(delta(5), ircg, CFpiCei, 1.);
+  dPK2dFpinvIsoprinc.multiply_nt(delta(0), Cpi, CFpi, 1.);
+  dPK2dFpinvIsoprinc.multiply_nt(delta(1), Cpi, CFpiCe, 1.);
+  dPK2dFpinvIsoprinc.multiply_nt(delta(1), CpiCCpi, CFpi, 1.);
+  dPK2dFpinvIsoprinc.multiply_nt(delta(2), Cpi, CFpiCei, 1.);
+  dPK2dFpinvIsoprinc.multiply_nt(delta(2), ircg, CFpi, 1.);
+  dPK2dFpinvIsoprinc.multiply_nt(delta(3), CpiCCpi, CFpiCe, 1.);
+  dPK2dFpinvIsoprinc.multiply_nt(delta(4), CpiCCpi, CFpiCei, 1.);
+  dPK2dFpinvIsoprinc.multiply_nt(delta(4), ircg, CFpiCe, 1.);
+  dPK2dFpinvIsoprinc.multiply_nt(delta(5), ircg, CFpiCei, 1.);
   add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2, FpiCe, 0.5 * delta(7));
 }
 
@@ -1038,9 +1038,9 @@ void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
   for (int i = 0; i < 3; i++) id2(i, i) = 1.;
 
   Core::LinAlg::Matrix<3, 3> fe;
-  fe.Multiply(*defgrd, *fpi);
+  fe.multiply(*defgrd, *fpi);
   Core::LinAlg::Matrix<3, 3> ce3x3;
-  ce3x3.MultiplyTN(fe, fe);
+  ce3x3.multiply_tn(fe, fe);
 
   // ce here strainlike
   Core::LinAlg::Matrix<6, 1> ce;
@@ -1067,7 +1067,7 @@ void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
 
   // inverse plastic right Cauchy-Green
   Core::LinAlg::Matrix<3, 3> CpiM;
-  CpiM.MultiplyNT(*fpi, *fpi);
+  CpiM.multiply_nt(*fpi, *fpi);
   // stress-like Voigt notation
   for (int i = 0; i < 3; i++) Cpi(i) = CpiM(i, i);
   Cpi(3) = (CpiM(0, 1) + CpiM(1, 0)) / 2.;
@@ -1077,8 +1077,8 @@ void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
   // inverse RCG
   Core::LinAlg::Matrix<3, 3> iRCG;
   Core::LinAlg::Matrix<3, 3> RCG;
-  RCG.MultiplyTN(*defgrd, *defgrd);
-  iRCG.Invert(RCG);
+  RCG.multiply_tn(*defgrd, *defgrd);
+  iRCG.invert(RCG);
   // stress-like Voigt notation
   for (int i = 0; i < 3; i++) ircg(i) = iRCG(i, i);
   ircg(3) = (iRCG(0, 1) + iRCG(1, 0)) / 2.;
@@ -1088,30 +1088,30 @@ void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int
   // C_p^-1 * C * C_p^-1
   Core::LinAlg::Matrix<3, 3> tmp33;
   Core::LinAlg::Matrix<3, 3> CpiCCpiM;
-  tmp33.Multiply(CpiM, RCG);
-  CpiCCpiM.Multiply(tmp33, CpiM);
+  tmp33.multiply(CpiM, RCG);
+  CpiCCpiM.multiply(tmp33, CpiM);
   // stress-like Voigt notation
   for (int i = 0; i < 3; i++) CpiCCpi(i) = CpiCCpiM(i, i);
   CpiCCpi(3) = (CpiCCpiM(0, 1) + CpiCCpiM(1, 0)) / 2.;
   CpiCCpi(4) = (CpiCCpiM(2, 1) + CpiCCpiM(1, 2)) / 2.;
   CpiCCpi(5) = (CpiCCpiM(0, 2) + CpiCCpiM(2, 0)) / 2.;
 
-  CpiC.Multiply(CpiM, RCG);
-  FpiCe.Multiply(*fpi, ce3x3);
+  CpiC.multiply(CpiM, RCG);
+  FpiCe.multiply(*fpi, ce3x3);
 
-  //    FpiTC.MultiplyTN(invpldefgrd,RCG);
-  //    CeFpiTC.Multiply(CeM,FpiTC);
+  //    FpiTC.multiply_tn(invpldefgrd,RCG);
+  //    CeFpiTC.multiply(CeM,FpiTC);
   Core::LinAlg::Matrix<3, 3> tmp;
-  tmp.Multiply(RCG, *fpi);
+  tmp.multiply(RCG, *fpi);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(tmp, CFpi);
-  tmp33.Multiply(tmp, ce3x3);
+  tmp33.multiply(tmp, ce3x3);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(tmp33, CFpiCe);
 
 
 
-  tmp.Invert(ce3x3);
-  tmp33.Multiply(*fpi, tmp);
-  tmp.Multiply(RCG, tmp33);
+  tmp.invert(ce3x3);
+  tmp33.multiply(*fpi, tmp);
+  tmp.multiply(RCG, tmp33);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(tmp, CFpiCei);
 }
 void Mat::PlasticElastHyperVCU::dpk2d_fpi(const int gp, const int eleGID,
@@ -1166,13 +1166,13 @@ void Mat::PlasticElastHyperVCU::ce2nd_deriv(const Core::LinAlg::Matrix<3, 3>* de
 {
   // Compute ce trial
   Core::LinAlg::Matrix<3, 3> fetrial;
-  fetrial.Multiply(*defgrd, fpi);
+  fetrial.multiply(*defgrd, fpi);
   Core::LinAlg::Matrix<3, 3> cetrial;
-  cetrial.MultiplyTN(fetrial, fetrial);
+  cetrial.multiply_tn(fetrial, fetrial);
 
   // Get matrix exponential derivatives
   Core::LinAlg::Matrix<3, 3> minus_dLp(dLp);
-  minus_dLp.Scale(-1.);
+  minus_dLp.scale(-1.);
   Core::LinAlg::Matrix<3, 3> zeros;
   Core::LinAlg::Matrix<3, 3> exp_dLp;
   Core::LinAlg::Matrix<6, 6> Dexp_dLp_mat;
@@ -1180,7 +1180,7 @@ void Mat::PlasticElastHyperVCU::ce2nd_deriv(const Core::LinAlg::Matrix<3, 3>* de
   matrix_exponential_second_derivative_sym3x3x6(minus_dLp, exp_dLp, Dexp_dLp_mat, D2exp_VOIGT);
 
   Core::LinAlg::Matrix<3, 3> exp_dLp_cetrial;
-  exp_dLp_cetrial.Multiply(exp_dLp, cetrial);
+  exp_dLp_cetrial.multiply(exp_dLp, cetrial);
 
   for (int a = 0; a < 3; a++)
     for (int d = a; d < 3; d++)

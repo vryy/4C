@@ -144,7 +144,7 @@ namespace Core::FADUtils
   template <unsigned int length>
   double VectorNorm(Core::LinAlg::Matrix<length, 1, double> v)
   {
-    return v.Norm2();
+    return v.norm2();
   }
 
   //! Calculates the Norm of a FAD vector, since .Norm2() is not available for FAD vectors
@@ -188,7 +188,7 @@ namespace Core::FADUtils
   /*!
   \brief Calculate vector product of two FAD or double vectors
   */
-  // Todo this function is obsolete, use CrossProduct of Core::LinAlg::Matrix instead
+  // Todo this function is obsolete, use cross_product of Core::LinAlg::Matrix instead
   template <typename type>
   Core::LinAlg::Matrix<3, 1, type> VectorProduct(
       Core::LinAlg::Matrix<3, 1, type> first_vector, Core::LinAlg::Matrix<3, 1, type> second_vector)
@@ -208,7 +208,7 @@ namespace Core::FADUtils
     S_first_vector(2, 1) = first_vector(0);
     S_first_vector(2, 2) = 0.0;
 
-    result_vector.Multiply(S_first_vector, second_vector);
+    result_vector.multiply(S_first_vector, second_vector);
 
     return result_vector;
   }

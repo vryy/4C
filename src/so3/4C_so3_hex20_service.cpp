@@ -31,8 +31,8 @@ std::vector<double> Discret::ELEMENTS::SoHex20::soh20_element_center_refe_coords
   // Element midpoint at r=s=t=0.0
   Core::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
   Core::LinAlg::Matrix<1, NUMDIM_SOH20> midpoint;
-  // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
-  midpoint.MultiplyTN(funct, xrefe);
+  // midpoint.multiply('T','N',1.0,funct,xrefe,0.0);
+  midpoint.multiply_tn(funct, xrefe);
   std::vector<double> centercoords(3);
   centercoords[0] = midpoint(0, 0);
   centercoords[1] = midpoint(0, 1);

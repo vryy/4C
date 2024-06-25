@@ -148,8 +148,8 @@ bool BEAMINTERACTION::IntersectArbitraryCylinders(Core::LinAlg::Matrix<3, 1, dou
     // UNDERGOING LARGE DEFLECTIONS" of Wriggers and Zavarise (1997)
     Core::LinAlg::Matrix<3, 1, double> b_1(r1_a);
     Core::LinAlg::Matrix<3, 1, double> b_2(r2_a);
-    b_1.Update(1.0, r1_b, 1.0);
-    b_2.Update(1.0, r2_b, 1.0);
+    b_1.update(1.0, r1_b, 1.0);
+    b_2.update(1.0, r2_b, 1.0);
     double eta1_seg(0.0);
     double eta2_seg(0.0);
 
@@ -238,9 +238,9 @@ double BEAMINTERACTION::CalcPointLineDist(
            Core::FADUtils::VectorNorm<3>(tline));
 
   vec1.clear();
-  vec1.Update(-1.0, rline_a, 0.0);
-  vec1.Update(-1.0, rline_b, 1.0);
-  vec1.Update(2.0, rp, 1.0);
+  vec1.update(-1.0, rline_a, 0.0);
+  vec1.update(-1.0, rline_b, 1.0);
+  vec1.update(2.0, rp, 1.0);
 
   eta = Core::FADUtils::ScalarProduct(tline, vec1) / Core::FADUtils::ScalarProduct(tline, tline);
 

@@ -902,9 +902,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
               Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
               Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-              v.Multiply(1, velocity, funct, 1);
-              p.Multiply(1, pressure, funct, 1);
-              if (acc_output) a.Multiply(1, acceleration, funct, 1);
+              v.multiply(1, velocity, funct, 1);
+              p.multiply(1, pressure, funct, 1);
+              if (acc_output) a.multiply(1, acceleration, funct, 1);
               break;
             }
             case Core::FE::CellType::hex20:
@@ -917,9 +917,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
               Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
               Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-              v.Multiply(1, velocity, funct, 1);
-              p.Multiply(1, pressure, funct, 1);
-              if (acc_output) a.Multiply(1, acceleration, funct, 1);
+              v.multiply(1, velocity, funct, 1);
+              p.multiply(1, pressure, funct, 1);
+              if (acc_output) a.multiply(1, acceleration, funct, 1);
               break;
             }
             case Core::FE::CellType::hex27:
@@ -932,9 +932,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
               Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
               Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-              v.Multiply(1, velocity, funct, 1);
-              p.Multiply(1, pressure, funct, 1);
-              if (acc_output) a.Multiply(1, acceleration, funct, 1);
+              v.multiply(1, velocity, funct, 1);
+              p.multiply(1, pressure, funct, 1);
+              if (acc_output) a.multiply(1, acceleration, funct, 1);
               break;
             }
             default:
@@ -1029,9 +1029,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-            v.Multiply(1, velocity, funct, 1);
-            p.Multiply(1, pressure, funct, 1);
-            if (acc_output) a.Multiply(1, acceleration, funct, 1);
+            v.multiply(1, velocity, funct, 1);
+            p.multiply(1, pressure, funct, 1);
+            if (acc_output) a.multiply(1, acceleration, funct, 1);
             break;
           }
           case Core::FE::CellType::hex20:
@@ -1044,9 +1044,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-            v.Multiply(1, velocity, funct, 1);
-            p.Multiply(1, pressure, funct, 1);
-            if (acc_output) a.Multiply(1, acceleration, funct, 1);
+            v.multiply(1, velocity, funct, 1);
+            p.multiply(1, pressure, funct, 1);
+            if (acc_output) a.multiply(1, acceleration, funct, 1);
             break;
           }
           case Core::FE::CellType::hex27:
@@ -1059,9 +1059,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-            v.Multiply(1, velocity, funct, 1);
-            p.Multiply(1, pressure, funct, 1);
-            if (acc_output) a.Multiply(1, acceleration, funct, 1);
+            v.multiply(1, velocity, funct, 1);
+            p.multiply(1, pressure, funct, 1);
+            if (acc_output) a.multiply(1, acceleration, funct, 1);
             break;
           }
           case Core::FE::CellType::wedge6:
@@ -1073,9 +1073,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-            v.Multiply(1, velocity, funct, 1);
-            p.Multiply(1, pressure, funct, 1);
-            if (acc_output) a.Multiply(1, acceleration, funct, 1);
+            v.multiply(1, velocity, funct, 1);
+            p.multiply(1, pressure, funct, 1);
+            if (acc_output) a.multiply(1, acceleration, funct, 1);
             break;
           }
           case Core::FE::CellType::wedge15:
@@ -1087,9 +1087,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-            v.Multiply(1, velocity, funct, 1);
-            p.Multiply(1, pressure, funct, 1);
-            if (acc_output) a.Multiply(1, acceleration, funct, 1);
+            v.multiply(1, velocity, funct, 1);
+            p.multiply(1, pressure, funct, 1);
+            if (acc_output) a.multiply(1, acceleration, funct, 1);
             break;
           }
           case Core::FE::CellType::tet4:
@@ -1101,9 +1101,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-            v.Multiply(1, velocity, funct, 1);
-            p.Multiply(1, pressure, funct, 1);
-            if (acc_output) a.Multiply(1, acceleration, funct, 1);
+            v.multiply(1, velocity, funct, 1);
+            p.multiply(1, pressure, funct, 1);
+            if (acc_output) a.multiply(1, acceleration, funct, 1);
             break;
           }
           case Core::FE::CellType::tet10:
@@ -1115,9 +1115,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
             Core::LinAlg::Matrix<1, numnodes> pressure(press, true);
             Core::LinAlg::Matrix<3, numnodes> acceleration(acc, true);
 
-            v.Multiply(1, velocity, funct, 1);
-            p.Multiply(1, pressure, funct, 1);
-            if (acc_output) a.Multiply(1, acceleration, funct, 1);
+            v.multiply(1, velocity, funct, 1);
+            p.multiply(1, pressure, funct, 1);
+            if (acc_output) a.multiply(1, acceleration, funct, 1);
             break;
           }
           default:

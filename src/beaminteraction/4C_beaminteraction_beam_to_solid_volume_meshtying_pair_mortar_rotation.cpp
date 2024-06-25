@@ -119,11 +119,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
 
   // Assemble into the global vectors
-  global_constraint.SumIntoGlobalValues(lambda_gid_rot.size(), lambda_gid_rot.data(), local_g.A());
-  global_kappa.SumIntoGlobalValues(lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.A());
-  local_kappa.PutScalar(1.0);
+  global_constraint.SumIntoGlobalValues(
+      lambda_gid_rot.size(), lambda_gid_rot.data(), local_g.data());
+  global_kappa.SumIntoGlobalValues(
+      lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.data());
+  local_kappa.put_scalar(1.0);
   global_lambda_active.SumIntoGlobalValues(
-      lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.A());
+      lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.data());
 
   // Assemble into global matrices.
   for (unsigned int i_dof_lambda = 0; i_dof_lambda < mortar_rot::n_dof_; i_dof_lambda++)
@@ -223,7 +225,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Calculate the rotation vector of this cross section.
       triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
@@ -280,30 +282,30 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           d_psi_solid_d_q_solid(i_dim, i_solid) = psi_solid(i_dim).dx(3 + i_solid);
 
       // Calculate the force terms derived w.r.t. the Lagrange multipliers.
-      T_rel_tr_times_lambda_shape.MultiplyTN(T_rel, lambda_shape_functions_full);
-      d_fb_d_lambda_gp.MultiplyTN(L_full, T_rel_tr_times_lambda_shape);
-      d_fb_d_lambda_gp.Scale(-1.0 * projected_gauss_point.GetGaussWeight() * segment_jacobian);
+      T_rel_tr_times_lambda_shape.multiply_tn(T_rel, lambda_shape_functions_full);
+      d_fb_d_lambda_gp.multiply_tn(L_full, T_rel_tr_times_lambda_shape);
+      d_fb_d_lambda_gp.scale(-1.0 * projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
-      T_solid_mtr_times_T_rel_tr_times_lambda_shape.MultiplyTN(
+      T_solid_mtr_times_T_rel_tr_times_lambda_shape.multiply_tn(
           T_solid_inv, T_rel_tr_times_lambda_shape);
-      d_fs_d_lambda_gp.MultiplyTN(
+      d_fs_d_lambda_gp.multiply_tn(
           d_psi_solid_d_q_solid, T_solid_mtr_times_T_rel_tr_times_lambda_shape);
-      d_fs_d_lambda_gp.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
+      d_fs_d_lambda_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
       // Constraint vector.
-      g_gp.PutScalar(0.0);
+      g_gp.put_scalar(0.0);
       for (unsigned int i_row = 0; i_row < mortar_rot::n_dof_; i_row++)
         for (unsigned int i_col = 0; i_col < 3; i_col++)
           g_gp(i_row) += lambda_shape_functions_full(i_col, i_row) * psi_rel(i_col);
-      g_gp.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
+      g_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
       // Derivatives of constraint vector.
-      T_beam_times_I_beam_tilde_full.Multiply(T_beam, I_beam_tilde_full);
+      T_beam_times_I_beam_tilde_full.multiply(T_beam, I_beam_tilde_full);
 
       for (unsigned int i_lambda = 0; i_lambda < mortar_rot::n_dof_; i_lambda++)
         for (unsigned int i_psi = 0; i_psi < 3; i_psi++)
           d_g_d_psi_beam(i_lambda, i_psi) = g_gp(i_lambda).dx(i_psi);
-      d_g_d_psi_beam_times_T_beam_I.Multiply(d_g_d_psi_beam, T_beam_times_I_beam_tilde_full);
+      d_g_d_psi_beam_times_T_beam_I.multiply(d_g_d_psi_beam, T_beam_times_I_beam_tilde_full);
 
       for (unsigned int i_lambda = 0; i_lambda < mortar_rot::n_dof_; i_lambda++)
         for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
@@ -512,7 +514,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Calculate the rotation vector of this cross section.
       triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
@@ -571,22 +573,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           d_psi_solid_d_q_solid(i_dim, i_solid) = psi_solid(i_dim).dx(3 + i_solid);
 
       // Calculate the force terms derived w.r.t. the Lagrange multipliers.
-      T_rel_tr_times_lambda_shape.MultiplyTN(T_rel, lambda_shape_functions_full);
-      d_fb_d_lambda_gp.MultiplyTN(L_full, T_rel_tr_times_lambda_shape);
-      d_fb_d_lambda_gp.Scale(-1.0 * projected_gauss_point.GetGaussWeight() * segment_jacobian);
+      T_rel_tr_times_lambda_shape.multiply_tn(T_rel, lambda_shape_functions_full);
+      d_fb_d_lambda_gp.multiply_tn(L_full, T_rel_tr_times_lambda_shape);
+      d_fb_d_lambda_gp.scale(-1.0 * projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
-      T_solid_mtr_times_T_rel_tr_times_lambda_shape.MultiplyTN(
+      T_solid_mtr_times_T_rel_tr_times_lambda_shape.multiply_tn(
           T_solid_inv, T_rel_tr_times_lambda_shape);
-      d_fs_d_lambda_gp.MultiplyTN(
+      d_fs_d_lambda_gp.multiply_tn(
           d_psi_solid_d_q_solid, T_solid_mtr_times_T_rel_tr_times_lambda_shape);
-      d_fs_d_lambda_gp.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
+      d_fs_d_lambda_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
       // Calculate the force vectors.
-      f_beam.PutScalar(0.0);
+      f_beam.put_scalar(0.0);
       for (unsigned int i_row = 0; i_row < n_dof_rot_; i_row++)
         for (unsigned int i_col = 0; i_col < mortar_rot::n_dof_; i_col++)
           f_beam(i_row) += d_fb_d_lambda_gp(i_row, i_col) * lambda_rot(i_col);
-      f_solid.PutScalar(0.0);
+      f_solid.put_scalar(0.0);
       for (unsigned int i_row = 0; i_row < solid::n_dof_; i_row++)
         for (unsigned int i_col = 0; i_col < mortar_rot::n_dof_; i_col++)
           f_solid(i_row) += d_fs_d_lambda_gp(i_row, i_col) * lambda_rot(i_col);
@@ -599,10 +601,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           d_f_solid_d_phi(i_row, i_dim) = f_solid(i_row).dx(i_dim);
 
-      T_beam_times_I_beam_tilde_full.Multiply(T_beam, I_beam_tilde_full);
-      d_f_beam_d_phi_times_T_beam_times_I_beam_tilde_full.Multiply(
+      T_beam_times_I_beam_tilde_full.multiply(T_beam, I_beam_tilde_full);
+      d_f_beam_d_phi_times_T_beam_times_I_beam_tilde_full.multiply(
           d_f_beam_d_phi, T_beam_times_I_beam_tilde_full);
-      d_f_solid_d_phi_times_T_beam_times_I_beam_tilde_full.Multiply(
+      d_f_solid_d_phi_times_T_beam_times_I_beam_tilde_full.multiply(
           d_f_solid_d_phi, T_beam_times_I_beam_tilde_full);
 
       // Add to output matrices and vector.

@@ -53,10 +53,10 @@ void Mat::Elastic::CoupAnisoExpoBase::EvaluateFunc(
     T& psi, Core::LinAlg::Matrix<3, 3, T> const& C, const int gp, int const eleGID) const
 {
   Core::LinAlg::Matrix<3, 3, T> A_T(
-      get_coup_aniso_expo_base_interface().get_structural_tensor(gp).A());
+      get_coup_aniso_expo_base_interface().get_structural_tensor(gp).data());
   const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
 
-  T I4 = C.Dot(A_T);
+  T I4 = C.dot(A_T);
 
   T k1;
   T k2;
@@ -78,7 +78,7 @@ void Mat::Elastic::CoupAnisoExpoBase::evaluate_first_derivatives_aniso(
     Core::LinAlg::Matrix<2, 1>& dPI_aniso, Core::LinAlg::Matrix<3, 3> const& rcg, int gp,
     int eleGID)
 {
-  double I4 = get_coup_aniso_expo_base_interface().get_structural_tensor(gp).Dot(rcg);
+  double I4 = get_coup_aniso_expo_base_interface().get_structural_tensor(gp).dot(rcg);
   const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
 
   double k1 = params_->k1_;
@@ -98,7 +98,7 @@ void Mat::Elastic::CoupAnisoExpoBase::evaluate_second_derivatives_aniso(
     Core::LinAlg::Matrix<3, 1>& ddPII_aniso, Core::LinAlg::Matrix<3, 3> const& rcg, int gp,
     int eleGID)
 {
-  double I4 = get_coup_aniso_expo_base_interface().get_structural_tensor(gp).Dot(rcg);
+  double I4 = get_coup_aniso_expo_base_interface().get_structural_tensor(gp).dot(rcg);
   const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
 
   double k1 = params_->k1_;
@@ -120,10 +120,10 @@ void Mat::Elastic::CoupAnisoExpoBase::GetDerivativesAniso(Core::LinAlg::Matrix<2
     Core::LinAlg::Matrix<3, 3, T> const& rcg, const int gp, const int eleGID) const
 {
   Core::LinAlg::Matrix<3, 3, T> AM(
-      get_coup_aniso_expo_base_interface().get_structural_tensor(gp).A());
+      get_coup_aniso_expo_base_interface().get_structural_tensor(gp).data());
   const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
 
-  T I4 = AM.Dot(rcg);
+  T I4 = AM.dot(rcg);
 
   T k1 = params_->k1_;
   T k2 = params_->k2_;
@@ -149,7 +149,7 @@ void Mat::Elastic::CoupAnisoExpoBase::add_stress_aniso_principal(
     Core::LinAlg::Matrix<6, 1>& stress, Teuchos::ParameterList& params, const int gp,
     const int eleGID)
 {
-  double I4 = get_coup_aniso_expo_base_interface().get_structural_tensor_stress(gp).Dot(rcg);
+  double I4 = get_coup_aniso_expo_base_interface().get_structural_tensor_stress(gp).dot(rcg);
   const double scalarProduct = get_coup_aniso_expo_base_interface().GetScalarProduct(gp);
 
   double k1;
@@ -167,11 +167,11 @@ void Mat::Elastic::CoupAnisoExpoBase::add_stress_aniso_principal(
 
   double gamma =
       2. * (k1 * (I4 - scalarProduct) * std::exp(k2 * std::pow((I4 - scalarProduct), 2)));
-  stress.Update(gamma, get_coup_aniso_expo_base_interface().get_structural_tensor_stress(gp), 1.0);
+  stress.update(gamma, get_coup_aniso_expo_base_interface().get_structural_tensor_stress(gp), 1.0);
 
   double delta = 2. * (1. + 2. * k2 * std::pow((I4 - scalarProduct), 2)) * 2. * k1 *
                  std::exp(k2 * std::pow((I4 - scalarProduct), 2));
-  cmat.MultiplyNT(delta, get_coup_aniso_expo_base_interface().get_structural_tensor_stress(gp),
+  cmat.multiply_nt(delta, get_coup_aniso_expo_base_interface().get_structural_tensor_stress(gp),
       get_coup_aniso_expo_base_interface().get_structural_tensor_stress(gp), 1.0);
 }
 

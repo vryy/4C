@@ -110,7 +110,7 @@ namespace
     tet4refsolution(0, 0) = 61.0 / 40.0;
     tet4refsolution(1, 0) = -199.0 / 400.0;
     tet4refsolution(2, 0) = 9.0 / 16.0;
-    xicentertet4ele.PutScalar(1.0 / 4.0);
+    xicentertet4ele.put_scalar(1.0 / 4.0);
     CONTACT::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tet4>(
         tet4ele, xicentertet4ele, tet4elecoords);
 
@@ -124,7 +124,7 @@ namespace
     tri3refsolution(0, 0) = 23.0 / 15.0;
     tri3refsolution(1, 0) = -149.0 / 300.0;
     tri3refsolution(2, 0) = 1.0 / 12.0;
-    xicentertri3ele.PutScalar(1.0 / 3.0);
+    xicentertri3ele.put_scalar(1.0 / 3.0);
     CONTACT::LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(
         tri3ele, xicentertri3ele, tri3elecoords);
 
@@ -154,7 +154,7 @@ namespace
     tri3refsolution(0, 0) = -0.085623542490578;
     tri3refsolution(1, 0) = 0.048198682858935;
     tri3refsolution(2, 0) = -0.995161040205065;
-    xicentertri3ele.PutScalar(1.0 / 3.0);
+    xicentertri3ele.put_scalar(1.0 / 3.0);
     CONTACT::ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri3>(
         tri3ele, xicentertri3ele, tri3elecoords);
 

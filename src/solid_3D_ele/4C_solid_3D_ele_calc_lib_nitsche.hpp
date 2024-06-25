@@ -34,13 +34,13 @@ namespace Discret::ELEMENTS
   namespace Details
   {
     template <unsigned a, unsigned b, unsigned c>
-    static inline void MultiplyTN(const Core::LinAlg::Matrix<a, b>& mat1,
+    static inline void multiply_tn(const Core::LinAlg::Matrix<a, b>& mat1,
         const Core::LinAlg::Matrix<a, c>& mat2, Core::LinAlg::SerialDenseMatrix& out)
     {
       out.reshape(b, c);
       Core::LinAlg::Matrix<b, c> out_mat(out.values(), true);
 
-      out_mat.MultiplyTN(mat1, mat2);
+      out_mat.multiply_tn(mat1, mat2);
     }
   }  // namespace Details
 
@@ -59,7 +59,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<9, 1>& d_cauchyndir_dF,
       Core::LinAlg::SerialDenseMatrix& d_cauchyndir_dd)
   {
-    Details::MultiplyTN(d_F_dd, d_cauchyndir_dF, d_cauchyndir_dd);
+    Details::multiply_tn(d_F_dd, d_cauchyndir_dF, d_cauchyndir_dd);
   }
 
   /*!
@@ -79,7 +79,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<9, Core::FE::dim<celltype>>& d2_cauchyndir_dF_dn,
       Core::LinAlg::SerialDenseMatrix& d2_cauchyndir_dd_dn)
   {
-    Details::MultiplyTN(d_F_dd, d2_cauchyndir_dF_dn, d2_cauchyndir_dd_dn);
+    Details::multiply_tn(d_F_dd, d2_cauchyndir_dF_dn, d2_cauchyndir_dd_dn);
   }
 
   /*!
@@ -99,7 +99,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<9, Core::FE::dim<celltype>>& d2_cauchyndir_dF_ddir,
       Core::LinAlg::SerialDenseMatrix& d2_cauchyndir_dd_ddir)
   {
-    Details::MultiplyTN(d_F_dd, d2_cauchyndir_dF_ddir, d2_cauchyndir_dd_ddir);
+    Details::multiply_tn(d_F_dd, d2_cauchyndir_dF_ddir, d2_cauchyndir_dd_ddir);
   }
 
   /*!
@@ -120,8 +120,8 @@ namespace Discret::ELEMENTS
   {
     Core::LinAlg::Matrix<9, Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>
         d2_cauchyndir_dF2_d_F_dd(false);
-    d2_cauchyndir_dF2_d_F_dd.Multiply(d2_cauchyndir_dF2, d_F_dd);
-    Details::MultiplyTN(d_F_dd, d2_cauchyndir_dF2_d_F_dd, d2_cauchyndir_dd_dd);
+    d2_cauchyndir_dF2_d_F_dd.multiply(d2_cauchyndir_dF2, d_F_dd);
+    Details::multiply_tn(d_F_dd, d2_cauchyndir_dF2_d_F_dd, d2_cauchyndir_dd_dd);
   }
 
   /*!
@@ -137,7 +137,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<9, 1>& d_cauchyndir_dF,
       Core::LinAlg::Matrix<3, 1>& d_cauchyndir_dxi)
   {
-    d_cauchyndir_dxi.MultiplyTN(d_F_dxi, d_cauchyndir_dF);
+    d_cauchyndir_dxi.multiply_tn(d_F_dxi, d_cauchyndir_dF);
   }
 
   /*!

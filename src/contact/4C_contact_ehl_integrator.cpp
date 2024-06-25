@@ -104,8 +104,8 @@ void CONTACT::IntegratorEhl::gp_weighted_surf_grad_and_deriv(Mortar::Element& se
   Core::LinAlg::Matrix<3, 1> t1(gxi.at(0).data(), true);
   Core::LinAlg::Matrix<3, 1> t2(gxi.at(1).data(), true);
   Core::LinAlg::Matrix<3, 1> n;
-  n.CrossProduct(t1, t2);
-  n.Scale(1. / n.Norm2());
+  n.cross_product(t1, t2);
+  n.scale(1. / n.norm2());
   Core::LinAlg::Matrix<3, 3> covariant_metric;
   for (int i = 0; i < 3; ++i)
   {
@@ -114,7 +114,7 @@ void CONTACT::IntegratorEhl::gp_weighted_surf_grad_and_deriv(Mortar::Element& se
     covariant_metric(i, 2) = n(i);
   }
   Core::LinAlg::Matrix<3, 3> contravariant_metric;
-  contravariant_metric.Invert(covariant_metric);
+  contravariant_metric.invert(covariant_metric);
 
   std::vector<std::vector<double>> gxi_contra(2, std::vector<double>(3, 0));
   for (int i = 0; i < Dim() - 1; ++i)
@@ -202,7 +202,7 @@ void CONTACT::IntegratorEhl::gp_weighted_av_rel_vel(Mortar::Element& sele, Morta
   Core::Gen::Pairedvector<int, double> dvt1(0);
   Core::Gen::Pairedvector<int, double> dvt2(0);
 
-  CONTACT::UTILS::BuildTangentVectors<dim>(normal, dnmap_unit, t1.A(), dt1, t2.A(), dt2);
+  CONTACT::UTILS::BuildTangentVectors<dim>(normal, dnmap_unit, t1.data(), dt1, t2.data(), dt2);
   CONTACT::UTILS::RelVelInvariant<dim>(sele, sxi, derivsxi, sval, sderiv, mele, mxi, derivmxi, mval,
       mderiv, gap, deriv_gap, relVel, relVel_deriv, -.5);
 

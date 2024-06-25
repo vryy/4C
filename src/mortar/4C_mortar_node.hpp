@@ -360,7 +360,7 @@ namespace Mortar
     /*!
      \brief Print this Node
      */
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     /*!
      \brief Is node on slave or master side of mortar interface

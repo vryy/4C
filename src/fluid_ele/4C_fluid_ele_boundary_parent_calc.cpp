@@ -769,8 +769,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
       // compute (inverse of) Jacobian matrix and determinant for parent element
       // and check its value
-      pxjm.MultiplyNT(pderiv, pxyze);
-      const double pdet = pxji.Invert(pxjm);
+      pxjm.multiply_nt(pderiv, pxyze);
+      const double pdet = pxji.invert(pxjm);
       if (pdet < 1E-16)
         FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
@@ -787,14 +787,14 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       // compute velocity vector and normal velocity at integration point
       // (here via parent element)
       double normvel = 0.0;
-      pvelaf.Multiply(pevelaf, pfunct);
-      normvel = pvelaf.Dot(unitnormal);
+      pvelaf.multiply(pevelaf, pfunct);
+      normvel = pvelaf.dot(unitnormal);
 
       // compute global first derivates for parent element
-      pderxy.Multiply(pxji, pderiv);
+      pderxy.multiply(pxji, pderiv);
 
       // get velocity derivatives at n+alpha_F at integration point
-      pvderxyaf.MultiplyNT(pevelaf, pderxy);
+      pvderxyaf.multiply_nt(pevelaf, pderxy);
 
       // evaluate material at integration point
       double rateofstrain = 0.0;
@@ -848,7 +848,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
       double prefac = 0.0;
       if (fldpara_->PhysicalType() == Inpar::FLUID::loma)
       {
-        pscaaf = pfunct.Dot(pescaaf);
+        pscaaf = pfunct.dot(pescaaf);
         if (pscaaf < 0.0)
           FOUR_C_THROW("Negative scalar in boundary computation for low-Mach-number flow!");
 
@@ -993,7 +993,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
             // dyadic product of unit normal vector and velocity vector
             Core::LinAlg::Matrix<nsd, nsd> n_x_u(true);
-            n_x_u.MultiplyNT(pvelaf, unitnormal);
+            n_x_u.multiply_nt(pvelaf, unitnormal);
 
             for (int ui = 0; ui < piel; ++ui)
             {
@@ -1170,7 +1170,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC(
 
             // dyadic product of unit normal vector and velocity vector
             Core::LinAlg::Matrix<nsd, nsd> n_x_u(true);
-            n_x_u.MultiplyNT(pvelaf, unitnormal);
+            n_x_u.multiply_nt(pvelaf, unitnormal);
 
             for (int ui = 0; ui < piel; ++ui)
             {
@@ -1435,12 +1435,12 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(
     Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // Compute pressure of boundary element at integration point
-    pressint.Multiply(epressnp, funct);
+    pressint.multiply(epressnp, funct);
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
-    pxjm.MultiplyNT(pderiv, pxyze);
-    const double pdet = pxji.Invert(pxjm);
+    pxjm.multiply_nt(pderiv, pxyze);
+    const double pdet = pxji.invert(pxjm);
     if (pdet < 1E-16)
       FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
@@ -1455,10 +1455,10 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC(
     fac_ = bintpoints.IP().qwgt[iquad] * drs_;
 
     // compute global first derivates for parent element
-    pderxy.Multiply(pxji, pderiv);
+    pderxy.multiply(pxji, pderiv);
 
     // get velocity derivatives at n+alpha_F at integration point
-    pvderxyaf.MultiplyNT(pevelaf, pderxy);
+    pvderxyaf.multiply_nt(pevelaf, pderxy);
 
     // evaluate material at integration point
     double rateofstrain = 0.0;  // Only Newtonian-fluids supported
@@ -1760,12 +1760,12 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC(
     Core::FE::shape_function_deriv1<bdistype>(xsi, deriv);
 
     // Compute velocity of parent element at integration point
-    pvelint.Multiply(pevelaf, pfunct);
+    pvelint.multiply(pevelaf, pfunct);
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
-    pxjm.MultiplyNT(pderiv, pxyze);
-    const double pdet = pxji.Invert(pxjm);
+    pxjm.multiply_nt(pderiv, pxyze);
+    const double pdet = pxji.invert(pxjm);
     if (pdet < 1E-16)
       FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
@@ -2128,8 +2128,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
-    pxjm.MultiplyNT(pderiv, pxyze);
-    const double pdet = pxji.Invert(pxjm);
+    pxjm.multiply_nt(pderiv, pxyze);
+    const double pdet = pxji.invert(pxjm);
     if (pdet < 1E-16)
       FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
@@ -2216,7 +2216,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
           // (important: requires 3D position vector)
           functionfac(idim) = Global::Problem::Instance()
                                   ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                  .evaluate(coordgp.A(), time, idim);
+                                  .evaluate(coordgp.data(), time, idim);
         }
         else
           functionfac(idim) = 1.0;
@@ -2224,19 +2224,19 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
     }
 
     // compute global first derivates for parent element
-    pderxy.Multiply(pxji, pderiv);
+    pderxy.multiply(pxji, pderiv);
 
     // get velocity at n+alpha_F at integration point
-    pvelintaf.Multiply(pevelaf, pfunct);
+    pvelintaf.multiply(pevelaf, pfunct);
 
     // get velocity at n+1/n+alpha_F at integration point
-    pvelintnp.Multiply(pevelnp, pfunct);
+    pvelintnp.multiply(pevelnp, pfunct);
 
     // get velocity derivatives at n+1 at integration point
-    pvderxyaf.MultiplyNT(pevelaf, pderxy);
+    pvderxyaf.multiply_nt(pevelaf, pderxy);
 
     // get pressure at n+1/n+alpha_F at integration point
-    const double preintnp = pfunct.Dot(peprenp);
+    const double preintnp = pfunct.dot(peprenp);
 
     // evaluate material at integration point
     double rateofstrain = 0.0;
@@ -2316,7 +2316,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::EvaluateWeakDBC(
       //                      \ /      +---+
       //                       +       dim j
 
-      const double normu = pvelintaf.Norm2();
+      const double normu = pvelintaf.norm2();
 
       /*
       // the penalty term could be interpreted as a traction
@@ -3896,8 +3896,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
-    pxjm.MultiplyNT(pderiv, pxyze);
-    const double pdet = pxji.Invert(pxjm);
+    pxjm.multiply_nt(pderiv, pxyze);
+    const double pdet = pxji.invert(pxjm);
     if (pdet < 1E-16)
       FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
@@ -3914,7 +3914,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
     //    meas_surf += fac_;
 
     // compute global first derivates for parent element
-    pderxy.Multiply(pxji, pderiv);
+    pderxy.multiply(pxji, pderiv);
 
     const unsigned Velx = 0;
     const unsigned Vely = 1;
@@ -4162,9 +4162,9 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 
     // compute (inverse of) Jacobian matrix and determinant for parent element
     // and check its value
-    pxjm.MultiplyNT(pderiv, pxyze);
-    //    const double pdet = pxji.Invert(pxjm);
-    pdet = pxji.Invert(pxjm);
+    pxjm.multiply_nt(pderiv, pxyze);
+    //    const double pdet = pxji.invert(pxjm);
+    pdet = pxji.invert(pxjm);
     if (pdet < 1E-16)
       FOUR_C_THROW("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pid, pdet);
 
@@ -4175,7 +4175,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
     //    meas_vol += fac_;
 
     // compute global first derivates for parent element
-    pderxy.Multiply(pxji, pderiv);
+    pderxy.multiply(pxji, pderiv);
 
     /*
   //    /                \
@@ -4580,8 +4580,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
         | dr   ds   dt |        | dt   dt   dt |
         +-            -+        +-            -+
       */
-      pxjm.MultiplyNT(pderiv, pxyze);
-      const double det = pxji.Invert(pxjm);
+      pxjm.multiply_nt(pderiv, pxyze);
+      const double det = pxji.invert(pxjm);
 
       if (det < 1E-16)
         FOUR_C_THROW(
@@ -4591,16 +4591,16 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       fac_ = pintpoints.IP().qwgt[iquad] * det;
 
       // compute global first derivates
-      pderxy.Multiply(pxji, pderiv);
+      pderxy.multiply(pxji, pderiv);
 
       // interpolate to gausspoint
-      pvelint.Multiply(pevel, pfunct);
+      pvelint.multiply(pevel, pfunct);
 
       // get velocity derivatives at integration point
-      pvderxy.MultiplyNT(pevel, pderxy);
+      pvderxy.multiply_nt(pevel, pderxy);
 
       // interpolate pressure to gausspoint
-      ppressure = pfunct.Dot(pepres);
+      ppressure = pfunct.dot(pepres);
 
       /*
                             /          \
@@ -4753,7 +4753,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
   Core::LinAlg::FixedSizeSerialDenseSolver<numstressdof_ * piel, numstressdof_ * piel> solver;
 
   solver.SetMatrix(inv_r_sigma);
-  solver.Invert();
+  solver.invert();
 
   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
          PART 2.1: Include Spaldings law
@@ -4872,7 +4872,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
         fac_ = intpoints.IP().qwgt[iquad] * drs_;
 
         // interpolate to gausspoint
-        velint.Multiply(pevel, pfunct);
+        velint.multiply(pevel, pfunct);
 
         // ------------------------------------------------
         // factor given by spatial function
@@ -4906,7 +4906,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
               // evaluate function at current gauss point (important: requires 3D position vector)
               functionfac(dim) = Global::Problem::Instance()
                                      ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                     .evaluate(coordgp.A(), time, dim);
+                                     .evaluate(coordgp.data(), time, dim);
             }
             else
             {
@@ -5192,8 +5192,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
         | dr   ds   dt |        | dt   dt   dt |
         +-            -+        +-            -+
       */
-      pxjm.MultiplyNT(pderiv, pxyze);
-      const double det = pxji.Invert(pxjm);
+      pxjm.multiply_nt(pderiv, pxyze);
+      const double det = pxji.invert(pxjm);
 
       if (det < 1E-16)
         FOUR_C_THROW(
@@ -5243,7 +5243,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
       const double h = 2.0 / sqrt(nGn);
 
       // interpolate to gausspoint
-      velint.Multiply(pevel, pfunct);
+      velint.multiply(pevel, pfunct);
 
       // ------------------------------------------------
       // factor given by spatial function
@@ -5277,7 +5277,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
             // evaluate function at current gauss point (important: requires 3D position vector)
             functionfac(dim) = Global::Problem::Instance()
                                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                   .evaluate(coordgp.A(), time, dim);
+                                   .evaluate(coordgp.data(), time, dim);
           }
           else
           {
@@ -5373,7 +5373,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet(
 
 
           // get velocity norm
-          double normu = velint.Norm2();
+          double normu = velint.norm2();
 
           // compute friction velocity u_tau
           double utau = visc_ / y;

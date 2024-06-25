@@ -119,14 +119,14 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_element_data
   structural_tensors_stress_.resize(1);
   scalar_products_[0] = get_anisotropy()
                             ->get_element_fiber(fiber_ids_[0])
-                            .Dot(get_anisotropy()->get_element_fiber(fiber_ids_[1]));
+                            .dot(get_anisotropy()->get_element_fiber(fiber_ids_[1]));
 
   Core::LinAlg::Matrix<3, 3> fiber1fiber2T(false);
-  fiber1fiber2T.MultiplyNT(get_anisotropy()->get_element_fiber(fiber_ids_[0]),
+  fiber1fiber2T.multiply_nt(get_anisotropy()->get_element_fiber(fiber_ids_[0]),
       get_anisotropy()->get_element_fiber(fiber_ids_[1]));
 
-  structural_tensors_[0].Update(0.5, fiber1fiber2T);
-  structural_tensors_[0].UpdateT(0.5, fiber1fiber2T, 1.0);
+  structural_tensors_[0].update(0.5, fiber1fiber2T);
+  structural_tensors_[0].update_t(0.5, fiber1fiber2T, 1.0);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(
       structural_tensors_[0], structural_tensors_stress_[0]);
 
@@ -164,14 +164,14 @@ void Mat::Elastic::CoupAnisoExpoShearAnisotropyExtension::on_global_gp_data_init
   {
     scalar_products_[gp] = get_anisotropy()
                                ->get_gauss_point_fiber(gp, fiber_ids_[0])
-                               .Dot(get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[1]));
+                               .dot(get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[1]));
 
     Core::LinAlg::Matrix<3, 3> fiber1fiber2T(false);
-    fiber1fiber2T.MultiplyNT(get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[0]),
+    fiber1fiber2T.multiply_nt(get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[0]),
         get_anisotropy()->get_gauss_point_fiber(gp, fiber_ids_[1]));
 
-    structural_tensors_[gp].Update(0.5, fiber1fiber2T);
-    structural_tensors_[gp].UpdateT(0.5, fiber1fiber2T, 1.0);
+    structural_tensors_[gp].update(0.5, fiber1fiber2T);
+    structural_tensors_[gp].update_t(0.5, fiber1fiber2T, 1.0);
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(
         structural_tensors_[gp], structural_tensors_stress_[gp]);
   }

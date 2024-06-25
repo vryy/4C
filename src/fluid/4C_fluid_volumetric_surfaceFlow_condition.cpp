@@ -628,8 +628,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
           }
 
           // calculate the raduis of the border node
-          R = c_cnd.Norm2();
-          border_raduis = c_bnd.Norm2();
+          R = c_cnd.norm2();
+          border_raduis = c_bnd.norm2();
 
           if (it->first == gid)
           {
@@ -638,8 +638,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
           }
 
           // normalize the two vectors
-          c_cnd.Scale(1.0 / c_cnd.Norm2());
-          c_bnd.Scale(1.0 / c_bnd.Norm2());
+          c_cnd.scale(1.0 / c_cnd.norm2());
+          c_bnd.scale(1.0 / c_bnd.norm2());
 
           //--------------------------------------------------------------
           // find the closest two vectors by calculating the norm of the
@@ -656,20 +656,20 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
           dir_vec(2) = c_cnd(0) * (*normal_)[1] - c_cnd(1) * (*normal_)[0];
 
           // if the boundary is from the left
-          if (dir_vec.Dot(c_bnd) > 0)
+          if (dir_vec.dot(c_bnd) > 0)
           {
-            if (diff.Norm2() <= diff_error_l)
+            if (diff.norm2() <= diff_error_l)
             {
-              diff_error_l = diff.Norm2();
+              diff_error_l = diff.norm2();
               R_l = border_raduis;
               v_left = c_bnd;
             }
           }
           else
           {
-            if (diff.Norm2() <= diff_error_r)
+            if (diff.norm2() <= diff_error_r)
             {
-              diff_error_r = diff.Norm2();
+              diff_error_r = diff.norm2();
               R_r = border_raduis;
               v_right = c_bnd;
             }
@@ -687,8 +687,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
 
         if (!isBorderNode)
         {
-          double cos_rl = v_right.Dot(v_left);
-          double cos_r = v_right.Dot(c_cnd);
+          double cos_rl = v_right.dot(v_left);
+          double cos_r = v_right.dot(c_cnd);
 
           double angle_rl = 0.0;
           double angle_r = 0.0;
@@ -704,8 +704,8 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::eval_local_normalized_radii(
           }
           else
           {
-            angle_rl = acos(v_right.Dot(v_left));
-            angle_r = acos(v_right.Dot(c_cnd));
+            angle_rl = acos(v_right.dot(v_left));
+            angle_r = acos(v_right.dot(c_cnd));
             border_raduis = R_r + (R_l - R_r) * angle_r / angle_rl;
           }
 

@@ -493,7 +493,7 @@ void STR::TimAda::PrintVariables(std::ostream& str) const
 
 /*----------------------------------------------------------------------*/
 /* Print */
-void STR::TimAda::Print(std::ostream& str) const
+void STR::TimAda::print(std::ostream& str) const
 {
   str << "TimAda" << std::endl;
   PrintConstants(str);
@@ -549,7 +549,7 @@ void STR::TimAda::set_dt(const double dtnew)
 /* Out stream */
 std::ostream& operator<<(std::ostream& str, const STR::TimAda& ta)
 {
-  ta.Print(str);
+  ta.print(str);
 
   return str;
 }

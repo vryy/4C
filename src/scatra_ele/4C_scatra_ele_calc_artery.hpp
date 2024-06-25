@@ -168,17 +168,17 @@ namespace Discret
         my::set_internal_variables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
 
         static Core::LinAlg::Matrix<NSD, 1> pressuregrad(true);
-        pressuregrad.Multiply(derxy, earterypressure);
+        pressuregrad.multiply(derxy, earterypressure);
 
         for (int k = 0; k < my::numscal_; ++k)
         {
           // convective velocity
-          my::convelint_[k].Update(-Diam() * Diam() / 32.0 / Visc(), pressuregrad, 0.0);
+          my::convelint_[k].update(-Diam() * Diam() / 32.0 / Visc(), pressuregrad, 0.0);
           // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-          my::conv_[k].MultiplyTN(derxy, my::convelint_[k]);
+          my::conv_[k].multiply_tn(derxy, my::convelint_[k]);
           // overwrite convective term
           // - k/\mu*grad p * grad phi
-          my::conv_phi_[k] = my::convelint_[k].Dot(my::gradphi_[k]);
+          my::conv_phi_[k] = my::convelint_[k].dot(my::gradphi_[k]);
         }
       };
 

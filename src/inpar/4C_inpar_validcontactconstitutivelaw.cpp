@@ -24,7 +24,7 @@ void Input::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
 
   for (unsigned i = 0; i < contactconstitutivlawlist.size(); ++i)
   {
-    contactconstitutivlawlist[i]->Print(stream, nullptr);
+    contactconstitutivlawlist[i]->print(stream, nullptr);
   }
 }
 

@@ -38,7 +38,7 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(const El
         "The given point has the wrong row dimension!\n"
         "rdim < prodbim <--> %d < %d",
         rdim, factory.ProbDim());
-  return factory.CreatePosition(element, xyz.A(), floattype);
+  return factory.CreatePosition(element, xyz.data(), floattype);
 }
 
 /*----------------------------------------------------------------------------*
@@ -57,9 +57,9 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
         "Dimension mismatch of xyze! \n"
         "expected input: %d x %d (rows x cols)\n"
         "received input : %d x %d (rows x cols)",
-        probdim, num_nodes_ele, xyze.M(), xyze.N());
+        probdim, num_nodes_ele, xyze.m(), xyze.n());
 
-  const double* xyze_ptr = xyze.A();
+  const double* xyze_ptr = xyze.data();
   Core::LinAlg::SerialDenseMatrix xyze_eptra;
   if (rdim > probdim)
   {
@@ -75,7 +75,7 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
         "received input : %d x 1 (rows x cols)",
         probdim, rdim_2);
 
-  return factory.CreatePosition(xyze_ptr, xyz.A(), distype, floattype);
+  return factory.CreatePosition(xyze_ptr, xyz.data(), distype, floattype);
 }
 
 /*----------------------------------------------------------------------------*
@@ -113,7 +113,7 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
         "received input : %d x 1 (rows x cols)",
         probdim, xyz.numRows());
 
-  return factory.CreatePosition(xyze_ptr, xyz.A(), distype, floattype);
+  return factory.CreatePosition(xyze_ptr, xyz.data(), distype, floattype);
 }
 
 /*----------------------------------------------------------------------------*
@@ -129,7 +129,7 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
         "The given point has the wrong row dimension!\n"
         "rdim < prodbim <--> %d < %d",
         rdim, factory.ProbDim());
-  return factory.CreatePosition(nodes, xyz.A(), distype, floattype);
+  return factory.CreatePosition(nodes, xyz.data(), distype, floattype);
 }
 
 /*----------------------------------------------------------------------------*

@@ -38,8 +38,8 @@ struct NextSideAlongRay
   NextSideAlongRay(Core::Geo::Cut::Point* startpoint, Core::Geo::Cut::Point* cutpoint)
       : startpoint_(startpoint), cutpoint_(cutpoint)
   {
-    startpoint_->Coordinates(startpoint_xyz_.A());
-    cutpoint_->Coordinates(cutpoint_xyz_.A());
+    startpoint_->Coordinates(startpoint_xyz_.data());
+    cutpoint_->Coordinates(cutpoint_xyz_.data());
   };
 
   /*--------------------------------------------------------------------*
@@ -72,7 +72,7 @@ struct NextSideAlongRay
     s2->Normal(rs, normal_2);
 
     //-------------
-    if (normal_1.Dot(normal_2) > 1 - REFERENCETOL) return true;
+    if (normal_1.dot(normal_2) > 1 - REFERENCETOL) return true;
 
     return false;
   }
@@ -641,8 +641,8 @@ bool Core::Geo::Cut::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s
   Core::LinAlg::Matrix<3, 1> xyz(true);
   Core::LinAlg::Matrix<3, 1> cut_point_xyz(true);
 
-  p->Coordinates(xyz.A());
-  cutpoint->Coordinates(cut_point_xyz.A());
+  p->Coordinates(xyz.data());
+  cutpoint->Coordinates(cut_point_xyz.data());
 
   //------------------------------------------------------------------------
   // determine the inside/outside position w.r.t the chosen cut-side
@@ -654,12 +654,12 @@ bool Core::Geo::Cut::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s
   s->Normal(rs, normal);  // outward pointing normal at cut-point
 
   Core::LinAlg::Matrix<3, 1> line_vec(true);
-  line_vec.Update(
+  line_vec.update(
       1.0, xyz, -1.0, cut_point_xyz);  // vector representing the line between p and the cut-point
 
   // check the cosine between normal and line_vec
-  double n_norm = normal.Norm2();
-  double l_norm = line_vec.Norm2();
+  double n_norm = normal.norm2();
+  double l_norm = line_vec.norm2();
   if (n_norm < MERGING_TOLERANCE or l_norm < MERGING_TOLERANCE)
   {
     double distance_between = Core::Geo::Cut::DistanceBetweenPoints(p, cutpoint);
@@ -670,7 +670,7 @@ bool Core::Geo::Cut::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s
   }
 
   // cosine between the line-vector and the normal vector
-  double cosine = normal.Dot(line_vec);
+  double cosine = normal.dot(line_vec);
   cosine /= (n_norm * l_norm);
 
   if (cosine > 0.0 + 1e-3)
@@ -708,15 +708,15 @@ bool Core::Geo::Cut::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
     Core::LinAlg::Matrix<3, 1> p_xyz(true);
     Core::LinAlg::Matrix<3, 1> cut_point_xyz(true);
 
-    p->Coordinates(p_xyz.A());
-    cutpoint->Coordinates(cut_point_xyz.A());
-    line.Update(1.0, p_xyz, -1.0, cut_point_xyz);
+    p->Coordinates(p_xyz.data());
+    cutpoint->Coordinates(cut_point_xyz.data());
+    line.update(1.0, p_xyz, -1.0, cut_point_xyz);
 
-    double line_norm = line.Norm2();
+    double line_norm = line.norm2();
 
     if (line_norm > BASICTOL)
     {
-      line.Scale(1. / line_norm);
+      line.scale(1. / line_norm);
     }
     else
     {
@@ -749,7 +749,7 @@ bool Core::Geo::Cut::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
     s->Normal(rs, normal);
 
     // check for angle=+-90 between line and normal
-    if (fabs(normal.Dot(line)) < (0.015 + BASICTOL)) return true;
+    if (fabs(normal.dot(line)) < (0.015 + BASICTOL)) return true;
   }
 
   return false;
@@ -978,7 +978,7 @@ bool Core::Geo::Cut::Element::create_simple_shaped_integration_cells(Mesh& mesh)
       //      if(this->Shape() == intcells[0]->Shape())
       //      {
       //        Core::LinAlg::SerialDenseMatrix xyze(3, intcells[0]->Points().size());
-      //        this->Coordinates(xyze.A());
+      //        this->Coordinates(xyze.data());
       //
       //        double vol_diff = vc->Volume() - Core::Geo::ElementVolume( this->Shape(), xyze );
       //
@@ -1102,7 +1102,7 @@ void Core::Geo::Cut::Element::DebugDump()
   for (plain_side_set::const_iterator i = cutsides.begin(); i != cutsides.end(); ++i)
   {
     Side* s = *i;
-    // s->Print();
+    // s->print();
     if (s->IsLevelSetSide()) haslevelsetside = true;
     const std::vector<Node*>& side_nodes = s->Nodes();
     for (std::vector<Node*>::const_iterator i = side_nodes.begin(); i != side_nodes.end(); ++i)
@@ -1181,7 +1181,7 @@ void Core::Geo::Cut::Element::DumpFacets()
   for (plain_facet_set::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
     Facet* f = *i;
-    f->Print(file);
+    f->print(file);
   }
 }
 

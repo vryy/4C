@@ -117,7 +117,7 @@ class MyocardGeneral
   virtual int GetNumberOfGP() const { return 1; };
 
   /// time update for this material
-  virtual void Update(const double phi, const double dt) = 0;
+  virtual void update(const double phi, const double dt) = 0;
 
 };  // Myocard_general
 

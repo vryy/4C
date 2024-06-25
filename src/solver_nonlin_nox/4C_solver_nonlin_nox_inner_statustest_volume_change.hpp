@@ -73,7 +73,7 @@ namespace NOX
 
           StatusType GetStatus() const override;
 
-          std::ostream& Print(std::ostream& stream, int indent = 0) const override;
+          std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
          protected:
           /// set the internal class variables by calling the related evaluate routine

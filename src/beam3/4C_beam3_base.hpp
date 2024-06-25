@@ -462,7 +462,7 @@ namespace Discret
 
         for (int dim = 0; dim < 3; dim++)
           tempvec(dim) = disp_refe_centerline(3 * vpernode * 1 + dim) - disp_refe_centerline(dim);
-        double reflength = tempvec.Norm2();
+        double reflength = tempvec.norm2();
 
         if (hermite_centerline_interpolation())
         {
@@ -552,7 +552,7 @@ namespace Discret
         /* at this point we have computed derivative with respect to the element parameter \xi \in
          * [-1;1]; as we want derivative with respect to the reference arc-length parameter s, we
          * have to divide it by the Jacobi determinant at the respective point*/
-        r_s.Scale(1.0 / jacobi);
+        r_s.scale(1.0 / jacobi);
       }
 
       /** \brief get applied beam material law object

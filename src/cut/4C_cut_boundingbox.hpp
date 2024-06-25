@@ -94,7 +94,7 @@ namespace Core::Geo
 
       /*! \brief If necessary make the boundingbox larger to include
        *  this point as one of the corners of the box */
-      void AddPoint(const Core::LinAlg::Matrix<3, 1>& p) { AddPoint(p.A()); }
+      void AddPoint(const Core::LinAlg::Matrix<3, 1>& p) { AddPoint(p.data()); }
 
       /*! \brief If necessary make the boundingbox larger to include
        *  all these nodes as one of the corners of the box */
@@ -113,7 +113,7 @@ namespace Core::Geo
       bool Within(double norm, Element& element) const;
 
       /*! \brief Print the corner points of boundingbox on the screen */
-      void Print();
+      void print();
 
       double minx() const { return box_(0, 0); }
       double miny() const { return box_(1, 0); }

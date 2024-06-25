@@ -199,7 +199,7 @@ namespace BEAMINTERACTION
         Core::LinAlg::SerialDenseMatrix& stiffmat22) = 0;
 
 
-    void Print(std::ostream& out) const;
+    void print(std::ostream& out) const;
 
     //@}
 

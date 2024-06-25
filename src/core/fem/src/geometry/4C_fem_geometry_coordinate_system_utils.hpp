@@ -28,7 +28,7 @@ namespace Core::Geo
   void BuildOrthonormalBasisFromUnitVector(const Core::LinAlg::Matrix<3, 1>& unitvec,
       Core::LinAlg::Matrix<3, 1>& basisvec_1, Core::LinAlg::Matrix<3, 1>& basisvec_2)
   {
-    if (std::abs(unitvec.Norm2() - 1.0) > 1.0e-14) FOUR_C_THROW("given vector not normalized!");
+    if (std::abs(unitvec.norm2() - 1.0) > 1.0e-14) FOUR_C_THROW("given vector not normalized!");
 
     if ((std::abs(unitvec(0)) <= std::abs(unitvec(1))) and
         (std::abs(unitvec(0)) <= std::abs(unitvec(2))))
@@ -50,9 +50,9 @@ namespace Core::Geo
       basisvec_1(2) = 0.0;
     }
 
-    basisvec_1.Scale(1.0 / basisvec_1.Norm2());
+    basisvec_1.scale(1.0 / basisvec_1.norm2());
 
-    basisvec_2.CrossProduct(unitvec, basisvec_1);
+    basisvec_2.cross_product(unitvec, basisvec_1);
   }
 }  // namespace Core::Geo
 

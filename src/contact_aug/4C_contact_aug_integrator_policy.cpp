@@ -212,16 +212,17 @@ double CONTACT::Aug::BaseSlaveIntPolicy<probdim, slavetype>::unit_slave_element_
   const Core::LinAlg::Matrix<3, 1> tau_2(&tau(0, 1), true);
   // necessary for the 2-d case
   Core::LinAlg::Matrix<3, 1> non_unit_normal_extended;
-  non_unit_normal_extended.CrossProduct(tau_1, tau_2);
+  non_unit_normal_extended.cross_product(tau_1, tau_2);
 
-  std::copy(non_unit_normal_extended.A(), non_unit_normal_extended.A() + probdim, unit_normal.A());
+  std::copy(non_unit_normal_extended.data(), non_unit_normal_extended.data() + probdim,
+      unit_normal.data());
 
-  double length_n_inv = unit_normal.Norm2();
+  double length_n_inv = unit_normal.norm2();
   if (length_n_inv == 0.0) FOUR_C_THROW("The length of the slave element normal is equal to 0.0!");
 
   length_n_inv = 1.0 / length_n_inv;
   const double normal_fac = sele.NormalFac();
-  unit_normal.Scale(normal_fac * length_n_inv);
+  unit_normal.scale(normal_fac * length_n_inv);
 
   return (length_n_inv);
 }
@@ -545,7 +546,7 @@ void CONTACT::Aug::BaseSlaveIntPolicy<probdim, slavetype>::projection_into_tange
     const Core::LinAlg::Matrix<probdim, 1>& unit_normal,
     Core::LinAlg::Matrix<probdim, probdim>& tproj_mat) const
 {
-  tproj_mat.MultiplyNT(-1.0, unit_normal, unit_normal);
+  tproj_mat.multiply_nt(-1.0, unit_normal, unit_normal);
 
   for (unsigned i = 0; i < probdim; ++i) tproj_mat(i, i) += 1.0;
 }
@@ -564,17 +565,17 @@ void CONTACT::Aug::BaseIntPolicy<probdim, slavetype, mastertype>::LMatrixInverse
     else
     {
       Core::LinAlg::Matrix<probdim, 1> last_col(&lmat_inv(0, c), true);
-      last_col.Update(-1.0, snormal);
+      last_col.update(-1.0, snormal);
     }
   }
 
-  if (std::abs(lmat_inv.Determinant()) < 1.0e-15)
+  if (std::abs(lmat_inv.determinant()) < 1.0e-15)
   {
-    lmat_inv.Print(std::cout);
+    lmat_inv.print(std::cout);
     FOUR_C_THROW("L-matrix is almost singular!");
   }
 
-  lmat_inv.Invert();
+  lmat_inv.invert();
 }
 
 /*----------------------------------------------------------------------------*
@@ -584,7 +585,7 @@ void CONTACT::Aug::BaseSlaveIntPolicy<probdim, slavetype>::AveragedNormalAtXi(Mo
     const Core::LinAlg::Matrix<SLAVENUMNODE, 1>& sval,
     Core::LinAlg::Matrix<probdim, 1>& snormal) const
 {
-  std::fill(snormal.A(), snormal.A() + probdim, 0.0);
+  std::fill(snormal.data(), snormal.data() + probdim, 0.0);
 
   const Core::Nodes::Node* const* snodes = sele.Nodes();
 
@@ -592,7 +593,7 @@ void CONTACT::Aug::BaseSlaveIntPolicy<probdim, slavetype>::AveragedNormalAtXi(Mo
   {
     const Node& cnode = static_cast<const Node&>(*snodes[i]);
     const Core::LinAlg::Matrix<probdim, 1> nn(cnode.MoData().n(), true);
-    snormal.Update(sval(i, 0), nn, 1.0);
+    snormal.update(sval(i, 0), nn, 1.0);
   }
 }
 
@@ -1282,13 +1283,13 @@ void CONTACT::Aug::IncompleteIntPolicy<probdim, slavetype, mastertype>::add_jac_
   sele.GetNodalCoords(scoord);
 
   Core::LinAlg::Matrix<3, 1> xs(true);
-  xs.MultiplyNN(scoord, sval);
+  xs.multiply_nn(scoord, sval);
 
   Core::LinAlg::Matrix<3, my::MASTERNUMNODE> mcoord;
   mele.GetNodalCoords(mcoord);
 
   Core::LinAlg::Matrix<3, 1> xm(true);
-  xm.MultiplyNN(mcoord, mval);
+  xm.multiply_nn(mcoord, mval);
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
@@ -1682,13 +1683,13 @@ void CONTACT::Aug::CompleteIntPolicy<probdim, slavetype, mastertype>::add_jac_de
   sele.GetNodalCoords(scoord);
 
   Core::LinAlg::Matrix<3, 1> xs(true);
-  xs.MultiplyNN(scoord, sval);
+  xs.multiply_nn(scoord, sval);
 
   Core::LinAlg::Matrix<3, my::MASTERNUMNODE> mcoord;
   mele.GetNodalCoords(mcoord);
 
   Core::LinAlg::Matrix<3, 1> xm(true);
-  xm.MultiplyNN(mcoord, mval);
+  xm.multiply_nn(mcoord, mval);
 
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {

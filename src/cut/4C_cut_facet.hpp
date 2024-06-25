@@ -43,9 +43,9 @@ namespace Core::Geo
 
       void DisconnectVolume(VolumeCell* cell);
 
-      inline void Print() const { Print(std::cout); }
+      inline void print() const { print(std::cout); }
 
-      void Print(std::ostream& stream) const;
+      void print(std::ostream& stream) const;
 
       /// Print only point IDs of a facet.
       void PrintPointIds()

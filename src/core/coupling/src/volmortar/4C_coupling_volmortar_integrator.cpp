@@ -1255,7 +1255,7 @@ void Core::VolMortar::VolMortarIntegrator<distypeS,
             // multiply the two shape functions
             double prod = lmval_A(j) * mval_A(k) * jac * weight_out;
             //              std::cout << "PROD1 = " << prod  << " row= " << row << "  col= " << col
-            //              << "  j= " << j<<  "  nsdof= " << nsdof<< std::endl; cnode->Print(cout);
+            //              << "  j= " << j<<  "  nsdof= " << nsdof<< std::endl; cnode->print(cout);
             // dof to dof
             if (jdof == kdof)
             {
@@ -1292,7 +1292,7 @@ void Core::VolMortar::VolMortarIntegrator<distypeS,
             // multiply the two shape functions
             double prod = lmval_B(j) * sval_A(k) * jac * weight_out;
             //              std::cout << "PROD2 = " << prod  << " row= " << row << "  col= " <<
-            //              col<< std::endl; cnode->Print(cout);
+            //              col<< std::endl; cnode->print(cout);
 
             // dof to dof
             if (jdof == kdof)

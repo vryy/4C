@@ -103,7 +103,7 @@ double Mat::ScatraMicroMacroCoupling::evaluate_mean_concentration_time_derivativ
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::ScatraMicroMacroCoupling::Update(const int gp_id) const
+void Mat::ScatraMicroMacroCoupling::update(const int gp_id) const
 {
   // safety check
   if (gp_id < 0) FOUR_C_THROW("Invalid macro-scale Gauss point ID!");

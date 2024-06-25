@@ -27,16 +27,16 @@ namespace Mat
       const Core::LinAlg::Matrix<3, 3>& iFin, Core::LinAlg::Matrix<3, 3>& Ce)
   {
     static Core::LinAlg::Matrix<3, 3> FiFin(false);
-    FiFin.MultiplyNN(F, iFin);
-    Ce.MultiplyTN(FiFin, FiFin);
+    FiFin.multiply_nn(F, iFin);
+    Ce.multiply_tn(FiFin, FiFin);
   }
 
   inline void EvaluateiCinCiCin(const Core::LinAlg::Matrix<3, 3>& C,
       const Core::LinAlg::Matrix<3, 3>& iCin, Core::LinAlg::Matrix<3, 3>& iCinCiCin)
   {
     static Core::LinAlg::Matrix<3, 3> CiCin(false);
-    CiCin.MultiplyNN(C, iCin);
-    iCinCiCin.MultiplyNN(iCin, CiCin);
+    CiCin.multiply_nn(C, iCin);
+    iCinCiCin.multiply_nn(iCin, CiCin);
   }
 
   inline void ElastHyperEvaluateElasticPart(const Core::LinAlg::Matrix<3, 3>& F,
@@ -67,13 +67,13 @@ namespace Mat
     static Core::LinAlg::Matrix<3, 1> principleInvariantsCe(true);
 
     // Compute right Cauchy-Green tensor C=F^TF
-    C.MultiplyTN(F, F);
+    C.multiply_tn(F, F);
 
     // Compute inverse right Cauchy-Green tensor C^-1
-    iC.Invert(C);
+    iC.invert(C);
 
     // Compute inverse inelastic right Cauchy-Green Tensor
-    iCin.MultiplyNT(iFin, iFin);
+    iCin.multiply_nt(iFin, iFin);
 
     // Compute iCin * C * iCin
     Mat::EvaluateiCinCiCin(C, iCin, iCinCiCin);
@@ -103,20 +103,20 @@ namespace Mat
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(iC, iCv);
 
     // Contribution to 2nd Piola-Kirchhoff stress tensor
-    S_stress.Update(gamma(0), iCinv, 1.0);
-    S_stress.Update(gamma(1), iCinCiCinv, 1.0);
-    S_stress.Update(gamma(2), iCv, 1.0);
+    S_stress.update(gamma(0), iCinv, 1.0);
+    S_stress.update(gamma(1), iCinCiCinv, 1.0);
+    S_stress.update(gamma(2), iCv, 1.0);
 
     // Contribution to the linearization
-    cmat.MultiplyNT(delta(0), iCinv, iCinv, 1.);
-    cmat.MultiplyNT(delta(1), iCinCiCinv, iCinv, 1.);
-    cmat.MultiplyNT(delta(1), iCinv, iCinCiCinv, 1.);
-    cmat.MultiplyNT(delta(2), iCinv, iCv, 1.);
-    cmat.MultiplyNT(delta(2), iCv, iCinv, 1.);
-    cmat.MultiplyNT(delta(3), iCinCiCinv, iCinCiCinv, 1.);
-    cmat.MultiplyNT(delta(4), iCinCiCinv, iCv, 1.);
-    cmat.MultiplyNT(delta(4), iCv, iCinCiCinv, 1.);
-    cmat.MultiplyNT(delta(5), iCv, iCv, 1.);
+    cmat.multiply_nt(delta(0), iCinv, iCinv, 1.);
+    cmat.multiply_nt(delta(1), iCinCiCinv, iCinv, 1.);
+    cmat.multiply_nt(delta(1), iCinv, iCinCiCinv, 1.);
+    cmat.multiply_nt(delta(2), iCinv, iCv, 1.);
+    cmat.multiply_nt(delta(2), iCv, iCinv, 1.);
+    cmat.multiply_nt(delta(3), iCinCiCinv, iCinCiCinv, 1.);
+    cmat.multiply_nt(delta(4), iCinCiCinv, iCv, 1.);
+    cmat.multiply_nt(delta(4), iCv, iCinCiCinv, 1.);
+    cmat.multiply_nt(delta(5), iCv, iCv, 1.);
     Mat::add_holzapfel_product(cmat, iCv, delta(6));
     Mat::add_holzapfel_product(cmat, iCinv, delta(7));
   }

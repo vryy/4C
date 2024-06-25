@@ -148,12 +148,12 @@ namespace Discret::ELEMENTS
       // update mulf history data only if prestress is active
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> inv_delta_defgrd(
           delta_defgrd);
-      inv_delta_defgrd.Invert();
+      inv_delta_defgrd.invert();
 
 
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> invJ_new;
 
-      invJ_new.MultiplyTN(inv_delta_defgrd, history_data.inverse_jacobian);
+      invJ_new.multiply_tn(inv_delta_defgrd, history_data.inverse_jacobian);
 
       history_data.deformation_gradient = deformation_gradient;
       history_data.inverse_jacobian = std::move(invJ_new);

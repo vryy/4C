@@ -358,7 +358,7 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
     {
       Point* p = points[i];
       Core::LinAlg::Matrix<3, 1> x(p->X());
-      m.Update(scale, x, 1);
+      m.update(scale, x, 1);
     }
     double length = 0;
     Core::LinAlg::Matrix<3, 1> l;
@@ -368,8 +368,8 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
       Point* p = points[i];
       Core::LinAlg::Matrix<3, 1> x(p->X());
       l = m;
-      l.Update(1, x, -1);
-      double n = l.Norm2();
+      l.update(1, x, -1);
+      double n = l.norm2();
       length = std::max(n, length);
     }
 
@@ -378,11 +378,11 @@ void Core::Geo::Cut::TetMesh::call_q_hull(
       Point* p = points[i];
       Core::LinAlg::Matrix<3, 1> x(p->X());
       l = m;
-      l.Update(1, x, -1);
-      double n = l.Norm2();
-      l.Scale(length / n);
-      l.Update(1, m, 1);
-      std::copy(l.A(), l.A() + 3, &coordinates[dim * i]);
+      l.update(1, x, -1);
+      double n = l.norm2();
+      l.scale(length / n);
+      l.update(1, m, 1);
+      std::copy(l.data(), l.data() + 3, &coordinates[dim * i]);
     }
   }
   else
@@ -626,7 +626,7 @@ bool Core::Geo::Cut::TetMesh::is_valid_tet(const std::vector<Point*>& t)
         //          {
         //            std::cout << "#"<< k2 << ": ";
         //            std::cout << "IsLevelSetSide: " << t[k]->CutSides()[k2]->IsLevelSetSide() <<
-        //            std::endl; t[k]->CutSides()[k2]->Print(); std::cout << std::endl;
+        //            std::endl; t[k]->CutSides()[k2]->print(); std::cout << std::endl;
         //          }
         //          for(unsigned k2=0; k2<t[k]->Facets().size(); k2++)
         //          {
@@ -714,9 +714,9 @@ void Core::Geo::Cut::TetMesh::fix_broken_tets()
     Core::LinAlg::Matrix<3, 1> v02;
     Core::LinAlg::Matrix<3, 1> v03;
 
-    v01.Update(1, p1, -1, p0, 0);
-    v02.Update(1, p2, -1, p0, 0);
-    v03.Update(1, p3, -1, p0, 0);
+    v01.update(1, p1, -1, p0, 0);
+    v02.update(1, p2, -1, p0, 0);
+    v03.update(1, p3, -1, p0, 0);
 
     // create 4 normal vectors to each tet surface plane
     Core::LinAlg::Matrix<3, 1> nplane012;
@@ -727,31 +727,31 @@ void Core::Geo::Cut::TetMesh::fix_broken_tets()
     nplane012(2) = v01(0) * v02(1) - v01(1) * v02(0);
 
     // compute normal distance of point to plane of the three remaining points
-    double distance = nplane012.Dot(v03);
+    double distance = nplane012.dot(v03);
 
     // compute norm (area) of plane
-    // double norm012 = nplane012.Norm2();
+    // double norm012 = nplane012.norm2();
 
     Core::LinAlg::Matrix<4, 1> temp(true);
-    temp(0, 0) = p0.Norm2();  // Distance of points to origin
-    temp(1, 0) = p1.Norm2();
-    temp(2, 0) = p2.Norm2();
-    temp(3, 0) = p3.Norm2();
+    temp(0, 0) = p0.norm2();  // Distance of points to origin
+    temp(1, 0) = p1.norm2();
+    temp(2, 0) = p2.norm2();
+    temp(3, 0) = p3.norm2();
 
     // This is to scale the tolerance, it determines our maximum precision (i.e. machine precision)
-    double max_dist_to_orgin = temp.NormInf();
+    double max_dist_to_orgin = temp.norm_inf();
 
     Core::LinAlg::Matrix<3, 1> v04;
-    v04.Update(1, p1, -1, p2, 0);
+    v04.update(1, p1, -1, p2, 0);
 
-    temp(0, 0) = v01.Norm2();  // Distance between points in "base" triangle
-    temp(1, 0) = v02.Norm2();
-    temp(2, 0) = v04.Norm2();
+    temp(0, 0) = v01.norm2();  // Distance between points in "base" triangle
+    temp(1, 0) = v02.norm2();
+    temp(2, 0) = v04.norm2();
     temp(3, 0) = fabs(distance);  //"Height" of tetrahedral
 
 #ifdef NEW_POSTOL_TET
     // This is the smallest distance between the base points in the tet and the height.
-    double min_dist_in_tet = temp.MinValue();
+    double min_dist_in_tet = temp.min_value();
     // We want to test with this one I think... But might lead to problems.
     double tolerance = LINSOLVETOL * max_dist_to_orgin;
 #else

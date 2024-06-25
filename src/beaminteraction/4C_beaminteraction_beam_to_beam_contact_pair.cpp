@@ -200,7 +200,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
 
   // *********************** DEBUG ************************************************
   //  std::cout << "\nSuccessful Creation&Init&Setup of";
-  //  Print(std::cout);
+  //  print(std::cout);
   // ******************* END DEBUG ************************************************
 }
 
@@ -697,7 +697,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
           // integration segment
           Core::LinAlg::Matrix<3, 1, TYPE> inward_tangent_master = r_xi(eta2_segright, Element2());
           // Scale tangent of right element node (eta2=1.0) in order to get inward tangent!
-          inward_tangent_master.Scale(-1.0);
+          inward_tangent_master.scale(-1.0);
           Core::LinAlg::Matrix<3, 1, TYPE> tangent_slave = r_xi(eta1_boundary_trial, Element1());
           double orientation = Core::FADUtils::CastToDouble(
               Core::FADUtils::ScalarProduct(inward_tangent_master, tangent_slave));
@@ -1259,7 +1259,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         deltanodalpos(i) = Core::FADUtils::CastToDouble(ele2pos_(i) - ele1pos_(i));
       }
 
-      double gap = deltanodalpos.Norm2() - r1_ - r2_;
+      double gap = deltanodalpos.norm2() - r1_ - r2_;
       if (check_contact_status(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1289,7 +1289,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         deltanodalpos(i) = Core::FADUtils::CastToDouble(ele2pos_(6 + i) - ele1pos_(i));
       }
 
-      double gap = deltanodalpos.Norm2() - r1_ - r2_;
+      double gap = deltanodalpos.norm2() - r1_ - r2_;
       if (check_contact_status(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1318,7 +1318,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         deltanodalpos(i) = Core::FADUtils::CastToDouble(ele2pos_(i) - ele1pos_(6 + i));
       }
 
-      double gap = deltanodalpos.Norm2() - r1_ - r2_;
+      double gap = deltanodalpos.norm2() - r1_ - r2_;
       if (check_contact_status(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1347,7 +1347,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         deltanodalpos(i) = Core::FADUtils::CastToDouble(ele2pos_(6 + i) - ele1pos_(6 + i));
       }
 
-      double gap = deltanodalpos.Norm2() - r1_ - r2_;
+      double gap = deltanodalpos.norm2() - r1_ - r2_;
       if (check_contact_status(gap))
       {
         std::pair<TYPE, TYPE> closestpoint(std::make_pair((TYPE)eta1, (TYPE)eta2));
@@ -1990,7 +1990,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::check_seg
   {
     if (std::fabs(dist) > segdist)
     {
-      this->Print(std::cout);
+      this->print(std::cout);
 
       std::cout << "\n\nangle_left= " << angle1 / M_PI * 180
                 << "degrees, angle_right= " << angle2 / M_PI * 180
@@ -2262,7 +2262,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
         if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(eta1)) <= 1.0 and
             Core::FADUtils::CastToDouble(Core::FADUtils::Norm(eta2)) <= 1.0)
         {
-          this->Print(std::cout);
+          this->print(std::cout);
           FOUR_C_THROW("Beam axis identical, choose smaller time step!");
         }
         else
@@ -2453,7 +2453,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
               std::fabs(eta2 - 1.0) < 1.1 * XIETAITERATIVEDISPTOL or
               std::fabs(eta2 + 1.0) < 1.1 * XIETAITERATIVEDISPTOL)
           {
-            //              this->Print(std::cout);
+            //              this->print(std::cout);
             std::cout << "\n|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!\n";
             //              FOUR_C_THROW("|eta1|=1 or |eta2|=1, danger of multiple gauss point
             //              evaluation!");
@@ -2495,7 +2495,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
             std::fabs(eta2 - 1.0) < 1.1 * XIETAITERATIVEDISPTOL or
             std::fabs(eta2 + 1.0) < 1.1 * XIETAITERATIVEDISPTOL)
         {
-          //          this->Print(std::cout);
+          //          this->print(std::cout);
           std::cout << "\n|eta1|=1 or |eta2|=1, danger of multiple gauss point evaluation!\n";
           //              FOUR_C_THROW("|eta1|=1 or |eta2|=1, danger of multiple gauss point
           //              evaluation!");
@@ -2816,7 +2816,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
 
 
       // TODO:
-      this->Print(std::cout);
+      this->print(std::cout);
       FOUR_C_THROW(
           "Local Newton loop unconverged. Adapt segangle or the shift angles for small-anlge "
           "contact!");
@@ -2866,7 +2866,7 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::point_to_
 
           if (throw_error)
           {
-            this->Print(std::cout);
+            this->print(std::cout);
             FOUR_C_THROW("eta2=-1, danger of multiple gauss point evaluation!");
           }
         }
@@ -2930,7 +2930,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     lengthvec1(i) = (Element1()->Nodes())[0]->X()[i] - (Element1()->Nodes())[1]->X()[i];
   }
   // length1 = physical length; l1=length in parameter space
-  double length1 = lengthvec1.Norm2();
+  double length1 = lengthvec1.norm2();
 
   int n = 1;
   // subdivide the slave segment by n+1 test points until the distance between the
@@ -3484,8 +3484,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::evaluate_
     }
     //*************End of standard linearization of penalty contact forces****************
 
-    stiffc1.Scale(intfac);
-    stiffc2.Scale(intfac);
+    stiffc1.scale(intfac);
+    stiffc2.scale(intfac);
 
 // automatic differentiation for debugging
 #ifdef AUTOMATICDIFF
@@ -3892,7 +3892,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::compute_l
   // invert L by hand
   TYPE det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(det_L)) < DETERMINANTTOL)
-    FOUR_C_THROW("ERROR: Determinant of L = 0");
+    FOUR_C_THROW("ERROR: determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
   L_inv(1, 0) = -L(1, 0) / det_L;
@@ -3917,7 +3917,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::compute_l
   }
 
   // compute D = L^-1 * B
-  D.Multiply(L_inv, B);
+  D.multiply(L_inv, B);
 
   // finally the linearizations / directional derivatives
   for (unsigned int i = 0; i < dim1 + dim2; i++)
@@ -4214,8 +4214,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
   TYPE norm_r2xi = Core::FADUtils::VectorNorm<3>(r2_xi);
   Core::LinAlg::Matrix<3, 1, TYPE> r1_xi_unit(r1_xi);
   Core::LinAlg::Matrix<3, 1, TYPE> r2_xi_unit(r2_xi);
-  r1_xi_unit.Scale(1.0 / norm_r1xi);
-  r2_xi_unit.Scale(1.0 / norm_r2xi);
+  r1_xi_unit.scale(1.0 / norm_r1xi);
+  r2_xi_unit.scale(1.0 / norm_r2xi);
   TYPE r1xi_unit_r2xi_unit = Core::FADUtils::ScalarProduct(r1_xi_unit, r2_xi_unit);
 
   // Pre-factor representing the modulus, since s=|r1xi_unit_r2xi_unit|
@@ -4225,10 +4225,10 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
 
   Core::LinAlg::Matrix<3, 1, TYPE> v1(r2_xi_unit);
   Core::LinAlg::Matrix<3, 1, TYPE> v2(r1_xi_unit);
-  v1.Update(-r1xi_unit_r2xi_unit, r1_xi_unit, 1.0);
-  v2.Update(-r1xi_unit_r2xi_unit, r2_xi_unit, 1.0);
-  v1.Scale(1.0 / norm_r1xi);
-  v2.Scale(1.0 / norm_r2xi);
+  v1.update(-r1xi_unit_r2xi_unit, r1_xi_unit, 1.0);
+  v2.update(-r1xi_unit_r2xi_unit, r2_xi_unit, 1.0);
+  v1.scale(1.0 / norm_r1xi);
+  v2.scale(1.0 / norm_r2xi);
 
   Core::LinAlg::Matrix<3, dim1 + dim2, TYPE> delta_r1_xi(true);
   Core::LinAlg::Matrix<3, dim1 + dim2, TYPE> delta_r2_xi(true);
@@ -4255,8 +4255,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::
 
   Core::LinAlg::Matrix<1, dim1 + dim2, TYPE> v1_delta_r1_xi(true);
   Core::LinAlg::Matrix<1, dim1 + dim2, TYPE> v2_delta_r2_xi(true);
-  v1_delta_r1_xi.MultiplyTN(v1, delta_r1_xi);
-  v2_delta_r2_xi.MultiplyTN(v2, delta_r2_xi);
+  v1_delta_r1_xi.multiply_tn(v1, delta_r1_xi);
+  v2_delta_r2_xi.multiply_tn(v2, delta_r2_xi);
 
   for (unsigned int j = 0; j < dim1 + dim2; j++)
   {
@@ -4290,7 +4290,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::compute_l
 
   TYPE norm_delta_r = Core::FADUtils::VectorNorm<3>(delta_r);
   Core::LinAlg::Matrix<3, 1, TYPE> normal(delta_r);
-  normal.Scale(1.0 / norm_delta_r);
+  normal.scale(1.0 / norm_delta_r);
 
   Core::LinAlg::Matrix<3, dim1 + dim2, TYPE> auxiliary_matrix1(true);
   Core::LinAlg::Matrix<3, 3, TYPE> auxiliary_matrix2(true);
@@ -4811,7 +4811,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::compute_n
 
   // unit normal
   Core::LinAlg::Matrix<3, 1, TYPE> normal(true);
-  normal.Update(1.0 / norm_delta_r, delta_r, 0.0);
+  normal.update(1.0 / norm_delta_r, delta_r, 0.0);
 
   TYPE gap = norm_delta_r - r1_ - r2_;
 
@@ -4824,7 +4824,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::compute_n
   //  if (Core::FADUtils::CastToDouble(gap)<-MAXPENETRATIONSAFETYFAC*(R1_+R2_) and numstep_>0)
   if (Core::FADUtils::CastToDouble(gap) < -MAXPENETRATIONSAFETYFAC * (r1_ + r2_))
   {
-    this->Print(std::cout);
+    this->print(std::cout);
     FOUR_C_THROW(
         "Gap too small, danger of penetration. Choose smaller time step or higher penalty!");
   }
@@ -4989,7 +4989,7 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_jac
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Print(
+void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::print(
     std::ostream& out) const
 {
   check_init_setup();
@@ -5006,17 +5006,17 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Print(
   if (cpvariables_.size())
   {
     out << "\n\nactive closest-point pairs:";
-    for (unsigned int i = 0; i < cpvariables_.size(); ++i) cpvariables_[i]->Print(out);
+    for (unsigned int i = 0; i < cpvariables_.size(); ++i) cpvariables_[i]->print(out);
   }
   if (gpvariables_.size())
   {
     out << "\n\nactive gauss-point pairs:";
-    for (unsigned int i = 0; i < gpvariables_.size(); ++i) gpvariables_[i]->Print(out);
+    for (unsigned int i = 0; i < gpvariables_.size(); ++i) gpvariables_[i]->print(out);
   }
   if (epvariables_.size())
   {
     out << "\n\nactive end-point pairs:";
-    for (unsigned int i = 0; i < epvariables_.size(); ++i) epvariables_[i]->Print(out);
+    for (unsigned int i = 0; i < epvariables_.size(); ++i) epvariables_[i]->print(out);
   }
 
   out << "\n";
@@ -5307,7 +5307,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::fad_check
   }
 
   // compute D = L^-1 * B
-  D.Multiply(L_inv, B);
+  D.multiply(L_inv, B);
 
   std::cout << "linxi and lineta: " << std::endl;
 
@@ -5399,7 +5399,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 //
 ////  std::cout << std::setprecision(25) << "fint1: " << std::endl;
 //
-////  fint1.Print(std::cout);
+////  fint1.print(std::cout);
 //
 //  std::vector<double> xi1((int)gpvariables_.size(),0.0);
 //  std::vector<double> eta1((int)gpvariables_.size(),0.0);
@@ -5432,7 +5432,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 //
 ////    std::cout << std::setprecision(25) << "fint2: " << std::endl;
 ////
-////    fint2.Print(std::cout);
+////    fint2.print(std::cout);
 //
 //    for(int i=0;i<(int)gpvariables_.size();i++)
 //    {

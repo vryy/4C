@@ -137,10 +137,10 @@ void Discret::ELEMENTS::Wall1Scatra::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              vuong 01/14|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Scatra::Print(std::ostream& os) const
+void Discret::ELEMENTS::Wall1Scatra::print(std::ostream& os) const
 {
   os << "Wall1_Scatra ";
-  Wall1::Print(os);
+  Wall1::print(os);
   return;
 }
 

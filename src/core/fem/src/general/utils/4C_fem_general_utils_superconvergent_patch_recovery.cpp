@@ -229,9 +229,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
               p(d + 1) = (*(*centercoords_col)(d))[elelid] - node->X()[d] /* + ALE_DISP*/;
 
             // compute outer product of p x p and add to A
-            A.MultiplyNT(1.0, p, p, 1.0);
+            A.multiply_nt(1.0, p, p, 1.0);
 
-            b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+            b.update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
           }
 
           // solve for coefficients of interpolation
@@ -299,9 +299,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
                            node->X()[d] /* + ALE_DISP*/;
 
               // compute outer product of p x p and add to A
-              A.MultiplyNT(1.0, p, p, 1.0);
+              A.multiply_nt(1.0, p, p, 1.0);
 
-              b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+              b.update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
             }
           }
 
@@ -345,7 +345,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
             const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
             static Core::LinAlg::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
-            const double tmp = dist.Norm2();
+            const double tmp = dist.norm2();
             if (tmp < distance and tmp > 1.0e-14)
             {
               distance = tmp;
@@ -389,9 +389,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
               p(d + 1) = (*(*centercoords_col)(d))[elelid] - closestnode->X()[d]; /* + ALE_DISP*/
 
             // compute outer product of p x p and add to A
-            A.MultiplyNT(1.0, p, p, 1.0);
+            A.multiply_nt(1.0, p, p, 1.0);
 
-            b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+            b.update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
           }
 
           // solve for coefficients of interpolation
@@ -439,7 +439,7 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
             const auto& pos = adjacentnodes[n]->X(); /* + ALE DISP */
             static Core::LinAlg::Matrix<dim, 1> dist;
             for (int d = 0; d < dim; ++d) dist(d) = pos[d] - node->X()[d]; /* + ALE DISP */
-            const double tmp = dist.Norm2();
+            const double tmp = dist.norm2();
             if (tmp < distance and tmp > 1.0e-14)
             {
               distance = tmp;
@@ -530,9 +530,9 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::compute_superconvergent_patch_recover
                            closestnode->X()[d]; /* + ALE_DISP*/
 
               // compute outer product of p x p and add to A
-              A.MultiplyNT(1.0, p, p, 1.0);
+              A.multiply_nt(1.0, p, p, 1.0);
 
-              b.Update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
+              b.update((*(*elevec_toberecovered_col)(j))[elelid], p, 1.0);
             }
           }
 

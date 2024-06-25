@@ -134,7 +134,7 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_setup()
   Core::LinAlg::FixedSizeSerialDenseSolver<numstr_, numstr_, 1> solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(set_t0inv_t());
   int err2 = solve_for_inverseT0.Factor();
-  int err = solve_for_inverseT0.Invert();
+  int err = solve_for_inverseT0.invert();
   if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of T0inv (Jacobian0) failed");
 
   // reset EAS matrices
@@ -180,27 +180,27 @@ void Discret::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
 
   Core::LinAlg::SYEV(U_mod, EW, U_mod);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
-  tmp.Multiply(U_mod, EW);
-  tmp2.MultiplyNT(tmp, U_mod);
-  U_mod.Update(tmp2);
+  tmp.multiply(U_mod, EW);
+  tmp2.multiply_nt(tmp, U_mod);
+  U_mod.update(tmp2);
 
   // ******************************************************************
   // calculate displacement-based right stretch tensor
   // ******************************************************************
-  U_disp.MultiplyTN(defgrd(), defgrd());
+  U_disp.multiply_tn(defgrd(), defgrd());
 
   Core::LinAlg::SYEV(U_disp, EW, U_disp);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
-  tmp.Multiply(U_disp, EW);
-  tmp2.MultiplyNT(tmp, U_disp);
-  U_disp.Update(tmp2);
+  tmp.multiply(U_disp, EW);
+  tmp2.multiply_nt(tmp, U_disp);
+  U_disp.update(tmp2);
 
   // ******************************************************************
   // compose consistent deformation gradient
   // ******************************************************************
-  U_disp.Invert();
-  R.Multiply(defgrd(), U_disp);
-  set_defgrd_mod().Multiply(R, U_mod);
+  U_disp.invert();
+  R.multiply(defgrd(), U_disp);
+  set_defgrd_mod().multiply(R, U_mod);
 
   // you're done here
   return;
@@ -343,17 +343,17 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
     case soh8p_easfull:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
           PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas>(
-          set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().A(), (M_GP->at(gp)).values());
+          set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().data(), (M_GP->at(gp)).values());
       break;
     case soh8p_easmild:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
           PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
-          set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().A(), (M_GP->at(gp)).values());
+          set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().data(), (M_GP->at(gp)).values());
       break;
     case soh8p_eassosh8:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
           PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
-          set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().A(), (M_GP->at(gp)).values());
+          set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().data(), (M_GP->at(gp)).values());
       break;
     case soh8p_easnone:
       break;
@@ -380,17 +380,17 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_enhance_strains()
     case soh8p_easfull:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_,
           PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
-          1.0, total_glstrain.A(), 1.0, m_eas().values(), alpha_eas_->values());
+          1.0, total_glstrain.data(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easmild:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_,
           PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
-          1.0, total_glstrain.A(), 1.0, m_eas().values(), alpha_eas_->values());
+          1.0, total_glstrain.data(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_eassosh8:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_,
           PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, 1>(
-          1.0, total_glstrain.A(), 1.0, m_eas().values(), alpha_eas_->values());
+          1.0, total_glstrain.data(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easnone:
       break;

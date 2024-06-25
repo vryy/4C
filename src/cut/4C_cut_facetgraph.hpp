@@ -49,13 +49,13 @@ namespace Core::Geo
       /// destructor
       virtual ~FacetGraph() = default;
 
-      void Print() const
+      void print() const
       {
         std::cout << "\n=== FacetGraph ===\n";
         std::cout << "--- Graph ---\n";
-        graph_.Print();
+        graph_.print();
         std::cout << "\n--- CycleList ---\n";
-        cycle_list_.Print();
+        cycle_list_.print();
       }
 
       virtual void CreateVolumeCells(Mesh& mesh, Element* element, plain_volumecell_set& cells);

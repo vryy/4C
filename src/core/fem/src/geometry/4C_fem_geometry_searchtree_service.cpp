@@ -486,10 +486,10 @@ Core::Geo::ObjectType Core::Geo::nearest3DObjectOnElement(Core::Elements::Elemen
   {
     Core::LinAlg::Matrix<3, 1> distance_vector;
     // vector pointing away from the node towards physCoord
-    distance_vector.Update(1.0, point, -1.0, nodeIter->second);
+    distance_vector.update(1.0, point, -1.0, nodeIter->second);
 
     // absolute distance between point and node
-    distance = distance_vector.Norm2();
+    distance = distance_vector.norm2();
 
     if (distance <= min_distance)
     {
@@ -531,8 +531,8 @@ bool Core::Geo::getDistanceToSurface(const Core::Elements::Element* surfaceEleme
     Core::Geo::elementToCurrentCoordinates(
         surfaceElement->Shape(), xyze_surfaceElement, elecoord, x_surface_phys);
     // normal pointing away from the surface towards point
-    distance_vector.Update(1.0, point, -1.0, x_surface_phys);
-    distance = distance_vector.Norm2();
+    distance_vector.update(1.0, point, -1.0, x_surface_phys);
+    distance = distance_vector.norm2();
     min_distance = distance;
     pointFound = true;
   }
@@ -560,8 +560,8 @@ bool Core::Geo::getDistanceToSurface(const Core::Elements::Element* surfaceEleme
         Core::Geo::elementToCurrentCoordinates(
             surfaceElement->Shape(), xyze_surfaceElement, elecoord, physcoord);
         // normal pointing away from the surface towards point
-        distance_vector.Update(1.0, point, -1.0, physcoord);
-        distance = distance_vector.Norm2();
+        distance_vector.update(1.0, point, -1.0, physcoord);
+        distance = distance_vector.norm2();
         if (distance < min_distance)
         {
           x_surface_phys = physcoord;
@@ -598,8 +598,8 @@ bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
     Core::Geo::elementToCurrentCoordinates(
         lineElement->Shape(), xyze_lineElement, elecoord, x_line_phys);
     // normal pointing away from the line towards point
-    distance_vector.Update(1.0, point, -1.0, x_line_phys);
-    distance = distance_vector.Norm2();
+    distance_vector.update(1.0, point, -1.0, x_line_phys);
+    distance = distance_vector.norm2();
     min_distance = distance;
     pointFound = true;
   }
@@ -627,8 +627,8 @@ bool Core::Geo::getDistanceToLine(const Core::Elements::Element* lineElement,
         Core::Geo::elementToCurrentCoordinates(
             lineElement->Shape(), xyze_lineElement, elecoord, physcoord);
         // normal pointing away from the line towards point
-        distance_vector.Update(1.0, point, -1.0, physcoord);
-        distance = distance_vector.Norm2();
+        distance_vector.update(1.0, point, -1.0, physcoord);
+        distance = distance_vector.norm2();
         if (distance < min_distance)
         {
           x_line_phys = physcoord;
@@ -655,10 +655,10 @@ void Core::Geo::getDistanceToPoint(const Core::Nodes::Node* node,
 
   Core::LinAlg::Matrix<3, 1> distance_vector;
   // vector pointing away from the node towards physCoord
-  distance_vector.Update(1.0, point, -1.0, x_node);
+  distance_vector.update(1.0, point, -1.0, x_node);
 
   // absolute distance between point and node
-  distance = distance_vector.Norm2();
+  distance = distance_vector.norm2();
 }
 
 /*----------------------------------------------------------------------*

@@ -808,7 +808,7 @@ void MultiScale::MicroStatic::EvaluateMicroBC(
       // boundary displacements are prescribed via the macroscopic
       // deformation gradient
       double disp_prescribed[3];
-      Core::LinAlg::Matrix<3, 3> Du(defgrd->A(), false);
+      Core::LinAlg::Matrix<3, 3> Du(defgrd->data(), false);
       Core::LinAlg::Matrix<3, 3> I(true);
       I(0, 0) = -1.0;
       I(1, 1) = -1.0;
@@ -972,14 +972,14 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
 
   // determine inverse of deformation gradient
 
-  Core::LinAlg::Matrix<3, 3> F_inv(defgrd->A(), false);
-  F_inv.Invert();
+  Core::LinAlg::Matrix<3, 3> F_inv(defgrd->data(), false);
+  F_inv.invert();
 
   // convert to second Piola-Kirchhoff stresses and store them in
   // vector format
   // assembly of stresses (cf Solid3 Hex8): S11,S22,S33,S12,S23,S13
 
-  stress->PutScalar(0.0);
+  stress->put_scalar(0.0);
 
   for (int i = 0; i < 3; ++i)
   {

@@ -191,7 +191,7 @@ namespace Core::DOFSets
     };
 
     /// Print this class
-    void Print(std::ostream& os) const override { dofset_->Print(os); };
+    void print(std::ostream& os) const override { dofset_->print(os); };
 
     /// Print the dofsets in the static_dofsets_ list
     void PrintAllDofsets(const Epetra_Comm& comm) const override

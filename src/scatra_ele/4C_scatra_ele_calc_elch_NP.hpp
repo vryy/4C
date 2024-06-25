@@ -407,10 +407,10 @@ namespace Discret
 
         // migration velocity vector (divided by D_k*z_k) at t_(n+1) or t_(n+alpha_F): -F/(RT)
         // \grad{\Phi}
-        migvelint_.Multiply(-vmelch::frt_, derxy, ephinp[vm::numscal_]);
+        migvelint_.multiply(-vmelch::frt_, derxy, ephinp[vm::numscal_]);
 
         // convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi}*\grad{N}
-        migconv_.MultiplyTN(-vmelch::frt_, derxy, vmelch::gradpot_);
+        migconv_.multiply_tn(-vmelch::frt_, derxy, vmelch::gradpot_);
       };
 
       /*========================================================================*/

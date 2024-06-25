@@ -31,7 +31,7 @@ void Mortar::ElementNitscheData<parent_distype>::AssembleRHS(Mortar::Element* me
   {
     for (int n = 0; n < nen; ++n)
       fc->SumIntoGlobalValues(
-          num_dof_per_node, &dofs.at(n * num_dof_per_node), &rhs.A()[n * num_dof_per_node]);
+          num_dof_per_node, &dofs.at(n * num_dof_per_node), &rhs.data()[n * num_dof_per_node]);
   }
 }
 
@@ -52,8 +52,9 @@ void Mortar::ElementNitscheData<parent_distype>::AssembleMatrix(Mortar::Element*
     {
       for (int n = 0; n < nen; ++n)
       {
-        if (Core::LinAlg::Matrix<num_dof_per_node, 1>(&(p.second.A()[n * num_dof_per_node]), true)
-                .NormInf() < 1e-16)
+        if (Core::LinAlg::Matrix<num_dof_per_node, 1>(
+                &(p.second.data()[n * num_dof_per_node]), true)
+                .norm_inf() < 1e-16)
           continue;
         for (int d = 0; d < num_dof_per_node; ++d)
           kc->FEAssemble(

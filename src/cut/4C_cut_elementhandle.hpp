@@ -77,7 +77,7 @@ namespace Core::Geo
         }
         Core::LinAlg::Matrix<3, 1>& rst = local_coordinates_[p];
         Core::LinAlg::Matrix<3, 1> xyz;
-        p->Coordinates(xyz.A());
+        p->Coordinates(xyz.data());
         local_coordinates(xyz, rst);
         return rst;
       }

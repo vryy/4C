@@ -270,10 +270,10 @@ void Discret::ELEMENTS::SoTet10::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------***
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoTet10::print(std::ostream& os) const
 {
   os << "So_tet10 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }
@@ -343,7 +343,7 @@ std::vector<double> Discret::ELEMENTS::SoTet10::element_center_refe_coords()
   // Centroid of a tet with (0,1)(0,1)(0,1) is (0.25, 0.25, 0.25)
   Core::FE::shape_function_3D(funct, 0.25, 0.25, 0.25, distype);
   Core::LinAlg::Matrix<1, NUMDIM_SOTET10> midpoint;
-  midpoint.MultiplyTN(funct, xrefe);
+  midpoint.multiply_tn(funct, xrefe);
   std::vector<double> centercoords(3);
   centercoords[0] = midpoint(0, 0);
   centercoords[1] = midpoint(0, 1);

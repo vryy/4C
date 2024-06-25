@@ -47,14 +47,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
   Teuchos::RCP<const Core::Mat::Material> material = ele->Material();
 
   // get phi at integration point
-  const double phinp = funct_.Dot(ephinp_[0]);
+  const double phinp = funct_.dot(ephinp_[0]);
 
   // get temperature at integration point
   double tempnp = phinp;
   if (material->MaterialType() == Core::Materials::m_matlist)
   {
     const Mat::MatList* actmat = static_cast<const Mat::MatList*>(material.get());
-    tempnp = funct_.Dot(ephinp_[actmat->NumMat() - 1]);
+    tempnp = funct_.dot(ephinp_[actmat->NumMat() - 1]);
   }
 
   // density at time n+1
@@ -62,7 +62,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
 
   // get velocities (n+alpha_F/1,i) at integration point
   Core::LinAlg::Matrix<nsd_, 1> convelint(true);
-  convelint.Multiply(evelnp_, funct_);
+  convelint.multiply(evelnp_, funct_);
 
   // compute rate of strain
   double rateofstrain = -1.0e30;
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
 
   // gradient of scalar value
   Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
-  gradphi.Multiply(derxy_, ephinp_[0]);
+  gradphi.multiply(derxy_, ephinp_[0]);
 
   // perform integrations, i.e., convolution
   // ---------------------------------------------
@@ -268,7 +268,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_
   //                    node j
   //
   Core::LinAlg::Matrix<nsd_, 1> densvelint_hat;
-  densvelint_hat.Multiply(edensvel_hat, funct_);
+  densvelint_hat.multiply(edensvel_hat, funct_);
 
   // get filtered dens * temp * velocities (n+alpha_F/1,i) at integration point
   //
@@ -280,7 +280,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_
   //                           node j
   //
   Core::LinAlg::Matrix<nsd_, 1> densveltempint_hat;
-  densveltempint_hat.Multiply(edensveltemp_hat, funct_);
+  densveltempint_hat.multiply(edensveltemp_hat, funct_);
 
   // get filtered dens * rate-of-strain * grad T (n+alpha_F/1,i) at integration point
   //
@@ -292,7 +292,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_
   //                                         node j
   //
   Core::LinAlg::Matrix<nsd_, 1> densstraintempint_hat;
-  densstraintempint_hat.Multiply(edensstraintemp_hat, funct_);
+  densstraintempint_hat.multiply(edensstraintemp_hat, funct_);
 
   // get filtered density at integration point
   //
@@ -329,7 +329,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_
 
   // gradient of scalar value (i.e., of filtered temperature)
   Core::LinAlg::Matrix<nsd_, 1> gradtemp_hat;
-  gradtemp_hat.MultiplyNT(derxy_, etemp_hat);
+  gradtemp_hat.multiply_nt(derxy_, etemp_hat);
 
   // this is sqrt(3)
   const double filterwidthratio = 1.73;
@@ -387,9 +387,9 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
   Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(ScaTra::DisTypeToStabGaussRule<distype>::rule);
   double volume = eval_shape_func_and_derivs_at_int_point(intpoints, 0);
 
-  phi_hat.Multiply(ephi_hat, funct_);
-  phi2_hat.Multiply(ephi2_hat, funct_);
-  phiexpression_hat.Multiply(ephiexpression_hat, funct_);
+  phi_hat.multiply(ephi_hat, funct_);
+  phi2_hat.multiply(ephi2_hat, funct_);
+  phiexpression_hat.multiply(ephiexpression_hat, funct_);
   for (unsigned nn = 0; nn < 3; ++nn)
   {
     for (unsigned rr = 0; rr < 3; ++rr)
@@ -711,7 +711,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff(
 
       Core::LinAlg::Matrix<nsd_, nsd_> velderxy(true);
 
-      velderxy.MultiplyNT(econvelnp_, derxy_);
+      velderxy.multiply_nt(econvelnp_, derxy_);
 
       //- cube root of element volume
 
@@ -799,7 +799,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_fine_scale_subgr_d
     const double mk = ScaTra::MK<distype>();
 
     // velocity norm
-    const double vel_norm = convelint.Norm2();
+    const double vel_norm = convelint.norm2();
 
     // parameter relating convective and diffusive forces + respective switch
     const double epe = mk * densnp * vel_norm * h / diffus;
@@ -904,12 +904,12 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_b_and_d_for_multif
   double scale_ratio = 0.0;
 
   // get velocity at element center
-  // convelint_.Multiply(econvelnp_,funct_);
+  // convelint_.multiply(econvelnp_,funct_);
   // get norm of velocity
-  const double vel_norm = convelint.Norm2();
+  const double vel_norm = convelint.norm2();
   // also for fine-scale velocity
-  // fsvelint_.Multiply(efsvel_,funct_);
-  const double fsvel_norm = fsvelint.Norm2();
+  // fsvelint_.multiply(efsvel_,funct_);
+  const double fsvel_norm = fsvelint.norm2();
 
   // do we have a fixed parameter N
   if (not turbparams_->Calc_N())
@@ -1181,19 +1181,19 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_ref_length(
     {
       // a) streamlength due to Tezduyar et al. (1992)
       // get norm of velocity
-      const double vel_norm = convelint.Norm2();
+      const double vel_norm = convelint.norm2();
       // normed velocity vector
       Core::LinAlg::Matrix<nsd_, 1> velino(true);
       if (vel_norm >= 1e-6)
-        velino.Update(1.0 / vel_norm, convelint);
+        velino.update(1.0 / vel_norm, convelint);
       else
       {
         velino.clear();
         velino(0, 0) = 1.0;
       }
       Core::LinAlg::Matrix<nen_, 1> tmp;
-      tmp.MultiplyTN(derxy_, velino);
-      const double val = tmp.Norm1();
+      tmp.multiply_tn(derxy_, velino);
+      const double val = tmp.norm1();
       hk = 2.0 / val;
 
       break;
@@ -1259,7 +1259,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_ref_length(
     case Inpar::FLUID::gradient_based:
     {
       Core::LinAlg::Matrix<nsd_, nsd_> convderxy;
-      convderxy.MultiplyNT(econvelnp_, derxy_);
+      convderxy.multiply_nt(econvelnp_, derxy_);
       if (nsd_ != 3) FOUR_C_THROW("Turbulence is 3d!");
       Core::LinAlg::Matrix<nsd_, 1> normed_velgrad;
 
@@ -1277,7 +1277,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_ref_length(
         //                        +
         //                        convderxy(2,rr)*convderxy(2,rr));
       }
-      double norm = normed_velgrad.Norm2();
+      double norm = normed_velgrad.norm2();
 
       // normed gradient
       if (norm > 1e-6)
@@ -1665,7 +1665,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
       // provide necessary velocities and gradients at element center
       // get velocity at element center
       Core::LinAlg::Matrix<nsd_, 1> fsvelint(true);
-      fsvelint.Multiply(efsvel_, funct_);
+      fsvelint.multiply(efsvel_, funct_);
 
       // calculate model coefficients
       for (int k = 0; k < numscal_; ++k)  // loop of each transported scalar
@@ -1706,7 +1706,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
 
     // gradient of current scalar value at integration point
     Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
-    gradphi.Multiply(derxy_, ephinp_[0]);
+    gradphi.multiply(derxy_, ephinp_[0]);
 
     // reactive part of the form: (reaction coefficient)*phi
     const double rea_phi = densnp[0] * phinp * reamanager_->GetReaCoeff(0);
@@ -1714,11 +1714,11 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     // get fine-scale velocity and its derivatives at integration point
     Core::LinAlg::Matrix<nsd_, 1> fsvelint(true);
     if (turbparams_->TurbModel() == Inpar::FLUID::multifractal_subgrid_scales)
-      fsvelint.Multiply(efsvel_, funct_);
+      fsvelint.multiply(efsvel_, funct_);
 
     // compute gradient of fine-scale part of scalar value
     Core::LinAlg::Matrix<nsd_, 1> fsgradphi(true);
-    if (turbparams_->FSSGD()) fsgradphi.Multiply(derxy_, fsphinp_[0]);
+    if (turbparams_->FSSGD()) fsgradphi.multiply(derxy_, fsphinp_[0]);
 
     double rhsint(0.0);
     get_rhs_int(rhsint, densnp[0], 0);
@@ -1766,7 +1766,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
         calc_subgr_velocity(ele, sgvelint, densam[0], densnp[0], visc, convelint, tau[0]);
 
         // calculation of subgrid-scale convective part
-        sgconv.MultiplyTN(derxy_, sgvelint);
+        sgconv.multiply_tn(derxy_, sgvelint);
       }
 
       // calculation of stabilization parameter at integration point
@@ -1799,15 +1799,15 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
       {
         // get divergence of subgrid-scale velocity
         Core::LinAlg::Matrix<nsd_, nsd_> mfsvderxy;
-        mfsvderxy.MultiplyNT(efsvel_, derxy_);
+        mfsvderxy.multiply_nt(efsvel_, derxy_);
         for (unsigned idim = 0; idim < nsd_; idim++)
           mfsvdiv += mfsvderxy(idim, idim) * B_mfs(idim, 0);
       }
 
       // calculate fine-scale scalar and its derivative for multifractal subgrid-scale modeling
-      mfssgphi = D_mfs * funct_.Dot(fsphinp_[0]);
-      mfsggradphi.Multiply(derxy_, fsphinp_[0]);
-      mfsggradphi.Scale(D_mfs);
+      mfssgphi = D_mfs * funct_.dot(fsphinp_[0]);
+      mfsggradphi.multiply(derxy_, fsphinp_[0]);
+      mfsggradphi.scale(D_mfs);
     }
 
     // residual of convection-diffusion-reaction eq
@@ -1867,7 +1867,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     // dissipation by supg-stabilization
     if (scatrapara_->StabType() == Inpar::ScaTra::stabtype_SUPG)
     {
-      eps_supg -= densnp[0] * sgphi * convelint.Dot(gradphi) * fac;  // sgphi_ is negative
+      eps_supg -= densnp[0] * sgphi * convelint.dot(gradphi) * fac;  // sgphi_ is negative
     }
     else if (scatrapara_->StabType() == Inpar::ScaTra::stabtype_no_stabilization)
     {
@@ -1880,8 +1880,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     // dissipation by reynolds-stress-stabilization
     if (scatrapara_->RBSubGrVel())
     {
-      eps_cross -= densnp[0] * phinp * sgvelint.Dot(gradphi) * fac;
-      eps_rey -= densnp[0] * sgphi * sgvelint.Dot(gradphi) * fac;
+      eps_cross -= densnp[0] * phinp * sgvelint.dot(gradphi) * fac;
+      eps_rey -= densnp[0] * sgphi * sgvelint.dot(gradphi) * fac;
     }
 
     //---------------------------------------------------------------
@@ -1892,12 +1892,12 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     if (turbparams_->TurbModel() == Inpar::FLUID::multifractal_subgrid_scales)
     {
       eps_mfs -= densnp[0] *
-                 (mfssgphi * convelint.Dot(gradphi) + phinp * mfsgvelint.Dot(gradphi) +
-                     mfssgphi * mfsgvelint.Dot(gradphi)) *
+                 (mfssgphi * convelint.dot(gradphi) + phinp * mfsgvelint.dot(gradphi) +
+                     mfssgphi * mfsgvelint.dot(gradphi)) *
                  fac;
       eps_mfscross -=
-          densnp[0] * (mfssgphi * convelint.Dot(gradphi) + phinp * mfsgvelint.Dot(gradphi)) * fac;
-      eps_mfsrey -= densnp[0] * mfssgphi * mfsgvelint.Dot(gradphi) * fac;
+          densnp[0] * (mfssgphi * convelint.dot(gradphi) + phinp * mfsgvelint.dot(gradphi)) * fac;
+      eps_mfsrey -= densnp[0] * mfssgphi * mfsgvelint.dot(gradphi) * fac;
     }
 
     //---------------------------------------------------------------
@@ -1907,7 +1907,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     // dissipation AVM3
     if (turbparams_->FSSGD())
     {
-      eps_avm3 += sgdiff * fsgradphi.Dot(fsgradphi) * fac;
+      eps_avm3 += sgdiff * fsgradphi.dot(fsgradphi) * fac;
     }
 
     //---------------------------------------------------------------
@@ -1918,7 +1918,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     if (scatrapara_->ASSGD() or turbparams_->TurbModel() == Inpar::FLUID::smagorinsky or
         turbparams_->TurbModel() == Inpar::FLUID::dynamic_smagorinsky)
     {
-      eps_smag += diffmanager_->GetSubGrDiff(0) * gradphi.Dot(gradphi) * fac;
+      eps_smag += diffmanager_->GetSubGrDiff(0) * gradphi.dot(gradphi) * fac;
     }
 
     //---------------------------------------------------------------
@@ -1926,11 +1926,11 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     //---------------------------------------------------------------
 
     // convective (Galerkin)
-    eps_conv -= densnp[0] * phinp * convelint.Dot(gradphi) * fac;
+    eps_conv -= densnp[0] * phinp * convelint.dot(gradphi) * fac;
 
     // dissipation (Galerkin) (diffus is diffus+sgdiff here)
     eps_visc += (diffmanager_->GetIsotropicDiff(0) - diffmanager_->GetSubGrDiff(0)) *
-                gradphi.Dot(gradphi) * fac;
+                gradphi.dot(gradphi) * fac;
 
     //---------------------------------------------------------------
     // element averages of tau_S and residual

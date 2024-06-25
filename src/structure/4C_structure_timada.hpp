@@ -221,7 +221,7 @@ namespace STR
     ) const;
 
     //! Print time adapting parameters:TimeIntegrator
-    void Print(std::ostream& str  //!< output stream
+    void print(std::ostream& str  //!< output stream
     ) const;
 
     //! Modify step size to hit precisely output period

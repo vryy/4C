@@ -89,7 +89,7 @@ namespace Mat
         int init_ = 0;
 
         /// print parameters
-        void Print() const;
+        void print() const;
 
        private:
         /// Override this method and throw error, as the material should be created in within the

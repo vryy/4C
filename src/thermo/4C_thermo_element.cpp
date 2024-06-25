@@ -264,17 +264,17 @@ void Discret::ELEMENTS::Thermo::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | print this element (public)                               dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Thermo::Print(std::ostream& os) const
+void Discret::ELEMENTS::Thermo::print(std::ostream& os) const
 {
   os << "Thermo element";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
   std::cout << std::endl;
   return;
-}  // Print()
+}  // print()
 
 
 /*----------------------------------------------------------------------*
@@ -425,12 +425,12 @@ void Discret::ELEMENTS::ThermoBoundary::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | print this element (public)                               dano 09/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ThermoBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::ThermoBoundary::print(std::ostream& os) const
 {
   os << "ThermoBoundary ";
-  Element::Print(os);
+  Element::print(os);
   return;
-}  // Print()
+}  // print()
 
 
 /*----------------------------------------------------------------------*

@@ -329,9 +329,9 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
   {
     // get convective velocity at element center for evaluation of
     // stabilization parameter
-    my::velint_.Multiply(evelaf, my::funct_);
-    my::convvelint_.Update(my::velint_);
-    if (isale) my::convvelint_.Multiply(-1.0, egridv, my::funct_, 1.0);
+    my::velint_.multiply(evelaf, my::funct_);
+    my::convvelint_.update(my::velint_);
+    if (isale) my::convvelint_.multiply(-1.0, egridv, my::funct_, 1.0);
 
     // calculate stabilization parameters at element center
     my::calc_stab_parameter(vol);
@@ -349,11 +349,11 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     // get convective velocity at integration point
     // (including grid velocity in ALE case,
     // values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    my::convvelint_.Multiply(evelaf, my::funct_);
+    my::convvelint_.multiply(evelaf, my::funct_);
     if (isale)
     {
-      my::gridvelint_.Multiply(egridv, my::funct_);
-      my::convvelint_.Update(-1.0, my::gridvelint_, 1.0);
+      my::gridvelint_.multiply(egridv, my::funct_);
+      my::convvelint_.update(-1.0, my::gridvelint_, 1.0);
     }
 
     //----------------------------------------------------------------------
@@ -381,7 +381,7 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
     if (my::fldpara_->TauGp()) my::calc_stab_parameter(vol);
 
     // evaluation of convective operator
-    my::conv_c_.MultiplyTN(my::derxy_, my::convvelint_);
+    my::conv_c_.multiply_tn(my::derxy_, my::convvelint_);
 
     // compute additional Galerkin terms on right-hand side of continuity equation
     // -> different for generalized-alpha and other time-integration schemes
@@ -445,25 +445,25 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
       //----------------------------------------------------------------------
       // get velocity derivatives at integration point
       // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-      my::vderxy_.MultiplyNT(evelaf, my::derxy_);
+      my::vderxy_.multiply_nt(evelaf, my::derxy_);
 
       // get pressure gradient at integration point
       // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-      my::gradp_.Multiply(my::derxy_, epreaf);
+      my::gradp_.multiply(my::derxy_, epreaf);
 
       // get bodyforce at integration point
       // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-      my::bodyforce_.Multiply(ebofoaf, my::funct_);
+      my::bodyforce_.multiply(ebofoaf, my::funct_);
       // get prescribed pressure gradient acting as body force
       // (required for turbulent channel flow)
-      my::generalbodyforce_.Multiply(eprescpgaf, my::funct_);
+      my::generalbodyforce_.multiply(eprescpgaf, my::funct_);
 
       // get momentum history data at integration point
       // (only required for one-step-theta and BDF2 time-integration schemes)
-      my::histmom_.Multiply(emhist, my::funct_);
+      my::histmom_.multiply(emhist, my::funct_);
 
       // convective term from previous iteration
-      my::conv_old_.Multiply(my::vderxy_, my::convvelint_);
+      my::conv_old_.multiply(my::vderxy_, my::convvelint_);
 
       // compute viscous term from previous iteration
       if (my::is_higher_order_ele_)

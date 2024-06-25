@@ -38,8 +38,8 @@ namespace
       iFinM_(1, 2) = iFinM_(2, 1) = 0.001;
       iFinM_(0, 2) = iFinM_(2, 0) = 0.005;
 
-      CM_.MultiplyTN(FM_, FM_);
-      iCinM_.MultiplyNT(iFinM_, iFinM_);
+      CM_.multiply_tn(FM_, FM_);
+      iCinM_.multiply_nt(iFinM_, iFinM_);
     }
 
     Core::LinAlg::Matrix<3, 3> FM_;

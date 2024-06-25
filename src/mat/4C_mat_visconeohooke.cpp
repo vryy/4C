@@ -309,7 +309,7 @@ void Mat::ViscoNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
   for (int i = 3; i < 6; i++) Id(i) = 0.0;
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
-  C.Scale(2.0);
+  C.scale(2.0);
   C += Id;
 
   // invariants
@@ -328,7 +328,7 @@ void Mat::ViscoNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Cinv(3) = 0.25 * C(5) * C(4) - 0.5 * C(3) * C(2);
   Cinv(4) = 0.25 * C(3) * C(5) - 0.5 * C(0) * C(4);
   Cinv(5) = 0.25 * C(3) * C(4) - 0.5 * C(5) * C(1);
-  Cinv.Scale(1.0 / I3);
+  Cinv.scale(1.0 / I3);
 
   // elastic part: NeoHooke  ************************************************
   // NeoHooke with penalty W = W^dev(C) + U(J)
@@ -337,36 +337,36 @@ void Mat::ViscoNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // Split into volumetric and deviatoric parts. Viscosity affects only deviatoric part
   // Volumetric part of PK2 stress
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> SVol(Cinv);
-  SVol.Scale(kappa * (J - 1.0) * J);
+  SVol.scale(kappa * (J - 1.0) * J);
   *stress += SVol;
 
   // Deviatoric elastic part (2 d W^dev/d C)
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> SDevEla(Cinv);
-  SDevEla.Scale(-1.0 / 3.0 * I1);
+  SDevEla.scale(-1.0 / 3.0 * I1);
   SDevEla += Id;
-  SDevEla.Scale(mue * I3invcubroot);  // mue*I3^(-1/3) (Id-1/3*I1*Cinv)
+  SDevEla.scale(mue * I3invcubroot);  // mue*I3^(-1/3) (Id-1/3*I1*Cinv)
 
   // visco part
   // read history
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> S_n(histstresslast_->at(gp));
-  S_n.Scale(-1.0);
+  S_n.scale(-1.0);
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_n(artstresslast_->at(gp));
 
   // artificial visco stresses
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q(Q_n);
-  Q.Scale(artscalar1);
+  Q.scale(artscalar1);
   Q += SDevEla;
   Q += S_n;
-  Q.Scale(artscalar2);  // Q^(n+1) = artscalar2* [artscalar1* Q + S^(n+1) - S^n]
+  Q.scale(artscalar2);  // Q^(n+1) = artscalar2* [artscalar1* Q + S^(n+1) - S^n]
 
   // update history
   histstresscurr_->at(gp) = SDevEla;
   artstresscurr_->at(gp) = Q;
 
   // add visco PK2 stress, weighted with alphas
-  SDevEla.Scale(alpha0);
+  SDevEla.scale(alpha0);
   *stress += SDevEla;
-  Q.Scale(alpha1);
+  Q.scale(alpha1);
   *stress += Q;
   // elasticity matrix
   double scalar1 = 2.0 * kappa * J * J - kappa * J;

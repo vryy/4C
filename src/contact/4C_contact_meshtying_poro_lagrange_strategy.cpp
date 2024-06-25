@@ -104,7 +104,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
         Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteffoffdiag);
 
     //    std::cout<< " kteffmatrix " << std::endl;
-    //    kteffmatrix->DomainMap().Print(std::cout);
+    //    kteffmatrix->DomainMap().print(std::cout);
 
     if (ParRedist())  // asdf
     {
@@ -117,7 +117,7 @@ void CONTACT::PoroMtLagrangeStrategy::evaluate_meshtying_poro_off_diag(
         kteffmatrix, gsmdofrowmap_, gndofrowmap_, fvelrow_, tempmap1, csm, tempmtx1, cn, tempmtx2);
 
     //    std::cout<< " tempmap1 " << std::endl;
-    //    tempmap1->Print(std::cout);
+    //    tempmap1->print(std::cout);
 
     // second split slave/master block row
     Core::LinAlg::SplitMatrix2x2(

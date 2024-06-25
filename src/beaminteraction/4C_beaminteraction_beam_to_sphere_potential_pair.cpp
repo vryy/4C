@@ -470,14 +470,14 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes,
   for (unsigned int i = 0; i < 3 * numnodes * numnodalvalues; ++i) fpot1_(i) *= prefactor;
   for (unsigned int i = 0; i < 3; ++i) fpot2_(i) *= prefactor;
 
-  stiffpot1_.Scale(prefactor);
-  stiffpot2_.Scale(prefactor);
+  stiffpot1_.scale(prefactor);
+  stiffpot2_.scale(prefactor);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Print(
+void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::print(
     std::ostream& out) const
 {
   check_init_setup();

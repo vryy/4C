@@ -101,9 +101,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
-    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
-    const double eslavegrowthint = my::funct_.Dot(egrowth_);
-    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+    const double eslavepotint = my::funct_.dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.dot(egrowth_);
+    const double emasterpotint = my::funct_.dot(emasterphinp[1]);
 
     // evaluate scatra-scatra interface layer resistance at current integration point
     const double eslaveresistanceint = eslavegrowthint * resistivity;
@@ -114,9 +114,9 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
     {
       case Inpar::S2I::growth_kinetics_butlervolmer:
       {
-        const double alphaa = my::scatraparamsboundary_->AlphaA();
+        const double alphaa = my::scatraparamsboundary_->Alphadata();
         const double kr = my::scatraparamsboundary_->charge_transfer_constant();
-        const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
+        const double emasterphiint = my::funct_.dot(emasterphinp[0]);
         const double epd = 0.0;  // equilibrium potential is 0 for the plating reaction
 
         // compute exchange mass flux density
@@ -186,7 +186,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
   const double faraday = myelch::elchparams_->Faraday();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphaa = my::scatraparamsboundary_->Alphadata();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
   const double resistivity = my::scatraparamsboundary_->Resistivity();
@@ -215,11 +215,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
-    const double eslavephiint = my::funct_.Dot(my::ephinp_[0]);
-    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
-    const double eslavegrowthint = my::funct_.Dot(egrowth_);
-    const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
-    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+    const double eslavephiint = my::funct_.dot(my::ephinp_[0]);
+    const double eslavepotint = my::funct_.dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.dot(egrowth_);
+    const double emasterphiint = my::funct_.dot(emasterphinp[0]);
+    const double emasterpotint = my::funct_.dot(emasterphinp[1]);
 
     // evaluate scatra-scatra interface layer resistance at current integration point
     const double eslaveresistanceint = eslavegrowthint * resistivity;
@@ -438,7 +438,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
   const double faraday = myelch::elchparams_->Faraday();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphaa = my::scatraparamsboundary_->Alphadata();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
   const double resistivity = my::scatraparamsboundary_->Resistivity();
@@ -467,11 +467,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
-    const double eslavephiint = my::funct_.Dot(my::ephinp_[0]);
-    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
-    const double eslavegrowthint = my::funct_.Dot(egrowth_);
-    const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
-    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+    const double eslavephiint = my::funct_.dot(my::ephinp_[0]);
+    const double eslavepotint = my::funct_.dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.dot(egrowth_);
+    const double emasterphiint = my::funct_.dot(emasterphinp[0]);
+    const double emasterpotint = my::funct_.dot(emasterphinp[1]);
 
     // evaluate scatra-scatra interface layer resistance at current integration point
     const double eslaveresistanceint = eslavegrowthint * resistivity;
@@ -623,7 +623,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
         "layer growth!");
   }
   const double faraday = myelch::elchparams_->Faraday();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphaa = my::scatraparamsboundary_->Alphadata();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
   if (kr < 0.0) FOUR_C_THROW("Charge transfer constant k_r is negative!");
   const double resistivity = my::scatraparamsboundary_->Resistivity();
@@ -650,10 +650,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
-    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
-    const double eslavegrowthint = my::funct_.Dot(egrowth_);
-    const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
-    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+    const double eslavepotint = my::funct_.dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.dot(egrowth_);
+    const double emasterphiint = my::funct_.dot(emasterphinp[0]);
+    const double emasterpotint = my::funct_.dot(emasterphinp[1]);
 
     // evaluate scatra-scatra interface layer resistance at current integration point
     const double eslaveresistanceint = eslavegrowthint * resistivity;
@@ -739,7 +739,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
         "layer growth!");
   }
   const double faraday = myelch::elchparams_->Faraday();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphaa = my::scatraparamsboundary_->Alphadata();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
   const double resistivity = my::scatraparamsboundary_->Resistivity();
@@ -771,11 +771,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
-    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
-    const double eslavegrowthint = my::funct_.Dot(egrowth_);
-    const double eslavegrowthhistint = my::funct_.Dot(eslavegrowthhist);
-    const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
-    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+    const double eslavepotint = my::funct_.dot(my::ephinp_[1]);
+    const double eslavegrowthint = my::funct_.dot(egrowth_);
+    const double eslavegrowthhistint = my::funct_.dot(eslavegrowthhist);
+    const double emasterphiint = my::funct_.dot(emasterphinp[0]);
+    const double emasterpotint = my::funct_.dot(emasterphinp[1]);
 
     // evaluate scatra-scatra interface layer resistance at current integration point
     const double eslaveresistanceint = eslavegrowthint * resistivity;

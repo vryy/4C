@@ -139,7 +139,7 @@ namespace BEAMINTERACTION
     /** \brief print this beam potential-based element pair to screen
      *
      *  \author grill */
-    void Print(std::ostream& out) const override;
+    void print(std::ostream& out) const override;
 
     /** \brief print this beam potential element pair to screen
      *

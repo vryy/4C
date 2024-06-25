@@ -183,7 +183,7 @@ double MyocardFitzhughNagumo::GetIonicCurrents(const int k, int gp) const
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void MyocardFitzhughNagumo::Update(const double phi, const double dt)
+void MyocardFitzhughNagumo::update(const double phi, const double dt)
 {
   // update initial values for next time step
   r0_ = r_;

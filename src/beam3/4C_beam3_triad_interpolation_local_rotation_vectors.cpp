@@ -287,7 +287,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::
         const Core::LinAlg::Matrix<1, numnodes, double>& I_i_xi, const double jacobifac) const
 {
   Core::LinAlg::Matrix<1, numnodes, double> I_i_s(I_i_xi);
-  I_i_s.Scale(std::pow(jacobifac, -1.0));
+  I_i_s.scale(std::pow(jacobifac, -1.0));
 
   get_nodal_generalized_rotation_interpolation_matrices_derivative(
       Itilde_prime, Psi_l, Psi_l_s, I_i, I_i_s);
@@ -329,7 +329,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_r
   calc_phi_ij(Q_nodeI, Q_nodeJ, Phi_IJ);
 
   Core::LinAlg::Matrix<3, 1, T> Phi_IJhalf(Phi_IJ);
-  Phi_IJhalf.Scale(0.5);
+  Phi_IJhalf.scale(0.5);
 
   // quaternion of half relative rotation between node I and J according to (3.9), Jelenic 1999
   Core::LinAlg::Matrix<4, 1, T> QIJhalf(true);
@@ -403,7 +403,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_p
   /* at this point we have computed derivative with respect to the element parameter \xi \in [-1;1];
    * as we want a derivatives with respect to the reference arc-length parameter s,
    * we have to divide it by the Jacobi determinant at the respective point */
-  Psi_l_s.Scale(1.0 / jacobi);
+  Psi_l_s.scale(1.0 / jacobi);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -474,11 +474,11 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
     auxmatrix.clear();
 
     auxmatrix = Core::LargeRotations::Tmatrix(Psili[node]);
-    auxmatrix.Scale(funct(node));
-    auxmatrix2.Update(-1.0, auxmatrix, 1.0);
+    auxmatrix.scale(funct(node));
+    auxmatrix2.update(-1.0, auxmatrix, 1.0);
   }
 
-  squaredbrackets.Multiply(Tinv_Psil, auxmatrix2);
+  squaredbrackets.multiply(Tinv_Psil, auxmatrix2);
 
   for (unsigned int i = 0; i < 3; i++) squaredbrackets(i, i) += 1;
 
@@ -489,14 +489,14 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   {
     // compute rightmost term in curley brackets in (3.18), Jelenic 1999
     Itilde[node].clear();
-    Itilde[node].Multiply(Tinv_Psil, Core::LargeRotations::Tmatrix(Psili[node]));
-    Itilde[node].Scale(funct(node));
+    Itilde[node].multiply(Tinv_Psil, Core::LargeRotations::Tmatrix(Psili[node]));
+    Itilde[node].scale(funct(node));
 
     // if node i is node I then add squared brackets term times v_I
     if (node == node_i_)
     {
       calc_v_i(v_matrix, phiIJ);
-      auxmatrix.Multiply(squaredbrackets, v_matrix);
+      auxmatrix.multiply(squaredbrackets, v_matrix);
       Itilde[node] += auxmatrix;
     }
 
@@ -504,13 +504,13 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
     if (node == node_j_)
     {
       calc_v_j(v_matrix, phiIJ);
-      auxmatrix.Multiply(squaredbrackets, v_matrix);
+      auxmatrix.multiply(squaredbrackets, v_matrix);
       Itilde[node] += auxmatrix;
     }
 
     // now the term in the curly brackets has been computed and has to be rotated by \Lambda_r
-    auxmatrix.MultiplyNT(Itilde[node], Lambdar);
-    Itilde[node].MultiplyNN(Lambdar, auxmatrix);
+    auxmatrix.multiply_nt(Itilde[node], Lambdar);
+    Itilde[node].multiply_nn(Lambdar, auxmatrix);
   }
 }
 
@@ -540,7 +540,7 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   for (unsigned int node = 0; node < numnodes; ++node)
   {
     auxmatrix = Core::LargeRotations::Tmatrix(Psili[node]);
-    auxmatrix.Scale(funct(node));
+    auxmatrix.scale(funct(node));
     Ttilde += auxmatrix;
   }
 
@@ -549,14 +549,14 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   for (unsigned int node = 0; node < numnodes; ++node)
   {
     auxmatrix = Core::LargeRotations::Tmatrix(Psili[node]);
-    auxmatrix.Scale(deriv_s(node));
+    auxmatrix.scale(deriv_s(node));
     Ttildeprime += auxmatrix;
   }
 
   // compute first squared brackets term in (3.18), Jelenic 1999
   Core::LinAlg::Matrix<3, 3, T> squaredbrackets(true);
-  squaredbrackets.Multiply(dTinvdx, Ttilde);
-  auxmatrix.Multiply(Core::LargeRotations::Tinvmatrix(Psil), Ttildeprime);
+  squaredbrackets.multiply(dTinvdx, Ttilde);
+  auxmatrix.multiply(Core::LargeRotations::Tinvmatrix(Psil), Ttildeprime);
   squaredbrackets += auxmatrix;
 
   Core::LinAlg::Matrix<3, 3, T> v_matrix(true);
@@ -566,24 +566,24 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
   {
     // compute first term in second squared brackets
     Itildeprime[node] = dTinvdx;
-    Itildeprime[node].Scale(funct(node));
+    Itildeprime[node].scale(funct(node));
 
     // compute second term in second squared brackets
     auxmatrix.clear();
     auxmatrix += Core::LargeRotations::Tinvmatrix(Psil);
-    auxmatrix.Scale(deriv_s(node));
+    auxmatrix.scale(deriv_s(node));
 
     // compute second squared brackets
     auxmatrix += Itildeprime[node];
 
     // compute second squared brackets time T(\Psi^l_j)
-    Itildeprime[node].Multiply(auxmatrix, Core::LargeRotations::Tmatrix(Psili[node]));
+    Itildeprime[node].multiply(auxmatrix, Core::LargeRotations::Tmatrix(Psili[node]));
 
     // if node i is node I then add first squared brackets term times v_I
     if (node == node_i_)
     {
       calc_v_i(v_matrix, phiIJ);
-      auxmatrix.Multiply(squaredbrackets, v_matrix);
+      auxmatrix.multiply(squaredbrackets, v_matrix);
       Itildeprime[node] -= auxmatrix;
     }
 
@@ -591,13 +591,13 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::comput
     if (node == node_j_)
     {
       calc_v_j(v_matrix, phiIJ);
-      auxmatrix.Multiply(squaredbrackets, v_matrix);
+      auxmatrix.multiply(squaredbrackets, v_matrix);
       Itildeprime[node] -= auxmatrix;
     }
 
     // now the term in the curly brackets has been computed and has to be rotated by \Lambda_r
-    auxmatrix.MultiplyNT(Itildeprime[node], Lambdar);
-    Itildeprime[node].MultiplyNN(Lambdar, auxmatrix);
+    auxmatrix.multiply_nt(Itildeprime[node], Lambdar);
+    Itildeprime[node].multiply_nn(Lambdar, auxmatrix);
   }
 }
 
@@ -613,14 +613,14 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_v
   Core::LargeRotations::computespin(vI, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity
   if (Core::FADUtils::VectorNorm(phiIJ) == 0.0)
-    vI.Scale(0.25);
+    vI.scale(0.25);
   else  // Fixme @grill: why do we cast to double here?
-    vI.Scale(std::tan(Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm(phiIJ)) / 4.0) /
+    vI.scale(std::tan(Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm(phiIJ)) / 4.0) /
              Core::FADUtils::VectorNorm(phiIJ));
 
   for (unsigned int i = 0; i < 3; i++) vI(i, i) += 1.0;
 
-  vI.Scale(0.5);
+  vI.scale(0.5);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -635,15 +635,15 @@ void LargeRotations::TriadInterpolationLocalRotationVectors<numnodes, T>::calc_v
   Core::LargeRotations::computespin(vJ, phiIJ);
   // Fixme @grill: think about introducing a tolerance here to avoid singularity
   if (Core::FADUtils::VectorNorm(phiIJ) == 0.0)
-    vJ.Scale(-0.25);
+    vJ.scale(-0.25);
   else  // Fixme why do we cast to double here?
-    vJ.Scale(-1.0 *
+    vJ.scale(-1.0 *
              std::tan(Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm(phiIJ)) / 4.0) /
              Core::FADUtils::VectorNorm(phiIJ));
 
   for (unsigned int i = 0; i < 3; i++) vJ(i, i) += 1.0;
 
-  vJ.Scale(0.5);
+  vJ.scale(0.5);
 }
 
 // explicit template instantiations

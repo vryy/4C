@@ -106,7 +106,7 @@ namespace FLD
     /*!
      * \brief Perform time update of time-dependent subgrid scales
      */
-    void Update(const double dt, const double gamma);
+    void update(const double dt, const double gamma);
 
     //@}
 

@@ -156,7 +156,7 @@ double Core::LinAlg::GeneralizedEigen(
     Core::LinAlg::SerialDenseMatrix::Base H;
     H.shape(N, N);
 
-    Core::LinAlg::multiplyNT(0., H, tau[i], v, v);
+    Core::LinAlg::multiply_nt(0., H, tau[i], v, v);
     H.scale(-1.);
     for (int k = 0; k < N; ++k) H(k, k) = 1. + H(k, k);
 
@@ -187,7 +187,7 @@ double Core::LinAlg::GeneralizedEigen(
   Core::LinAlg::SerialDenseMatrix::Base A_tmp;
   A_tmp.shape(N, N);
   // A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
-  Core::LinAlg::multiplyTN(A_tmp, Q_new, tmpA);
+  Core::LinAlg::multiply_tn(A_tmp, Q_new, tmpA);
 
   Core::LinAlg::SerialDenseMatrix::Base A_new;
   A_new.shape(N, N);

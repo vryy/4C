@@ -99,10 +99,10 @@ void Discret::ELEMENTS::Vele3Surface::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
+void Discret::ELEMENTS::Vele3Surface::print(std::ostream& os) const
 {
   os << "Vele3Surface " << Core::FE::CellTypeToString(Shape());
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

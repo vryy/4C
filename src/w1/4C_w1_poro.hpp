@@ -145,7 +145,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       Core::Elements::ElementType& ElementType() const override
       {
@@ -423,7 +423,7 @@ namespace Discret
           const Core::LinAlg::Matrix<numnod_, 1>& shapfct,
           const Core::LinAlg::Matrix<numnod_, 1>* myporosity, double& porosity, double& dphi_dp);
 
-      //! Compute Jacobian Determinant
+      //! Compute Jacobian determinant
       void compute_jacobian_determinant_volume_change_and_linearizations(double& J,
           double& volchange, Core::LinAlg::Matrix<1, numdof_>& dJ_dus,
           Core::LinAlg::Matrix<1, numdof_>& dvolchange_dus,
@@ -432,7 +432,7 @@ namespace Discret
           const Core::LinAlg::Matrix<numdim_, numnod_>& N_XYZ,
           const Core::LinAlg::Matrix<numdim_, numnod_>& nodaldisp);
 
-      //! Compute Jacobian Determinant
+      //! Compute Jacobian determinant
       void compute_jacobian_determinant_volume_change(double& J, double& volchange,
           const Core::LinAlg::Matrix<numdim_, numdim_>& defgrd,
           const Core::LinAlg::Matrix<numdim_, numnod_>& N_XYZ,
@@ -524,7 +524,7 @@ namespace Discret
           Core::LinAlg::Matrix<numnod_, 1>& shapefct, Core::LinAlg::Matrix<numdim_, numnod_>& deriv,
           Core::LinAlg::Matrix<numdim_, numnod_>& N_XYZ);
 
-      //! Compute Jacobian Determinant
+      //! Compute Jacobian determinant
       double compute_jacobian_determinant(const int& gp,
           const Core::LinAlg::Matrix<numdim_, numnod_>& xcurr,
           const Core::LinAlg::Matrix<numdim_, numnod_>& deriv);

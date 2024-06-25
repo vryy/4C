@@ -977,9 +977,9 @@ Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
   //       rec_it != (vc_data.cut_points_coords_).end();
   //       rec_it++)
   //    {
-  //     vc_center.Update(1.0,(*rec_it),1.0);
+  //     vc_center.update(1.0,(*rec_it),1.0);
   //    }
-  //    vc_center.Scale(1.0/(vc_data.cut_points_coords_).size());
+  //    vc_center.scale(1.0/(vc_data.cut_points_coords_).size());
   //
   //    for(plain_volumecell_set::iterator c = my_vcs.begin(); c!=my_vcs.end(); c++)
   //    {
@@ -1002,9 +1002,9 @@ Core::Geo::Cut::VolumeCell* Core::Geo::Cut::Parallel::find_volume_cell(
   //     my_it++)
   //     {
   //       Core::LinAlg::Matrix<3,1> coord((*my_it)->X(),true);
-  //       my_center.Update(1.0,coord,1.0);
+  //       my_center.update(1.0,coord,1.0);
   //     }
-  //     my_center.Scale(1.0/(my_cut_points.size()));
+  //     my_center.scale(1.0/(my_cut_points.size()));
   //
   //     for(int i=0; i<3; i++)
   //     {

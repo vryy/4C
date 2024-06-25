@@ -1724,11 +1724,11 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips(
 
   // check if moving node (ALE case)
   Core::LinAlg::Matrix<3, 1> n_diff(true);
-  n_diff.Update(1.0, n_coord_new, -1.0, n_coord_old);
+  n_diff.update(1.0, n_coord_new, -1.0, n_coord_old);
 
   // TODO: for ALE we have to check whether the path of the point crosses at least one space-time
   // side element
-  if (n_diff.Norm2() > 1e-14)
+  if (n_diff.norm2() > 1e-14)
   {
     // TODO: currently we expect that node did not change the side around a tip
     // TODO: USE the FOUR_C_THROW, at the moment we just throw a warning
@@ -1766,7 +1766,7 @@ bool XFEM::XFluidTimeInt::special_check_interface_tips(
     }
     else
     {
-      if (n_diff.Norm2() > 1e-14)
+      if (n_diff.norm2() > 1e-14)
         FOUR_C_THROW(
             "background fluid ALE with level-sets interface??? Think about that, does Scatra "
             "support this?");
@@ -1923,8 +1923,8 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
     x_new(1) += mydisp_new.at(1);
     x_new(2) += mydisp_new.at(2);
 
-    std::copy(x_old.A(), x_old.A() + 3, &xyze_old(0, i));
-    std::copy(x_new.A(), x_new.A() + 3, &xyze_new(0, i));
+    std::copy(x_old.data(), x_old.data() + 3, &xyze_old(0, i));
+    std::copy(x_new.data(), x_new.data() + 3, &xyze_new(0, i));
   }
 
   //------------------------------------------------------------------
@@ -1984,7 +1984,7 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
 
     Core::LinAlg::Matrix<3, numnode_side> xyz_side_new(xyze_new);
 
-    derxy.MultiplyNT(xyz_side_new, deriv);
+    derxy.multiply_nt(xyz_side_new, deriv);
 
 
     // set dx_dr and dx_ds
@@ -1999,7 +1999,7 @@ bool XFEM::XFluidTimeInt::within_space_time_side(
     normal(1) = dx_dr(2) * dx_ds(0) - dx_ds(2) * dx_dr(0);
     normal(2) = dx_dr(0) * dx_ds(1) - dx_ds(0) * dx_dr(1);
 
-    normal.Scale(1.0 / normal.Norm2());
+    normal.scale(1.0 / normal.norm2());
 
     //------------------------------------------------------------------
 
@@ -2075,10 +2075,10 @@ bool XFEM::XFluidTimeInt::check_st_side_volume(
 
   Core::FE::shape_function_deriv1<space_time_distype>(xsi, deriv);
 
-  xjm.MultiplyNT(deriv, xyze_st);
+  xjm.multiply_nt(deriv, xyze_st);
 
   double det = 0.0;
-  det = xjm.Determinant();
+  det = xjm.determinant();
   if (abs(det) < 1E-14)
   {
     successful = false;

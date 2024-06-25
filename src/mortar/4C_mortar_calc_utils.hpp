@@ -499,12 +499,12 @@ namespace Mortar
         //     }
 
         // solve equation
-        if (abs(xjm.Determinant()) < 1e-15)
+        if (abs(xjm.determinant()) < 1e-15)
         {
           FOUR_C_THROW("*** WARNING: jacobi singular ***");
         }
 
-        double xjm_invert = xjm.Invert();
+        double xjm_invert = xjm.invert();
         if (abs(xjm_invert) < 1e-12) FOUR_C_THROW("ERROR: Singular Jacobian for advection map");
 
         double deltaxi[ndim];
@@ -620,18 +620,18 @@ namespace Mortar
         if (converged == true) break;
 
         // solve equation
-        if (abs(xjm.Determinant()) < 1e-15)
+        if (abs(xjm.determinant()) < 1e-15)
         {
           std::cout << "WARNING !!! jacobi determinant singular! In GlobalToLocal(...)"
                     << std::endl;
-          std::cout << "JAC= " << xjm.Determinant() << std::endl;
+          std::cout << "JAC= " << xjm.determinant() << std::endl;
           std::cout << "CONVERGED= " << converged << std::endl;
           //       FOUR_C_THROW("*** WARNING: jacobi singular ***");
           converged = false;
           break;
         }
 
-        double xjm_invert = xjm.Invert();
+        double xjm_invert = xjm.invert();
         if (abs(xjm_invert) < 1e-15) FOUR_C_THROW("ERROR: Singular Jacobian");
 
         double deltaxi[3];
@@ -721,18 +721,18 @@ namespace Mortar
         if (converged == true) break;
 
         // solve equation
-        if (abs(xjm.Determinant()) < 1e-15)
+        if (abs(xjm.determinant()) < 1e-15)
         {
           std::cout << "WARNING !!! jacobi determinant singular! In GlobalToCurrentLocal(...)"
                     << std::endl;
-          std::cout << "JAC= " << xjm.Determinant() << std::endl;
+          std::cout << "JAC= " << xjm.determinant() << std::endl;
           std::cout << "CONVERGED= " << converged << std::endl;
           //       FOUR_C_THROW("*** WARNING: jacobi singular ***");
           converged = false;
           break;
         }
 
-        double xjm_invert = xjm.Invert();
+        double xjm_invert = xjm.invert();
         if (abs(xjm_invert) < 1e-15) FOUR_C_THROW("ERROR: Singular Jacobian");
 
         double deltaxi[3];

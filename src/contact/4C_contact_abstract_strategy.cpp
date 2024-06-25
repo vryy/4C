@@ -227,7 +227,7 @@ CONTACT::AbstractStrategy::AbstractStrategy(
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const CONTACT::AbstractStrategy& strategy)
 {
-  strategy.Print(os);
+  strategy.print(os);
   return os;
 }
 
@@ -2487,7 +2487,7 @@ void CONTACT::AbstractStrategy::InterfaceForces(bool output)
 /*----------------------------------------------------------------------*
  |  print interfaces (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::AbstractStrategy::Print(std::ostream& os) const
+void CONTACT::AbstractStrategy::print(std::ostream& os) const
 {
   if (Comm().MyPID() == 0)
   {

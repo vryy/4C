@@ -136,7 +136,7 @@ namespace Discret::ELEMENTS
       Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> dispgrad;
       dispgrad.clear();
       // gradient of displacements
-      dispgrad.MultiplyNT(mydisp, jacobian_mapping.N_XYZ_);
+      dispgrad.multiply_nt(mydisp, jacobian_mapping.N_XYZ_);
 
       double volchange = 1.0;
       // volchange = 1 + trace of the linearized strains (= trace of displacement gradient)
@@ -209,7 +209,7 @@ namespace Discret::ELEMENTS
 
       // linearization of determinant of deformation gradient detF w.r.t. structural displacement
       // u_s dDetF/du_s = dDetF/dF : dF/du_s = DetF * F^-T * N,X
-      dDetDefGrad_dDisp.MultiplyTN(
+      dDetDefGrad_dDisp.multiply_tn(
           spatial_material_mapping.determinant_deformation_gradient_, defgrd_inv_vec, N_X);
       return dDetDefGrad_dDisp;
     }
@@ -282,7 +282,7 @@ namespace Discret::ELEMENTS
         nullptr   // dphi_dpp not needed
     );
 
-    dPorosity_dDisp.Update(dphi_dJ, dDetDefGrad_dDisp);
+    dPorosity_dDisp.update(dphi_dJ, dDetDefGrad_dDisp);
   }
 
   /*!
@@ -354,7 +354,7 @@ namespace Discret::ELEMENTS
       dps_dphi -= volfracphi[ivolfrac] * volfracpressure[ivolfrac] / (porosity * porosity);
 
     // d (p_s) / d u_s = d (p_s) / d porosity * d porosity / d u_s
-    dSolidpressure_dDisp.Update(dps_dphi, dPorosity_dDisp);
+    dSolidpressure_dDisp.update(dps_dphi, dPorosity_dDisp);
   }
 
   /*!
@@ -406,7 +406,7 @@ namespace Discret::ELEMENTS
    * @param detJ_w (in) : integration factor (Gauss point weight times the determinant of
    * the jacobian)
    * @param solidpressure (in) : solid pressure
-   * @param DetDefGrad (in) : Determinant of deformation gradient
+   * @param DetDefGrad (in) : determinant of deformation gradient
    * * @param BopCinv (in) : B^T . C^-1
    * @param force_vector (in/out) : Force vector where the local contribution is added to
    */
@@ -419,7 +419,7 @@ namespace Discret::ELEMENTS
   {
     // additional fluid stress- stiffness term RHS -(B^T .  C^-1  * J * p^f * detJ * w(gp))
     double factor = -detJ_w * solidpressure * DetDefGrad;
-    force_vector.Update(factor, BopCinv, 1.0);
+    force_vector.update(factor, BopCinv, 1.0);
   }
 
   /*!
@@ -429,7 +429,7 @@ namespace Discret::ELEMENTS
    * @param detJ_w (in) : integration factor (Gauss point weight times the determinant of
    * the jacobian)
    * @param solidpressure (in) : solidpressure
-   * @param DetDefGrad (in) : Determinant of deformation gradient
+   * @param DetDefGrad (in) : determinant of deformation gradient
    * @param BopCinv (in) : B^T . C^-1
    * @param Bop (in) : Strain gradient (B-Operator)
    * @param dDetDefGrad_dDisp (in) : derivative of determinant of derformation gradient w.r.t. the
@@ -455,16 +455,16 @@ namespace Discret::ELEMENTS
     Core::LinAlg::Matrix<DETAIL::num_dof_per_ele<celltype>, DETAIL::num_dof_per_ele<celltype>> tmp;
 
     // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
-    tmp.Multiply((-detJ_w * solidpressure), BopCinv, dDetDefGrad_dDisp);
-    stiffness_matrix.Update(1.0, tmp, 1.0);
+    tmp.multiply((-detJ_w * solidpressure), BopCinv, dDetDefGrad_dDisp);
+    stiffness_matrix.update(1.0, tmp, 1.0);
 
     // additional fluid stress- stiffness term -(B^T .  dC^-1/d(us) * J * p^f * detJ * w(gp))
-    tmp.MultiplyTN((-detJ_w * solidpressure * DetDefGrad), Bop, dInverseRightCauchyGreen_dDisp);
-    stiffness_matrix.Update(1.0, tmp, 1.0);
+    tmp.multiply_tn((-detJ_w * solidpressure * DetDefGrad), Bop, dInverseRightCauchyGreen_dDisp);
+    stiffness_matrix.update(1.0, tmp, 1.0);
 
     // additional fluid stress- stiffness term -(B^T .  dC^-1 * J * dp^s/d(us) * detJ * w(gp))
-    tmp.Multiply((-detJ_w * DetDefGrad), BopCinv, dSolidpressure_dDisp);
-    stiffness_matrix.Update(1.0, tmp, 1.0);
+    tmp.multiply((-detJ_w * DetDefGrad), BopCinv, dSolidpressure_dDisp);
+    stiffness_matrix.update(1.0, tmp, 1.0);
   }
 
   /*!
@@ -474,7 +474,7 @@ namespace Discret::ELEMENTS
    * @param detJ_w (in) : integration factor (Gauss point weight times the determinant of
    * the jacobian)
    * @param solidpressure (in) : solidpressure
-   * @param DetDefGrad (in) : Determinant of deformation gradient
+   * @param DetDefGrad (in) : determinant of deformation gradient
    * @param C_inv_vec (in) : inverse Right Cauchy-Green tensor as vector in voigt notation
    * @param n_xyz (in) : derivatives of the shape functions w.r.t. XYZ
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
@@ -492,7 +492,7 @@ namespace Discret::ELEMENTS
         C_inv_vec);  // auxiliary integrated stress
 
     // scale
-    sfac.Scale((-detJ_w * solidpressure * DetDefGrad));
+    sfac.scale((-detJ_w * solidpressure * DetDefGrad));
 
     std::vector<double> SmB_L(3);  // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -526,7 +526,7 @@ namespace Discret::ELEMENTS
    * @param solidpressurederiv (in) : derivative of solidpressure w.r.t. fluid multiphase
    * @param BopCinv (in) : B^T * C^-1
    * @param shape_functions (in) : Shape function
-   * * @param DetDefGrad (in) : Determinant of deformation gradient
+   * * @param DetDefGrad (in) : determinant of deformation gradient
    * @param nummultifluiddofpernode (in) : number of fluid multiphase dofs per node
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
@@ -765,7 +765,7 @@ namespace Discret::ELEMENTS
 
     cauchygreen.right_cauchy_green_ =
         Discret::ELEMENTS::evaluate_cauchy_green(spatial_material_mapping);
-    cauchygreen.inverse_right_cauchy_green_.Invert(cauchygreen.right_cauchy_green_);
+    cauchygreen.inverse_right_cauchy_green_.invert(cauchygreen.right_cauchy_green_);
 
     return cauchygreen;
   }

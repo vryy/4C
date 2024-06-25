@@ -251,7 +251,7 @@ bool Core::Geo::Cut::BoundingBox::in_between(const double& norm, const double& s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::BoundingBox::Print()
+void Core::Geo::Cut::BoundingBox::print()
 {
   if (empty_)
   {

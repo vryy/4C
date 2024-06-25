@@ -131,7 +131,7 @@ namespace Discret
       void unpack(const std::vector<char>& data) override;
 
       //! Print this element
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       //! return elementtype
       SoSh18PlastType& ElementType() const override { return SoSh18PlastType::Instance(); }

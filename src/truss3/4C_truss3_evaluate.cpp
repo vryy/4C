@@ -414,7 +414,7 @@ void Discret::ELEMENTS::Truss3::prep_calc_internal_force_stiff_tot_lag(
   curr_nodal_coords(5) = curr_nodal_coords(2);
 
   // derivative of current length w.r.t. nodal displacements
-  dcurr_nodal_coords_du.PutScalar(0.0);
+  dcurr_nodal_coords_du.put_scalar(0.0);
   dcurr_nodal_coords_du(0, 0) = dcurr_nodal_coords_du(1, 1) = dcurr_nodal_coords_du(2, 2) =
       dcurr_nodal_coords_du(3, 0) = dcurr_nodal_coords_du(4, 1) = dcurr_nodal_coords_du(5, 2) = 1.0;
   dcurr_nodal_coords_du(0, 3) = dcurr_nodal_coords_du(1, 4) = dcurr_nodal_coords_du(2, 5) =

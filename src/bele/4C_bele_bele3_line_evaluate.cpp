@@ -209,7 +209,7 @@ double Discret::ELEMENTS::Bele3Line::f2_substitution(const Core::LinAlg::SerialD
   // compute derivative of parametrization
   double dr = 0.0;
   Core::LinAlg::SerialDenseVector der_par(iel);
-  Core::LinAlg::multiplyNT(der_par, xye, deriv);
+  Core::LinAlg::multiply_nt(der_par, xye, deriv);
   dr = Core::LinAlg::Norm2(der_par);
   return dr;
 }

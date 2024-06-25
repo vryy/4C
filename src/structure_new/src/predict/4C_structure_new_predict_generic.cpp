@@ -60,7 +60,7 @@ void STR::Predict::Generic::init(const enum Inpar::STR::PredEnum& type,
 void STR::Predict::Generic::pre_predict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
-  Print();
+  print();
   dbc_ptr_->UpdateLocSysManager();
 }
 
@@ -216,7 +216,7 @@ Teuchos::ParameterList& STR::Predict::Generic::nox_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::Print() const
+void STR::Predict::Generic::print() const
 {
   check_init_setup();
   if (gstate_ptr_->get_my_rank() == 0 and iodata_ptr_->get_print2_screen_every_n_step() and

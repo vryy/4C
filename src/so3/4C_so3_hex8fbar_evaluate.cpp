@@ -134,7 +134,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       nlnstiffmass(lm, mydisp, nullptr, myres, matptr, nullptr, &elevec1, nullptr, nullptr, nullptr,
           nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none,
@@ -322,7 +322,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       {
         prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
         prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
-        Fnew.Multiply(deltaF, Fhist);
+        Fnew.multiply(deltaF, Fhist);
         prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
       }
 
@@ -401,10 +401,10 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       {
         // inverse jacobian matrix at centroid
         Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
-        invJ_0.Multiply(N_rst_0, xrefe);
-        invJ_0.Invert();
+        invJ_0.multiply(N_rst_0, xrefe);
+        invJ_0.invert();
         // material derivatives at centroid
-        N_XYZ_0.Multiply(invJ_0, N_rst_0);
+        N_XYZ_0.multiply(invJ_0, N_rst_0);
       }
 
       if (Prestress::IsMulf(pstype_))
@@ -415,11 +415,11 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
         prestress_->StoragetoMatrix(NUMGPT_SOH8, invJdef_0, prestress_->JHistory());
         // get derivatives wrt to last spatial configuration
         Core::LinAlg::Matrix<3, 8> N_xyz_0;
-        N_xyz_0.Multiply(invJdef_0, N_rst_0);  // if (!Id()) std::cout << invJdef_0;
+        N_xyz_0.multiply(invJdef_0, N_rst_0);  // if (!Id()) std::cout << invJdef_0;
 
         // build multiplicative incremental defgrd
         Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-        defgrd_0.MultiplyTT(xdisp, N_xyz_0);
+        defgrd_0.multiply_tt(xdisp, N_xyz_0);
         defgrd_0(0, 0) += 1.0;
         defgrd_0(1, 1) += 1.0;
         defgrd_0(2, 2) += 1.0;
@@ -430,20 +430,20 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
 
         // build total defgrd = delta F * F_old
         Core::LinAlg::Matrix<3, 3> tmp;
-        tmp.Multiply(defgrd_0, Fhist);
+        tmp.multiply(defgrd_0, Fhist);
         defgrd_0 = tmp;
 
         // build inverse and detF
-        invdefgrd_0.Invert(defgrd_0);
-        detF_0 = defgrd_0.Determinant();
+        invdefgrd_0.invert(defgrd_0);
+        detF_0 = defgrd_0.determinant();
       }
       else  // no prestressing
       {
         // deformation gradient and its determinant at centroid
         Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-        defgrd_0.MultiplyTT(xcurr, N_XYZ_0);
-        invdefgrd_0.Invert(defgrd_0);
-        detF_0 = defgrd_0.Determinant();
+        defgrd_0.multiply_tt(xcurr, N_XYZ_0);
+        invdefgrd_0.invert(defgrd_0);
+        detF_0 = defgrd_0.determinant();
       }
 
 
@@ -462,7 +462,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
         // compute derivatives N_XYZ at gp w.r.t. material coordinates
         // by N_XYZ = J^-1 * N_rst
         Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ(true);
-        N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+        N_XYZ.multiply(invJ_[gp], derivs[gp]);
 
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd(true);
@@ -478,10 +478,10 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
           prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
           // get derivatives wrt to last spatial configuration
           Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_xyz;
-          N_xyz.Multiply(invJdef, derivs[gp]);
+          N_xyz.multiply(invJdef, derivs[gp]);
 
           // build multiplicative incremental defgrd
-          defgrd.MultiplyTT(xdisp, N_xyz);
+          defgrd.multiply_tt(xdisp, N_xyz);
           defgrd(0, 0) += 1.0;
           defgrd(1, 1) += 1.0;
           defgrd(2, 2) += 1.0;
@@ -492,20 +492,20 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
 
           // build total defgrd = delta F * F_old
           Core::LinAlg::Matrix<3, 3> Fnew;
-          Fnew.Multiply(defgrd, Fhist);
+          Fnew.multiply(defgrd, Fhist);
           defgrd = Fnew;
 
           // F_bar deformation gradient =(detF_0/detF)^1/3*F
-          double detF = defgrd.Determinant();
+          double detF = defgrd.determinant();
           Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd_bar(defgrd);
           double f_bar_factor = pow(detF_0 / detF, 1.0 / 3.0);
-          defgrd_bar.Scale(f_bar_factor);
+          defgrd_bar.scale(f_bar_factor);
 
 
 
           // right Cauchy-Green tensor = F^T * F
           Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchygreen;
-          cauchygreen.MultiplyTN(defgrd_bar, defgrd_bar);
+          cauchygreen.multiply_tn(defgrd_bar, defgrd_bar);
 
           glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
           glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
@@ -517,17 +517,17 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
         else  // no prestressing
         {
           // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-          defgrd.MultiplyTT(xcurr, N_XYZ);
+          defgrd.multiply_tt(xcurr, N_XYZ);
 
           // F_bar deformation gradient =(detF_0/detF)^1/3*F
-          double detF = defgrd.Determinant();
+          double detF = defgrd.determinant();
           Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd_bar(defgrd);
           double f_bar_factor = pow(detF_0 / detF, 1.0 / 3.0);
-          defgrd_bar.Scale(f_bar_factor);
+          defgrd_bar.scale(f_bar_factor);
 
           // right Cauchy-Green tensor = F^T * F
           Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchygreen;
-          cauchygreen.MultiplyTN(defgrd_bar, defgrd_bar);
+          cauchygreen.multiply_tn(defgrd_bar, defgrd_bar);
 
           glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
           glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
@@ -590,8 +590,8 @@ void Discret::ELEMENTS::SoHex8fbar::init_jacobian_mapping()
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
   {
     // invJ_[gp].Shape(NUMDIM_SOH8,NUMDIM_SOH8);
-    invJ_[gp].Multiply(derivs[gp], xrefe);
-    detJ_[gp] = invJ_[gp].Invert();
+    invJ_[gp].multiply(derivs[gp], xrefe);
+    detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
     if (Prestress::IsMulfActive(time_, pstype_, pstime_))
@@ -606,8 +606,8 @@ void Discret::ELEMENTS::SoHex8fbar::init_jacobian_mapping()
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
       Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
-      invJ_0.Multiply(N_rst_0, xrefe);
-      invJ_0.Invert();
+      invJ_0.multiply(N_rst_0, xrefe);
+      invJ_0.invert();
       prestress_->MatrixtoStorage(NUMGPT_SOH8, invJ_0, prestress_->JHistory());
     }
 
@@ -682,10 +682,10 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& para
   {
     // compute the Jacobian matrix
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac;
-    jac.Multiply(derivs[gp], xrefe);
+    jac.multiply(derivs[gp], xrefe);
 
     // compute determinant of Jacobian
-    const double detJ = jac.Determinant();
+    const double detJ = jac.determinant();
     if (detJ == 0.0)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
@@ -712,7 +712,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& para
       const double functfac =
           (functnum > 0) ? Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                               .evaluate(xrefegp.A(), time, dim)
+                               .evaluate(xrefegp.data(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid = 0; nodid < NUMNOD_SOH8; ++nodid)
@@ -789,10 +789,10 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
   {
     // inverse jacobian matrix at centroid
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
-    invJ_0.Multiply(N_rst_0, xrefe);
-    invJ_0.Invert();
+    invJ_0.multiply(N_rst_0, xrefe);
+    invJ_0.invert();
     // material derivatives at centroid
-    N_XYZ_0.Multiply(invJ_0, N_rst_0);
+    N_XYZ_0.multiply(invJ_0, N_rst_0);
   }
 
   if (Prestress::IsMulf(pstype_))
@@ -803,11 +803,11 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     prestress_->StoragetoMatrix(NUMGPT_SOH8, invJdef_0, prestress_->JHistory());
     // get derivatives wrt to last spatial configuration
     Core::LinAlg::Matrix<3, 8> N_xyz_0;
-    N_xyz_0.Multiply(invJdef_0, N_rst_0);
+    N_xyz_0.multiply(invJdef_0, N_rst_0);
 
     // build multiplicative incremental defgrd
     Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-    defgrd_0.MultiplyTT(xdisp, N_xyz_0);
+    defgrd_0.multiply_tt(xdisp, N_xyz_0);
     defgrd_0(0, 0) += 1.0;
     defgrd_0(1, 1) += 1.0;
     defgrd_0(2, 2) += 1.0;
@@ -818,20 +818,20 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
 
     // build total defgrd = delta F * F_old
     Core::LinAlg::Matrix<3, 3> tmp;
-    tmp.Multiply(defgrd_0, Fhist);
+    tmp.multiply(defgrd_0, Fhist);
     defgrd_0 = tmp;
 
     // build inverse and detF
-    invdefgrd_0.Invert(defgrd_0);
-    detF_0 = defgrd_0.Determinant();
+    invdefgrd_0.invert(defgrd_0);
+    detF_0 = defgrd_0.determinant();
   }
   else  // no prestressing
   {
     // deformation gradient and its determinant at centroid
     Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-    defgrd_0.MultiplyTT(xcurr, N_XYZ_0);
-    invdefgrd_0.Invert(defgrd_0);
-    detF_0 = defgrd_0.Determinant();
+    defgrd_0.multiply_tt(xcurr, N_XYZ_0);
+    invdefgrd_0.invert(defgrd_0);
+    detF_0 = defgrd_0.determinant();
   }
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -849,7 +849,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+    N_XYZ.multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
     if (Prestress::IsMulf(pstype_))
@@ -859,10 +859,10 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
       Core::LinAlg::Matrix<3, 8> N_xyz;
-      N_xyz.Multiply(invJdef, derivs[gp]);
+      N_xyz.multiply(invJdef, derivs[gp]);
 
       // build multiplicative incremental defgrd
-      defgrd.MultiplyTT(xdisp, N_xyz);
+      defgrd.multiply_tt(xdisp, N_xyz);
       defgrd(0, 0) += 1.0;
       defgrd(1, 1) += 1.0;
       defgrd(2, 2) += 1.0;
@@ -873,21 +873,21 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
 
       // build total defgrd = delta F * F_old
       Core::LinAlg::Matrix<3, 3> Fnew;
-      Fnew.Multiply(defgrd, Fhist);
+      Fnew.multiply(defgrd, Fhist);
       defgrd = Fnew;
     }
     else  // no prestressing
     {
       // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-      defgrd.MultiplyTT(xcurr, N_XYZ);
+      defgrd.multiply_tt(xcurr, N_XYZ);
     }
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd;
-    invdefgrd.Invert(defgrd);
-    double detF = defgrd.Determinant();
+    invdefgrd.invert(defgrd);
+    double detF = defgrd.determinant();
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // check for negative jacobian
     if (detF_0 < 0. || detF < 0.)
@@ -925,11 +925,11 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     // F_bar deformation gradient =(detF_0/detF)^1/3*F
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd_bar(defgrd);
     double f_bar_factor = pow(detF_0 / detF, 1.0 / 3.0);
-    defgrd_bar.Scale(f_bar_factor);
+    defgrd_bar.scale(f_bar_factor);
 
     // Right Cauchy-Green tensor(Fbar) = F_bar^T * F_bar
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchygreen_bar;
-    cauchygreen_bar.MultiplyTN(defgrd_bar, defgrd_bar);
+    cauchygreen_bar.multiply_tn(defgrd_bar, defgrd_bar);
 
     // Green-Lagrange strains(F_bar) matrix E = 0.5 * (Cauchygreen(F_bar) - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -969,12 +969,12 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
 
         // inverse of fbar deformation gradient
         Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd_bar;
-        invdefgrd_bar.Invert(defgrd_bar);
+        invdefgrd_bar.invert(defgrd_bar);
 
         Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> temp;
         Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> euler_almansi_bar;
-        temp.Multiply(gl_bar, invdefgrd_bar);
-        euler_almansi_bar.MultiplyTN(invdefgrd_bar, temp);
+        temp.multiply(gl_bar, invdefgrd_bar);
+        euler_almansi_bar.multiply_tn(invdefgrd_bar, temp);
 
         (*elestrain)(gp, 0) = euler_almansi_bar(0, 0);
         (*elestrain)(gp, 1) = euler_almansi_bar(1, 1);
@@ -1213,7 +1213,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       case Inpar::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
-        const double detF_bar = defgrd_bar.Determinant();
+        const double detF_bar = defgrd_bar.determinant();
 
         Core::LinAlg::Matrix<3, 3> pkstress_bar;
         pkstress_bar(0, 0) = stress_bar(0);
@@ -1228,8 +1228,8 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
 
         Core::LinAlg::Matrix<3, 3> temp;
         Core::LinAlg::Matrix<3, 3> cauchystress_bar;
-        temp.Multiply(1.0 / detF_bar, defgrd_bar, pkstress_bar);
-        cauchystress_bar.MultiplyNT(temp, defgrd_bar);
+        temp.multiply(1.0 / detF_bar, defgrd_bar, pkstress_bar);
+        cauchystress_bar.multiply_nt(temp, defgrd_bar);
 
         (*elestress)(gp, 0) = cauchystress_bar(0, 0);
         (*elestress)(gp, 1) = cauchystress_bar(1, 1);
@@ -1252,7 +1252,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w / f_bar_factor, bop, stress_bar, 1.0);
+      force->multiply_tn(detJ_w / f_bar_factor, bop, stress_bar, 1.0);
     }
 
     // update stiffness matrix
@@ -1261,12 +1261,12 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<6, NUMDOF_SOH8> cb;
-      cb.Multiply(cmat, bop);
-      stiffmatrix->MultiplyTN(detJ_w * f_bar_factor, bop, cb, 1.0);
+      cb.multiply(cmat, bop);
+      stiffmatrix->multiply_tn(detJ_w * f_bar_factor, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       Core::LinAlg::Matrix<6, 1> sfac(stress_bar);  // auxiliary integrated stress
-      sfac.Scale(detJ_w / f_bar_factor);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      sfac.scale(detJ_w / f_bar_factor);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       std::vector<double> SmB_L(3);       // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod = 0; inod < NUMNOD_SOH8; ++inod)
@@ -1295,10 +1295,10 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       cauchygreenvector(5) = 2 * cauchygreen(2, 0);
 
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> ccg;
-      ccg.Multiply(cmat, cauchygreenvector);
+      ccg.multiply(cmat, cauchygreenvector);
 
       Core::LinAlg::Matrix<NUMDOF_SOH8, 1> bopccg(false);  // auxiliary integrated stress
-      bopccg.MultiplyTN(detJ_w * f_bar_factor / 3.0, bop, ccg);
+      bopccg.multiply_tn(detJ_w * f_bar_factor / 3.0, bop, ccg);
 
       double htensor[NUMDOF_SOH8];
       for (int n = 0; n < NUMDOF_SOH8; n++)
@@ -1312,7 +1312,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
       }
 
       Core::LinAlg::Matrix<NUMDOF_SOH8, 1> bops(false);  // auxiliary integrated stress
-      bops.MultiplyTN(-detJ_w / f_bar_factor / 3.0, bop, stress_bar);
+      bops.multiply_tn(-detJ_w / f_bar_factor / 3.0, bop, stress_bar);
       for (int i = 0; i < NUMDOF_SOH8; i++)
       {
         for (int j = 0; j < NUMDOF_SOH8; j++)
@@ -1369,7 +1369,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         // evaluate derivative of mass w.r.t. to right cauchy green tensor
         // Right Cauchy-Green tensor = F^T * F
         Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchygreen;
-        cauchygreen.MultiplyTN(defgrd, defgrd);
+        cauchygreen.multiply_tn(defgrd, defgrd);
 
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         Core::LinAlg::SerialDenseVector glstrain_epetra(Mat::NUM_STRESS_3D);
@@ -1391,9 +1391,9 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
 
         // multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time
         // integration factor
-        linmass_disp.Scale(2.0 * timintfac_dis);
-        linmass_vel.Scale(2.0 * timintfac_vel);
-        linmass.Update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
+        linmass_disp.scale(2.0 * timintfac_dis);
+        linmass_vel.scale(2.0 * timintfac_vel);
+        linmass.update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
 
         // evaluate accelerations at time n+1 at gauss point
         Core::LinAlg::Matrix<NUMDIM_SOH8, 1> myacc(true);
@@ -1406,7 +1406,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
           // integrate linearisation of mass matrix
           //(B^T . d\rho/d disp . a) * detJ * w(gp)
           Core::LinAlg::Matrix<1, NUMDOF_SOH8> cb;
-          cb.MultiplyTN(linmass_disp, bop);
+          cb.multiply_tn(linmass_disp, bop);
           for (int inod = 0; inod < NUMNOD_SOH8; ++inod)
           {
             double factor = detJ_w * shapefcts[gp](inod);
@@ -1484,11 +1484,11 @@ void Discret::ELEMENTS::SoHex8fbar::def_gradient(const std::vector<double>& disp
 
     // by N_XYZ = J^-1 * N_rst
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_xyz;
-    N_xyz.Multiply(invJdef, derivs[gp]);
+    N_xyz.multiply(invJdef, derivs[gp]);
 
     // build defgrd (independent of xrefe!)
     Core::LinAlg::Matrix<3, 3> defgrd;
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
@@ -1503,11 +1503,11 @@ void Discret::ELEMENTS::SoHex8fbar::def_gradient(const std::vector<double>& disp
 
     // by N_XYZ = J^-1 * N_rst
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_xyz;
-    N_xyz.Multiply(invJdef, N_rst_0);
+    N_xyz.multiply(invJdef, N_rst_0);
 
     // build defgrd (independent of xrefe!)
     Core::LinAlg::Matrix<3, 3> defgrd;
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
@@ -1548,16 +1548,16 @@ void Discret::ELEMENTS::SoHex8fbar::update_jacobian_mapping(
     // get the invJ old state
     prestress.StoragetoMatrix(gp, invJhist, prestress.JHistory());
     // get derivatives wrt to invJhist
-    N_xyz.Multiply(invJhist, derivs[gp]);
+    N_xyz.multiply(invJhist, derivs[gp]);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
     // make inverse of this defgrd
-    defgrd.Invert();
+    defgrd.invert();
     // push-forward of Jinv
-    invJnew.MultiplyTN(defgrd, invJhist);
+    invJnew.multiply_tn(defgrd, invJhist);
     // store new reference configuration
     prestress.MatrixtoStorage(gp, invJnew, prestress.JHistory());
   }  // for (unsigned gp=0; gp<NUMGPT_SOH8; ++gp)
@@ -1566,16 +1566,16 @@ void Discret::ELEMENTS::SoHex8fbar::update_jacobian_mapping(
     // get the invJ old state
     prestress.StoragetoMatrix(NUMGPT_SOH8, invJhist, prestress.JHistory());
     // get derivatives wrt to invJhist
-    N_xyz.Multiply(invJhist, N_rst_0);
+    N_xyz.multiply(invJhist, N_rst_0);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
     // make inverse of this defgrd
-    defgrd.Invert();
+    defgrd.invert();
     // push-forward of Jinv
-    invJnew.MultiplyTN(defgrd, invJhist);
+    invJnew.multiply_tn(defgrd, invJhist);
     // store new reference configuration
     prestress.MatrixtoStorage(NUMGPT_SOH8, invJnew, prestress.JHistory());
   }
@@ -1637,10 +1637,10 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
     {
       // inverse jacobian matrix at centroid
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
-      invJ_0.Multiply(N_rst_0, xrefe);
-      invJ_0.Invert();
+      invJ_0.multiply(N_rst_0, xrefe);
+      invJ_0.invert();
       // material derivatives at centroid
-      N_XYZ_0.Multiply(invJ_0, N_rst_0);
+      N_XYZ_0.multiply(invJ_0, N_rst_0);
     }
 
     if (Prestress::IsMulf(pstype_))
@@ -1651,11 +1651,11 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
       prestress_->StoragetoMatrix(NUMGPT_SOH8, invJdef_0, prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
       Core::LinAlg::Matrix<3, 8> N_xyz_0;
-      N_xyz_0.Multiply(invJdef_0, N_rst_0);  // if (!Id()) std::cout << invJdef_0;
+      N_xyz_0.multiply(invJdef_0, N_rst_0);  // if (!Id()) std::cout << invJdef_0;
 
       // build multiplicative incremental defgrd
       Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-      defgrd_0.MultiplyTT(xdisp, N_xyz_0);
+      defgrd_0.multiply_tt(xdisp, N_xyz_0);
       defgrd_0(0, 0) += 1.0;
       defgrd_0(1, 1) += 1.0;
       defgrd_0(2, 2) += 1.0;
@@ -1666,20 +1666,20 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
 
       // build total defgrd = delta F * F_old
       Core::LinAlg::Matrix<3, 3> tmp;
-      tmp.Multiply(defgrd_0, Fhist);
+      tmp.multiply(defgrd_0, Fhist);
       defgrd_0 = tmp;
 
       // build inverse and detF
-      invdefgrd_0.Invert(defgrd_0);
-      detF_0 = defgrd_0.Determinant();
+      invdefgrd_0.invert(defgrd_0);
+      detF_0 = defgrd_0.determinant();
     }
     else  // no prestressing
     {
       // deformation gradient and its determinant at centroid
       Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-      defgrd_0.MultiplyTT(xcurr, N_XYZ_0);
-      invdefgrd_0.Invert(defgrd_0);
-      detF_0 = defgrd_0.Determinant();
+      defgrd_0.multiply_tt(xcurr, N_XYZ_0);
+      invdefgrd_0.invert(defgrd_0);
+      detF_0 = defgrd_0.determinant();
     }
 
 
@@ -1709,7 +1709,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
        */
       // compute derivatives N_XYZ at gp w.r.t. material coordinates
       // by N_XYZ = J^-1 * N_rst
-      N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+      N_XYZ.multiply(invJ_[gp], derivs[gp]);
 
       if (Prestress::IsMulf(pstype_))
       {
@@ -1718,10 +1718,10 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
         prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
         // get derivatives wrt to last spatial configuration
         Core::LinAlg::Matrix<3, 8> N_xyz;
-        N_xyz.Multiply(invJdef, derivs[gp]);
+        N_xyz.multiply(invJdef, derivs[gp]);
 
         // build multiplicative incremental defgrd
-        defgrd.MultiplyTT(xdisp, N_xyz);
+        defgrd.multiply_tt(xdisp, N_xyz);
         defgrd(0, 0) += 1.0;
         defgrd(1, 1) += 1.0;
         defgrd(2, 2) += 1.0;
@@ -1732,25 +1732,25 @@ void Discret::ELEMENTS::SoHex8fbar::update_element(std::vector<double>& disp,
 
         // build total defgrd = delta F * F_old
         Core::LinAlg::Matrix<3, 3> Fnew;
-        Fnew.Multiply(defgrd, Fhist);
+        Fnew.multiply(defgrd, Fhist);
         defgrd = Fnew;
       }
       else  // no prestressing
       {
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-        defgrd.MultiplyTT(xcurr, N_XYZ);
+        defgrd.multiply_tt(xcurr, N_XYZ);
       }
 
-      double detF = defgrd.Determinant();
+      double detF = defgrd.determinant();
 
       // F_bar deformation gradient =(detF_0/detF)^1/3*F
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd_bar(defgrd);
       double f_bar_factor = pow(detF_0 / detF, 1.0 / 3.0);
-      defgrd_bar.Scale(f_bar_factor);
+      defgrd_bar.scale(f_bar_factor);
 
       // This is an additional update call needed for G&R materials (mixture,
       // growthremodel_elasthyper)
-      SolidMaterial()->Update(defgrd_bar, gp, params, Id());
+      SolidMaterial()->update(defgrd_bar, gp, params, Id());
     }
   }
   else

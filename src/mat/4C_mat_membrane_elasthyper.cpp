@@ -144,8 +144,8 @@ void Mat::MembraneElastHyper::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>&
       icg, gp, eleGID, potsum_, summandProperties_);
 
   // update 2nd Piola-Kirchhoff stress and constitutive tensor
-  stress.Update(1.0, stress_iso, 1.0);
-  cmat.Update(1.0, cmat_iso, 1.0);
+  stress.update(1.0, stress_iso, 1.0);
+  cmat.update(1.0, cmat_iso, 1.0);
 
   // evaluate anisotropic 2nd Piola-Kirchhoff stress and constitutive tensor
   if (summandProperties_.anisoprinc)
@@ -156,8 +156,8 @@ void Mat::MembraneElastHyper::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3>&
         stress_aniso, cmat_aniso, Q_trafo, rcg, rcg33, params, gp, eleGID);
 
     // update 2nd Piola-Kirchhoff stress and constitutive tensor
-    stress.Update(1.0, stress_aniso, 1.0);
-    cmat.Update(1.0, cmat_aniso, 1.0);
+    stress.update(1.0, stress_aniso, 1.0);
+    cmat.update(1.0, cmat_aniso, 1.0);
   }
   if (summandProperties_.anisomod)
   {
@@ -213,11 +213,11 @@ void Mat::MembraneElastHyper::evaluate_anisotropic_stress_cmat(
   for (unsigned int p = 0; p < potsum_.size(); ++p)
   {
     // skip for materials without fiber
-    if (fibervecs_[p].Norm2() == 0) continue;
+    if (fibervecs_[p].norm2() == 0) continue;
 
     // fibervector in orthonormal frame on membrane surface
     Core::LinAlg::Matrix<3, 1> fibervector(true);
-    fibervector.MultiplyTN(1.0, Q_trafo, fibervecs_[p], 0.0);
+    fibervector.multiply_tn(1.0, Q_trafo, fibervecs_[p], 0.0);
 
     // set new fibervector in anisotropic material
     potsum_[p]->SetFiberVecs(fibervector);
@@ -256,10 +256,10 @@ void Mat::MembraneElastHyper::evaluate_anisotropic_stress_cmat(
     cmat_aniso_red(2, 2) = cmat_aniso_full(3, 3);
 
     // anisotropic 2nd Piola Kirchhoff stress
-    stress_aniso.Update(1.0, stress_aniso_red, 1.0);
+    stress_aniso.update(1.0, stress_aniso_red, 1.0);
 
     // anisotropic constitutive tensor
-    cmat_aniso.Update(1.0, cmat_aniso_red, 1.0);
+    cmat_aniso.update(1.0, cmat_aniso_red, 1.0);
   }
 }  // Mat::MembraneElastHyper::evaluate_anisotropic_stress_cmat
 

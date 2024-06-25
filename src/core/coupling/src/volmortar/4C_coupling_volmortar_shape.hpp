@@ -445,7 +445,7 @@ namespace Core::VolMortar
           for (int row = 0; row < 3; row++)
             for (int col = 0; col < 4; col++) jacob(row + 1, col) = ele.Nodes()[col]->X()[row];
 
-          jac = jacob.Determinant() / 6.0;
+          jac = jacob.determinant() / 6.0;
 
           break;
         }
@@ -476,8 +476,8 @@ namespace Core::VolMortar
           Core::LinAlg::Matrix<ndim, ndim> invJ;
           invJ.clear();
 
-          invJ.Multiply(derivs, xrefe);
-          jac = invJ.Invert();
+          invJ.multiply(derivs, xrefe);
+          jac = invJ.invert();
           if (jac <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", jac);
 
           break;
@@ -583,7 +583,7 @@ namespace Core::VolMortar
           invJ.clear();
 
           invJ.Multiply(deriv, xrefe);
-          jac = invJ.Invert();
+          jac = invJ.invert();
           if (jac <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", jac);
 
           break;

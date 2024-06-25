@@ -312,7 +312,7 @@ void CONTACT::Aug::Strategy::FdDebug::do_perturbation(const int gid, const int d
 
   // store current position
   Core::LinAlg::Matrix<3, 1>& x = ref_x_[gid];
-  std::copy(cnode->xspatial(), cnode->xspatial() + 3, x.A());
+  std::copy(cnode->xspatial(), cnode->xspatial() + 3, x.data());
 
   // change forward step to backward step
   switch (dof)
@@ -342,7 +342,7 @@ void CONTACT::Aug::Strategy::FdDebug::undo_perturbation(const int gid, const int
 
   // get stored position
   const Core::LinAlg::Matrix<3, 1>& x = ref_x_.at(gid);
-  std::copy(x.A(), x.A() + 3, cnode->xspatial());
+  std::copy(x.data(), x.data() + 3, cnode->xspatial());
 }
 
 /*----------------------------------------------------------------------------*

@@ -69,7 +69,7 @@ Core::Nodes::ImmersedNode* Core::Nodes::ImmersedNode::Clone() const
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const Core::Nodes::ImmersedNode& immersednode)
 {
-  immersednode.Print(os);
+  immersednode.print(os);
   return os;
 }
 
@@ -77,10 +77,10 @@ std::ostream& operator<<(std::ostream& os, const Core::Nodes::ImmersedNode& imme
 /*----------------------------------------------------------------------*
  |  print this element (public)                             rauch 11/14 |
  *----------------------------------------------------------------------*/
-void Core::Nodes::ImmersedNode::Print(std::ostream& os) const
+void Core::Nodes::ImmersedNode::print(std::ostream& os) const
 {
   os << "Immersed ";
-  Node::Print(os);
+  Node::print(os);
 
   if (IsBoundaryImmersed())
     os << " Immersed Boundary  ";

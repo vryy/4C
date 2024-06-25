@@ -188,7 +188,7 @@ namespace Input::INTERNAL
 
       [[nodiscard]] virtual std::unique_ptr<LineDefinitionComponentConcept> Clone() const = 0;
 
-      virtual void Print(std::ostream& stream) const = 0;
+      virtual void print(std::ostream& stream) const = 0;
 
       virtual bool ReadRequired(
           Core::IO::InputParameterContainer& container, std::istream& stream) = 0;
@@ -218,7 +218,7 @@ namespace Input::INTERNAL
         return std::make_unique<LineDefinitionComponentModel<T>>(*this);
       }
 
-      void Print(std::ostream& stream) const override { component_.Print(stream); }
+      void print(std::ostream& stream) const override { component_.print(stream); }
 
       bool ReadRequired(Core::IO::InputParameterContainer& container, std::istream& stream) override
       {
@@ -271,7 +271,7 @@ namespace Input::INTERNAL
     LineDefinitionComponent& operator=(LineDefinitionComponent&& other) = default;
 
     /// print to a dat file comment
-    void Print(std::ostream& stream) const { pimpl_->Print(stream); }
+    void print(std::ostream& stream) const { pimpl_->print(stream); }
 
     /// Try to read component from input line
     /// This function is called for required components.
@@ -312,7 +312,7 @@ namespace Input::INTERNAL
     {
     }
 
-    void Print(std::ostream& stream) const
+    void print(std::ostream& stream) const
     {
       if (value_prepare_)
       {
@@ -753,7 +753,7 @@ namespace Input
   {
     for (const auto& component : pimpl_->components_)
     {
-      component.Print(stream);
+      component.print(stream);
       stream << ' ';
     }
     if (!pimpl_->optionaltail_.empty())
@@ -761,7 +761,7 @@ namespace Input
       stream << "[ ";
       for (const auto& [_, component] : pimpl_->optionaltail_)
       {
-        component.Print(stream);
+        component.print(stream);
         stream << ' ';
       }
       stream << "] ";

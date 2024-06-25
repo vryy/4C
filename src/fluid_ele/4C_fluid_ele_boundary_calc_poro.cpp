@@ -570,7 +570,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     // coordinate system
     Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv_loc);
     // transformation from parent element coordinate system to interface element coordinate system
-    pderiv.MultiplyTN(derivtrafo, pderiv_loc);
+    pderiv.multiply_tn(derivtrafo, pderiv_loc);
 
     double dphi_dp = 0.0;
     double dphi_dJ = 0.0;
@@ -595,11 +595,11 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     Core::LinAlg::Matrix<nsd_, nsd_> xjm;
     Core::LinAlg::Matrix<nsd_, nsd_> xjm_n;  // at previous time step n
     Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
-    xjm.MultiplyNT(pderiv_loc, xcurr);
-    xjm_n.MultiplyNT(pderiv_loc, xcurr_n);
-    Jmat.MultiplyNT(pderiv_loc, xrefe);
-    double det = xjm.Determinant();
-    double detJ = Jmat.Determinant();
+    xjm.multiply_nt(pderiv_loc, xcurr);
+    xjm_n.multiply_nt(pderiv_loc, xcurr_n);
+    Jmat.multiply_nt(pderiv_loc, xrefe);
+    double det = xjm.determinant();
+    double detJ = Jmat.determinant();
     const double J = det / detJ;
 
     // inverse of transposed jacobian "ds/dx" (xjm)
@@ -610,13 +610,13 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //   |  s_1,2  s_2,2  s_3,2  | = xji  = -------- ;  [xji] o [xjm] = I
     //   |_ s_1,3  s_2,3  s_3,3 _|           d x_j
     //    _
-    xji.Invert(xjm);
-    xji_n.Invert(xjm_n);
+    xji.invert(xjm);
+    xji_n.invert(xjm_n);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // check unitiy of  [xji] o [xjm]
     Core::LinAlg::Matrix<nsd_, nsd_> eye;
-    eye.Multiply(xji, xjm);
+    eye.multiply(xji, xjm);
     if (nsd_ == 3)
     {
       if (abs(eye(0, 0) - 1.0) > 1e-11 or abs(eye(1, 1) - 1.0) > 1e-11 or
@@ -669,26 +669,26 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     const double fac = intpoints.IP().qwgt[gpid];
 
     // calculate variables at gausspoint
-    Base::velint_.Multiply(evelnp, Base::funct_);
-    gridvelint.Multiply(egridvel, Base::funct_);
-    pressint.Multiply(epressnp, Base::funct_);
-    pressint_n.Multiply(epressn, Base::funct_);
+    Base::velint_.multiply(evelnp, Base::funct_);
+    gridvelint.multiply(egridvel, Base::funct_);
+    pressint.multiply(epressnp, Base::funct_);
+    pressint_n.multiply(epressn, Base::funct_);
 
     //                                         _              _
     //                                        | u1,1 u1,2 u1,3 |
     // dudxi = u_i,alhpa = N_A,alpha u^A_i =  | u2,1 u2,2 u2,3 |
     //                                        |_u3,1 u3,2 u3,3_|
     //
-    dudxi.MultiplyNT(pevelnp, pderiv_loc);  // corrected: switched pevelnp and pderiv
-    dudxi_n.MultiplyNT(peveln, pderiv_loc);
+    dudxi.multiply_nt(pevelnp, pderiv_loc);  // corrected: switched pevelnp and pderiv
+    dudxi_n.multiply_nt(peveln, pderiv_loc);
 
     //                                            l=_  1     2     3  _
     //         -1                               i=1| u1,x1 u1,x2 u1,x3 |
     // dudxi o J  = N_A,alpha u^A_i xi_alpha,l =  2| u2,x1 u2,x2 u2,x3 | = gradu
     //                                            3|_u3,x1 u3,x2 u3,x3_|
     //
-    dudxioJinv.MultiplyNT(dudxi, xji);
-    dudxioJinv_n.MultiplyNT(dudxi_n, xji_n);  // at previus time step n
+    dudxioJinv.multiply_nt(dudxi, xji);
+    dudxioJinv_n.multiply_nt(dudxi_n, xji_n);  // at previus time step n
 
     Core::LinAlg::Matrix<1, nsd_> graduon(true);
     Core::LinAlg::Matrix<1, nsd_> graduon_n(true);  // from previous time step
@@ -745,8 +745,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     // of Jacobian matrix d(x,y,z)/d(r,s)
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs_n(0.0);
-    dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
-    dxyzdrs_n.MultiplyNT(Base::deriv_, Base::xyze_n_);
+    dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
+    dxyzdrs_n.multiply_nt(Base::deriv_, Base::xyze_n_);
 
     // tangential surface vectors are columns of dxyzdrs
     Core::LinAlg::Matrix<nsd_, 1> tangential1(true);
@@ -760,13 +760,13 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       tangential1_n(idof, 0) = dxyzdrs_n(0, idof);
     }
 
-    normoftangential1 = tangential1.Norm2();
-    normoftangential1_n = tangential1_n.Norm2();
+    normoftangential1 = tangential1.norm2();
+    normoftangential1_n = tangential1_n.norm2();
 
     // normalize tangential vectors
-    tangential1.Scale(1 / normoftangential1);
+    tangential1.scale(1 / normoftangential1);
 
-    tangential1_n.Scale(1 / normoftangential1_n);
+    tangential1_n.scale(1 / normoftangential1_n);
 
     if (nsd_ == 3)
     {
@@ -776,13 +776,13 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
         tangential2_n(idof, 0) = dxyzdrs_n(1, idof);
       }
 
-      normoftangential2 = tangential2.Norm2();
-      normoftangential2_n = tangential2_n.Norm2();
+      normoftangential2 = tangential2.norm2();
+      normoftangential2_n = tangential2_n.norm2();
 
       // normalize tangential vectors
-      tangential2.Scale(1 / normoftangential2);
+      tangential2.scale(1 / normoftangential2);
 
-      tangential2_n.Scale(1 / normoftangential2_n);
+      tangential2_n.scale(1 / normoftangential2_n);
     }
 
     //                                                             I
@@ -792,8 +792,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //
     double tangentialvs1 = 0.0;
     double tangentialvs2 = 0.0;
-    tangentialvs1 = gridvelint.Dot(tangential1);
-    tangentialvs2 = gridvelint.Dot(tangential2);
+    tangentialvs1 = gridvelint.dot(tangential1);
+    tangentialvs2 = gridvelint.dot(tangential2);
 
     //                                          I
     // calculate tangential fluid velocity vf o t
@@ -802,8 +802,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //
     double tangentialvf1 = 0.0;
     double tangentialvf2 = 0.0;
-    tangentialvf1 = Base::velint_.Dot(tangential1);
-    tangentialvf2 = Base::velint_.Dot(tangential2);
+    tangentialvf1 = Base::velint_.dot(tangential1);
+    tangentialvf2 = Base::velint_.dot(tangential2);
 
     //  derivatives of surface tangentials with respect to mesh displacements
     //              I
@@ -974,7 +974,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       normal(1, 0) = -dxyzdrs(0, 0);
     }
     // transformation factor for surface integrals without normal vector
-    scalarintegraltransformfac = normal.Norm2();  // || x,r x x,s ||
+    scalarintegraltransformfac = normal.norm2();  // || x,r x x,s ||
 
     // linearization of || x,r x x,s || = ||n||
     //
@@ -1016,7 +1016,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //  derxy  = ----------  ----------- =   |  N1,2 N2,2 N3,2 N4,2 ...   |
     //            d xi_alpha  d   x_j        |_ N1,3 N2,3 N3,3 N4,3 ...  _|
     //
-    derxy.Multiply(xji, pderiv_loc);
+    derxy.multiply(xji, pderiv_loc);
 
     for (int i = 0; i < nenparent; i++)
       for (int j = 0; j < nsd_; j++) dJ_dds(j + i * nsd_) = J * derxy(j, i);
@@ -1046,7 +1046,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //     /j=1 2 3  \/j=1 2 3 \/
     //    [  x x x      x x x            ]
     //
-    // gradN.MultiplyTT(pderiv,xji);
+    // gradN.multiply_tt(pderiv,xji);
     for (int inode = 0; inode < nenparent; inode++)  // L     Loop
     {
       for (int idof = 0; idof < nsd_; idof++)  // j     Loop
@@ -1069,7 +1069,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //               d d^L_l     3 |_    ...               _|
     //
     Core::LinAlg::Matrix<nsd_, nsd_ * nenparent> graduonormalderiv;
-    graduonormalderiv.Multiply(dudxioJinv, normalderiv);
+    graduonormalderiv.multiply(dudxioJinv, normalderiv);
 
     // transposed gradient of u once contracted with linearization of normal
     //
@@ -1080,7 +1080,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     //               d d^L_l     3 |_    ...               _|
     //
     Core::LinAlg::Matrix<nsd_, nsd_ * nenparent> graduTonormalderiv;
-    graduTonormalderiv.MultiplyTN(dudxioJinv, normalderiv);
+    graduTonormalderiv.multiply_tn(dudxioJinv, normalderiv);
 
     // Isn't that cool?
     Core::LinAlg::Matrix<1, nenparent> survivor;
@@ -1105,7 +1105,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
     }
 #endif
 
-    normalvelocity.MultiplyTN(Base::velint_, Base::unitnormal_);
+    normalvelocity.multiply_tn(Base::velint_, Base::unitnormal_);
 
     // //////////////////////////////////////////////////////////////////////////
     // ////////////////////////      Loop over Nodes       //////////////////////
@@ -1122,7 +1122,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       }
 
       Core::LinAlg::Matrix<1, nenparent * nsd_> u_minus_vs_normalderiv(true);
-      u_minus_vs_normalderiv.Multiply(u_minus_vs, normalderiv);
+      u_minus_vs_normalderiv.multiply(u_minus_vs, normalderiv);
 
 
       // //////////////////////////////////////////////////////////////////////////
@@ -1560,10 +1560,10 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       }
     }
 
-    tangentialvelocity1.MultiplyTN(Base::velint_, tangential1);
-    tangentialvelocity2.MultiplyTN(Base::velint_, tangential2);
-    tangentialgridvelocity1.MultiplyTN(gridvelint, tangential1);
-    tangentialgridvelocity2.MultiplyTN(gridvelint, tangential2);
+    tangentialvelocity1.multiply_tn(Base::velint_, tangential1);
+    tangentialvelocity2.multiply_tn(Base::velint_, tangential2);
+    tangentialgridvelocity1.multiply_tn(gridvelint, tangential1);
+    tangentialgridvelocity2.multiply_tn(gridvelint, tangential2);
 
 
     // //////////////////////////////////////////////////////////////////////////
@@ -1581,7 +1581,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
       }
 
       Core::LinAlg::Matrix<1, nenparent * nsd_> u_minus_vs_normalderiv(true);
-      u_minus_vs_normalderiv.Multiply(u_minus_vs, normalderiv);
+      u_minus_vs_normalderiv.multiply(u_minus_vs, normalderiv);
 
       // //////////////////////////////////////////////////////////////////////////
       // //////////////////////            Fill RHS           /////////////////////
@@ -1968,12 +1968,12 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
     // transposed jacobian "dx/ds"
     Core::LinAlg::Matrix<nsd_, nsd_> xjm;
     Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
-    xjm.MultiplyNT(pderiv_loc, xcurr);
-    Jmat.MultiplyNT(pderiv_loc, xrefe);
+    xjm.multiply_nt(pderiv_loc, xcurr);
+    Jmat.multiply_nt(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
-    const double det = xjm.Determinant();
+    const double det = xjm.determinant();
     // jacobian determinant "det(dX/ds)"
-    const double detJ = Jmat.Determinant();
+    const double detJ = Jmat.determinant();
     // jacobian determinant "det(dx/dX) = det(dx/ds)/det(dX/ds)"
     const double J = det / detJ;
 
@@ -1985,11 +1985,11 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
         IsNurbs<distype>::isnurbs);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
 
-    Base::velint_.Multiply(evelnp, Base::funct_);
-    gridvelint.Multiply(egridvel, Base::funct_);
-    double press = epressnp.Dot(Base::funct_);
+    Base::velint_.multiply(evelnp, Base::funct_);
+    gridvelint.multiply(egridvel, Base::funct_);
+    double press = epressnp.dot(Base::funct_);
 
     // double scalar = escaaf.Dot(Base::funct_);
 
@@ -2004,7 +2004,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
 
     // flowrate = uint o normal
     const double flowrate =
-        (Base::velint_.Dot(Base::unitnormal_) - gridvelint.Dot(Base::unitnormal_)) * porosity_gp;
+        (Base::velint_.dot(Base::unitnormal_) - gridvelint.dot(Base::unitnormal_)) * porosity_gp;
 
     // store flowrate at first dof of each node
     // use negative value so that inflow is positiv
@@ -2136,8 +2136,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
     {
       for (int i = 0; i < Base::numdofpernode_; i++)
         nodenormal(i) = normal(inode * Base::numdofpernode_ + i);
-      double norm = nodenormal.Norm2();
-      nodenormal.Scale(1 / norm);
+      double norm = nodenormal.norm2();
+      nodenormal.scale(1 / norm);
 
       for (int idof = 0; idof < Base::numdofpernode_; idof++)
       {
@@ -2192,7 +2192,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
 
       // dxyzdrs vector -> normal which is not normalized
       Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
-      dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
+      dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
       // The integration factor is not multiplied with drs
       // since it is the same as the scaling factor for the unit normal derivatives
@@ -2252,12 +2252,12 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
       for (int i = 0; i < Base::numdofpernode_; i++)
         nodenormal(i) = normal(inode * Base::numdofpernode_ + i);
 
-      double norm = nodenormal.Norm2();
-      nodenormal.Scale(1 / norm);
+      double norm = nodenormal.norm2();
+      nodenormal.scale(1 / norm);
 
       for (int idof = 0; idof < nsd_; idof++)
         convvel(idof) = evelnp(idof, inode) - egridvel(idof, inode);
-      temp.Multiply(convvel, normalderiv);
+      temp.multiply(convvel, normalderiv);
       for (int idof = 0; idof < Base::numdofpernode_; idof++)
       {
         if (mycondVector[inode * Base::numdofpernode_ + idof] != 0.0)
@@ -2353,8 +2353,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
   {
     for (int i = 0; i < Base::numdofpernode_; i++)
       nodenormal(i) = normal(inode * Base::numdofpernode_ + i);
-    double norm = nodenormal.Norm2();
-    nodenormal.Scale(1 / norm);
+    double norm = nodenormal.norm2();
+    nodenormal.scale(1 / norm);
 
     bool isset = false;
     for (int idof = 0; idof < Base::numdofpernode_; idof++)
@@ -2674,18 +2674,18 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
       Core::FE::Nurbs::nurbs_get_funct_deriv(
           pfunct, pderiv_loc, pxsi, mypknots, pweights, pdistype);
     }
-    pderiv.MultiplyTN(derivtrafo, pderiv_loc);
+    pderiv.multiply_tn(derivtrafo, pderiv_loc);
 
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     // transposed jacobian "dx/ds"
     Core::LinAlg::Matrix<nsd_, nsd_> xjm;
     Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
-    xjm.MultiplyNT(pderiv_loc, xcurr);
-    Jmat.MultiplyNT(pderiv_loc, xrefe);
+    xjm.multiply_nt(pderiv_loc, xcurr);
+    Jmat.multiply_nt(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
-    const double det = xjm.Determinant();
+    const double det = xjm.determinant();
     // jacobian determinant "det(dX/ds)"
-    const double detJ = Jmat.Determinant();
+    const double detJ = Jmat.determinant();
     // jacobian determinant "det(dx/dX) = det(dx/ds)/det(dX/ds)"
     const double J = det / detJ;
 
@@ -2697,17 +2697,17 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
         IsNurbs<distype>::isnurbs);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
 
     const double timefacpre = Base::fldparatimint_->TimeFacPre();
     const double timefacfacpre = Base::fldparatimint_->TimeFacPre() * Base::fac_;
     const double rhsfac = Base::fldparatimint_->TimeFacRhs() * Base::fac_;
 
-    Base::velint_.Multiply(evelnp, Base::funct_);
-    gridvelint.Multiply(egridvel, Base::funct_);
-    double press = epressnp.Dot(Base::funct_);
+    Base::velint_.multiply(evelnp, Base::funct_);
+    gridvelint.multiply(egridvel, Base::funct_);
+    double press = epressnp.dot(Base::funct_);
 
-    double scalar = escaaf.Dot(Base::funct_);
+    double scalar = escaaf.dot(Base::funct_);
 
     double dphi_dp = 0.0;
     double dphi_dJ = 0.0;
@@ -2728,7 +2728,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
-    dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
+    dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     if (nsd_ == 3)
     {
@@ -2766,7 +2766,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     }
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) normalderiv.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) normalderiv.scale(normalfac);
 
     //-------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
     Core::LinAlg::Matrix<1, nsd_ * nenparent> dJ_dus;
@@ -2775,8 +2775,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     // inverse of transposed jacobian "ds/dx"
     Core::LinAlg::Matrix<nsd_, nsd_> xji;
 
-    xji.Invert(xjm);
-    derxy.Multiply(xji, pderiv_loc);
+    xji.invert(xjm);
+    derxy.multiply(xji, pderiv_loc);
 
     for (int i = 0; i < nenparent; i++)
       for (int j = 0; j < nsd_; j++) dJ_dus(j + i * nsd_) = J * derxy(j, i);
@@ -2800,7 +2800,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
     }
 
     Core::LinAlg::Matrix<1, nenparent * nsd_> tmp;
-    tmp.Multiply(convel, normalderiv);
+    tmp.multiply(convel, normalderiv);
 
     // fill element matrix
     {
@@ -2972,14 +2972,14 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     const double rhsfac = Base::fldparatimint_->TimeFacRhs() * Base::fac_;
 
     // get pressure at integration point
-    double press = Base::funct_.Dot(epressnp);
+    double press = Base::funct_.dot(epressnp);
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
-    dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
+    dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
 
     //  derivatives of surface normals wrt mesh displacements
     Core::LinAlg::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
@@ -3025,7 +3025,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
     }
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) normalderiv.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) normalderiv.scale(normalfac);
 
     // fill element matrix
     for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -3389,16 +3389,16 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
     // transposed jacobian "dx/ds"
     Core::LinAlg::Matrix<nsd_, nsd_> xjm;
     Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
-    xjm.MultiplyNT(pderiv_loc, xcurr);
-    Jmat.MultiplyNT(pderiv_loc, xrefe);
+    xjm.multiply_nt(pderiv_loc, xcurr);
+    Jmat.multiply_nt(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
-    const double det = xjm.Determinant();
+    const double det = xjm.determinant();
     // jacobian determinant "det(dX/ds)"
-    const double detJ = Jmat.Determinant();
+    const double detJ = Jmat.determinant();
     // jacobian determinant "det(dx/dX) = det(dx/ds)/det(dX/ds)"
     const double J = det / detJ;
 
-    double press = pepressnp.Dot(pfunct);
+    double press = pepressnp.dot(pfunct);
 
     double dphi_dp = 0.0;
     double dphi_dJ = 0.0;
@@ -3411,12 +3411,12 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
-    dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
+    dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
 
-    convvel.Multiply(econvvel, Base::funct_);
+    convvel.multiply(econvvel, Base::funct_);
 
     // fill element matrix and rhs
     for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -3789,16 +3789,16 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // transposed jacobian "dx/ds"
     Core::LinAlg::Matrix<nsd_, nsd_> xjm;
     Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
-    xjm.MultiplyNT(pderiv_loc, xcurr);
-    Jmat.MultiplyNT(pderiv_loc, xrefe);
+    xjm.multiply_nt(pderiv_loc, xcurr);
+    Jmat.multiply_nt(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
-    const double det = xjm.Determinant();
+    const double det = xjm.determinant();
     // jacobian determinant "det(dX/ds)"
-    const double detJ = Jmat.Determinant();
+    const double detJ = Jmat.determinant();
     // jacobian determinant "det(dx/dX) = det(dx/ds)/det(dX/ds)"
     const double J = det / detJ;
 
-    double press = pepressnp.Dot(pfunct);
+    double press = pepressnp.dot(pfunct);
 
     double dphi_dp = 0.0;
     double dphi_dJ = 0.0;
@@ -3816,13 +3816,13 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
-    dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
+    dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
 
-    convvel.Multiply(econvvel, Base::funct_);
-    lambda.Multiply(elambda, dualfunct);
+    convvel.multiply(econvvel, Base::funct_);
+    lambda.multiply(elambda, dualfunct);
 
     //  derivatives of surface normals wrt mesh displacements
     Core::LinAlg::Matrix<nsd_, Base::bdrynen_ * nsd_> normalderiv(true);
@@ -3858,7 +3858,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
       }
 
       // in the case of nurbs the normal vector must be scaled with a special factor
-      if (IsNurbs<distype>::isnurbs) normalderiv.Scale(normalfac);
+      if (IsNurbs<distype>::isnurbs) normalderiv.scale(normalfac);
 
       if (abs(Base::unitnormal_(0)) > 1.0e-6 || abs(Base::unitnormal_(1)) > 1.0e-6)
       {
@@ -3944,7 +3944,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
       }
 
       // in the case of nurbs the normal vector must be scaled with a special factor
-      if (IsNurbs<distype>::isnurbs) normalderiv.Scale(normalfac);
+      if (IsNurbs<distype>::isnurbs) normalderiv.scale(normalfac);
 
       // simple definition for txi
       tangent1(0) = -Base::unitnormal_(1);
@@ -3961,7 +3961,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     }
 
     static Core::LinAlg::Matrix<1, Base::bdrynen_ * nsd_> convvel_normalderiv(true);
-    convvel_normalderiv.MultiplyTN(convvel, normalderiv);
+    convvel_normalderiv.multiply_tn(convvel, normalderiv);
 
     // fill element matrix
     for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -3982,9 +3982,9 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     if (nsd_ == 3)
     {
       static Core::LinAlg::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent1deriv(true);
-      lambda_tangent1deriv.MultiplyTN(lambda, tangent1deriv);
+      lambda_tangent1deriv.multiply_tn(lambda, tangent1deriv);
       static Core::LinAlg::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent2deriv(true);
-      lambda_tangent2deriv.MultiplyTN(lambda, tangent2deriv);
+      lambda_tangent2deriv.multiply_tn(lambda, tangent2deriv);
 
       for (int inode = 0; inode < Base::bdrynen_; inode++)
       {
@@ -4004,7 +4004,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     else if (nsd_ == 2)
     {
       Core::LinAlg::Matrix<1, Base::bdrynen_ * nsd_> lambda_tangent1deriv(true);
-      lambda_tangent1deriv.MultiplyTN(lambda, tangent1deriv);
+      lambda_tangent1deriv.multiply_tn(lambda, tangent1deriv);
 
       for (int inode = 0; inode < Base::bdrynen_; inode++)
       {
@@ -4370,16 +4370,16 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // transposed jacobian "dx/ds"
     Core::LinAlg::Matrix<nsd_, nsd_> xjm;
     Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
-    xjm.MultiplyNT(pderiv_loc, xcurr);
-    Jmat.MultiplyNT(pderiv_loc, xrefe);
+    xjm.multiply_nt(pderiv_loc, xcurr);
+    Jmat.multiply_nt(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
-    const double det = xjm.Determinant();
+    const double det = xjm.determinant();
     // jacobian determinant "det(dX/ds)"
-    const double detJ = Jmat.Determinant();
+    const double detJ = Jmat.determinant();
     // jacobian determinant "det(dx/dX) = det(dx/ds)/det(dX/ds)"
     const double J = det / detJ;
 
-    double press = pepressnp.Dot(pfunct);
+    double press = pepressnp.dot(pfunct);
 
     double dphi_dp = 0.0;
     double dphi_dJ = 0.0;
@@ -4392,12 +4392,12 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
-    dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
+    dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
 
-    convvel.Multiply(econvvel, Base::funct_);
+    convvel.multiply(econvvel, Base::funct_);
     double normal_convel = 0.0;
 
     for (int idof = 0; idof < nsd_; idof++)
@@ -4729,16 +4729,16 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // transposed jacobian "dx/ds"
     Core::LinAlg::Matrix<nsd_, nsd_> xjm;
     Core::LinAlg::Matrix<nsd_, nsd_> Jmat;
-    xjm.MultiplyNT(pderiv_loc, xcurr);
-    Jmat.MultiplyNT(pderiv_loc, xrefe);
+    xjm.multiply_nt(pderiv_loc, xcurr);
+    Jmat.multiply_nt(pderiv_loc, xrefe);
     // jacobian determinant "det(dx/ds)"
-    const double det = xjm.Determinant();
+    const double det = xjm.determinant();
     // jacobian determinant "det(dX/ds)"
-    const double detJ = Jmat.Determinant();
+    const double detJ = Jmat.determinant();
     // jacobian determinant "det(dx/dX) = det(dx/ds)/det(dX/ds)"
     const double J = det / detJ;
 
-    double press = pepressnp.Dot(pfunct);
+    double press = pepressnp.dot(pfunct);
 
     //--------------------------------------------dJ/dus = dJ/dF : dF/dus = J * F^-T . N_X = J * N_x
     Core::LinAlg::Matrix<1, nsd_ * nenparent> dJ_dus;
@@ -4747,8 +4747,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
     // inverse of transposed jacobian "ds/dx"
     Core::LinAlg::Matrix<nsd_, nsd_> xji;
 
-    xji.Invert(xjm);
-    derxy.Multiply(xji, pderiv_loc);
+    xji.invert(xjm);
+    derxy.multiply(xji, pderiv_loc);
 
     for (int i = 0; i < nenparent; i++)
       for (int j = 0; j < nsd_; j++) dJ_dus(j + i * nsd_) = J * derxy(j, i);
@@ -4764,12 +4764,12 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<Base::bdrynsd_, nsd_> dxyzdrs(0.0);
-    dxyzdrs.MultiplyNT(Base::deriv_, Base::xyze_);
+    dxyzdrs.multiply_nt(Base::deriv_, Base::xyze_);
 
     // in the case of nurbs the normal vector must be scaled with a special factor
-    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) Base::unitnormal_.scale(normalfac);
 
-    convvel.Multiply(econvvel, Base::funct_);
+    convvel.multiply(econvvel, Base::funct_);
     double normal_convel = 0.0;
 
     for (int idof = 0; idof < nsd_; idof++)
@@ -4826,7 +4826,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_porosity_at
     const Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
     double& porosity, double& dphi_dp, double& dphi_dJ, bool save)
 {
-  porosity = eporosity.Dot(Base::funct_);
+  porosity = eporosity.dot(Base::funct_);
   dphi_dp = 0.0;
   dphi_dJ = 0.0;
 }

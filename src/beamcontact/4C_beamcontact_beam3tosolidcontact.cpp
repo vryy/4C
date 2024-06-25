@@ -1136,11 +1136,11 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
   L(0, 1) = Lpar(0, par_i[1]);
   L(1, 1) = Lpar(1, par_i[1]);
 
-  // Invert L by hand
+  // invert L by hand
   TYPEBTS det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(det_L)) < DETERMINANTTOL)
   {
-    FOUR_C_THROW("ERROR: Determinant of L = 0");
+    FOUR_C_THROW("ERROR: determinant of L = 0");
   }
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
@@ -1180,7 +1180,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::comput
   }
 
   // Compute D = L^-1 * B
-  D.Multiply(L_inv, B);
+  D.multiply(L_inv, B);
 
   // Finally get directional derivatives
   for (int i = 0; i < dim1 + dim2; i++)
@@ -2063,7 +2063,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::projec
     {
       // Do not sort out
 
-      // Invert J
+      // invert J
       Jinv(0, 0) = J(1, 1) / det_J;
       Jinv(0, 1) = -J(0, 1) / det_J;
       Jinv(1, 0) = -J(1, 0) / det_J;
@@ -3091,7 +3091,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fad_ch
   L(1, 0) = f(1).dx(dim1 + dim2 + par_i[0]);
   L(1, 1) = f(1).dx(dim1 + dim2 + par_i[1]);
 
-  // Invert L by hand
+  // invert L by hand
   TYPEBTS det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(det_L)) < DETERMINANTTOL)
     FOUR_C_THROW("ERROR: Determinant of L = 0");
@@ -3116,7 +3116,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::fad_ch
   }
 
   // Compute D = L^-1 * B
-  D.Multiply(L_inv, B);
+  D.multiply(L_inv, B);
 
   // Finally compute directional derivatives of not fixed parameters
   for (int i = 0; i < dim1 + dim2; i++)

@@ -396,7 +396,7 @@ namespace
 
   TEST_F(InelasticDefgradFactorsTest, TestEvaluateInelasticDefGradDerivative)
   {
-    const double detF = FM_.Determinant();
+    const double detF = FM_.determinant();
     Core::LinAlg::Matrix<9, 1> DFinDx(true);
     Core::LinAlg::Matrix<9, 1> DFinDx_ref(true);
 
@@ -497,8 +497,8 @@ namespace
     Core::LinAlg::Matrix<3, 3> CM;
     Core::LinAlg::Matrix<3, 3> iCM;
     Core::LinAlg::Matrix<6, 1> iCV;
-    CM.MultiplyTN(1.0, FM_, FM_, 0.0);
-    iCM.Invert(CM);
+    CM.multiply_tn(1.0, FM_, FM_, 0.0);
+    iCM.invert(CM);
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCM, iCV);
 
     // matrix to be filled by the methods
@@ -586,7 +586,7 @@ namespace
     CMatAdd.clear();
 
     // test InelasticDefgradLinTempIso: set up reference solution
-    CMatAdd_ref_solution.PutScalar(0.0);
+    CMatAdd_ref_solution.put_scalar(0.0);
 
     // evaluate the method
     lin_temp_iso_->evaluate_additional_cmat(

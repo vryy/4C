@@ -509,7 +509,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(Discret::E
       }
     }
     // The integration is made by computing the matrix product
-    Core::LinAlg::multiplyNT(
+    Core::LinAlg::multiply_nt(
         local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
@@ -842,17 +842,17 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_all(const int
 {
   r = Global::Problem::Instance()
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-          .evaluate(xyz.A(), t, 0);
+          .evaluate(xyz.data(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = Global::Problem::Instance()
                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-               .evaluate(xyz.A(), t, 1 + d);
+               .evaluate(xyz.data(), t, 1 + d);
 
   for (unsigned int m = 0; m < msd_; ++m)
     L(m) = Global::Problem::Instance()
                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-               .evaluate(xyz.A(), t, 1 + nsd_ + m);
+               .evaluate(xyz.data(), t, 1 + nsd_ + m);
 }
 
 
@@ -864,12 +864,12 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_density_momen
 {
   r = Global::Problem::Instance()
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-          .evaluate(xyz.A(), t, 0);
+          .evaluate(xyz.data(), t, 0);
 
   for (unsigned int d = 0; d < nsd_; ++d)
     w(d) = Global::Problem::Instance()
                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcnum - 1)
-               .evaluate(xyz.A(), t, 1 + d);
+               .evaluate(xyz.data(), t, 1 + d);
 }
 
 
@@ -1082,7 +1082,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_m
     // get viscosity
     double mu = Global::Problem::Instance()
                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(varviscfuncnum - 1)
-                    .evaluate(xyz.A(), time, 0);
+                    .evaluate(xyz.data(), time, 0);
 
     // evaluate Dw
     for (unsigned int d = 0; d < nsd_; ++d) Dw(d, d) = 2.0 * mu;
@@ -1199,7 +1199,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
         for (unsigned int dmod = 0; dmod < (1 + nsd_); ++dmod)
           feg(dmod, q) = Global::Problem::Instance()
                              ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(forcefuncnum - 1)
-                             .evaluate(xyzeg.A(), time, dmod);
+                             .evaluate(xyzeg.data(), time, dmod);
 
       drdteg(q) += N(i, q) * drdte(i);
 

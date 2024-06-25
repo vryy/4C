@@ -91,7 +91,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::update(Core::LinAlg::Matrix<3,
   current_reference_growth_[gp] =
       Global::Problem::Instance()
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
-          .evaluate(reference_coordinates.A(), totaltime, 0);
+          .evaluate(reference_coordinates.data(), totaltime, 0);
 
   MixtureConstituentElastHyperBase::update(defgrd, params, gp, eleGID);
 }
@@ -115,7 +115,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::evaluate_elastic_part(
 {
   // Compute total inelastic deformation gradient
   static Core::LinAlg::Matrix<3, 3> iFin(false);
-  iFin.MultiplyNN(iFextin, prestretch_tensor(gp));
+  iFin.multiply_nn(iFextin, prestretch_tensor(gp));
 
   // Evaluate 3D elastic part
   Mat::ElastHyperEvaluateElasticPart(

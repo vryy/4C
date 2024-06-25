@@ -359,7 +359,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
     double abs_tangent = 0.0;
 
     // Res will be normalized with the length of the current tangent
-    abs_tangent = tangent.Norm2();
+    abs_tangent = tangent.norm2();
 
     // computespin = S ( tangent ) using the spinmatrix in namespace largerotations
     Core::LargeRotations::computespin(spinmatrix, tangent);
@@ -889,8 +889,8 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         }
       }
 
-      NTildex.MultiplyTN(N_x, N_x);
-      NTildexx.MultiplyTN(N_xx, N_xx);
+      NTildex.multiply_tn(N_x, N_x);
+      NTildexx.multiply_tn(N_xx, N_xx);
 
       for (int i = 0; i < nnode * dofpn; i++)
       {
@@ -932,23 +932,23 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 // assemble parts from tension
 #ifndef ANS_BEAM3EB
         R_tension = NTildex;
-        R_tension.Scale(tension);
-        R_tension.Update(1.0 / std::pow(rxrx, 1.5), NxTrxrxTNx, 1.0);
-        R_tension.Scale(EA * wgt);
+        R_tension.scale(tension);
+        R_tension.update(1.0 / std::pow(rxrx, 1.5), NxTrxrxTNx, 1.0);
+        R_tension.scale(EA * wgt);
 #else
         // attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are
         // allready considered, all the other jacobi factors due to differentiation and integration
         // cancel out!!!
-        R_tension_ANS.Update(epsilon_ANS / jacobi_, NTildex, 1.0);
-        R_tension_ANS.Scale(EA * wgt);
+        R_tension_ANS.update(epsilon_ANS / jacobi_, NTildex, 1.0);
+        R_tension_ANS.scale(EA * wgt);
 #endif
 
         // assemble parts from bending
-        R_bending.Update(-rxxrxx / std::pow(jacobi_, 2.0), NTildex, 1.0);
-        R_bending.Update(1.0, NTildexx, 1.0);
-        R_bending.UpdateT(-2.0 / std::pow(jacobi_, 2.0), M2, 1.0);
+        R_bending.update(-rxxrxx / std::pow(jacobi_, 2.0), NTildex, 1.0);
+        R_bending.update(1.0, NTildexx, 1.0);
+        R_bending.update_t(-2.0 / std::pow(jacobi_, 2.0), M2, 1.0);
 
-        R_bending.Scale(EI * wgt / std::pow(jacobi_, 3));
+        R_bending.scale(EI * wgt / std::pow(jacobi_, 3));
 
         // shifting values from fixed size matrix to epetra matrix *stiffmatrix
         for (int i = 0; i < dofpn * nnode; i++)
@@ -987,10 +987,10 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
           }
         }
 #ifdef ANS_BEAM3EB
-        Res_tension_ANS.Update(EA * wgt * epsilon_ANS / jacobi_, NxTrx, 1.0);
+        Res_tension_ANS.update(EA * wgt * epsilon_ANS / jacobi_, NxTrx, 1.0);
 #endif
-        Res_bending.Scale(EI * wgt);
-        Res_tension.Scale(EA * wgt);
+        Res_bending.scale(EI * wgt);
+        Res_tension.scale(EA * wgt);
 
         // shifting values from fixed size vector to epetra vector *force
         for (int i = 0; i < dofpn * nnode; i++)
@@ -1466,12 +1466,12 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       ortho_normal(1) = -rx_fad(0, 0);
       ortho_normal(2) = 0.0;
       if (Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm<3>(ortho_normal)) > 1.0e-12)
-        ortho_normal.Scale(1.0 / (Core::FADUtils::VectorNorm<3>(ortho_normal)));
+        ortho_normal.scale(1.0 / (Core::FADUtils::VectorNorm<3>(ortho_normal)));
 
       Res_orthopressure.clear();
       R_orthopressure.clear();
-      Res_orthopressure.MultiplyTN(N, ortho_normal);
-      Res_orthopressure.Scale(orthopressureload * wgt * jacobi_);
+      Res_orthopressure.multiply_tn(N, ortho_normal);
+      Res_orthopressure.scale(orthopressureload * wgt * jacobi_);
       for (int i = 0; i < nnode * dofpn; i++)
       {
         for (int j = 0; j < nnode * dofpn; j++)
@@ -1481,9 +1481,9 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       }
 #endif
 
-      NTilde.MultiplyTN(N_x, N_xx);
-      NTildex.MultiplyTN(N_x, N_x);
-      NTildexx.MultiplyTN(N_xx, N_xx);
+      NTilde.multiply_tn(N_x, N_xx);
+      NTildex.multiply_tn(N_x, N_x);
+      NTildexx.multiply_tn(N_xx, N_xx);
 
       for (int i = 0; i < nnode * dofpn; i++)
       {
@@ -1555,9 +1555,9 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         // assemble parts from tension
 #ifndef ANS_BEAM3EB
         R_tension = NTildex;
-        R_tension.Scale(tension);
-        R_tension.Update(1.0 / std::pow(rxrx, 1.5), NxTrxrxTNx, 1.0);
-        R_tension.Scale(EA * wgt);
+        R_tension.scale(tension);
+        R_tension.update(1.0 / std::pow(rxrx, 1.5), NxTrxrxTNx, 1.0);
+        R_tension.scale(EA * wgt);
 #else
 #ifndef CONSISTENTANSBEAM3EB
         // attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are
@@ -1567,9 +1567,9 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
           for (int j = 0; j < nnode * dofpn; j++)
             R_tension_ANS(i, j) += NxTrx(i) * lin_epsilon_ANS(j) / std::pow(rxrx, 0.5);
 
-        R_tension_ANS.Update(-epsilon_ANS / std::pow(rxrx, 1.5), NxTrxrxTNx, 1.0);
-        R_tension_ANS.Update(epsilon_ANS / std::pow(rxrx, 0.5), NTildex, 1.0);
-        R_tension_ANS.Scale(EA * wgt);
+        R_tension_ANS.update(-epsilon_ANS / std::pow(rxrx, 1.5), NxTrxrxTNx, 1.0);
+        R_tension_ANS.update(epsilon_ANS / std::pow(rxrx, 0.5), NTildex, 1.0);
+        R_tension_ANS.scale(EA * wgt);
 #else
         // since CONSISTENTANSBEAM3EB can so far only be calculated via FAD, R_tension_ANS has to be
         // replaced by R_tension_ANS_fad
@@ -1585,20 +1585,20 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 
         // assemble parts from bending
         R_bending = NTildex;
-        R_bending.Scale(2.0 * std::pow(rxrxx, 2.0) / std::pow(rxrx, 3.0));
-        R_bending.Update(-rxxrxx / std::pow(rxrx, 2.0), NTildex, 1.0);
-        R_bending.Update(-rxrxx / std::pow(rxrx, 2.0), NTilde, 1.0);
-        R_bending.UpdateT(-rxrxx / std::pow(rxrx, 2.0), NTilde, 1.0);
-        R_bending.Update(1.0 / rxrx, NTildexx, 1.0);
-        R_bending.Update(-12.0 * std::pow(rxrxx, 2.0) / std::pow(rxrx, 4.0), NxTrxrxTNx, 1.0);
-        R_bending.Update(4.0 * rxrxx / std::pow(rxrx, 3.0), M1, 1.0);
-        R_bending.UpdateT(4.0 * rxrxx / std::pow(rxrx, 3.0), M1, 1.0);
-        R_bending.Update(4.0 * rxxrxx / std::pow(rxrx, 3.0), NxTrxrxTNx, 1.0);
-        R_bending.Update(-2.0 / std::pow(rxrx, 2.0), M2, 1.0);
-        R_bending.UpdateT(-2.0 / std::pow(rxrx, 2.0), M2, 1.0);
-        R_bending.Update(-1.0 / std::pow(rxrx, 2.0), M3, 1.0);
+        R_bending.scale(2.0 * std::pow(rxrxx, 2.0) / std::pow(rxrx, 3.0));
+        R_bending.update(-rxxrxx / std::pow(rxrx, 2.0), NTildex, 1.0);
+        R_bending.update(-rxrxx / std::pow(rxrx, 2.0), NTilde, 1.0);
+        R_bending.update_t(-rxrxx / std::pow(rxrx, 2.0), NTilde, 1.0);
+        R_bending.update(1.0 / rxrx, NTildexx, 1.0);
+        R_bending.update(-12.0 * std::pow(rxrxx, 2.0) / std::pow(rxrx, 4.0), NxTrxrxTNx, 1.0);
+        R_bending.update(4.0 * rxrxx / std::pow(rxrx, 3.0), M1, 1.0);
+        R_bending.update_t(4.0 * rxrxx / std::pow(rxrx, 3.0), M1, 1.0);
+        R_bending.update(4.0 * rxxrxx / std::pow(rxrx, 3.0), NxTrxrxTNx, 1.0);
+        R_bending.update(-2.0 / std::pow(rxrx, 2.0), M2, 1.0);
+        R_bending.update_t(-2.0 / std::pow(rxrx, 2.0), M2, 1.0);
+        R_bending.update(-1.0 / std::pow(rxrx, 2.0), M3, 1.0);
 
-        R_bending.Scale(EI * wgt / jacobi_);
+        R_bending.scale(EI * wgt / jacobi_);
 
 #ifndef INEXTENSIBLE
         // shifting values from fixed size matrix to epetra matrix *stiffmatrix
@@ -1667,7 +1667,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
         // attention: in epsilon_ANS and lin_epsilon_ANS the corresponding jacobi factors are
         // allready considered, all the other jacobi factors due to differentiation and integration
         // cancel out!!!
-        Res_tension_ANS.Update(EA * wgt * epsilon_ANS / std::pow(rxrx, 0.5), NxTrx, 0.0);
+        Res_tension_ANS.update(EA * wgt * epsilon_ANS / std::pow(rxrx, 0.5), NxTrx, 0.0);
 #else
         // since CONSISTENTANSBEAM3EB can so far only be calculated via FAD, Rrd_tension_ANS has to
         // be replaced by Rrd_tension_ANS_fad
@@ -1678,8 +1678,8 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 #endif
 #endif
 
-        Res_bending.Scale(EI * wgt / jacobi_);
-        Res_tension.Scale(EA * wgt);
+        Res_bending.scale(EI * wgt / jacobi_);
+        Res_tension.scale(EA * wgt);
 
 #ifndef INEXTENSIBLE
         // shifting values from fixed size vector to epetra vector *force
@@ -1790,7 +1790,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
       for (int i = 0; i < 3; i++)
         for (int j = 0; j < nnode * NODALDOFS; j++) r(i, 0) += N_i(j) * disp_totlag(3 * j + i);
 
-      NTilde.MultiplyTN(N_mass, N_mass);
+      NTilde.multiply_tn(N_mass, N_mass);
 
       if (massmatrix != nullptr)
       {
@@ -1821,13 +1821,13 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 #endif
       }  // if (massmatrix != nullptr)
 
-      ekin_ += 0.5 * wgt * jacobi_ * mass_inertia_translational * std::pow(r_t.Norm2(), 2.0);
+      ekin_ += 0.5 * wgt * jacobi_ * mass_inertia_translational * std::pow(r_t.norm2(), 2.0);
 
       Core::LinAlg::Matrix<3, 1> dL(true);
       Core::LinAlg::Matrix<3, 3> S_r(true);
       Core::LargeRotations::computespin(S_r, r);
-      dL.Multiply(S_r, r_t);
-      dL.Scale(mass_inertia_translational);
+      dL.multiply(S_r, r_t);
+      dL.scale(mass_inertia_translational);
       for (int i = 0; i < 3; i++)
       {
         l_(i) += wgt * jacobi_ * dL(i);
@@ -1909,8 +1909,8 @@ void Discret::ELEMENTS::Beam3eb::EvaluatePTC(
       t0(i) = t0_(i, node);
       t(i) = t_(i, node);
     }
-    t0.Scale(1.0 / t0.Norm2());
-    t.Scale(1.0 / t.Norm2());
+    t0.scale(1.0 / t0.norm2());
+    t.scale(1.0 / t.norm2());
 
     double tTt0 = 0.0;
     for (int i = 0; i < 3; i++) tTt0 += t0(i) * t(i);
@@ -2047,7 +2047,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
             (idim == jdim) * gamma(1) + (gamma(0) - gamma(1)) * r_s(idim) * r_s(jdim);
 
     // compute viscous force vector per unit length at current GP
-    f_visc.Multiply(damp_mat, vel_rel);
+    f_visc.multiply(damp_mat, vel_rel);
 
 
     if (force != nullptr)
@@ -2063,7 +2063,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
     {
       // compute matrix product of damping matrix and gradient of background velocity
       Core::LinAlg::Matrix<ndim, ndim> dampmatvelbackgroundgrad(true);
-      dampmatvelbackgroundgrad.Multiply(damp_mat, velbackgroundgrad);
+      dampmatvelbackgroundgrad.multiply(damp_mat, velbackgroundgrad);
 
       // loop over all shape functions in row dimension
       for (unsigned int i = 0; i < nnode * vpernode; i++)

@@ -185,8 +185,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
              i_curve_segment++)
         {
           // Get the position, displacement and lambda value at the current point.
-          xi = segment.GetEtaA() +
-               i_curve_segment * (segment.GetEtaB() - segment.GetEtaA()) / (double)mortar_segments;
+          xi = segment.GetEtadata() + i_curve_segment * (segment.GetEtaB() - segment.GetEtadata()) /
+                                          (double)mortar_segments;
           GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, r);
           GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, X);
           u = r;
@@ -260,7 +260,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
               projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
           // Jacobian including the segment length.
-          segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+          segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
           // Evaluate the coupling load at this point.
           GEOMETRYPAIR::EvaluatePosition<mortar>(
@@ -271,8 +271,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
               GEOMETRYPAIR::ElementDataToDouble<beam>::ToDouble(this->ele1pos_), r_gauss_point);
 
           // Calculate moment around origin.
-          temp_moment.CrossProduct(r_gauss_point, lambda_gauss_point);
-          temp_moment.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
+          temp_moment.cross_product(r_gauss_point, lambda_gauss_point);
+          temp_moment.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
           (*line_load_moment_origin) += temp_moment;
         }
       }

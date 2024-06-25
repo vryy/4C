@@ -52,15 +52,15 @@ int main(int argc, char** argv)
   }
 
   // Scale vectors to unity
-  double normvec1 = vector1.Norm2();
-  vector1.Scale(1.0 / normvec1);
-  double normvec2 = vector2.Norm2();
-  vector2.Scale(1.0 / normvec2);
+  double normvec1 = vector1.norm2();
+  vector1.scale(1.0 / normvec1);
+  double normvec2 = vector2.norm2();
+  vector2.scale(1.0 / normvec2);
 
   // Compute third base vector
   Core::LinAlg::Matrix<3, 3> S_vector1;
   Core::LargeRotations::computespin(S_vector1, vector1);
-  vector3.Multiply(S_vector1, vector2);
+  vector3.multiply(S_vector1, vector2);
 
   // Compute rotation matrix
   Core::LinAlg::Matrix<3, 3> rotmatrix;

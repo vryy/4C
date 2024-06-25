@@ -102,12 +102,12 @@ void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_s
         const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         const double phizero =
-            my::funct_.Dot(ephizero[0]);  // only one scalar available for level set
+            my::funct_.dot(ephizero[0]);  // only one scalar available for level set
         double smoothH_exact = 0.0;
         smooth_heaviside_function(h, phizero, smoothH_exact);
 
         const double phinp =
-            my::funct_.Dot(my::ephinp_[0]);  // only one scalar available for level set
+            my::funct_.dot(my::ephinp_[0]);  // only one scalar available for level set
         double smoothH = 0.0;
         smooth_heaviside_function(h, phinp, smoothH);
 

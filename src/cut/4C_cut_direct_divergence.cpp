@@ -70,7 +70,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::DirectDivergence::VCIntegrat
       std::cout << "number of facets: " << facete.size() << std::endl;
 
       for (plain_facet_set::const_iterator f = facete.begin(); f != facete.end(); f++)
-        (*f)->Print(std::cout);
+        (*f)->print(std::cout);
 
       // dump element and facets
       std::ofstream file("facets_x_normal_equal_0_CUTFAIL_DD.pos");
@@ -149,7 +149,7 @@ void Core::Geo::Cut::DirectDivergence::list_facets(
 
       std::cout << "the side has " << corn.size() << " points" << std::endl;
 
-      for (unsigned j = 0; j < corn.size(); j++) corn[j]->Print(std::cout);
+      for (unsigned j = 0; j < corn.size(); j++) corn[j]->print(std::cout);
 
       std::cout << std::endl;
 #endif

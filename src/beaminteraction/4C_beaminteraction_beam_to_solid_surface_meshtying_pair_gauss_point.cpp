@@ -87,13 +87,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the beam.
       coupling_vector = this->evaluate_coupling(projected_gauss_point);
       force = coupling_vector;
-      force.Scale(penalty_parameter);
+      force.scale(penalty_parameter);
 
       // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
       // dof. This is done with the virtual work equation $F \delta r = f \delta q$.
@@ -131,7 +131,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPoint<beam, surface>::
   {
     const auto force_pair_double = Core::FADUtils::CastToDouble(force_pair);
     force_vector->SumIntoGlobalValues(
-        beam::n_dof_ + surface::n_dof_, pair_gid.A(), force_pair_double.A());
+        beam::n_dof_ + surface::n_dof_, pair_gid.data(), force_pair_double.data());
   }
 
   // If given, assemble force terms into the global stiffness matrix.

@@ -279,7 +279,7 @@ void Core::FE::DiscretizationHDG::assign_global_i_ds(const Epetra_Comm& comm,
 std::ostream& operator<<(std::ostream& os, const Core::FE::DiscretizationHDG& dis)
 {
   // print standard discretization info
-  dis.Print(os);
+  dis.print(os);
   // print additional info about internal faces
   dis.PrintFaces(os);
 

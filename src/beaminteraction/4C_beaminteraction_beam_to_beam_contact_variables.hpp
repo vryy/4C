@@ -187,7 +187,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 12/16 */
-    inline void Print(std::ostream& out) const
+    inline void print(std::ostream& out) const
     {
       out << "\nInstance of BeamToBeamContactVariables (SegmentIds " << segids_.first << " & "
           << segids_.second << "):";

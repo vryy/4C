@@ -242,10 +242,10 @@ void Discret::ELEMENTS::SoWeg6::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoWeg6::print(std::ostream& os) const
 {
   os << "So_weg6 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }
@@ -268,8 +268,8 @@ std::vector<double> Discret::ELEMENTS::SoWeg6::element_center_refe_coords()
   // Element midpoint at r=s=1/3, t=0.0
   Core::FE::shape_function_3D(funct, 1.0 / 3.0, 1.0 / 3.0, 0.0, distype);
   Core::LinAlg::Matrix<1, NUMDIM_WEG6> midpoint;
-  // midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
-  midpoint.MultiplyTN(funct, xrefe);
+  // midpoint.multiply('T','N',1.0,funct,xrefe,0.0);
+  midpoint.multiply_tn(funct, xrefe);
   std::vector<double> centercoords(3);
   centercoords[0] = midpoint(0, 0);
   centercoords[1] = midpoint(0, 1);

@@ -56,7 +56,7 @@ namespace Core::LargeRotations
 
     // setting R to third summand of equation (16.70)
     Core::LargeRotations::computespin(R, qvec);
-    R.Scale(2 * q(3));
+    R.scale(2 * q(3));
 
     // adding second summand of equation (16.70)
     for (int i = 0; i < 3; i++)
@@ -167,7 +167,7 @@ namespace Core::LargeRotations
       else
       {
         theta = omega;
-        theta.Scale(thetaabs / abs_omega);
+        theta.scale(thetaabs / abs_omega);
       }
     }
 
@@ -258,8 +258,8 @@ namespace Core::LargeRotations
   template <class T1, class T2, class T3>
   void quaternionproduct(const T1& q1, const T2& q2, T3& q12)
   {
-    FOUR_C_ASSERT(q12.M() == 4 and q12.N() == 1 and q1.M() == 4 and q1.N() == 1 and q2.M() == 4 and
-                      q2.N() == 1,
+    FOUR_C_ASSERT(q12.m() == 4 and q12.n() == 1 and q1.m() == 4 and q1.n() == 1 and q2.m() == 4 and
+                      q2.n() == 1,
         "size mismatch: expected 4x1 vector for quaternion");
 
     q12(0) = q2(3) * q1(0) + q1(3) * q2(0) + q2(1) * q1(2) - q1(1) * q2(2);
@@ -306,7 +306,7 @@ namespace Core::LargeRotations
     if (theta_abs > 1e-8)
     {
       computespin(result, theta);
-      result.Scale(-0.5);
+      result.scale(-0.5);
 
       T theta_abs_half = theta_abs / 2.0;
 
@@ -321,7 +321,7 @@ namespace Core::LargeRotations
     else
     {
       Core::LargeRotations::computespin(result, theta);
-      result.Scale(-0.5);
+      result.scale(-0.5);
       for (int j = 0; j < 3; j++) result(j, j) += 1.0;
     }
     return result;
@@ -346,7 +346,7 @@ namespace Core::LargeRotations
     {
       // ultimate term in eq. (2.5)
       Core::LargeRotations::computespin(result, theta);
-      result.Scale((1.0 - cos(theta_abs)) / (theta_abs * theta_abs));
+      result.scale((1.0 - cos(theta_abs)) / (theta_abs * theta_abs));
 
       // penultimate term in eq. (2.5)
       for (int i = 0; i < 3; i++) result(i, i) += sin(theta_abs) / (theta_abs);
@@ -363,7 +363,7 @@ namespace Core::LargeRotations
       // based on the small angle approximation sin(x)=x and 1-cos(x)=x^2/2 we get: Tinv = I +
       // 0.5*S(theta) -> Tinv'=0.5*S(theta')
       Core::LargeRotations::computespin(result, theta);
-      result.Scale(0.5);
+      result.scale(0.5);
       for (int j = 0; j < 3; j++) result(j, j) += 1.0;
     }
 
@@ -389,7 +389,7 @@ namespace Core::LargeRotations
     if (normPsil < 1e-8)
     {
       computespin(dTinvdx, Psilprime);
-      dTinvdx.Scale(0.5);
+      dTinvdx.scale(0.5);
     }
     else
     {
@@ -404,28 +404,28 @@ namespace Core::LargeRotations
       computespin(spinPsilprime, Psilprime);
 
       // third summand
-      dTinvdx.Multiply(spinPsilprime, spinPsil);
-      auxmatrix.Multiply(spinPsil, spinPsilprime);
+      dTinvdx.multiply(spinPsilprime, spinPsil);
+      auxmatrix.multiply(spinPsil, spinPsilprime);
       dTinvdx += auxmatrix;
-      dTinvdx.Scale((1.0 - sin(normPsil) / normPsil) / (normPsil * normPsil));
+      dTinvdx.scale((1.0 - sin(normPsil) / normPsil) / (normPsil * normPsil));
 
       // first summand
-      auxmatrix.PutScalar(0.0);
+      auxmatrix.put_scalar(0.0);
       auxmatrix += spinPsil;
-      auxmatrix.Scale(scalarproductPsilPsilprime *
+      auxmatrix.scale(scalarproductPsilPsilprime *
                       (normPsil * sin(normPsil) - 2 * (1.0 - cos(normPsil))) /
                       (normPsil * normPsil * normPsil * normPsil));
       dTinvdx += auxmatrix;
 
       // second summand
-      auxmatrix.PutScalar(0.0);
+      auxmatrix.put_scalar(0.0);
       auxmatrix += spinPsilprime;
-      auxmatrix.Scale((1.0 - cos(normPsil)) / (normPsil * normPsil));
+      auxmatrix.scale((1.0 - cos(normPsil)) / (normPsil * normPsil));
       dTinvdx += auxmatrix;
 
       // fourth summand
-      auxmatrix.Multiply(spinPsil, spinPsil);
-      auxmatrix.Scale(scalarproductPsilPsilprime *
+      auxmatrix.multiply(spinPsil, spinPsil);
+      auxmatrix.scale(scalarproductPsilPsilprime *
                       (3.0 * sin(normPsil) - normPsil * (2.0 + cos(normPsil))) /
                       (normPsil * normPsil * normPsil * normPsil * normPsil));
       dTinvdx += auxmatrix;
@@ -509,7 +509,7 @@ namespace Core::LargeRotations
     rotation_matrix.clear();
     quaternion.clear();
 
-    rotation_matrix.MultiplyTN(triad_ref, triad);
+    rotation_matrix.multiply_tn(triad_ref, triad);
     Core::LargeRotations::triadtoquaternion(rotation_matrix, quaternion);
     Core::LargeRotations::quaterniontoangle(quaternion, theta);
   }
@@ -526,7 +526,7 @@ namespace Core::LargeRotations
     rotation_matrix.clear();
     quaternion.clear();
 
-    rotation_matrix.MultiplyNT(triad, triad_ref);
+    rotation_matrix.multiply_nt(triad, triad_ref);
     Core::LargeRotations::triadtoquaternion(rotation_matrix, quaternion);
     Core::LargeRotations::quaterniontoangle(quaternion, theta);
   }

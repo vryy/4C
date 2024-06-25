@@ -59,7 +59,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
     r_cross_section_ref(0) = 0.0;
     r_cross_section_ref(1) = integration_point.GetEtaCrossSection()(0);
     r_cross_section_ref(2) = integration_point.GetEtaCrossSection()(1);
-    r_cross_section_cur.Multiply(triad, r_cross_section_ref);
+    r_cross_section_cur.multiply(triad, r_cross_section_ref);
     GEOMETRYPAIR::EvaluatePosition<beam>(eta, q, r_beam);
     r_beam += r_cross_section_cur;
   };

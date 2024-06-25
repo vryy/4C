@@ -479,7 +479,7 @@ namespace Core::COUPLING
     \param  os (i)
 
     \return void  */
-    void Print(std::ostream& os) const;
+    void print(std::ostream& os) const;
 
     //@}
 

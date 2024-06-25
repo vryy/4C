@@ -354,7 +354,7 @@ namespace Discret::UTILS::Beam
       double deriv_int = 0.0;
 
       CalcInterpolation<nnode, vpernode, 3, double>(disp_centerline, H_i_xi[numgp], r_xi);
-      int_length += gausspoints.qwgt[numgp] * r_xi.Norm2();
+      int_length += gausspoints.qwgt[numgp] * r_xi.norm2();
 
       for (int dim = 0; dim < 3; dim++)
         deriv_int +=
@@ -362,7 +362,7 @@ namespace Discret::UTILS::Beam
                 disp_centerline(3 * vpernode * 1 + 3 + dim) * H_i_xi[numgp](3) / reflength) *
             r_xi(dim);
 
-      deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.Norm2();
+      deriv_length += gausspoints.qwgt[numgp] * deriv_int / r_xi.norm2();
     }
 
     return {reflength - int_length, 1 - deriv_length};

@@ -210,7 +210,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       RedAirwayType& ElementType() const override { return RedAirwayType::Instance(); }
 
@@ -348,7 +348,7 @@ namespace Discret
       //@}
 
       //! get cross-sectional area
-      //  double         getA(){ return A_;}
+      //  double         getdata(){ return A_;}
 
       //! get youngs modulus of the wall
       //  double         getEw(){ return Ew_;}
@@ -600,7 +600,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       RedAcinusType& ElementType() const override { return RedAcinusType::Instance(); }
 
@@ -736,7 +736,7 @@ namespace Discret
       //@}
 
       //! get cross-sectional area
-      //  double         getA(){ return A_;}
+      //  double         getdata(){ return A_;}
 
       //! get youngs modulus of the wall
       //  double         getEw(){ return Ew_;}
@@ -991,7 +991,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       RedInterAcinarDepType& ElementType() const override
       {
@@ -1122,7 +1122,7 @@ namespace Discret
 
 
       //! get cross-sectional area
-      //  double         getA(){ return A_;}
+      //  double         getdata(){ return A_;}
 
       //! get youngs modulus of the wall
       //  double         getEw(){ return Ew_;}
@@ -1360,7 +1360,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       RedAirBloodScatraType& ElementType() const override
       {
@@ -1423,7 +1423,7 @@ namespace Discret
 
 
       //! get cross-sectional area
-      //  double         getA(){ return A_;}
+      //  double         getdata(){ return A_;}
 
       //! get youngs modulus of the wall
       //  double         getEw(){ return Ew_;}
@@ -1656,7 +1656,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       RedAirBloodScatraLine3Type& ElementType() const override
       {
@@ -1787,7 +1787,7 @@ namespace Discret
 
 
       //! get cross-sectional area
-      //  double         getA(){ return A_;}
+      //  double         getdata(){ return A_;}
 
       //! get youngs modulus of the wall
       //  double         getEw(){ return Ew_;}

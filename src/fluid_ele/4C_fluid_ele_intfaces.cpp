@@ -567,10 +567,10 @@ void Discret::ELEMENTS::FluidIntFace::PatchLocationVector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                            schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidIntFace::print(std::ostream& os) const
 {
   os << "FluidIntFace ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

@@ -92,7 +92,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
 
   // *********************** DEBUG ************************************************
   //  std::cout << "\nSuccessful Creation&Init&Setup of";
-  //  Print(std::cout);
+  //  print(std::cout);
   // ******************* END DEBUG ************************************************
 }
 
@@ -1132,7 +1132,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::ResetSt
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
-void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Print(
+void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::print(
     std::ostream& out) const
 {
   // ToDo add further information here
@@ -1169,7 +1169,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes,
         << std::left << std::setprecision(2) << -1 << std::setw(9) << std::left
         << std::setprecision(3) << -1 << std::setw(12) << std::left << std::scientific << gap_
         << std::setw(12) << std::left << std::scientific
-        << Core::FADUtils::CastToDouble<TYPE, 3, 1>(fc2_).Norm2() << std::setprecision(6)
+        << Core::FADUtils::CastToDouble<TYPE, 3, 1>(fc2_).norm2() << std::setprecision(6)
         << std::resetiosflags(std::ios::scientific) << std::right;
 
     out << "\n";

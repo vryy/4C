@@ -263,8 +263,8 @@ void Discret::ELEMENTS::Rigidsphere::get_background_velocity(
 
 
   // default values for background velocity and its gradient
-  velbackground.PutScalar(0);
-  velbackgroundgrad.PutScalar(0);
+  velbackground.put_scalar(0);
+  velbackgroundgrad.put_scalar(0);
 
   //  double time = params.get<double>("total time",0.0);
   //  double starttime = params.get<double>("STARTTIMEACT",0.0);

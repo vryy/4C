@@ -199,10 +199,10 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::SoNurbs27::Print(std::ostream& os) const
+void Discret::ELEMENTS::Nurbs::SoNurbs27::print(std::ostream& os) const
 {
   os << "So_nurbs27 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

@@ -2,7 +2,7 @@
 /*! \file
 \file linalg_utils_densematrix_determinant.H
 
-\brief Determinant functions for dense matrices up to 4x4 and LU determinant.
+\brief determinant functions for dense matrices up to 4x4 and LU determinant.
 
 \level 0
 
@@ -24,7 +24,7 @@ namespace Core::LinAlg
    *\brief Explicit determinant of a nonsymmetric 2x2 matrix.
    *
    * @param A (in) Matrix A.
-   * @return Determinant of matrix A.
+   * @return determinant of matrix A.
    */
   template <typename T>
   T Determinant(const Core::LinAlg::Matrix<2, 2, T>& A)
@@ -41,7 +41,7 @@ namespace Core::LinAlg
    *\brief Explicit determinant of a nonsymmetric 3x3 matrix.
    *
    * @param A (in) Matrix A.
-   * @return Determinant of matrix A.
+   * @return determinant of matrix A.
    */
   template <typename T>
   T Determinant(const Core::LinAlg::Matrix<3, 3, T>& A)
@@ -66,7 +66,7 @@ namespace Core::LinAlg
    *\brief Explicit determinant of a nonsymmetric 4x4 matrix.
    *
    * @param A (in) Matrix A.
-   * @return Determinant of matrix A.
+   * @return determinant of matrix A.
    */
   template <typename T>
   T Determinant(const Core::LinAlg::Matrix<4, 4, T>& A)
@@ -103,7 +103,7 @@ namespace Core::LinAlg
   }
 
   /*!
-  \brief Determinant of a nonsymmetric matrix using LU factorization
+  \brief determinant of a nonsymmetric matrix using LU factorization
 
   \return the determinant of the matrix A
   */

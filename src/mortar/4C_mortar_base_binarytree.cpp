@@ -365,9 +365,9 @@ void Mortar::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
                 A(2, 2) = (dopnormals_(k, 2)) / norm2;
 
                 // only if matrix a is not singular
-                if (A.Determinant() != 0)
+                if (A.determinant() != 0)
                 {
-                  A.Invert();
+                  A.invert();
                   for (int m = 0; m < 3; m++)
                   {
                     position[m] = A(m, 0) * slabs_(i, imm) + A(m, 1) * slabs_(j, jmm) +

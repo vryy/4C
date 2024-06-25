@@ -618,19 +618,19 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
       Nxi(2 * r + 1, 1) = my::funct_(r);
     }
     // Calculating essential variables at the Gauss points
-    th = my::funct_.Dot(th_);
-    Young = my::funct_.Dot(young_);
+    th = my::funct_.dot(th_);
+    Young = my::funct_.dot(young_);
     beta = sqrt(M_PI) * Young * th / (1.0 - pow(nue, 2));
-    Q = my::funct_.Dot(qn_);
-    A = my::funct_.Dot(an_);
-    Ao = my::funct_.Dot(area0_);
+    Q = my::funct_.dot(qn_);
+    A = my::funct_.dot(an_);
+    Ao = my::funct_.dot(area0_);
     // Calculating essential derivatives at the Gauss points
     dbeta_dxi = sqrt(M_PI) / (1.0 - pow(nue, 2)) *
-                (th * my::tderiv_.Dot(young_) + my::tderiv_.Dot(th_) * Young);
-    dAodxi = my::tderiv_.Dot(area0_);
-    dQdxi = my::tderiv_.Dot(qn_);
-    dAdxi = my::tderiv_.Dot(an_);
-    dpext_dxi = my::tderiv_.Dot(pext_);
+                (th * my::tderiv_.dot(young_) + my::tderiv_.dot(th_) * Young);
+    dAodxi = my::tderiv_.dot(area0_);
+    dQdxi = my::tderiv_.dot(qn_);
+    dAdxi = my::tderiv_.dot(an_);
+    dpext_dxi = my::tderiv_.dot(pext_);
 
     //--------------------------------------------------------------
     //                   compute the rhs vector
@@ -814,44 +814,44 @@ void Discret::ELEMENTS::ArteryEleCalcLinExp<distype>::sysmat(Artery* ele,
                   pow(A, 1.5) / (3.0 * dens * Ao) * (dbeta_dxi - beta / Ao * dAodxi);
 
     // Calculating FLW
-    FLW.Multiply(dt / 2.0, H, B);
+    FLW.multiply(dt / 2.0, H, B);
     FLW += F;
 
     // Calculating BLW
-    BLW.Multiply(dt / 2.0, Bu, B);
+    BLW.multiply(dt / 2.0, Bu, B);
     BLW += B;
 
     // Term 1 is constant and can be evaluated analytically, therefore it will
     // be added in the end
 
     // Adding the contribution of Term 2
-    rhs_temp.Multiply(dNdxi, FLW);
-    rhs_temp.Scale(dt);
+    rhs_temp.multiply(dNdxi, FLW);
+    rhs_temp.scale(dt);
 
 
     // Adding the contribution of Term 3
-    temp2.Multiply(Bu, dFdxi);
-    temp2.Scale(-0.5 * pow(dt, 2));
-    temp1.Multiply(Nxi, temp2);
+    temp2.multiply(Bu, dFdxi);
+    temp2.scale(-0.5 * pow(dt, 2));
+    temp1.multiply(Nxi, temp2);
     rhs_temp += temp1;
 
     // Adding the contribution of Term 4
-    temp2.Multiply(H, dFdxi);
-    temp2.Scale(-pow(dt, 2) / L);
-    temp1.Multiply(dNdxi, temp2);
+    temp2.multiply(H, dFdxi);
+    temp2.scale(-pow(dt, 2) / L);
+    temp1.multiply(dNdxi, temp2);
     rhs_temp += temp1;
 
     // Adding the contribution of Term 5
-    temp1.Multiply(Nxi, BLW);
-    temp1.Scale(0.5 * dt * L);
+    temp1.multiply(Nxi, BLW);
+    temp1.scale(0.5 * dt * L);
     rhs_temp += temp1;
 
     // Final Addition
-    rhs_temp.Scale(wgt);
+    rhs_temp.scale(wgt);
     rhs += rhs_temp;
   }  // loop gausspoints
 
-  temp1.Multiply(sysmat, qan);
+  temp1.multiply(sysmat, qan);
   rhs += temp1;
 }
 

@@ -168,7 +168,7 @@ namespace BEAMINTERACTION
 
     //! return appropriate instance of the desired class (acts as a simple factory)
     static Teuchos::RCP<BeamLinkRigidJointed> Create();
-    void Print(std::ostream& out) const;
+    void print(std::ostream& out) const;
     //@}
 
    private:

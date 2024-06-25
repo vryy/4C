@@ -30,9 +30,9 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::compute_porosity_and_linearization
   if (myporosity == nullptr)
     FOUR_C_THROW("no porosity values given!");
   else
-    porosity = shapfct.Dot(*myporosity);
+    porosity = shapfct.dot(*myporosity);
 
-  dphi_dus.PutScalar(0.0);
+  dphi_dus.put_scalar(0.0);
 }
 
 template <Core::FE::CellType distype>
@@ -46,7 +46,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::compute_porosity_and_linearization
   if (myporosity == nullptr)
     FOUR_C_THROW("no porosity values given!");
   else
-    porosity = shapfct.Dot(*myporosity);
+    porosity = shapfct.dot(*myporosity);
 }
 
 template <Core::FE::CellType distype>
@@ -251,12 +251,12 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList&
             discretization, 0, la[0].lm_, &mydisp, &myporosity, "displacement");
 
         Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
-        if (elemat1.IsInitialized()) matptr = &elemat1;
+        if (elemat1.is_initialized()) matptr = &elemat1;
 
         enum Inpar::STR::DampKind damping =
             params.get<enum Inpar::STR::DampKind>("damping", Inpar::STR::damp_none);
         Core::LinAlg::Matrix<numdof_, numdof_>* matptr2 = nullptr;
-        if (elemat2.IsInitialized() and (damping == Inpar::STR::damp_material)) matptr2 = &elemat2;
+        if (elemat2.is_initialized() and (damping == Inpar::STR::damp_material)) matptr2 = &elemat2;
 
         // need current fluid state,
         // call the fluid discretization: fluid equates 2nd dofset
@@ -299,7 +299,7 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList&
       std::vector<int> lm = la[0].lm_;
 
       Core::LinAlg::Matrix<numdof_, (Base::numdim_ + 1)* Base::numnod_>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
@@ -530,7 +530,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1(Teuchos::Param
 
     // inverse deformation gradient F^-1
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
@@ -548,7 +548,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1(Teuchos::Param
 
     //----------------------------------------------------
     // pressure at integration point
-    double press = shapefct.Dot(epreaf);
+    double press = shapefct.dot(epreaf);
 
     // structure velocity at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> velint(true);
@@ -558,15 +558,15 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1(Teuchos::Param
 
     // fluid velocity at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> fvelint;
-    fvelint.Multiply(evelnp, shapefct);
+    fvelint.multiply(evelnp, shapefct);
 
     // material fluid velocity gradient at integration point
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> fvelder;
-    fvelder.MultiplyNT(evelnp, N_XYZ);
+    fvelder.multiply_nt(evelnp, N_XYZ);
 
     // pressure gradient at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> Gradp;
-    Gradp.Multiply(N_XYZ, epreaf);
+    Gradp.multiply(N_XYZ, epreaf);
 
     // non-linear B-operator
     Core::LinAlg::Matrix<Base::numstr_, Base::numdof_> bop;
@@ -574,11 +574,11 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1(Teuchos::Param
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // inverse Right Cauchy-Green tensor
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> C_inv(false);
-    C_inv.Invert(cauchygreen);
+    C_inv.invert(cauchygreen);
 
     //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture
     // displacement d(GradJ)/d(us)
@@ -659,20 +659,20 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1(Teuchos::Param
       double visc = Base::fluid_mat_->Viscosity();
       Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> CinvFvel(true);
       Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> visctress1(true);
-      CinvFvel.Multiply(C_inv, fvelder);
-      visctress1.MultiplyNT(CinvFvel, defgrd_inv);
+      CinvFvel.multiply(C_inv, fvelder);
+      visctress1.multiply_nt(CinvFvel, defgrd_inv);
       Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> visctress2(visctress1);
-      visctress1.UpdateT(1.0, visctress2, 1.0);
+      visctress1.update_t(1.0, visctress2, 1.0);
 
       fstress(0) = visctress1(0, 0);
       fstress(1) = visctress1(1, 1);
       fstress(2) = visctress1(0, 1);
 
-      fstress.Scale(detJ_w * visc * J);
+      fstress.scale(detJ_w * visc * J);
 
       // B^T . C^-1
       Core::LinAlg::Matrix<Base::numdof_, 1> fstressb(true);
-      fstressb.MultiplyTN(bop, fstress);
+      fstressb.multiply_tn(bop, fstress);
 
       for (int k = 0; k < Base::numnod_; k++)
       {
@@ -791,7 +791,7 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1_od(Teuchos::Pa
 
     // inverse deformation gradient F^-1
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
@@ -807,26 +807,26 @@ void Discret::ELEMENTS::Wall1PoroP1<distype>::gauss_point_loop_p1_od(Teuchos::Pa
 
     // -----------------Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     //------------------ inverse Right Cauchy-Green tensor
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> C_inv(false);
-    C_inv.Invert(cauchygreen);
+    C_inv.invert(cauchygreen);
 
     //---------------- get pressure at integration point
-    double press = shapefct.Dot(epreaf);
+    double press = shapefct.dot(epreaf);
 
     //------------------ get material pressure gradient at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> Gradp;
-    Gradp.Multiply(N_XYZ, epreaf);
+    Gradp.multiply(N_XYZ, epreaf);
 
     //--------------------- get fluid velocity at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> fvelint;
-    fvelint.Multiply(evelnp, shapefct);
+    fvelint.multiply(evelnp, shapefct);
 
     //---------------- material fluid velocity gradient at integration point
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> fvelder;
-    fvelder.MultiplyNT(evelnp, N_XYZ);
+    fvelder.multiply_nt(evelnp, N_XYZ);
 
     //---------------- structure velocity at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> velint(true);
@@ -948,7 +948,7 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::evaluate_neumann(Teuchos::Parameter
         {
           // calculate reference position of GP
           Core::LinAlg::Matrix<1, Base::numdim_> gp_coord;
-          gp_coord.MultiplyTT(shapefcts, xrefe);
+          gp_coord.multiply_tt(shapefcts, xrefe);
 
           // write coordinates in another datatype
           std::array<double, 3> gp_coord2;  // the position vector has to be given in 3D!!!

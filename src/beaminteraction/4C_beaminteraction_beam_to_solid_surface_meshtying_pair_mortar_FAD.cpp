@@ -99,7 +99,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the Gauss point contribution to the coupling potential.
       coupling_vector = this->evaluate_coupling(projected_gauss_point);
@@ -178,7 +178,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the mortar shape functions.
       GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
@@ -241,15 +241,16 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   Core::LinAlg::Matrix<mortar::n_dof_, 1, double> constraint_vector_double =
       Core::FADUtils::CastToDouble(constraint_vector);
   global_constraint.SumIntoGlobalValues(
-      lambda_gid_pos.size(), lambda_gid_pos.data(), constraint_vector_double.A());
+      lambda_gid_pos.size(), lambda_gid_pos.data(), constraint_vector_double.data());
 
   // Assemble into global kappa vector.
-  global_kappa.SumIntoGlobalValues(lambda_gid_pos.size(), lambda_gid_pos.data(), local_kappa.A());
+  global_kappa.SumIntoGlobalValues(
+      lambda_gid_pos.size(), lambda_gid_pos.data(), local_kappa.data());
 
   // Assemble into global lambda active vector.
-  local_kappa.PutScalar(1.0);
+  local_kappa.put_scalar(1.0);
   global_lambda_active.SumIntoGlobalValues(
-      lambda_gid_pos.size(), lambda_gid_pos.data(), local_kappa.A());
+      lambda_gid_pos.size(), lambda_gid_pos.data(), local_kappa.data());
 }
 
 
@@ -275,8 +276,8 @@ void GetSurfaceBasis(const Core::LinAlg::Matrix<3, 1, double>& xi,
 
   // Calculate normal on the basis vectors.
   Core::LinAlg::Matrix<3, 1, scalar_type_basis> element_surface_normal;
-  element_surface_normal.CrossProduct(dr_surf_0, dr_surf_1);
-  element_surface_normal.Scale(1.0 / Core::FADUtils::VectorNorm(element_surface_normal));
+  element_surface_normal.cross_product(dr_surf_0, dr_surf_1);
+  element_surface_normal.scale(1.0 / Core::FADUtils::VectorNorm(element_surface_normal));
 
   // Put the new basis vectors in a matrix.
   for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
@@ -316,7 +317,7 @@ void GetSurfaceRotationVectorAveraged(const Core::LinAlg::Matrix<3, 1, double>& 
     for (unsigned int i_col = 0; i_col < 3; i_col++)
       surface_basis_ref_inverse_scalar_type(i_row, i_col) = surface_basis_ref_inverse(i_row, i_col);
   Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_F;
-  surface_F.Multiply(surface_basis_current, surface_basis_ref_inverse_scalar_type);
+  surface_F.multiply(surface_basis_current, surface_basis_ref_inverse_scalar_type);
 
   // Get the solid rotation vector from the deformation gradient via construction in the cross
   // section plane.
@@ -356,13 +357,13 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
     beam_cross_section_normal_ref(i_dim) = triad_beam_ref(i_dim, 0);
   }
   Core::LinAlg::Matrix<3, 1, double> surface_material_director_ref;
-  surface_material_director_ref.CrossProduct(surface_normal_ref, beam_cross_section_normal_ref);
-  surface_material_director_ref.Scale(
+  surface_material_director_ref.cross_product(surface_normal_ref, beam_cross_section_normal_ref);
+  surface_material_director_ref.scale(
       1.0 / Core::FADUtils::VectorNorm(surface_material_director_ref));
 
   // Get the reference triad of the surface.
   Core::LinAlg::Matrix<3, 1, double> surface_material_director_perpendicular_ref;
-  surface_material_director_perpendicular_ref.CrossProduct(
+  surface_material_director_perpendicular_ref.cross_product(
       surface_material_director_ref, surface_normal_ref);
   Core::LinAlg::Matrix<3, 3, double> surface_triad_ref;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -374,7 +375,7 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
 
   // Get the offset of the reference triad, so it matches the beam reference triad.
   Core::LinAlg::Matrix<3, 3, double> surface_triad_offset;
-  surface_triad_offset.MultiplyTN(surface_triad_ref, triad_beam_ref);
+  surface_triad_offset.multiply_tn(surface_triad_ref, triad_beam_ref);
 
   // Calculate the in plane surface deformation gradient.
   Core::LinAlg::Matrix<3, 3, double> surface_basis_ref_inverse;
@@ -385,15 +386,15 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
     for (unsigned int i_col = 0; i_col < 3; i_col++)
       surface_basis_ref_inverse_scalar_type(i_row, i_col) = surface_basis_ref_inverse(i_row, i_col);
   Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_F;
-  surface_F.Multiply(surface_basis_current, surface_basis_ref_inverse_scalar_type);
+  surface_F.multiply(surface_basis_current, surface_basis_ref_inverse_scalar_type);
 
   // Get the current material director.
   Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_ref_fad;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     surface_material_director_ref_fad(i_dim) = surface_material_director_ref(i_dim);
   Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_current;
-  surface_material_director_current.Multiply(surface_F, surface_material_director_ref_fad);
-  surface_material_director_current.Scale(
+  surface_material_director_current.multiply(surface_F, surface_material_director_ref_fad);
+  surface_material_director_current.scale(
       1.0 / Core::FADUtils::VectorNorm(surface_material_director_current));
 
   // Get the current triad of the surface.
@@ -401,7 +402,7 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     surface_normal_current(i_dim) = surface_basis_current(i_dim, 2);
   Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_perpendicular_current;
-  surface_material_director_perpendicular_current.CrossProduct(
+  surface_material_director_perpendicular_current.cross_product(
       surface_material_director_current, surface_normal_current);
   Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_triad_current;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -417,7 +418,7 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
     for (unsigned int i_col = 0; i_col < 3; i_col++)
       surface_triad_offset_fad(i_row, i_col) = surface_triad_offset(i_row, i_col);
   Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_triad_current_with_offset;
-  surface_triad_current_with_offset.Multiply(surface_triad_current, surface_triad_offset_fad);
+  surface_triad_current_with_offset.multiply(surface_triad_current, surface_triad_offset_fad);
 
   // Get the rotation angle.
   Core::LinAlg::Matrix<4, 1, scalar_type_rot_vec> rot_quat;
@@ -428,7 +429,7 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
   Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec> current_normal;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     current_normal(i_dim) = surface_basis_current(i_dim, 2);
-  if (abs(surface_material_director_current.Dot(current_normal)) > 1e-10)
+  if (abs(surface_material_director_current.dot(current_normal)) > 1e-10)
     FOUR_C_THROW("The current material director has to lie within the surface tangent plane.");
 #endif
 }
@@ -585,7 +586,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
         // Jacobian including the segment length.
-        segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+        segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
         // Calculate the rotation vector of this cross section.
         triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
@@ -648,22 +649,22 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             d_psi_surface_d_q_surface(i_dim, i_surface) = psi_surface(i_dim).dx(3 + i_surface);
 
         // Calculate the force terms derived w.r.t. the Lagrange multipliers.
-        T_rel_tr_times_lambda_shape.MultiplyTN(T_rel, lambda_shape_functions_full);
-        d_fb_d_lambda_gp.MultiplyTN(L_full, T_rel_tr_times_lambda_shape);
-        d_fb_d_lambda_gp.Scale(-1.0 * projected_gauss_point.GetGaussWeight() * segment_jacobian);
+        T_rel_tr_times_lambda_shape.multiply_tn(T_rel, lambda_shape_functions_full);
+        d_fb_d_lambda_gp.multiply_tn(L_full, T_rel_tr_times_lambda_shape);
+        d_fb_d_lambda_gp.scale(-1.0 * projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
-        T_surface_mtr_times_T_rel_tr_times_lambda_shape.MultiplyTN(
+        T_surface_mtr_times_T_rel_tr_times_lambda_shape.multiply_tn(
             T_surface_inv, T_rel_tr_times_lambda_shape);
-        d_fs_d_lambda_gp.MultiplyTN(
+        d_fs_d_lambda_gp.multiply_tn(
             d_psi_surface_d_q_surface, T_surface_mtr_times_T_rel_tr_times_lambda_shape);
-        d_fs_d_lambda_gp.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
+        d_fs_d_lambda_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
         // Calculate the force vectors.
-        f_beam.PutScalar(0.0);
+        f_beam.put_scalar(0.0);
         for (unsigned int i_row = 0; i_row < n_dof_rot_; i_row++)
           for (unsigned int i_col = 0; i_col < mortar::n_dof_; i_col++)
             f_beam(i_row) += d_fb_d_lambda_gp(i_row, i_col) * lambda_rot(i_col);
-        f_surface.PutScalar(0.0);
+        f_surface.put_scalar(0.0);
         for (unsigned int i_row = 0; i_row < surface::n_dof_; i_row++)
           for (unsigned int i_col = 0; i_col < mortar::n_dof_; i_col++)
             f_surface(i_row) += d_fs_d_lambda_gp(i_row, i_col) * lambda_rot(i_col);
@@ -676,10 +677,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             d_f_surface_d_phi(i_row, i_dim) = f_surface(i_row).dx(i_dim);
 
-        T_beam_times_I_beam_tilde_full.Multiply(T_beam, I_beam_tilde_full);
-        d_f_beam_d_phi_times_T_beam_times_I_beam_tilde_full.Multiply(
+        T_beam_times_I_beam_tilde_full.multiply(T_beam, I_beam_tilde_full);
+        d_f_beam_d_phi_times_T_beam_times_I_beam_tilde_full.multiply(
             d_f_beam_d_phi, T_beam_times_I_beam_tilde_full);
-        d_f_surface_d_phi_times_T_beam_times_I_beam_tilde_full.Multiply(
+        d_f_surface_d_phi_times_T_beam_times_I_beam_tilde_full.multiply(
             d_f_surface_d_phi, T_beam_times_I_beam_tilde_full);
 
         // Add to output matrices and vector.
@@ -833,7 +834,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
         // Jacobian including the segment length.
-        segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+        segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
         // Calculate the rotation vector of this cross section.
         triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
@@ -894,30 +895,30 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             d_psi_surface_d_q_surface(i_dim, i_surface) = psi_surface(i_dim).dx(3 + i_surface);
 
         // Calculate the force terms derived w.r.t. the Lagrange multipliers.
-        T_rel_tr_times_lambda_shape.MultiplyTN(T_rel, lambda_shape_functions_full);
-        d_fb_d_lambda_gp.MultiplyTN(L_full, T_rel_tr_times_lambda_shape);
-        d_fb_d_lambda_gp.Scale(-1.0 * projected_gauss_point.GetGaussWeight() * segment_jacobian);
+        T_rel_tr_times_lambda_shape.multiply_tn(T_rel, lambda_shape_functions_full);
+        d_fb_d_lambda_gp.multiply_tn(L_full, T_rel_tr_times_lambda_shape);
+        d_fb_d_lambda_gp.scale(-1.0 * projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
-        T_surface_mtr_times_T_rel_tr_times_lambda_shape.MultiplyTN(
+        T_surface_mtr_times_T_rel_tr_times_lambda_shape.multiply_tn(
             T_surface_inv, T_rel_tr_times_lambda_shape);
-        d_fs_d_lambda_gp.MultiplyTN(
+        d_fs_d_lambda_gp.multiply_tn(
             d_psi_surface_d_q_surface, T_surface_mtr_times_T_rel_tr_times_lambda_shape);
-        d_fs_d_lambda_gp.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
+        d_fs_d_lambda_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
         // Constraint vector.
-        g_gp.PutScalar(0.0);
+        g_gp.put_scalar(0.0);
         for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++)
           for (unsigned int i_col = 0; i_col < 3; i_col++)
             g_gp(i_row) += lambda_shape_functions_full(i_col, i_row) * psi_rel(i_col);
-        g_gp.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
+        g_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
 
         // Derivatives of constraint vector.
-        T_beam_times_I_beam_tilde_full.Multiply(T_beam, I_beam_tilde_full);
+        T_beam_times_I_beam_tilde_full.multiply(T_beam, I_beam_tilde_full);
 
         for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
           for (unsigned int i_psi = 0; i_psi < 3; i_psi++)
             d_g_d_psi_beam(i_lambda, i_psi) = g_gp(i_lambda).dx(i_psi);
-        d_g_d_psi_beam_times_T_beam_I.Multiply(d_g_d_psi_beam, T_beam_times_I_beam_tilde_full);
+        d_g_d_psi_beam_times_T_beam_I.multiply(d_g_d_psi_beam, T_beam_times_I_beam_tilde_full);
 
         for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
           for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
@@ -949,11 +950,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
 
   // Assemble into the global vectors
-  global_constraint.SumIntoGlobalValues(lambda_gid_rot.size(), lambda_gid_rot.data(), local_g.A());
-  global_kappa.SumIntoGlobalValues(lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.A());
-  local_kappa.PutScalar(1.0);
+  global_constraint.SumIntoGlobalValues(
+      lambda_gid_rot.size(), lambda_gid_rot.data(), local_g.data());
+  global_kappa.SumIntoGlobalValues(
+      lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.data());
+  local_kappa.put_scalar(1.0);
   global_lambda_active.SumIntoGlobalValues(
-      lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.A());
+      lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.data());
 
   // Assemble into global matrices.
   for (unsigned int i_dof_lambda = 0; i_dof_lambda < mortar::n_dof_; i_dof_lambda++)

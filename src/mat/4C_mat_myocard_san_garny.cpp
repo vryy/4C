@@ -778,7 +778,7 @@ double MyocardSanGarny::GetIonicCurrents(const int k) const
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void MyocardSanGarny::Update(const double phi, const double dt)
+void MyocardSanGarny::update(const double phi, const double dt)
 {
   // update initial values for next time step
   for (int i = 0; i < 16; i++) s0_[i] = s_[i];

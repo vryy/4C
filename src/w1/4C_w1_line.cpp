@@ -130,10 +130,10 @@ void Discret::ELEMENTS::Wall1Line::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mgit 03/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Line::Print(std::ostream& os) const
+void Discret::ELEMENTS::Wall1Line::print(std::ostream& os) const
 {
   os << "Wall1Line ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

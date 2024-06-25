@@ -105,7 +105,7 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
 
         // compute dXYZ / dr
         Core::LinAlg::Matrix<noddof_, 1> dxyzdr(true);
-        dxyzdr.MultiplyTT(1.0, x, derivs, 0.0);
+        dxyzdr.multiply_tt(1.0, x, derivs, 0.0);
         // compute line increment dL
         double dL;
         dL = 0.0;
@@ -128,7 +128,7 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
             {
               // calculate reference position of GP
               Core::LinAlg::Matrix<noddof_, 1> gp_coord(true);
-              gp_coord.MultiplyTN(1.0, x, shapefcts, 0.0);
+              gp_coord.multiply_tn(1.0, x, shapefcts, 0.0);
 
               // write coordinates in another datatype
               double gp_coord2[noddof_];

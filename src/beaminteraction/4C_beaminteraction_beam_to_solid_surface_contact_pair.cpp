@@ -116,7 +116,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       // Evaluate the gap function.
       r_rel = r_beam;
       r_rel -= r_surface;
-      gap = r_rel.Dot(surface_normal) - beam_cross_section_radius;
+      gap = r_rel.dot(surface_normal) - beam_cross_section_radius;
 
       // Get the shape function matrices.
       GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
@@ -145,7 +145,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       scalar_type force = PenaltyForce(gap, this->Params()->beam_to_solid_surface_contact_params());
 
       // Add the Gauss point contributions to the pair force vector.
-      gap_variation_times_normal.Scale(
+      gap_variation_times_normal.scale(
           force * projected_gauss_point.GetGaussWeight() * segment_jacobian);
       pair_force_vector -= gap_variation_times_normal;
     }
@@ -254,7 +254,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
       // Evaluate the gap function.
       r_rel = r_beam;
       r_rel -= r_surface;
-      gap = r_rel.Dot(surface_normal) - beam_cross_section_radius;
+      gap = r_rel.dot(surface_normal) - beam_cross_section_radius;
 
       // Get the contact force.
       potential += projected_gauss_point.GetGaussWeight() * segment_jacobian *

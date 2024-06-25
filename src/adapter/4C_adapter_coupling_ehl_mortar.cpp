@@ -1070,11 +1070,11 @@ void Adapter::CouplingEhlMortar::CreateForceVec(
     const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
     const Core::LinAlg::Matrix<3, 1> nor(cnode->MoData().n(), true);
     Core::LinAlg::Matrix<3, 3> nn;
-    nn.MultiplyNT(nor, nor);
+    nn.multiply_nt(nor, nor);
     Core::LinAlg::Matrix<3, 1> lmn;
-    lmn.Multiply(nn, lm);
+    lmn.multiply(nn, lm);
     Core::LinAlg::Matrix<3, 1> lmt(lm);
-    lmt.Update(-1., lmn, 1.);
+    lmt.update(-1., lmn, 1.);
     for (int d = 0; d < 3; ++d)
     {
       n->operator[](n->Map().LID(cnode->Dofs()[d])) = lmn(d);

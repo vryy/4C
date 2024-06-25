@@ -1242,7 +1242,7 @@ void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::runPreComputeX(
 
     // same for relative rotation angle deltatheta
     Core::LinAlg::Matrix<3, 1> deltatheta(&dir_rotvec[i], true);
-    deltatheta.Scale(step);
+    deltatheta.scale(step);
 
     Core::LargeRotations::angletoquaternion(deltatheta, deltaQ);
     Core::LargeRotations::quaternionproduct(Qold, deltaQ, Qnew);

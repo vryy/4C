@@ -171,7 +171,7 @@ void FLD::TDSEleData::update_svelnp_in_one_direction(const double fac1, const do
 /*----------------------------------------------------------------------*
  |  update time dependent subgrid scales (public)             gjb 12/12 |
  *----------------------------------------------------------------------*/
-void FLD::TDSEleData::Update(const double dt, const double gamma)
+void FLD::TDSEleData::update(const double dt, const double gamma)
 {
   // the old subgrid-scale acceleration for the next timestep is calculated
   // on the fly, not stored on the element

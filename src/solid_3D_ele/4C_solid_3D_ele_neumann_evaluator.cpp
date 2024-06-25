@@ -118,7 +118,7 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
 
         // material/reference co-ordinates of Gauss point
         Core::LinAlg::Matrix<numdim, 1> gauss_point_reference_coordinates;
-        gauss_point_reference_coordinates.MultiplyTN(
+        gauss_point_reference_coordinates.multiply_tn(
             nodal_coordinates.reference_coordinates_, shape_functions.shapefunctions_);
 
         for (auto dim = 0; dim < numdim; dim++)
@@ -131,7 +131,7 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
                 (function_number > 0)
                     ? Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
-                          .evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
+                          .evaluate(gauss_point_reference_coordinates.data(), total_time, dim)
                     : 1.0;
 
             const double value_times_integration_factor =

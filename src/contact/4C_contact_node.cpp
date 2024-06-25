@@ -246,7 +246,7 @@ void CONTACT::Aug::NodeDataContainer::Complete()
 
   GetDeriv1st_Kappa().complete();
   GetDeriv2nd_Kappa().complete();
-  GetDeriv1st_A().complete();
+  GetDeriv1st_data().complete();
 
   debug_.Complete();
 }
@@ -420,18 +420,18 @@ CONTACT::Node* CONTACT::Node::Clone() const
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const CONTACT::Node& cnode)
 {
-  cnode.Print(os);
+  cnode.print(os);
   return os;
 }
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Node::Print(std::ostream& os) const
+void CONTACT::Node::print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Contact ";
-  Mortar::Node::Print(os);
+  Mortar::Node::print(os);
   if (IsSlave())
     if (IsInitActive()) os << " InitActive ";
   return;

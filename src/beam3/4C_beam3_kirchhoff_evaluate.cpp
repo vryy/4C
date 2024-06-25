@@ -346,7 +346,7 @@ void Discret::ELEMENTS::Beam3k::calc_internal_and_inertia_forces_and_stiff(
     if (force != nullptr)
     {
       // set view on Core::LinAlg::SerialDenseVector to avoid copying of data
-      internal_force.SetView(&((*force)(0)));
+      internal_force.set_view(&((*force)(0)));
     }
 
     // vector containing locally assembled nodal positions and tangents required for centerline:
@@ -698,7 +698,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
 
     r_s.clear();
     // Calculation of r' at xi
-    r_s.Multiply(N_s, disp_totlag_centerline);
+    r_s.multiply(N_s, disp_totlag_centerline);
 
     // calculate epsilon at collocation point
     abs_r_s = Core::FADUtils::Norm<T>(r_s);
@@ -708,8 +708,8 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
 
 
     v_epsilon_cp[ind].clear();
-    v_epsilon_cp[ind].MultiplyTN(N_s, r_s);
-    v_epsilon_cp[ind].Scale(1.0 / abs_r_s);
+    v_epsilon_cp[ind].multiply_tn(N_s, r_s);
+    v_epsilon_cp[ind].scale(1.0 / abs_r_s);
 
     calc_v_thetaperp<nnodecl>(v_thetaperp_cp[ind], N_s, r_s, abs_r_s);
 
@@ -753,7 +753,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
     L_i_s.clear();
     Core::FE::shape_function_1D(L_i, xi_gp, Shape());
     Core::FE::shape_function_1D_deriv1(L_i_xi, xi_gp, Shape());
-    L_i_s.Update(1.0 / jacobi_[numgp], L_i_xi);
+    L_i_s.update(1.0 / jacobi_[numgp], L_i_xi);
 
 
     // Calculate collocation point interpolations ("v"-vectors and epsilon)
@@ -775,17 +775,17 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
     // re-interpolation of collocation point values
     for (unsigned int node = 0; node < BEAM3K_COLLOCATION_POINTS; ++node)
     {
-      v_epsilon_bar.Update(L_i(node), v_epsilon_cp[node], 1.0);
+      v_epsilon_bar.update(L_i(node), v_epsilon_cp[node], 1.0);
 
-      v_thetaperp_s_bar.Update(L_i_s(node), v_thetaperp_cp[node], 1.0);
+      v_thetaperp_s_bar.update(L_i_s(node), v_thetaperp_cp[node], 1.0);
 
-      v_thetapar_s_bar.Update(L_i_s(node), v_thetapar_cp[node], 1.0);
+      v_thetapar_s_bar.update(L_i_s(node), v_thetapar_cp[node], 1.0);
 
       epsilon_bar += L_i(node) * epsilon_cp[node];
     }
 
-    v_theta_s_bar.Update(1.0, v_thetaperp_s_bar, 1.0);
-    v_theta_s_bar.Update(1.0, v_thetapar_s_bar, 1.0);
+    v_theta_s_bar.update(1.0, v_thetaperp_s_bar, 1.0);
+    v_theta_s_bar.update(1.0, v_thetapar_s_bar, 1.0);
 
 
     // "v"-matrix which is required for inertia forces is already calculated here
@@ -793,8 +793,8 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
     v_theta_gp[numgp].clear();
     for (unsigned int node = 0; node < BEAM3K_COLLOCATION_POINTS; ++node)
     {
-      v_theta_gp[numgp].Update(L_i(node), v_thetaperp_cp[node], 1.0);
-      v_theta_gp[numgp].Update(L_i(node), v_thetapar_cp[node], 1.0);
+      v_theta_gp[numgp].update(L_i(node), v_thetaperp_cp[node], 1.0);
+      v_theta_gp[numgp].update(L_i(node), v_thetapar_cp[node], 1.0);
     }
 
 
@@ -825,22 +825,22 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_wk(
 
     // pushforward of stress resultants
     m.clear();
-    m.Multiply(triad_mat_gp[numgp], M);
+    m.multiply(triad_mat_gp[numgp], M);
 
 
     // residual contribution from moments
     f_int_aux.clear();
-    f_int_aux.Multiply(v_theta_s_bar, m);
-    f_int_aux.Scale(wgt * jacobi_[numgp]);
+    f_int_aux.multiply(v_theta_s_bar, m);
+    f_int_aux.scale(wgt * jacobi_[numgp]);
 
-    internal_force.Update(1.0, f_int_aux, 1.0);
+    internal_force.update(1.0, f_int_aux, 1.0);
 
     // residual contribution from axial force
     f_int_aux.clear();
-    f_int_aux.Update(1.0, v_epsilon_bar);
-    f_int_aux.Scale(wgt * jacobi_[numgp] * f_par);
+    f_int_aux.update(1.0, v_epsilon_bar);
+    f_int_aux.scale(wgt * jacobi_[numgp] * f_par);
 
-    internal_force.Update(1.0, f_int_aux, 1.0);
+    internal_force.update(1.0, f_int_aux, 1.0);
 
 
     if (stiffmatrix != nullptr)
@@ -952,8 +952,8 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
   Core::LinAlg::Matrix<3, 3, double> constitutive_matrix_moment_spatial(true);
 
   Core::LinAlg::Matrix<3, 3, double> temp(true);
-  temp.Multiply(triad_mat_gp, constitutive_matrix_moment_material);
-  constitutive_matrix_moment_spatial.MultiplyNT(temp, triad_mat_gp);
+  temp.multiply(triad_mat_gp, constitutive_matrix_moment_material);
+  constitutive_matrix_moment_spatial.multiply_nt(temp, triad_mat_gp);
 
 
   // linearization of stress resultant (moment)
@@ -996,13 +996,13 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
 
     // Calculation of r' and g_1
     r_s_cp.clear();
-    r_s_cp.Multiply(N_s, disp_totlag_centerline);
+    r_s_cp.multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s_cp = r_s_cp.Norm2();  // Todo think about computing and storing inverse value here
+    abs_r_s_cp = r_s_cp.norm2();  // Todo think about computing and storing inverse value here
 
 
     g_1_cp.clear();
-    g_1_cp.Update(std::pow(abs_r_s_cp, -1.0), r_s_cp);
+    g_1_cp.update(std::pow(abs_r_s_cp, -1.0), r_s_cp);
 
 
     calc_lin_v_thetaperp_moment<nnodecl>(
@@ -1023,14 +1023,14 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
   Core::FE::shape_function_1D_deriv1(L_i_xi, xi_gp, Shape());
 
   L_i_s.clear();
-  L_i_s.Update(std::pow(jacobifac_gp, -1.0), L_i_xi, 0.0);
+  L_i_s.update(std::pow(jacobifac_gp, -1.0), L_i_xi, 0.0);
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
-    lin_v_epsilon_bar.Update(L_i(icp), lin_v_epsilon_cp[icp], 1.0);
+    lin_v_epsilon_bar.update(L_i(icp), lin_v_epsilon_cp[icp], 1.0);
 
-    lin_v_thetaperp_s_bar_moment.Update(L_i_s(icp), lin_v_thetaperp_moment_cp[icp], 1.0);
-    lin_v_thetapar_s_bar_moment.Update(L_i_s(icp), lin_v_thetapar_moment_cp[icp], 1.0);
+    lin_v_thetaperp_s_bar_moment.update(L_i_s(icp), lin_v_thetaperp_moment_cp[icp], 1.0);
+    lin_v_thetapar_s_bar_moment.update(L_i_s(icp), lin_v_thetapar_moment_cp[icp], 1.0);
   }
 
   // compute Itilde(_s) matrices required for re-interpolation of CP values of lin_theta
@@ -1050,15 +1050,15 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
   {
     auxmatrix.clear();
 
-    auxmatrix.Multiply(Itilde[icp], lin_theta_cp[icp]);
+    auxmatrix.multiply(Itilde[icp], lin_theta_cp[icp]);
 
-    lin_theta_bar.Update(1.0, auxmatrix, 1.0);
+    lin_theta_bar.update(1.0, auxmatrix, 1.0);
 
     auxmatrix.clear();
 
-    auxmatrix.Multiply(Itilde_s[icp], lin_theta_cp[icp]);
+    auxmatrix.multiply(Itilde_s[icp], lin_theta_cp[icp]);
 
-    lin_theta_s_bar.Update(1.0, auxmatrix, 1.0);
+    lin_theta_s_bar.update(1.0, auxmatrix, 1.0);
   }
 
 
@@ -1075,13 +1075,13 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
 
 
   // linearization of the residual contributions from moments
-  stiffmatrix_fixedsize.Update(jacobifac_GPwgt, lin_v_thetaperp_s_bar_moment, 1.0);
+  stiffmatrix_fixedsize.update(jacobifac_GPwgt, lin_v_thetaperp_s_bar_moment, 1.0);
 
-  stiffmatrix_fixedsize.Update(jacobifac_GPwgt, lin_v_thetapar_s_bar_moment, 1.0);
+  stiffmatrix_fixedsize.update(jacobifac_GPwgt, lin_v_thetapar_s_bar_moment, 1.0);
 
   auxmatrix2.clear();
-  auxmatrix2.Multiply(v_theta_s_bar, lin_moment_resultant);
-  stiffmatrix_fixedsize.Update(jacobifac_GPwgt, auxmatrix2, 1.0);
+  auxmatrix2.multiply(v_theta_s_bar, lin_moment_resultant);
+  stiffmatrix_fixedsize.update(jacobifac_GPwgt, auxmatrix2, 1.0);
 
 
   // linearization of the residual contributions from axial force
@@ -1090,9 +1090,9 @@ void Discret::ELEMENTS::Beam3k::calculate_stiffmat_contributions_analytic_wk(
     for (unsigned int jdof = 0; jdof < numdofelement; ++jdof)
       auxmatrix2(idof, jdof) = v_epsilon_bar(idof) * v_epsilon_bar(jdof);
 
-  stiffmatrix_fixedsize.Update(axial_rigidity * jacobifac_GPwgt, auxmatrix2, 1.0);
+  stiffmatrix_fixedsize.update(axial_rigidity * jacobifac_GPwgt, auxmatrix2, 1.0);
 
-  stiffmatrix_fixedsize.Update(axial_force_bar * jacobifac_GPwgt, lin_v_epsilon_bar, 1.0);
+  stiffmatrix_fixedsize.update(axial_force_bar * jacobifac_GPwgt, lin_v_epsilon_bar, 1.0);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1116,7 +1116,7 @@ void Discret::ELEMENTS::Beam3k::pre_compute_terms_at_cp_for_stiffmat_contributio
 
 
   Core::LinAlg::Matrix<ndim, 1, double> g_1(true);
-  g_1.Update(std::pow(abs_r_s, -1.0), r_s);
+  g_1.update(std::pow(abs_r_s, -1.0), r_s);
 
   Core::LinAlg::Matrix<ndim, 1, double> g_1_bar(true);
 
@@ -1136,7 +1136,7 @@ void Discret::ELEMENTS::Beam3k::pre_compute_terms_at_cp_for_stiffmat_contributio
 
   // lin_theta
   lin_theta.clear();
-  lin_theta.Update(1.0, lin_theta_par, 1.0, lin_theta_perp);
+  lin_theta.update(1.0, lin_theta_par, 1.0, lin_theta_perp);
 
   calc_lin_v_epsilon<nnodecl>(lin_v_epsilon, N_s, g_1, abs_r_s);
 }
@@ -1273,20 +1273,20 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     assemble_shapefunctions_ns(N_i_xi, jacobi_cp_[ind], N_s);
     r_s.clear();
     // Calculation of r' at xi
-    r_s.Multiply(N_s, disp_totlag_centerline);
+    r_s.multiply(N_s, disp_totlag_centerline);
 
     // calculate epsilon at collocation point
     abs_r_s = Core::FADUtils::Norm<FAD>(r_s);
     epsilon_cp[ind] = abs_r_s - 1.0;
 
     v_epsilon_cp[ind].clear();
-    v_epsilon_cp[ind].MultiplyTN(N_s, r_s);
-    v_epsilon_cp[ind].Scale(1.0 / abs_r_s);
+    v_epsilon_cp[ind].multiply_tn(N_s, r_s);
+    v_epsilon_cp[ind].scale(1.0 / abs_r_s);
 
 #ifdef CONSISTENTSPINSK
-    N_s_cp[ind].Update(1.0, N_s, 0.0);
-    g1_cp[ind].Update(1.0 / abs_r_s, r_s, 0.0);
-    ttilde_cp[ind].Update(1.0 / (abs_r_s * abs_r_s), r_s, 0.0);
+    N_s_cp[ind].update(1.0, N_s, 0.0);
+    g1_cp[ind].update(1.0 / abs_r_s, r_s, 0.0);
+    ttilde_cp[ind].update(1.0 / (abs_r_s * abs_r_s), r_s, 0.0);
 #endif
 
   }  // for (int node=0; node<BEAM3K_COLLOCATION_POINTS; node++)
@@ -1314,14 +1314,14 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD> auxmatrix3(true);
     compute_triple_product<6 * nnodecl + BEAM3K_COLLOCATION_POINTS>(
         N_s_cp[node], g1_cp[REFERENCE_NODE], ttilde_cp[node], auxmatrix3);
-    v1_cp[node].Update(1.0, auxmatrix3, 0.0);
+    v1_cp[node].update(1.0, auxmatrix3, 0.0);
     auxmatrix3.clear();
     compute_triple_product<6 * nnodecl + BEAM3K_COLLOCATION_POINTS>(
         N_s_cp[REFERENCE_NODE], g1_cp[node], ttilde_cp[REFERENCE_NODE], auxmatrix3);
-    v1_cp[node].Update(-1.0, auxmatrix3, 1.0);
+    v1_cp[node].update(-1.0, auxmatrix3, 1.0);
     Core::LinAlg::Matrix<1, 1, FAD> auxscalar(true);
-    auxscalar.MultiplyTN(g1_cp[node], g1_cp[REFERENCE_NODE]);
-    v1_cp[node].Scale(1.0 / (1.0 + auxscalar(0, 0)));
+    auxscalar.multiply_tn(g1_cp[node], g1_cp[REFERENCE_NODE]);
+    v1_cp[node].scale(1.0 / (1.0 + auxscalar(0, 0)));
 #endif
   }
   //********end: evaluate quantities at collocation points********************************
@@ -1360,7 +1360,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     N_ss.clear();
     Core::FE::shape_function_1D(L_i, xi, Shape());
     Core::FE::shape_function_1D_deriv1(L_i_xi, xi, Shape());
-    L_i_s.Update(1.0 / jacobi_[numgp], L_i_xi, 0.0);
+    L_i_s.update(1.0 / jacobi_[numgp], L_i_xi, 0.0);
     assemble_shapefunctions_l(L_i, L);
     // The assemble routine is identical for L and L_s
     assemble_shapefunctions_l(L_i_s, L_s);
@@ -1377,7 +1377,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     for (unsigned int node = 0; node < BEAM3K_COLLOCATION_POINTS; node++)
     {
       // calculate interpolated axial tension and variation
-      v_epsilon.Update(L_i(node), v_epsilon_cp[node], 1.0);
+      v_epsilon.update(L_i(node), v_epsilon_cp[node], 1.0);
       epsilon += L_i(node) * epsilon_cp[node];
       // calculate interpolated relative angle
       phi += L_i(node) * phi_cp[node];
@@ -1386,9 +1386,9 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
 
     // Calculation of r' and r'' at xi
     r_s.clear();
-    r_s.Multiply(N_s, disp_totlag_centerline);
+    r_s.multiply(N_s, disp_totlag_centerline);
     r_ss.clear();
-    r_ss.Multiply(N_ss, disp_totlag_centerline);
+    r_ss.multiply(N_ss, disp_totlag_centerline);
 
     //*****************************************************************************************************************************
     //************************Begin: Determine "v"-vectors representing the discrete strain
@@ -1404,14 +1404,14 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     }
     g1.clear();
     g1_s.clear();
-    g1.Update(1.0 / abs_r_s, r_s, 0.0);
-    g1_s.Update(1.0 / abs_r_s, r_ss, 0.0);
-    g1_s.Update(-rsTrss / (abs_r_s * abs_r_s * abs_r_s), r_s, 1.0);
+    g1.update(1.0 / abs_r_s, r_s, 0.0);
+    g1_s.update(1.0 / abs_r_s, r_ss, 0.0);
+    g1_s.update(-rsTrss / (abs_r_s * abs_r_s * abs_r_s), r_s, 1.0);
     ttilde.clear();
     ttilde_s.clear();
-    ttilde.Update(1.0 / (abs_r_s * abs_r_s), r_s, 0.0);
-    ttilde_s.Update(1.0 / (abs_r_s * abs_r_s), r_ss, 0.0);
-    ttilde_s.Update(-2 * rsTrss / (abs_r_s * abs_r_s * abs_r_s * abs_r_s), r_s, 1.0);
+    ttilde.update(1.0 / (abs_r_s * abs_r_s), r_s, 0.0);
+    ttilde_s.update(1.0 / (abs_r_s * abs_r_s), r_ss, 0.0);
+    ttilde_s.update(-2 * rsTrss / (abs_r_s * abs_r_s * abs_r_s * abs_r_s), r_s, 1.0);
 
     //************** I) Compute v_theta_s=v_thetaperp_s+v_thetapartheta_s(+v_thetapard_s)
     //*****************************************
@@ -1430,18 +1430,18 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     auxmatrix1.clear();
     auxmatrix2.clear();
     Core::LargeRotations::computespin(auxmatrix1, ttilde);
-    auxmatrix2.MultiplyTN(N_ss, auxmatrix1);
-    v_thetaperp_s.Update(-1.0, auxmatrix2, 0.0);
+    auxmatrix2.multiply_tn(N_ss, auxmatrix1);
+    v_thetaperp_s.update(-1.0, auxmatrix2, 0.0);
     auxmatrix1.clear();
     auxmatrix2.clear();
     Core::LargeRotations::computespin(auxmatrix1, ttilde_s);
-    auxmatrix2.MultiplyTN(N_s, auxmatrix1);
-    v_thetaperp_s.Update(-1.0, auxmatrix2, 1.0);
+    auxmatrix2.multiply_tn(N_s, auxmatrix1);
+    v_thetaperp_s.update(-1.0, auxmatrix2, 1.0);
 
     // I c) Calculate sum v_theta_s=v_thetaperp_s+v_thetapartheta_s
     v_theta_s.clear();
-    v_theta_s.Update(1.0, v_thetaperp_s, 1.0);
-    v_theta_s.Update(1.0, v_thetapartheta_s, 1.0);
+    v_theta_s.update(1.0, v_thetaperp_s, 1.0);
+    v_theta_s.update(1.0, v_thetapartheta_s, 1.0);
 
     //************** II) Compute v_theta=v_thetaperp_+v_thetapartheta_(+v_thetapard_)  which is
     // required for inertia forces ********
@@ -1459,8 +1459,8 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     auxmatrix1.clear();
     auxmatrix2.clear();
     Core::LargeRotations::computespin(auxmatrix1, ttilde);
-    auxmatrix2.MultiplyTN(N_s, auxmatrix1);
-    v_theta_gp[numgp].Update(-1.0, auxmatrix2, 1.0);
+    auxmatrix2.multiply_tn(N_s, auxmatrix1);
+    v_theta_gp[numgp].update(-1.0, auxmatrix2, 1.0);
 
 
 // Compute contributions stemming from CONSISTENTSPINSK
@@ -1475,46 +1475,46 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     auxmatrix3.clear();
     compute_triple_product<6 * nnodecl + BEAM3K_COLLOCATION_POINTS>(
         N_s, g1_cp[REFERENCE_NODE], ttilde, auxmatrix3);
-    v1.Update(1.0, auxmatrix3, 0.0);
+    v1.update(1.0, auxmatrix3, 0.0);
     auxmatrix3.clear();
     compute_triple_product<6 * nnodecl + BEAM3K_COLLOCATION_POINTS>(
         N_s_cp[REFERENCE_NODE], g1, ttilde_cp[REFERENCE_NODE], auxmatrix3);
-    v1.Update(-1.0, auxmatrix3, 1.0);
+    v1.update(-1.0, auxmatrix3, 1.0);
     auxscalar1.clear();
-    auxscalar1.MultiplyTN(g1, g1_cp[REFERENCE_NODE]);
-    v1.Scale(1.0 / (1.0 + auxscalar1(0, 0)));
+    auxscalar1.multiply_tn(g1, g1_cp[REFERENCE_NODE]);
+    v1.scale(1.0 / (1.0 + auxscalar1(0, 0)));
 
     // Calculate v1_s:
     v1_s.clear();
     auxmatrix3.clear();
     compute_triple_product<6 * nnodecl + BEAM3K_COLLOCATION_POINTS>(
         N_s, g1_cp[REFERENCE_NODE], ttilde_s, auxmatrix3);
-    v1_s.Update(1.0, auxmatrix3, 0.0);
+    v1_s.update(1.0, auxmatrix3, 0.0);
     auxmatrix3.clear();
     compute_triple_product<6 * nnodecl + BEAM3K_COLLOCATION_POINTS>(
         N_ss, g1_cp[REFERENCE_NODE], ttilde, auxmatrix3);
-    v1_s.Update(1.0, auxmatrix3, 1.0);
+    v1_s.update(1.0, auxmatrix3, 1.0);
     auxmatrix3.clear();
     compute_triple_product<6 * nnodecl + BEAM3K_COLLOCATION_POINTS>(
         N_s_cp[REFERENCE_NODE], g1_s, ttilde_cp[REFERENCE_NODE], auxmatrix3);
-    v1_s.Update(-1.0, auxmatrix3, 1.0);
+    v1_s.update(-1.0, auxmatrix3, 1.0);
     auxscalar1.clear();
-    auxscalar1.MultiplyTN(g1_s, g1_cp[REFERENCE_NODE]);
-    v1_s.Update(-auxscalar1(0, 0), v1, 1.0);
+    auxscalar1.multiply_tn(g1_s, g1_cp[REFERENCE_NODE]);
+    v1_s.update(-auxscalar1(0, 0), v1, 1.0);
     auxscalar1.clear();
-    auxscalar1.MultiplyTN(g1, g1_cp[REFERENCE_NODE]);
-    v1_s.Scale(1.0 / (1.0 + auxscalar1(0, 0)));
+    auxscalar1.multiply_tn(g1, g1_cp[REFERENCE_NODE]);
+    v1_s.scale(1.0 / (1.0 + auxscalar1(0, 0)));
 
     // Calculate vec1 and vec2
     Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD> vec1(true);
     Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD> vec2(true);
     for (int node = 0; node < BEAM3K_COLLOCATION_POINTS; node++)
     {
-      vec1.Update(L_i_s(node), v1_cp[node], 1.0);
-      vec2.Update(L_i(node), v1_cp[node], 1.0);
+      vec1.update(L_i_s(node), v1_cp[node], 1.0);
+      vec2.update(L_i(node), v1_cp[node], 1.0);
     }
-    vec1.Update(-1.0, v1_s, 1.0);
-    vec2.Update(-1.0, v1, 1.0);
+    vec1.update(-1.0, v1_s, 1.0);
+    vec2.update(-1.0, v1, 1.0);
 
     // Compute v_thetapard_s
     v_thetapard_s.clear();
@@ -1526,7 +1526,7 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
       }
     }
     // I d) Add v_thetapard_s contribution according to v_theta_s+=v_thetapard_s
-    v_theta_s.Update(1.0, v_thetapard_s, 1.0);
+    v_theta_s.update(1.0, v_thetapard_s, 1.0);
 
     // to II)  Compute v_thetapard_ of v_theta=v_thetaperp_+v_thetapartheta_(+v_thetapard_)  which
     // is required for inertia forces******* II c) v_thetapard_ contribution
@@ -1534,9 +1534,9 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
     Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 1, FAD> vec3(true);
     for (int node = 0; node < BEAM3K_COLLOCATION_POINTS; node++)
     {
-      vec3.Update(L_i(node), v1_cp[node], 1.0);
+      vec3.update(L_i(node), v1_cp[node], 1.0);
     }
-    vec3.Update(-1.0, v1, 1.0);
+    vec3.update(-1.0, v1, 1.0);
     for (int i = 0; i < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; i++)
     {
       for (int j = 0; j < 3; j++)
@@ -1579,19 +1579,19 @@ void Discret::ELEMENTS::Beam3k::calculate_internal_forces_and_stiff_sk(
 
     // pushforward of stress resultants
     m.clear();
-    m.Multiply(triad_mat_gp[numgp], M);
+    m.multiply(triad_mat_gp[numgp], M);
 
     // residual contribution from moments
     f_int_aux.clear();
-    f_int_aux.Multiply(v_theta_s, m);
-    f_int_aux.Scale(wgt * jacobi_[numgp]);
-    internal_force.Update(1.0, f_int_aux, 1.0);
+    f_int_aux.multiply(v_theta_s, m);
+    f_int_aux.scale(wgt * jacobi_[numgp]);
+    internal_force.update(1.0, f_int_aux, 1.0);
 
     // residual contribution from axial forces
     f_int_aux.clear();
-    f_int_aux.Update(1.0, v_epsilon, 0.0);
-    f_int_aux.Scale(wgt * jacobi_[numgp] * f_par);
-    internal_force.Update(1.0, f_int_aux, 1.0);
+    f_int_aux.update(1.0, v_epsilon, 0.0);
+    f_int_aux.scale(wgt * jacobi_[numgp] * f_par);
+    internal_force.update(1.0, f_int_aux, 1.0);
 
 
     // store material strain and stress resultant values in class variables
@@ -1717,7 +1717,7 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
 
     // calculation of centroid position at this gp in current state
     rnewmass.clear();
-    rnewmass.Multiply(N, disp_totlag_centerline);
+    rnewmass.multiply(N, disp_totlag_centerline);
 
 
     // get quaternion in converged state at gp and compute corresponding triad
@@ -1729,7 +1729,7 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
 
     // compute quaternion of relative rotation from converged to current state
     Core::LinAlg::Matrix<3, 3, T> deltatriad(true);
-    deltatriad.MultiplyNT(triad_mat_gp[numgp], triad_mat_old);
+    deltatriad.multiply_nt(triad_mat_gp[numgp], triad_mat_old);
     Core::LinAlg::Matrix<4, 1, T> deltaQ(true);
     Core::LargeRotations::triadtoquaternion(deltatriad, deltaQ);
     Core::LinAlg::Matrix<3, 1, T> deltatheta(true);
@@ -1741,17 +1741,17 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
     Core::LinAlg::Matrix<3, 1, T> Aconvmass(true);
     Core::LinAlg::Matrix<3, 1, T> Amodconvmass(true);
 
-    deltaTHETA.MultiplyTN(triad_mat_gp[numgp], deltatheta);
+    deltaTHETA.multiply_tn(triad_mat_gp[numgp], deltatheta);
 
     Core::LinAlg::Matrix<3, 1, T> auxvector(true);
     for (unsigned int i = 0; i < 3; ++i) auxvector(i) = (wconvmass_[numgp])(i);
-    Wconvmass.MultiplyTN(triad_mat_old, auxvector);
+    Wconvmass.multiply_tn(triad_mat_old, auxvector);
 
     for (unsigned int i = 0; i < 3; ++i) auxvector(i) = (aconvmass_[numgp])(i);
-    Aconvmass.MultiplyTN(triad_mat_old, auxvector);
+    Aconvmass.multiply_tn(triad_mat_old, auxvector);
 
     for (unsigned int i = 0; i < 3; ++i) auxvector(i) = (amodconvmass_[numgp])(i);
-    Amodconvmass.MultiplyTN(triad_mat_old, auxvector);
+    Amodconvmass.multiply_tn(triad_mat_old, auxvector);
 
     Core::LinAlg::Matrix<3, 1, T> deltar(true);
     for (unsigned int i = 0; i < 3; ++i) deltar(i) = rnewmass(i) - rconvmass_[numgp](i);
@@ -1816,27 +1816,27 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
     Core::LinAlg::Matrix<3, 1, T> Jp_Wnewmass(true);
     Core::LinAlg::Matrix<3, 1, T> auxvector1(true);
     Core::LinAlg::Matrix<3, 1, T> Pi_t(true);
-    Jp_Wnewmass.Multiply(Jp, Wnewmass);
+    Jp_Wnewmass.multiply(Jp, Wnewmass);
     for (unsigned int i = 0; i < 3; ++i)
       for (unsigned int j = 0; j < 3; ++j)
         auxvector1(i) += SWnewmass(i, j) * Jp_Wnewmass(j) + Jp(i, j) * Anewmass(j);
 
-    Pi_t.Multiply(triad_mat_gp[numgp], auxvector1);
+    Pi_t.multiply(triad_mat_gp[numgp], auxvector1);
 
     Core::LinAlg::Matrix<3, 1, T> L_t(true);
-    L_t.Update(mass_inertia_translational, rttnewmass, 1.0);
+    L_t.update(mass_inertia_translational, rttnewmass, 1.0);
 
     // residual contribution from inertia moment
     f_inert_aux.clear();
-    f_inert_aux.Multiply(v_theta_gp[numgp], Pi_t);
-    f_inert_aux.Scale(wgt * jacobi_[numgp]);
-    f_inert.Update(1.0, f_inert_aux, 1.0);
+    f_inert_aux.multiply(v_theta_gp[numgp], Pi_t);
+    f_inert_aux.scale(wgt * jacobi_[numgp]);
+    f_inert.update(1.0, f_inert_aux, 1.0);
 
     // residual contribution from inertia force
     f_inert_aux.clear();
-    f_inert_aux.MultiplyTN(N, L_t);
-    f_inert_aux.Scale(wgt * jacobi_[numgp]);
-    f_inert.Update(1.0, f_inert_aux, 1.0);
+    f_inert_aux.multiply_tn(N, L_t);
+    f_inert_aux.scale(wgt * jacobi_[numgp]);
+    f_inert.update(1.0, f_inert_aux, 1.0);
 
 
     // compute analytic mass matrix if required
@@ -1844,7 +1844,7 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
     {
       // temporal derivative of angular momentum equals negative inertia moment
       Core::LinAlg::Matrix<3, 1, T> moment_rho(Pi_t);
-      moment_rho.Scale(-1.0);
+      moment_rho.scale(-1.0);
 
       if (weakkirchhoff_)
       {
@@ -1865,8 +1865,8 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
     // Calculation of kinetic energy
     Core::LinAlg::Matrix<1, 1, T> ekinrot(true);
     Core::LinAlg::Matrix<1, 1, T> ekintrans(true);
-    ekinrot.MultiplyTN(Wnewmass, Jp_Wnewmass);
-    ekintrans.MultiplyTN(rtnewmass, rtnewmass);
+    ekinrot.multiply_tn(Wnewmass, Jp_Wnewmass);
+    ekintrans.multiply_tn(rtnewmass, rtnewmass);
     ekin_ += 0.5 *
              (Core::FADUtils::CastToDouble(ekinrot(0, 0)) +
                  mass_inertia_translational * Core::FADUtils::CastToDouble(ekintrans(0, 0))) *
@@ -1877,9 +1877,9 @@ void Discret::ELEMENTS::Beam3k::calculate_inertia_forces_and_mass_matrix(
     Core::LinAlg::Matrix<3, 1, T> anewmass(true);
     Core::LinAlg::Matrix<3, 1, T> amodnewmass(true);
 
-    wnewmass.Multiply(triad_mat_gp[numgp], Wnewmass);
-    anewmass.Multiply(triad_mat_gp[numgp], Anewmass);
-    amodnewmass.Multiply(triad_mat_gp[numgp], Amodnewmass);
+    wnewmass.multiply(triad_mat_gp[numgp], Wnewmass);
+    anewmass.multiply(triad_mat_gp[numgp], Anewmass);
+    amodnewmass.multiply(triad_mat_gp[numgp], Amodnewmass);
 
 
     // compute quaterion of current material triad at gp
@@ -2006,12 +2006,12 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
 
     // Calculation of r' and g_1
     r_s_cp.clear();
-    r_s_cp.Multiply(N_s, disp_totlag_centerline);
+    r_s_cp.multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s_cp = r_s_cp.Norm2();  // Todo think about computing and storing inverse value here
+    abs_r_s_cp = r_s_cp.norm2();  // Todo think about computing and storing inverse value here
 
     g_1_cp.clear();
-    g_1_cp.Update(std::pow(abs_r_s_cp, -1.0), r_s_cp);
+    g_1_cp.update(std::pow(abs_r_s_cp, -1.0), r_s_cp);
 
 
     calc_lin_v_thetaperp_moment<nnodecl>(
@@ -2030,8 +2030,8 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
-    lin_v_thetaperp_bar_moment.Update(L_i(icp), lin_v_thetaperp_moment_cp[icp], 1.0);
-    lin_v_thetapar_bar_moment.Update(L_i(icp), lin_v_thetapar_moment_cp[icp], 1.0);
+    lin_v_thetaperp_bar_moment.update(L_i(icp), lin_v_thetaperp_moment_cp[icp], 1.0);
+    lin_v_thetapar_bar_moment.update(L_i(icp), lin_v_thetapar_moment_cp[icp], 1.0);
   }
   /***********************************************************************************************/
 
@@ -2048,21 +2048,21 @@ void Discret::ELEMENTS::Beam3k::calculate_mass_matrix_contributions_analytic_wk(
   Core::LinAlg::Matrix<numdofelement, numdofelement, double> auxmatrix(true);
 
   // linearization of residual from inertia force
-  auxmatrix.MultiplyTN(N, N);
-  auxmatrix.Scale(mass_inertia_translational * lin_prefactor_acc);
+  auxmatrix.multiply_tn(N, N);
+  auxmatrix.scale(mass_inertia_translational * lin_prefactor_acc);
 
-  massmatrix_fixedsize.Update(jacobifac_GPwgt, auxmatrix, 1.0);
+  massmatrix_fixedsize.update(jacobifac_GPwgt, auxmatrix, 1.0);
 
 
   // linearization of residual from inertia moment
-  massmatrix_fixedsize.Update(-1.0 * jacobifac_GPwgt, lin_v_thetaperp_bar_moment, 1.0);
+  massmatrix_fixedsize.update(-1.0 * jacobifac_GPwgt, lin_v_thetaperp_bar_moment, 1.0);
 
-  massmatrix_fixedsize.Update(-1.0 * jacobifac_GPwgt, lin_v_thetapar_bar_moment, 1.0);
+  massmatrix_fixedsize.update(-1.0 * jacobifac_GPwgt, lin_v_thetapar_bar_moment, 1.0);
 
   auxmatrix.clear();
-  auxmatrix.Multiply(v_theta_bar, lin_moment_rho);
+  auxmatrix.multiply(v_theta_bar, lin_moment_rho);
 
-  massmatrix_fixedsize.Update(-1.0 * jacobifac_GPwgt, auxmatrix, 1.0);
+  massmatrix_fixedsize.update(-1.0 * jacobifac_GPwgt, auxmatrix, 1.0);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2359,11 +2359,11 @@ void Discret::ELEMENTS::Beam3k::evaluate_residual_from_point_neumann_moment(
   Core::LinAlg::Matrix<1, 1, T> auxscalar(true);
 
   Core::LargeRotations::computespin(Srs, r_s);
-  auxvector.Multiply(Srs, moment_ext);
-  auxvector.Scale(-1.0 * std::pow(abs_r_s, -2.0));
+  auxvector.multiply(Srs, moment_ext);
+  auxvector.scale(-1.0 * std::pow(abs_r_s, -2.0));
 
-  auxscalar.MultiplyTN(r_s, moment_ext);
-  auxscalar.Scale(1.0 / abs_r_s);
+  auxscalar.multiply_tn(r_s, moment_ext);
+  auxscalar.scale(1.0 / abs_r_s);
 
   for (unsigned int j = 0; j < 3; ++j)
   {
@@ -2422,7 +2422,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_stiff_matrix_analytic_from_point_neuman
 
   // Calculation of first base vector
   Core::LinAlg::Matrix<3, 1, double> g_1(true);
-  g_1.Update(std::pow(abs_r_s, -1.0), r_s);
+  g_1.update(std::pow(abs_r_s, -1.0), r_s);
 
   Core::LinAlg::Matrix<3, 3, double> spinmatrix_of_moment_ext(true);
   Core::LargeRotations::computespin(spinmatrix_of_moment_ext, moment_ext);
@@ -2609,9 +2609,9 @@ void Discret::ELEMENTS::Beam3k::evaluate_line_neumann_forces(
     }
 
     f_ext_aux.clear();
-    f_ext_aux.MultiplyTN(N, force_gp);
+    f_ext_aux.multiply_tn(N, force_gp);
 
-    force_ext.Update(wgt * jacobi_[numgp], f_ext_aux, 1.0);
+    force_ext.update(wgt * jacobi_[numgp], f_ext_aux, 1.0);
   }
 }
 
@@ -2674,7 +2674,7 @@ inline void Discret::ELEMENTS::Beam3k::calc_brownian_forces_and_stiff(
     if (force != nullptr)
     {
       // set view on Core::LinAlg::SerialDenseVector to avoid copying of data
-      force_brownian.SetView(&((*force)(0)));
+      force_brownian.set_view(&((*force)(0)));
     }
 
     // vector containing locally assembled nodal positions and tangents required for centerline:
@@ -2856,7 +2856,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_translational_damping(Teuchos::Paramete
             (idim == jdim) * gamma(1) + (gamma(0) - gamma(1)) * r_s(idim) * r_s(jdim);
 
     // compute viscous force vector per unit length at current GP
-    f_visc.Multiply(damp_mat, vel_rel);
+    f_visc.multiply(damp_mat, vel_rel);
 
     const double jacobifac_gp_weight = jacobi_[gp] * gausspoints.qwgt[gp];
 
@@ -2904,7 +2904,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_tr
 
   // compute matrix product of damping matrix and gradient of background velocity
   Core::LinAlg::Matrix<ndim, ndim> dampmatvelbackgroundgrad(true);
-  dampmatvelbackgroundgrad.Multiply(damping_matrix, velbackgroundgrad);
+  dampmatvelbackgroundgrad.multiply(damping_matrix, velbackgroundgrad);
 
   const double jacobifac_gp_wgt = jacobifactor * gp_weight;
 
@@ -3201,7 +3201,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
     // Calculation of r' at xi
     r_s.clear();
-    r_s.Multiply(N_s, disp_totlag_centerline);
+    r_s.multiply(N_s, disp_totlag_centerline);
 
     abs_r_s = Core::FADUtils::Norm<T>(r_s);
 
@@ -3226,7 +3226,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
     v_thetapar_bar.clear();
     for (unsigned int node = 0; node < BEAM3K_COLLOCATION_POINTS; ++node)
     {
-      v_thetapar_bar.Update(L_i(node), v_thetapar_cp[node], 1.0);
+      v_thetapar_bar.update(L_i(node), v_thetapar_cp[node], 1.0);
     }
 
     // compute material triad at gp
@@ -3254,7 +3254,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
     // compute quaternion of relative rotation from converged to current state
     Core::LinAlg::Matrix<3, 3, T> deltatriad(true);
-    deltatriad.MultiplyNT(triad_mat, triad_mat_conv);
+    deltatriad.multiply_nt(triad_mat, triad_mat_conv);
 
     Core::LinAlg::Matrix<4, 1, T> deltaQ(true);
     Core::LargeRotations::triadtoquaternion(deltatriad, deltaQ);
@@ -3265,7 +3265,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
     // angular velocity at this Gauss point according to backward Euler scheme
     Core::LinAlg::Matrix<3, 1, T> omega(true);
-    omega.Update(1.0 / dt, deltatheta);
+    omega.update(1.0 / dt, deltatheta);
 
     // compute matrix Lambda*[gamma(2) 0 0 \\ 0 0 0 \\ 0 0 0]*Lambda^t = gamma(2) * g_1 \otimes g_1
     // where g_1 is first base vector, i.e. first column of Lambda
@@ -3276,14 +3276,14 @@ void Discret::ELEMENTS::Beam3k::evaluate_rotational_damping(
 
     // compute vector gamma(2) * g_1 \otimes g_1 * \omega (viscous moment per unit length)
     Core::LinAlg::Matrix<3, 1, T> m_visc(true);
-    m_visc.Multiply(g1g1gamma, omega);
+    m_visc.multiply(g1g1gamma, omega);
 
 
     // residual contribution from viscous damping moment
     f_int_aux.clear();
-    f_int_aux.Multiply(v_thetapar_bar, m_visc);
+    f_int_aux.multiply(v_thetapar_bar, m_visc);
 
-    f_int.Update(wgt * jacobi_[gp], f_int_aux, 1.0);
+    f_int.update(wgt * jacobi_[gp], f_int_aux, 1.0);
 
 
     if (stiffmatrix != nullptr)
@@ -3394,12 +3394,12 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_ro
 
     // Calculation of r' and g_1
     r_s_cp.clear();
-    r_s_cp.Multiply(N_s, disp_totlag_centerline);
+    r_s_cp.multiply(N_s, disp_totlag_centerline);
 
-    abs_r_s_cp = r_s_cp.Norm2();  // Todo think about computing and storing inverse value here
+    abs_r_s_cp = r_s_cp.norm2();  // Todo think about computing and storing inverse value here
 
     g_1_cp.clear();
-    g_1_cp.Update(std::pow(abs_r_s_cp, -1.0), r_s_cp);
+    g_1_cp.update(std::pow(abs_r_s_cp, -1.0), r_s_cp);
 
 
     calc_lin_v_thetapar_moment<nnodecl>(
@@ -3414,7 +3414,7 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_ro
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
-    lin_v_thetapar_bar_moment.Update(L_i(icp), lin_v_thetapar_moment_cp[icp], 1.0);
+    lin_v_thetapar_bar_moment.update(L_i(icp), lin_v_thetapar_moment_cp[icp], 1.0);
   }
   /***********************************************************************************************/
 
@@ -3430,9 +3430,9 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_ro
   {
     auxmatrix.clear();
 
-    auxmatrix.Multiply(Itilde[icp], lin_theta_cp[icp]);
+    auxmatrix.multiply(Itilde[icp], lin_theta_cp[icp]);
 
-    lin_theta_bar.Update(1.0, auxmatrix, 1.0);
+    lin_theta_bar.update(1.0, auxmatrix, 1.0);
   }
 
   calc_lin_moment_viscous<nnodecl>(lin_moment_viscous, triad_mat_gp, triad_mat_conv_gp,
@@ -3443,12 +3443,12 @@ void Discret::ELEMENTS::Beam3k::evaluate_analytic_stiffmat_contributions_from_ro
   Core::LinAlg::Matrix<numdofelement, numdofelement, double> auxmatrix2(true);
 
   // linearization of residual from rotational damping moment
-  stiffmatrix_fixedsize.Update(jacobifac_GPwgt, lin_v_thetapar_bar_moment, 1.0);
+  stiffmatrix_fixedsize.update(jacobifac_GPwgt, lin_v_thetapar_bar_moment, 1.0);
 
   auxmatrix2.clear();
-  auxmatrix2.Multiply(v_theta_par_bar, lin_moment_viscous);
+  auxmatrix2.multiply(v_theta_par_bar, lin_moment_viscous);
 
-  stiffmatrix_fixedsize.Update(jacobifac_GPwgt, auxmatrix2, 1.0);
+  stiffmatrix_fixedsize.update(jacobifac_GPwgt, auxmatrix2, 1.0);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -3469,7 +3469,7 @@ void Discret::ELEMENTS::Beam3k::
   const unsigned int numdofelement = ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS;
 
   Core::LinAlg::Matrix<ndim, 1, double> g_1(true);
-  g_1.Update(std::pow(abs_r_s, -1.0), r_s);
+  g_1.update(std::pow(abs_r_s, -1.0), r_s);
 
   Core::LinAlg::Matrix<ndim, 1, double> g_1_bar(true);
 
@@ -3488,7 +3488,7 @@ void Discret::ELEMENTS::Beam3k::
 
   // lin_theta
   lin_theta.clear();
-  lin_theta.Update(1.0, lin_theta_par, 1.0, lin_theta_perp);
+  lin_theta.update(1.0, lin_theta_par, 1.0, lin_theta_perp);
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -3556,8 +3556,8 @@ void Discret::ELEMENTS::Beam3k::assemble_shapefunctions_nss(Core::LinAlg::Matrix
     Core::LinAlg::Matrix<3, 2 * 6 + BEAM3K_COLLOCATION_POINTS, T2>& N_ss) const
 {
   Core::LinAlg::Matrix<1, 4, T1> N_i_ss(true);
-  N_i_ss.Update(std::pow(jacobi, -2.0), N_i_xixi, 1.0);
-  N_i_ss.Update(-1.0 * jacobi2 * std::pow(jacobi, -4.0), N_i_xi, 1.0);
+  N_i_ss.update(std::pow(jacobi, -2.0), N_i_xixi, 1.0);
+  N_i_ss.update(-1.0 * jacobi2 * std::pow(jacobi, -4.0), N_i_xi, 1.0);
 
   assemble_shapefunctions_n(N_i_ss, N_ss);
 }
@@ -3573,7 +3573,7 @@ void Discret::ELEMENTS::Beam3k::assemble_shapefunctions_ns(Core::LinAlg::Matrix<
 
   // Calculate the derivatives in s
   N_i_s = N_i_xi;
-  N_i_s.Scale(std::pow(jacobi, -1.0));
+  N_i_s.scale(std::pow(jacobi, -1.0));
 
   assemble_shapefunctions_n(N_i_s, N_s);
 }
@@ -3657,9 +3657,9 @@ void Discret::ELEMENTS::Beam3k::apply_rot_vec_trafo(
     }
 
     t = Core::FADUtils::Norm<T>(g_1);
-    g_1.Scale(1.0 / t);
+    g_1.scale(1.0 / t);
     Core::LargeRotations::computespin(auxmatrix, g_1);
-    auxmatrix.Scale(-1.0 * t);
+    auxmatrix.scale(-1.0 * t);
     trafomat.clear();
 
     for (unsigned int i = 0; i < 3; ++i)
@@ -3679,7 +3679,7 @@ void Discret::ELEMENTS::Beam3k::apply_rot_vec_trafo(
       f_aux1(i) = f_int(7 * node + 3 + i);
     }
 
-    f_aux2.MultiplyTN(trafomat, f_aux1);
+    f_aux2.multiply_tn(trafomat, f_aux1);
 
     for (unsigned int i = 0; i < 4; ++i)
     {
@@ -3726,7 +3726,7 @@ void Discret::ELEMENTS::Beam3k::transform_stiff_matrix_multipl(
       for (unsigned int j = 0; j < 3; ++j) tempmat(i, j) = (*stiffmatrix)(i, 7 * node + 3 + j);
 
     newstiffmat.clear();
-    newstiffmat.MultiplyNN(tempmat, Tmat);
+    newstiffmat.multiply_nn(tempmat, Tmat);
 
     for (unsigned int i = 0; i < 2 * 6 + BEAM3K_COLLOCATION_POINTS; ++i)
       for (unsigned int j = 0; j < 3; ++j) (*stiffmatrix)(i, 7 * node + 3 + j) = newstiffmat(i, j);

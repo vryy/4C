@@ -52,7 +52,7 @@ namespace Core::Geo
         for (int i = 0; i < 1; ++i)
           for (int j = 0; j < 3; ++j) xjm(i, j) += deriv(i, inode) * xyze(j, inode);
 
-      const double fac = intpoints.Weight(iquad) * xjm.Norm2();
+      const double fac = intpoints.Weight(iquad) * xjm.norm2();
 
       length += fac;
     }  // end loop over gauss points
@@ -92,9 +92,9 @@ namespace Core::Geo
         for (int i = 0; i < 2; ++i)
           for (int j = 0; j < 3; ++j) xjm(i, j) += deriv(i, inode) * xyze(j, inode);
 
-      xjm_xjmt.MultiplyNT<3>(xjm, xjm);
+      xjm_xjmt.multiply_nt<3>(xjm, xjm);
 
-      const double det = xjm_xjmt.Determinant();
+      const double det = xjm_xjmt.determinant();
       const double fac = intpoints.Weight(iquad) * std::sqrt(det);
 
       area += fac;
@@ -137,7 +137,7 @@ namespace Core::Geo
         for (int i = 0; i < 3; ++i)
           for (int j = 0; j < 3; ++j) xjm(i, j) += deriv(i, inode) * xyze(j, inode);
 
-      const double det = xjm.Determinant();
+      const double det = xjm.determinant();
       const double fac = intpoints.Weight(iquad) * det;
 
       if (det <= 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT: %g", det);
@@ -164,8 +164,8 @@ namespace Core::Geo
     Core::LinAlg::Matrix<3, 1> d(&xyze(0, 0));
     const Core::LinAlg::Matrix<3, 1> x1(&xyze(0, 1));
 
-    d.Update(1.0, x1, -1.0);
-    return d.Norm2();
+    d.update(1.0, x1, -1.0);
+    return d.norm2();
   }
 
 

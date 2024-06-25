@@ -39,7 +39,7 @@ Core::DOFSets::DofSet::DofSet()
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const Core::DOFSets::DofSet& dofset)
 {
-  dofset.Print(os);
+  dofset.print(os);
   return os;
 }
 
@@ -47,7 +47,7 @@ std::ostream& operator<<(std::ostream& os, const Core::DOFSets::DofSet& dofset)
 /*----------------------------------------------------------------------*
  |  print this  (public)                                      ukue 04/07|
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSet::Print(std::ostream& os) const
+void Core::DOFSets::DofSet::print(std::ostream& os) const
 {
   for (int proc = 0; proc < numdfcolelements_->Comm().NumProc(); ++proc)
   {

@@ -223,11 +223,11 @@ STR::ELEMENTS::ParamsInterface& Discret::ELEMENTS::Membrane<distype>::str_params
  |  print this element (public)                            fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::Membrane<distype>::print(std::ostream& os) const
 {
   os << "Membrane ";
   os << " discretization type: " << Core::FE::CellTypeToString(distype).c_str();
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

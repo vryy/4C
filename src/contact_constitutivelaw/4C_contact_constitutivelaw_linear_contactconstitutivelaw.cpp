@@ -49,7 +49,7 @@ double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::evaluate(double gap, CON
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
-  return params_->GetA() * (gap + params_->GetOffset()) + params_->GetB();
+  return params_->Getdata() * (gap + params_->GetOffset()) + params_->GetB();
 }  // end of linear_coconstlaw evaluate
 /*----------------------------------------------------------------------*
  |  Calculate the derivative of the contact constitutive law|
@@ -61,7 +61,7 @@ double CONTACT::CONSTITUTIVELAW::LinearConstitutiveLaw::EvaluateDeriv(
   {
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes.");
   }
-  return params_->GetA();
+  return params_->Getdata();
 }
 
 FOUR_C_NAMESPACE_CLOSE

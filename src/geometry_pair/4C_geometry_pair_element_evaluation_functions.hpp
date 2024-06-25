@@ -96,12 +96,12 @@ namespace GEOMETRYPAIR
       dr_0(i_dir) = dr(i_dir, 0);
       dr_1(i_dir) = dr(i_dir, 1);
     }
-    normal.CrossProduct(dr_0, dr_1);
-    normal.Scale(1.0 / Core::FADUtils::VectorNorm(normal));
+    normal.cross_product(dr_0, dr_1);
+    normal.scale(1.0 / Core::FADUtils::VectorNorm(normal));
     if constexpr (std::is_same<surface, t_nurbs9>::value)
     {
       // In the NURBS case some normals have to be flipped to point outward of the volume element
-      normal.Scale(element_data_surface.shape_function_data_.surface_normal_factor_);
+      normal.scale(element_data_surface.shape_function_data_.surface_normal_factor_);
     }
   }
 
@@ -132,7 +132,7 @@ namespace GEOMETRYPAIR
         for (unsigned int dim = 0; dim < surface::spatial_dim_; dim++)
           normal(dim) +=
               element_data_surface.nodal_normals_(surface::spatial_dim_ * node + dim) * N(node);
-      normal.Scale(1.0 / Core::FADUtils::VectorNorm(normal));
+      normal.scale(1.0 / Core::FADUtils::VectorNorm(normal));
     }
     else
     {
@@ -163,7 +163,7 @@ namespace GEOMETRYPAIR
     GEOMETRYPAIR::EvaluatePosition<surface>(xi, element_data_surface, r);
 
     // Add the normal part to the position
-    normal.Scale(xi(2));
+    normal.scale(xi(2));
     r += normal;
   }
 
@@ -193,7 +193,7 @@ namespace GEOMETRYPAIR
     // Create the director vectors in the cross-section
     // Director 2 is the one in the y-axis (reference configuration)
     // Director 3 is the one in the z-axis (reference configuration)
-    tangent.Scale(1. / Core::FADUtils::VectorNorm(tangent));
+    tangent.scale(1. / Core::FADUtils::VectorNorm(tangent));
     cross_section_director_2.clear();
     cross_section_director_2(0) = -tangent(1);
     cross_section_director_2(1) = tangent(0);
@@ -226,7 +226,7 @@ namespace GEOMETRYPAIR
     Core::LinAlg::Matrix<3, 3, scalar_type> dXdxi(true);
     EvaluatePositionDerivative1<volume>(xi, X_volume, dXdxi);
     J.clear();
-    J.UpdateT(dXdxi);
+    J.update_t(dXdxi);
   }
 
   /**
@@ -412,9 +412,9 @@ namespace GEOMETRYPAIR
   template <typename T>
   void StartValues<DiscretizationTypeGeometry::triangle>::set(T& xi)
   {
-    // We do not use xi.PutScalar(0.25) here, since this might be a surface element which has a
+    // We do not use xi.put_scalar(0.25) here, since this might be a surface element which has a
     // normal direction and we do not want to set an initial value in the normal direction
-    xi.PutScalar(0.0);
+    xi.put_scalar(0.0);
     for (int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = 0.25;
   }
 
@@ -425,7 +425,7 @@ namespace GEOMETRYPAIR
   template <typename T>
   void StartValues<DiscretizationTypeGeometry::quad>::set(T& xi)
   {
-    xi.PutScalar(0.0);
+    xi.put_scalar(0.0);
   }
 
   /**
@@ -435,7 +435,7 @@ namespace GEOMETRYPAIR
   template <typename T>
   void StartValues<DiscretizationTypeGeometry::tetraeder>::set(T& xi)
   {
-    xi.PutScalar(0.25);
+    xi.put_scalar(0.25);
   }
 
   /**
@@ -445,7 +445,7 @@ namespace GEOMETRYPAIR
   template <typename T>
   void StartValues<DiscretizationTypeGeometry::hexahedron>::set(T& xi)
   {
-    xi.PutScalar(0.0);
+    xi.put_scalar(0.0);
   }
 
 }  // namespace GEOMETRYPAIR

@@ -114,7 +114,7 @@ namespace Discret
       //! @name Access methods
 
       //! Print this element
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       //! return elementtype thermo element
       Core::Elements::ElementType& ElementType() const override;

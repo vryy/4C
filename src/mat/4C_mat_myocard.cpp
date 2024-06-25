@@ -584,9 +584,9 @@ void Mat::Myocard::resize_internal_state_variables()
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void Mat::Myocard::Update(const double phi, const double dt)
+void Mat::Myocard::update(const double phi, const double dt)
 {
-  myocard_mat_->Update(phi, dt * (params_->time_scale));
+  myocard_mat_->update(phi, dt * (params_->time_scale));
 
   return;
 }

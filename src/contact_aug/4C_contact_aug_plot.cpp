@@ -481,11 +481,11 @@ void CONTACT::Aug::Plot::read_ref_points(const Teuchos::ParameterList& plot_para
 {
   ref_points_.resize(2, Core::LinAlg::Matrix<3, 1>(true));
 
-  read_ref_point(plot_params, "FIRST_REF_POINT", ref_points_[0].A());
-  read_ref_point(plot_params, "SECOND_REF_POINT", ref_points_[1].A());
+  read_ref_point(plot_params, "FIRST_REF_POINT", ref_points_[0].data());
+  read_ref_point(plot_params, "SECOND_REF_POINT", ref_points_[1].data());
 
-  ref_points_[0].Print(std::cout);
-  ref_points_[1].Print(std::cout);
+  ref_points_[0].print(std::cout);
+  ref_points_[1].print(std::cout);
 }
 
 /*----------------------------------------------------------------------------*
@@ -764,7 +764,7 @@ void CONTACT::Aug::Plot::get_support_points(
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::Plot::compute_distance_position()
 {
-  const Core::LinAlg::Matrix<3, 1> ref_pos(ref_points_[0].A(), true);
+  const Core::LinAlg::Matrix<3, 1> ref_pos(ref_points_[0].data(), true);
 
   const Epetra_Map& slrownodes = strat_->SlRowNodes();
   const unsigned num_my_nodes = slrownodes.NumMyElements();
@@ -778,9 +778,9 @@ void CONTACT::Aug::Plot::compute_distance_position()
     if (not node) FOUR_C_THROW("Couldn't find the node with GID %d!", gid);
 
     Core::LinAlg::Matrix<3, 1> distance(node->X().data(), false);
-    distance.Update(-1.0, ref_pos, 1.0);
+    distance.update(-1.0, ref_pos, 1.0);
 
-    const double d_nrm2 = distance.Norm2();
+    const double d_nrm2 = distance.norm2();
     position_node_id_map_.insert(std::pair<double, int>(d_nrm2, gid));
   }
 }
@@ -790,7 +790,7 @@ void CONTACT::Aug::Plot::compute_distance_position()
 void CONTACT::Aug::Plot::compute_angle_position()
 {
   Core::LinAlg::Matrix<3, 1> ref12(ref_points_[0], false);
-  ref12.Update(1.0, ref_points_[1], -1.0);
+  ref12.update(1.0, ref_points_[1], -1.0);
 
   const Epetra_Map& slrownodes = strat_->SlRowNodes();
   const unsigned num_my_nodes = slrownodes.NumMyElements();
@@ -805,10 +805,10 @@ void CONTACT::Aug::Plot::compute_angle_position()
 
     const Core::LinAlg::Matrix<3, 1> ref3(node->X().data(), true);
     Core::LinAlg::Matrix<3, 1> ref13(ref_points_[0], false);
-    ref13.Update(1.0, ref3, -1.0);
+    ref13.update(1.0, ref3, -1.0);
 
-    const double iproduct = ref12.Dot(ref13);
-    double angle = std::acos(iproduct / (ref13.Norm2() * ref12.Norm2()));
+    const double iproduct = ref12.dot(ref13);
+    double angle = std::acos(iproduct / (ref13.norm2() * ref12.norm2()));
 
     position_node_id_map_.insert(std::pair<double, int>(angle, gid));
   }

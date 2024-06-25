@@ -84,7 +84,7 @@ namespace Mat
         double const& dt,           ///< Time step size
         int const eleGID) const     ///< Element id
     {
-      drdC.UpdateT(-cur_rho_col * dt * k_sig / sig_h, dsigdCv, 0.0);
+      drdC.update_t(-cur_rho_col * dt * k_sig / sig_h, dsigdCv, 0.0);
     };
 
     /// Evaluate time derivative of the mass density of the i-th fiber family
@@ -118,7 +118,7 @@ namespace Mat
                                                      ///< to the elastic right Cauchy-Green tensor
         int const eleGID) const                      ///< Element id
     {
-      r = (k_sig * (sig - sig_h) / sig_h + 1. / t_decay) * (sig - sig_h) - 2.0 * dsigdCeM.Dot(YM);
+      r = (k_sig * (sig - sig_h) / sig_h + 1. / t_decay) * (sig - sig_h) - 2.0 * dsigdCeM.dot(YM);
     };
 
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
@@ -137,8 +137,8 @@ namespace Mat
     {
       drdlambr = 2. * (k_sig / sig_h) * (sig - sig_h) * dsigdlambr;
       drdlambr += dsigdlambr / t_decay;
-      drdlambr -= 2.0 * dsigdCedlambrM.Dot(YM);
-      drdlambr -= 2.0 * dsigdCeM.Dot(dYdlambrM);
+      drdlambr -= 2.0 * dsigdCedlambrM.dot(YM);
+      drdlambr -= 2.0 * dsigdCeM.dot(dYdlambrM);
     };
 
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
@@ -157,8 +157,8 @@ namespace Mat
     {
       drdrho = 2. * (k_sig / sig_h) * (sig - sig_h) * dsigdrho;
       drdrho += dsigdrho / t_decay;
-      drdrho -= 2.0 * dsigdCedrhoM.Dot(YM);
-      drdrho -= 2.0 * dsigdCeM.Dot(dYdrhoM);
+      drdrho -= 2.0 * dsigdCedrhoM.dot(YM);
+      drdrho -= 2.0 * dsigdCeM.dot(dYdrhoM);
     };
 
     /// Evaluate derivative of remodel evolution equation of the i-th fiber family w.r.t. the
@@ -179,10 +179,10 @@ namespace Mat
                                  ///< elastic and total right Cauchy-Green tensor
         int const eleGID) const  ///< Element id
     {
-      drdC.UpdateT(2. * (k_sig / sig_h) * (sig - sig_h), dsigdCv, 0.0);
-      drdC.UpdateT(1.0 / t_decay, dsigdCv, 1.0);
-      drdC.MultiplyTN(-2.0, dsigdCe9x1, dYdC, 1.0);
-      drdC.MultiplyTN(-2.0, Y_strain, dsigdCedC, 1.0);
+      drdC.update_t(2. * (k_sig / sig_h) * (sig - sig_h), dsigdCv, 0.0);
+      drdC.update_t(1.0 / t_decay, dsigdCv, 1.0);
+      drdC.multiply_tn(-2.0, dsigdCe9x1, dYdC, 1.0);
+      drdC.multiply_tn(-2.0, Y_strain, dsigdCedC, 1.0);
     };
 
     /// Evaluate derivative of remodel evolution equation w.r.t. time derivative of the remodel
@@ -196,7 +196,7 @@ namespace Mat
         int const eleGID) const                      ///< Element id
     {
       dlambrdt = ((k_sig * (sig - sig_h) / sig_h + 1. / t_decay) * (sig - sig_h)) /
-                 (2.0 * dsigdCeM.Dot(YredM));
+                 (2.0 * dsigdCeM.dot(YredM));
     };
 
     double sig_h;          ///< Cauchy prestress of new mass which is deposited during G&R
@@ -215,21 +215,21 @@ namespace Mat
       /// Update of internal data
       void UpdateNewton(int const gp, double const dt)
       {
-        iFrM[gp].Update(G / cur_lambr[gp], AM, 0.0);
-        iFrM[gp].Update(1. / std::sqrt(G / cur_lambr[gp]), AM_orth, 1.0);
-        FrnM[gp].Update(last_lambr[gp] / G, AM, 0.0);
-        FrnM[gp].Update(1. / std::sqrt(last_lambr[gp] / G), AM_orth, 1.0);
-        diFrdlambrM[gp].Update(-std::pow(cur_lambr[gp], -2.0) * G, AM, 0.0);
-        diFrdlambrM[gp].Update(0.5 * std::pow(cur_lambr[gp] * G, -0.5), AM_orth, 1.0);
-        dFrdlambrM[gp].Update(1.0 / G, AM, 0.0);
-        dFrdlambrM[gp].Update(
+        iFrM[gp].update(G / cur_lambr[gp], AM, 0.0);
+        iFrM[gp].update(1. / std::sqrt(G / cur_lambr[gp]), AM_orth, 1.0);
+        FrnM[gp].update(last_lambr[gp] / G, AM, 0.0);
+        FrnM[gp].update(1. / std::sqrt(last_lambr[gp] / G), AM_orth, 1.0);
+        diFrdlambrM[gp].update(-std::pow(cur_lambr[gp], -2.0) * G, AM, 0.0);
+        diFrdlambrM[gp].update(0.5 * std::pow(cur_lambr[gp] * G, -0.5), AM_orth, 1.0);
+        dFrdlambrM[gp].update(1.0 / G, AM, 0.0);
+        dFrdlambrM[gp].update(
             -0.5 * std::pow(cur_lambr[gp], -1.5) * std::pow(G, 0.5), AM_orth, 1.0);
-        FrdotM[gp].Update((cur_lambr[gp] - last_lambr[gp]) / (dt * G), AM, 0.0);
-        FrdotM[gp].Update(-0.5 * std::pow(cur_lambr[gp], -1.5) * std::pow(G, 0.5) *
+        FrdotM[gp].update((cur_lambr[gp] - last_lambr[gp]) / (dt * G), AM, 0.0);
+        FrdotM[gp].update(-0.5 * std::pow(cur_lambr[gp], -1.5) * std::pow(G, 0.5) *
                               (cur_lambr[gp] - last_lambr[gp]) / dt,
             AM_orth, 1.0);
-        dFrdotdlambrM[gp].Update(1.0 / (dt * G), AM, 0.0);
-        dFrdotdlambrM[gp].Update(0.5 * std::pow(cur_lambr[gp], -1.5) * std::pow(G, 0.5) / dt *
+        dFrdotdlambrM[gp].update(1.0 / (dt * G), AM, 0.0);
+        dFrdotdlambrM[gp].update(0.5 * std::pow(cur_lambr[gp], -1.5) * std::pow(G, 0.5) / dt *
                                      (1.5 * (1.0 - last_lambr[gp] / cur_lambr[gp]) - 1.0),
             AM_orth, 1.0);
       };

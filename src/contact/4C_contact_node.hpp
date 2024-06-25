@@ -478,22 +478,22 @@ namespace CONTACT
        *
        *  Integration over the whole slave interface, without consideration of
        *  the segments or projections. */
-      inline double& GetAugA() { return aug_a_; }
-      inline double GetAugA() const { return aug_a_; }
+      inline double& GetAugdata() { return aug_a_; }
+      inline double GetAugdata() const { return aug_a_; }
 
       /*! \brief Return the first order derivative of the scaling factor augA
        *
        *  Integration over the whole slave interface, without consideration of
        *  the segments or projections. */
-      inline Deriv1stMap& GetDeriv1st_A() { return d_aug_a_; }
-      inline const Deriv1stMap& GetDeriv1st_A() const { return d_aug_a_; }
+      inline Deriv1stMap& GetDeriv1st_data() { return d_aug_a_; }
+      inline const Deriv1stMap& GetDeriv1st_data() const { return d_aug_a_; }
 
       /*! \brief Return the second order derivative of the scaling factor augA
        *
        *  Integration over the whole slave interface, without consideration of
        *  the segments or projections. */
-      inline Deriv2ndMap& GetDeriv2nd_A() { return dd_aug_a_; }
-      inline const Deriv2ndMap& GetDeriv2nd_A() const { return dd_aug_a_; }
+      inline Deriv2ndMap& GetDeriv2nd_data() { return dd_aug_a_; }
+      inline const Deriv2ndMap& GetDeriv2nd_data() const { return dd_aug_a_; }
 
       /*! \brief Return the 1-st order derivative of smooth averaged unit normal */
       inline Deriv1stVecMap& GetDeriv1st_N() { return d_avg_unit_normal_; }
@@ -1041,7 +1041,7 @@ namespace CONTACT
     /*!
      \brief Print this contact node
      */
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     /*!
      \brief Is Node initialized as active node (only slave nodes)

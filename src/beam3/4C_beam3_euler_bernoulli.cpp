@@ -106,7 +106,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3ebType::ComputeNullSpace
     const auto& xsecond = secondnode->X();
 
     for (std::size_t dim = 0; dim < spacedim; ++dim) tangent(dim) = xsecond[dim] - xfirst[dim];
-    tangent.Scale(1.0 / tangent.Norm2());
+    tangent.scale(1.0 / tangent.norm2());
   }
 
   // Form a Cartesian basis
@@ -124,12 +124,12 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3ebType::ComputeNullSpace
   // Find basis vector that is the least parallel to the tangent vector
   std::size_t baseVecIndexWithMindDotProduct = 0;
   {
-    double dotProduct = tangent.Dot(basis[0]);
+    double dotProduct = tangent.dot(basis[0]);
     double minDotProduct = dotProduct;
     // First basis vector is already done. Start looping at second basis vector.
     for (std::size_t i = 1; i < spacedim; ++i)
     {
-      dotProduct = tangent.Dot(basis[i]);
+      dotProduct = tangent.dot(basis[i]);
       if (dotProduct < minDotProduct)
       {
         minDotProduct = dotProduct;
@@ -141,12 +141,12 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3ebType::ComputeNullSpace
   // Compute two vectors orthogonal to the tangent vector
   Core::LinAlg::Matrix<spacedim, 1> someVector = basis[baseVecIndexWithMindDotProduct];
   Core::LinAlg::Matrix<spacedim, 1> omegaOne, omegaTwo;
-  omegaOne.CrossProduct(tangent, someVector);
-  omegaTwo.CrossProduct(tangent, omegaOne);
+  omegaOne.cross_product(tangent, someVector);
+  omegaTwo.cross_product(tangent, omegaOne);
 
-  if (std::abs(omegaOne.Dot(tangent)) > 1.0e-12)
+  if (std::abs(omegaOne.dot(tangent)) > 1.0e-12)
     FOUR_C_THROW("omegaOne not orthogonal to tangent vector.");
-  if (std::abs(omegaTwo.Dot(tangent)) > 1.0e-12)
+  if (std::abs(omegaTwo.dot(tangent)) > 1.0e-12)
     FOUR_C_THROW("omegaTwo not orthogonal to tangent vector.");
 
   Core::LinAlg::Matrix<3, 1> nodeCoords(true);
@@ -154,13 +154,13 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Beam3ebType::ComputeNullSpace
 
   // Compute rotations in displacement DOFs
   Core::LinAlg::Matrix<spacedim, 1> rotOne(true), rotTwo(true);
-  rotOne.CrossProduct(omegaOne, nodeCoords);
-  rotTwo.CrossProduct(omegaTwo, nodeCoords);
+  rotOne.cross_product(omegaOne, nodeCoords);
+  rotTwo.cross_product(omegaTwo, nodeCoords);
 
   // Compute rotations in tangent DOFs
   Core::LinAlg::Matrix<spacedim, 1> rotTangOne(true), rotTangTwo(true);
-  rotTangOne.CrossProduct(omegaOne, tangent);
-  rotTangTwo.CrossProduct(omegaTwo, tangent);
+  rotTangOne.cross_product(omegaOne, tangent);
+  rotTangTwo.cross_product(omegaTwo, tangent);
 
   Core::LinAlg::SerialDenseMatrix nullspace(numdof, dimnsp);
   // x-modes
@@ -332,10 +332,10 @@ Core::Elements::Element* Discret::ELEMENTS::Beam3eb::Clone() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3eb::Print(std::ostream& os) const
+void Discret::ELEMENTS::Beam3eb::print(std::ostream& os) const
 {
   os << "beam3eb ";
-  Element::Print(os);
+  Element::print(os);
 }
 
 /*----------------------------------------------------------------------*
@@ -490,9 +490,9 @@ void Discret::ELEMENTS::Beam3eb::set_up_reference_geometry(
       // Store length factor for every GP
       // note: the length factor jacobi replaces the determinant and refers to the reference
       // configuration by definition
-      jacobi_ = Tref_[numgp].Norm2();
+      jacobi_ = Tref_[numgp].norm2();
 
-      Tref_[numgp].Scale(1 / jacobi_);
+      Tref_[numgp].scale(1 / jacobi_);
     }
 
     // compute tangent at each node
@@ -513,8 +513,8 @@ void Discret::ELEMENTS::Beam3eb::set_up_reference_geometry(
       {
         Tref_[node](dof) = xrefe[3 + dof] - xrefe[dof];
       }
-      norm2 = Tref_[node].Norm2();
-      Tref_[node].Scale(1 / norm2);
+      norm2 = Tref_[node].norm2();
+      Tref_[node].scale(1 / norm2);
 
       for (int i = 0; i < 3; i++) t0_(i, node) = Tref_[node](i);
     }

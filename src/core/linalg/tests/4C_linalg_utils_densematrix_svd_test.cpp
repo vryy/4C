@@ -25,7 +25,7 @@ namespace
   void AssertIsUnitaryMatrix(const Core::LinAlg::Matrix<N, N>& M)
   {
     Core::LinAlg::Matrix<N, N> MHM(false);
-    MHM.MultiplyTN(M, M);
+    MHM.multiply_tn(M, M);
 
     for (unsigned int i = 0; i < N; ++i)
       for (unsigned int j = 0; j < N; ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
@@ -35,7 +35,7 @@ namespace
   {
     Core::LinAlg::SerialDenseMatrix MHM(M.numRows(), M.numCols(), false);
 
-    Core::LinAlg::multiplyTN(MHM, M, M);
+    Core::LinAlg::multiply_tn(MHM, M, M);
 
     for (int i = 0; i < M.numRows(); ++i)
       for (int j = 0; j < M.numCols(); ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
@@ -49,8 +49,8 @@ namespace
     // check whether SVD fulfills: A = Q * S * VT
     Core::LinAlg::Matrix<rows, cols> QS(false);
     Core::LinAlg::Matrix<rows, cols> A_result(false);
-    QS.MultiplyNN(Q, S);
-    A_result.MultiplyNN(QS, VT);
+    QS.multiply_nn(Q, S);
+    A_result.multiply_nn(QS, VT);
 
     FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
 

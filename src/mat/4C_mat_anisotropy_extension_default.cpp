@@ -106,20 +106,20 @@ void Mat::DefaultAnisotropyExtension<numfib>::set_fiber_vecs(const double newgam
   Core::LinAlg::Matrix<3, 1> a1_0(true);
   Core::LinAlg::Matrix<3, 1> a2_0(true);
   Core::LinAlg::Matrix<3, 3> idefgrd(true);
-  idefgrd.Invert(defgrd);
+  idefgrd.invert(defgrd);
 
 
   std::array<Core::LinAlg::Matrix<3, 1>, numfib> fibers;
 
   if (numfib >= 1)
   {
-    fibers[0].Multiply(idefgrd, ca1);
-    fibers[0].Scale(1.0 / fibers[0].Norm2());
+    fibers[0].multiply(idefgrd, ca1);
+    fibers[0].scale(1.0 / fibers[0].norm2());
   }
   if (numfib >= 2)
   {
-    fibers[1].Multiply(idefgrd, ca2);
-    fibers[1].Scale(1.0 / fibers[1].Norm2());
+    fibers[1].multiply(idefgrd, ca2);
+    fibers[1].scale(1.0 / fibers[1].norm2());
   }
   if (numfib >= 3)
   {
@@ -136,7 +136,7 @@ void Mat::DefaultAnisotropyExtension<numfib>::set_fiber_vecs(
     const Core::LinAlg::Matrix<3, 1>& fibervec)
 {
   std::array<Core::LinAlg::Matrix<3, 1>, numfib> fibers;
-  fibers[0].Update(fibervec);
+  fibers[0].update(fibervec);
 
   if (numfib >= 2)
   {

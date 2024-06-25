@@ -51,9 +51,9 @@ namespace Core::LinAlg
   void SVD(const Core::LinAlg::Matrix<rows, cols>& A, Core::LinAlg::Matrix<rows, rows>& Q,
       Core::LinAlg::Matrix<rows, cols>& S, Core::LinAlg::Matrix<cols, cols>& VT)
   {
-    Matrix<rows, cols> tmp(A.A(), false);  // copy, because content of matrix is destroyed
-    const char jobu = 'A';                 // compute and return all M columns of U
-    const char jobvt = 'A';                // compute and return all N rows of V^T
+    Matrix<rows, cols> tmp(A.data(), false);  // copy, because content of matrix is destroyed
+    const char jobu = 'A';                    // compute and return all M columns of U
+    const char jobvt = 'A';                   // compute and return all N rows of V^T
     std::vector<double> s(std::min(rows, cols));
     int info;
     int lwork = std::max(3 * std::min(rows, cols) + std::max(rows, cols), 5 * std::min(rows, cols));
@@ -61,8 +61,8 @@ namespace Core::LinAlg
     double rwork;
 
     Teuchos::LAPACK<int, double> lapack;
-    lapack.GESVD(jobu, jobvt, rows, cols, tmp.A(), tmp.M(), s.data(), Q.A(), Q.M(), VT.A(), VT.M(),
-        work.data(), lwork, &rwork, &info);
+    lapack.GESVD(jobu, jobvt, rows, cols, tmp.data(), tmp.m(), s.data(), Q.data(), Q.m(), VT.data(),
+        VT.m(), work.data(), lwork, &rwork, &info);
 
     if (info) FOUR_C_THROW("Lapack's dgesvd returned %d", info);
 

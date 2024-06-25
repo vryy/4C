@@ -309,7 +309,7 @@ namespace Mortar
     virtual void postprocess_quantities_per_interface(
         Teuchos::RCP<Teuchos::ParameterList> outputParams) = 0;
 
-    virtual void Print(std::ostream& os) const = 0;
+    virtual void print(std::ostream& os) const = 0;
     virtual void PrintActiveSet() const = 0;
     virtual void Recover(Teuchos::RCP<Epetra_Vector> disi) = 0;
     virtual bool RedistributeContact(

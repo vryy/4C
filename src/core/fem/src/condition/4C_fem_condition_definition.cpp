@@ -129,7 +129,7 @@ void Core::Conditions::ConditionDefinition::Read(Core::IO::DatFileReader& reader
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::ostream& Core::Conditions::ConditionDefinition::Print(
+std::ostream& Core::Conditions::ConditionDefinition::print(
     std::ostream& stream, const Core::FE::Discretization* dis)
 {
   unsigned l = sectionname_.length();

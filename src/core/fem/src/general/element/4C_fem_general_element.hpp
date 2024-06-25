@@ -595,7 +595,7 @@ might become invalid after a redistribution of the discretization.
     Prints basic information about this element to ostream. This method would
     usually be called by the print method of a derived class.
     */
-    virtual void Print(std::ostream& os) const;
+    virtual void print(std::ostream& os) const;
 
     /*!
     \brief Return the material of this element

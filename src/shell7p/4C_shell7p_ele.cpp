@@ -308,11 +308,11 @@ bool Discret::ELEMENTS::Shell7p::VisData(const std::string& name, std::vector<do
 }  // VisData()
 
 
-void Discret::ELEMENTS::Shell7p::Print(std::ostream& os) const
+void Discret::ELEMENTS::Shell7p::print(std::ostream& os) const
 {
   os << "Shell7p ";
   os << " discretization type: " << Core::FE::CellTypeToString(distype_).c_str();
-  Element::Print(os);
+  Element::print(os);
 }
 
 

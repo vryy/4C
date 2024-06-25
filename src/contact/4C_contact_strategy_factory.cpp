@@ -1831,7 +1831,7 @@ void CONTACT::STRATEGY::Factory::BuildSearchTree(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::STRATEGY::Factory::Print(
+void CONTACT::STRATEGY::Factory::print(
     const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
     const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr,
     const Teuchos::ParameterList& params) const

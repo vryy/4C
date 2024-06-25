@@ -253,7 +253,7 @@ void Mat::BeamPlasticMaterial<T>::evaluate_force_contributions_to_stress(
       Gammaelast(i) = Gamma(i) - gammaplastconv_[gp](i);
     }
     // compute resulting stress
-    stressN.Multiply(CN, Gammaelast);
+    stressN.multiply(CN, Gammaelast);
 
     // check if yield stress is surpassed
     if (std::abs(stressN(0)) > effyieldstress_n_[gp])
@@ -273,7 +273,7 @@ void Mat::BeamPlasticMaterial<T>::evaluate_force_contributions_to_stress(
         Gammaelast(i) = Gamma(i) - gammaplastnew_[gp](i);
       }
 
-      stressN.Multiply(CN, Gammaelast);
+      stressN.multiply(CN, Gammaelast);
     }
     stress_n_[gp] = std::abs(stressN(0));
   }
@@ -319,10 +319,10 @@ void Mat::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
     }
 
     // compute resulting moments
-    stressM.Multiply(CM, kappaelast_[gp]);
+    stressM.multiply(CM, kappaelast_[gp]);
 
     // compute norm of moment vector
-    normstress_m_[gp] = stressM.Norm2();
+    normstress_m_[gp] = stressM.norm2();
 
     // compute fraction that exceeds the current yield moment
     deltastress_m_[gp] = normstress_m_[gp] - effyieldstress_m_[gp];
@@ -339,7 +339,7 @@ void Mat::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
       {
         kappaplastnew_[gp](i) = kappaplastconv_[gp](i) + delta_kappaplast_[gp] *
                                                              kappaelast_[gp](i) /
-                                                             kappaelast_[gp].Norm2();
+                                                             kappaelast_[gp].norm2();
       }
 
       // update elastic curvature
@@ -349,8 +349,8 @@ void Mat::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
       }
 
       // update moment vector and its norm
-      stressM.Multiply(CM, kappaelast_[gp]);
-      normstress_m_[gp] = stressM.Norm2();
+      stressM.multiply(CM, kappaelast_[gp]);
+      normstress_m_[gp] = stressM.norm2();
     }
 
     // if torsional plasticity is turned off, the moment needs to be recomputed using the full
@@ -358,7 +358,7 @@ void Mat::BeamPlasticMaterial<T>::evaluate_moment_contributions_to_stress(
     if (!this->Params().get_torsion_plasticity())
     {
       kappaelast_[gp](0) = Cur(0);
-      stressM.Multiply(CM, kappaelast_[gp]);
+      stressM.multiply(CM, kappaelast_[gp]);
     }
   }
 
@@ -404,10 +404,10 @@ void Mat::BeamPlasticMaterial<T>::update()
   {
     gammaplastaccum_[gp] += std::abs(gammaplastconv_[gp](0) - gammaplastnew_[gp](0));
     gammaplastconv_[gp] = gammaplastnew_[gp];
-    c_n_eff_[gp].putScalar(0.0);
+    c_n_eff_[gp].put_scalar(0.0);
     effyieldstress_n_[gp] = 0.0;
-    delta_gammaplast_[gp].putScalar(0.0);
-    deltastress_n_[gp].putScalar(0.0);
+    delta_gammaplast_[gp].put_scalar(0.0);
+    deltastress_n_[gp].put_scalar(0.0);
   }
   for (unsigned int gp = 0; gp < numgp_moment_; gp++)
   {
@@ -418,11 +418,11 @@ void Mat::BeamPlasticMaterial<T>::update()
                                       (kappaplastconv_[gp](2) - kappaplastnew_[gp](2)) *
                                           (kappaplastconv_[gp](2) - kappaplastnew_[gp](2)));
     kappaplastconv_[gp] = kappaplastnew_[gp];
-    c_m_eff_[gp].putScalar(0.0);
+    c_m_eff_[gp].put_scalar(0.0);
     effyieldstress_m_[gp] = 0.0;
-    kappaelast_[gp].putScalar(0.0);
-    kappaelastflow_[gp].putScalar(0.0);
-    elastic_curvature_[gp].putScalar(0.0);
+    kappaelast_[gp].put_scalar(0.0);
+    kappaelastflow_[gp].put_scalar(0.0);
+    elastic_curvature_[gp].put_scalar(0.0);
     delta_kappaplast_[gp] = 0.0;
     normstress_m_[gp] = 0.0;
     deltastress_m_[gp] = 0.0;
@@ -563,7 +563,7 @@ void Mat::BeamPlasticMaterial<T>::get_stiffness_matrix_of_moments(
     {
       kappaelastflow_[gp](i) = kappaelast_[gp](i);
     }
-    normKappaelastflow = kappaelastflow_[gp].Norm2();
+    normKappaelastflow = kappaelastflow_[gp].norm2();
 
     // compute e, which is the unit vector in the direction of kappaelastflow
     for (int i = i_start; i < 3; i++)

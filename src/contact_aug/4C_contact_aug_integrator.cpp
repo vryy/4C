@@ -713,11 +713,11 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
 
       // evaluate the convective master base vectors
       Core::LinAlg::Matrix<3, 2> mtau;
-      mele.Metrics(uniqueMxi.A(), &mtau(0, 0), &mtau(0, 1));
+      mele.Metrics(uniqueMxi.data(), &mtau(0, 0), &mtau(0, 1));
 
       // evaluate the GP master coordinate 1-st and 2-nd order derivatives
       evaluator_->Deriv_MXiGP(
-          sele, mele, sxi, uniqueMxi.A(), uniqueProjalpha, sval_, mval_, mderiv_, mtau);
+          sele, mele, sxi, uniqueMxi.data(), uniqueProjalpha, sval_, mval_, mderiv_, mtau);
 
       //**********************************************************************
       // evaluate at GP and lin char. quantities
@@ -751,7 +751,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::integr
       IntPolicy::get_deriv1st_w_gap_complete(linsize, sele, mele, sval_, mval_, lmval_, gpn_, mtau,
           dmxigp_, gapn_sl, gapn_ma, wgt, jacslave, derivjac_);
 
-      IntPolicy::Get_Debug(sele, lmval_, gapn_sl, gapn_ma, wgt, jacslave, gpn_, uniqueMxi.A());
+      IntPolicy::Get_Debug(sele, lmval_, gapn_sl, gapn_ma, wgt, jacslave, gpn_, uniqueMxi.data());
 
       IntPolicy::Get_Deriv1st_Debug(sele, lmval_, sval_, sderiv_, stau, derivjac_, dmxigp_,
           dn_unit_, deriv_gapn_sl_, gapn_sl, wgt, jacslave);
@@ -929,11 +929,11 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
 
       // evaluate the convective master base vectors
       Core::LinAlg::Matrix<3, 2> mtau;
-      mele.Metrics(uniqueMxi.A(), &mtau(0, 0), &mtau(0, 1));
+      mele.Metrics(uniqueMxi.data(), &mtau(0, 0), &mtau(0, 1));
 
       // evaluate the GP master coordinate 1-st and 2-nd order derivatives
       evaluator_->Deriv_MXiGP(
-          sele, mele, sxi, uniqueMxi.A(), uniqueProjalpha, sval_, mval_, mderiv_, mtau);
+          sele, mele, sxi, uniqueMxi.data(), uniqueProjalpha, sval_, mval_, mderiv_, mtau);
 
       //**********************************************************************
       // evaluate at GP and lin char. quantities

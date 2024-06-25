@@ -523,7 +523,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     factory.BuildSearchTree(interfaces);
 
     // print final screen output
-    factory.Print(interfaces, contact_strategy_lagrange_, cparams);
+    factory.print(interfaces, contact_strategy_lagrange_, cparams);
 
     // ---------------------------------------------------------------------
     // final touches to the contact strategy

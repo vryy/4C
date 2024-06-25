@@ -354,21 +354,21 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
   {
     case Core::FE::CellType::tri3:
     {
-      xicele1.PutScalar(1.0 / 3.0);
+      xicele1.put_scalar(1.0 / 3.0);
       LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(ele1, xicele1, ele1coords);
       ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri3>(ele1, xicele1, ele1normal);
     }
     break;
     case Core::FE::CellType::tri6:
     {
-      xicele1.PutScalar(1.0 / 3.0);
+      xicele1.put_scalar(1.0 / 3.0);
       LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(ele1, xicele1, ele1coords);
       ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::tri6>(ele1, xicele1, ele1normal);
     }
     break;
     case Core::FE::CellType::quad4:
     {
-      xicele1.PutScalar(0.0);
+      xicele1.put_scalar(0.0);
       LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(ele1, xicele1, ele1coords);
       ComputeUnitNormalAtXiRefConfig<Core::FE::CellType::quad4>(ele1, xicele1, ele1normal);
     }
@@ -384,19 +384,19 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
   {
     case Core::FE::CellType::tri3:
     {
-      xicele2.PutScalar(1.0 / 3.0);
+      xicele2.put_scalar(1.0 / 3.0);
       LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri3>(ele2, xicele2, ele2coords);
     }
     break;
     case Core::FE::CellType::tri6:
     {
-      xicele2.PutScalar(1.0 / 3.0);
+      xicele2.put_scalar(1.0 / 3.0);
       LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::tri6>(ele2, xicele2, ele2coords);
     }
     break;
     case Core::FE::CellType::quad4:
     {
-      xicele2.PutScalar(0.0);
+      xicele2.put_scalar(0.0);
       LocalToGlobalPositionAtXiRefConfig<3, Core::FE::CellType::quad4>(ele2, xicele2, ele2coords);
     }
     break;
@@ -406,15 +406,15 @@ bool CONTACT::UnbiasedSelfBinaryTree::rough_check_ref_config(int ele1gid, int el
   }
 
   // calculate vector ele1 center -> ele2 center
-  ele1ele2vec.Update(-1.0, ele1coords, 1.0, ele2coords, 0.0);
+  ele1ele2vec.update(-1.0, ele1coords, 1.0, ele2coords, 0.0);
   // as we are only interested in the angle between connecting vector and normal we normalize it to
   // 1
-  const double ele1ele2vecnorm = ele1ele2vec.Norm2();
-  if (ele1ele2vecnorm > 1.0e-14) ele1ele2vec.Scale(1.0 / ele1ele2vecnorm);
+  const double ele1ele2vecnorm = ele1ele2vec.norm2();
+  if (ele1ele2vecnorm > 1.0e-14) ele1ele2vec.scale(1.0 / ele1ele2vecnorm);
 
   // calculate scalar product of slavemastervector and slavenormal in reference coordinates
-  scalarprod.MultiplyTN(1.0, ele1ele2vec, ele1normal, 0.0);
-  const double scalarprodnorm = scalarprod.MaxValue();
+  scalarprod.multiply_tn(1.0, ele1ele2vec, ele1normal, 0.0);
+  const double scalarprodnorm = scalarprod.max_value();
 
   // if normal (in ref. config) of ele1 and vector (in ref. config) connecting centers of ele1 and
   // ele2 point in the same direction -> integrate!

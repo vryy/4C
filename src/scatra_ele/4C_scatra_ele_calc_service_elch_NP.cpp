@@ -223,14 +223,14 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calculate_flux(
   {
     case Inpar::ScaTra::flux_total:
       // convective flux contribution
-      q.Update(var_manager()->Phinp(k), var_manager()->ConVel(k));
+      q.update(var_manager()->Phinp(k), var_manager()->ConVel(k));
 
       [[fallthrough]];
     case Inpar::ScaTra::flux_diffusive:
       // diffusive flux contribution
-      q.Update(-myelch::diff_manager()->GetIsotropicDiff(k), var_manager()->GradPhi(k), 1.0);
+      q.update(-myelch::diff_manager()->GetIsotropicDiff(k), var_manager()->GradPhi(k), 1.0);
 
-      q.Update(-var_manager()->FRT() * myelch::diff_manager()->GetIsotropicDiff(k) *
+      q.update(-var_manager()->FRT() * myelch::diff_manager()->GetIsotropicDiff(k) *
                    myelch::diff_manager()->GetValence(k) * var_manager()->Phinp(k),
           var_manager()->GradPot(), 1.0);
 
@@ -321,13 +321,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
         const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // get values of all transported scalars at integration point
-        for (int k = 0; k < my::numscal_; ++k) conint(k) = my::funct_.Dot(my::ephinp_[k]);
+        for (int k = 0; k < my::numscal_; ++k) conint(k) = my::funct_.dot(my::ephinp_[k]);
 
         // get el. potential solution at integration point
-        potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
+        potint = my::funct_.dot(my::ephinp_[my::numscal_]);
 
         // get global coordinate of integration point
-        xint.Multiply(my::xyze_, my::funct_);
+        xint.multiply(my::xyze_, my::funct_);
 
         // compute various constants
         const double d =
@@ -389,7 +389,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
 
         // compute differences between analytical solution and numerical solution
         deltapot = potint - pot;
-        deltacon.Update(1.0, conint, -1.0, c);
+        deltacon.update(1.0, conint, -1.0, c);
 
         // add square to L2 error
         errors[0] += deltacon(0) * deltacon(0) * fac;  // cation concentration
@@ -428,13 +428,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
         const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
         // get values of all transported scalars at integration point
-        for (int k = 0; k < my::numscal_; ++k) conint(k) = my::funct_.Dot(my::ephinp_[k]);
+        for (int k = 0; k < my::numscal_; ++k) conint(k) = my::funct_.dot(my::ephinp_[k]);
 
         // get el. potential solution at integration point
-        const double potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
+        const double potint = my::funct_.dot(my::ephinp_[my::numscal_]);
 
         // get global coordinate of integration point
-        xint.Multiply(my::xyze_, my::funct_);
+        xint.multiply(my::xyze_, my::funct_);
 
         // evaluate analytical solution for cation concentration at radial position r
         if (nsd_ == 3)
@@ -462,7 +462,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
 
         // compute differences between analytical solution and numerical solution
         double deltapot = potint - pot;
-        deltacon.Update(1.0, conint, -1.0, c);
+        deltacon.update(1.0, conint, -1.0, c);
 
         // add square to L2 error
         errors[0] += deltacon(0) * deltacon(0) * fac;  // cation concentration
@@ -484,7 +484,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::cal_error_compared_to_anal
         double deviation(0.0);
         for (int k = 0; k < my::numscal_; ++k)
         {
-          const double conint_k = my::funct_.Dot(my::ephinp_[k]);
+          const double conint_k = my::funct_.dot(my::ephinp_[k]);
           deviation += myelch::diff_manager()->GetValence(k) * conint_k;
         }
 

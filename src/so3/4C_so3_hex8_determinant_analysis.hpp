@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief Determinant analysis for Solid Hex8 element
+\brief determinant analysis for Solid Hex8 element
 
 \level 3
 

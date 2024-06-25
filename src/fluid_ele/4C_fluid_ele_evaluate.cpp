@@ -518,7 +518,7 @@ int Discret::ELEMENTS::Fluid::evaluate(Teuchos::ParameterList& params,
       // time update for time-dependent subgrid-scales
       const double dt = params.get<double>("dt");
       const double gamma = params.get<double>("gamma");
-      this->TDS()->Update(dt, gamma);
+      this->TDS()->update(dt, gamma);
     }
     break;
     case FLD::calc_model_params_mfsubgr_scales:

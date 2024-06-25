@@ -71,10 +71,10 @@ Discret::ELEMENTS::Nurbs::Ale2Nurbs::Ale2Nurbs(const Discret::ELEMENTS::Nurbs::A
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::Ale2Nurbs::Print(std::ostream& os) const
+void Discret::ELEMENTS::Nurbs::Ale2Nurbs::print(std::ostream& os) const
 {
   os << "Ale2Nurbs ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

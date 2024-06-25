@@ -785,7 +785,7 @@ void Core::FE::DiscretizationFaces::BuildFaces(const bool verbose)
             if (pbc_surf_it == surfmapdata.end())
             {
               // print some helpful information first
-              master_ele->Print(std::cout);
+              master_ele->print(std::cout);
 
               std::cout << "\n slave " << std::endl;
               for (std::size_t kk = 0; kk < myslavenodeids.size(); kk++)
@@ -1046,7 +1046,7 @@ int Core::FE::DiscretizationFaces::NumMyColFaces() const
 std::ostream& operator<<(std::ostream& os, const Core::FE::DiscretizationFaces& dis)
 {
   // print standard discretization info
-  dis.Print(os);
+  dis.print(os);
   // print additional info about internal faces
   dis.PrintFaces(os);
 

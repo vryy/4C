@@ -478,7 +478,7 @@ double Discret::ELEMENTS::Wall1Line::w1_substitution(const Core::LinAlg::SerialD
   // compute derivative of parametrization
   double dr = 0.0;
   Core::LinAlg::SerialDenseMatrix der_par(1, 2);
-  int err = Core::LinAlg::multiplyNT(der_par, deriv, xyze);
+  int err = Core::LinAlg::multiply_nt(der_par, deriv, xyze);
   if (err != 0) FOUR_C_THROW("Multiply failed");
   dr = sqrt(der_par(0, 0) * der_par(0, 0) + der_par(0, 1) * der_par(0, 1));
   if (unrm != nullptr)
@@ -777,9 +777,9 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
         // get Jacobian matrix and determinant w.r.t. spatial configuration
         //! transposed jacobian "dx/ds"
         Core::LinAlg::SerialDenseMatrix xjm(numdim, numdim);
-        Core::LinAlg::multiplyNT(xjm, deriv, xcurr);
+        Core::LinAlg::multiply_nt(xjm, deriv, xcurr);
         Core::LinAlg::SerialDenseMatrix Jmat(numdim, numdim);
-        Core::LinAlg::multiplyNT(Jmat, deriv, xrefe);
+        Core::LinAlg::multiply_nt(Jmat, deriv, xrefe);
 
         double det = 0.0;
         double detJ = 0.0;

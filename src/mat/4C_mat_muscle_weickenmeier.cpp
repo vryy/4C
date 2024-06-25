@@ -204,13 +204,13 @@ void Mat::MuscleWeickenmeier::setup(int numgp, Input::LineDefinition* linedef)
   anisotropy_.read_anisotropy_from_element(linedef);
 }
 
-void Mat::MuscleWeickenmeier::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
+void Mat::MuscleWeickenmeier::update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
     Teuchos::ParameterList& params, int const eleGID)
 {
   // compute the current fibre stretch using the deformation gradient and the structural tensor
   // right Cauchy Green tensor C= F^T F
   Core::LinAlg::Matrix<3, 3> C(false);
-  C.MultiplyTN(defgrd, defgrd);
+  C.multiply_tn(defgrd, defgrd);
 
   // structural tensor M, i.e. dyadic product of fibre directions
   const Core::LinAlg::Matrix<3, 3>& M = anisotropy_extension_.get_structural_tensor(gp, 0);
@@ -237,13 +237,13 @@ void Mat::MuscleWeickenmeier::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // compute matrices
   // right Cauchy Green tensor C
   Core::LinAlg::Matrix<3, 3> C(false);                     // matrix notation
-  C.MultiplyTN(*defgrd, *defgrd);                          // C = F^T F
+  C.multiply_tn(*defgrd, *defgrd);                         // C = F^T F
   Core::LinAlg::Matrix<6, 1> Cv(false);                    // Voigt notation
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(C, Cv);  // Cv
 
   // inverse right Cauchy Green tensor C^-1
   Core::LinAlg::Matrix<3, 3> invC(false);                        // matrix notation
-  invC.Invert(C);                                                // invC = C^-1
+  invC.invert(C);                                                // invC = C^-1
   Core::LinAlg::Matrix<6, 1> invCv(false);                       // Voigt notation
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(invC, invCv);  // invCv
 
@@ -254,16 +254,16 @@ void Mat::MuscleWeickenmeier::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // structural tensor L = omega0/3*Identity + omegap*M
   Core::LinAlg::Matrix<3, 3> L(M);
-  L.Scale(1.0 - omega0);  // omegap*M
+  L.scale(1.0 - omega0);  // omegap*M
   for (unsigned i = 0; i < 3; ++i) L(i, i) += omega0 / 3.0;
 
   // product invC*L
   Core::LinAlg::Matrix<3, 3> invCL(false);
-  invCL.MultiplyNN(invC, L);
+  invCL.multiply_nn(invC, L);
 
   // product invC*L*invC
   Core::LinAlg::Matrix<3, 3> invCLinvC(false);  // matrix notation
-  invCLinvC.MultiplyNN(invCL, invC);
+  invCLinvC.multiply_nn(invCL, invC);
   Core::LinAlg::Matrix<6, 1> invCLinvCv(false);  // Voigt notation
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(invCLinvC, invCLinvCv);
 
@@ -291,28 +291,28 @@ void Mat::MuscleWeickenmeier::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   }
   // compute derivative \frac{\partial omegaa}{\partial C} in Voigt notation
   Core::LinAlg::Matrix<6, 1> domegaadCv(Mv);
-  domegaadCv.Scale(derivOmegaa * 0.5 / lambdaM);
+  domegaadCv.scale(derivOmegaa * 0.5 / lambdaM);
 
   // compute helper matrices for further calculation
   Core::LinAlg::Matrix<3, 3> LomegaaM(L);
-  LomegaaM.Update(omegaa, M, 1.0);  // LomegaaM = L + omegaa*M
+  LomegaaM.update(omegaa, M, 1.0);  // LomegaaM = L + omegaa*M
   Core::LinAlg::Matrix<6, 1> LomegaaMv(false);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(LomegaaM, LomegaaMv);
 
   Core::LinAlg::Matrix<3, 3> LfacomegaaM(L);  // LfacomegaaM = L + fac*M
-  LfacomegaaM.Update(
+  LfacomegaaM.update(
       (1.0 + omegaa * alpha * std::pow(lambdaM, 2.)) / (alpha * std::pow(lambdaM, 2.)), M,
       1.0);  // + fac*M
   Core::LinAlg::Matrix<6, 1> LfacomegaaMv(false);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(LfacomegaaM, LfacomegaaMv);
 
   Core::LinAlg::Matrix<3, 3> transpCLomegaaM(false);
-  transpCLomegaaM.MultiplyTN(1.0, C, LomegaaM);  // C^T*(L+omegaa*M)
+  transpCLomegaaM.multiply_tn(1.0, C, LomegaaM);  // C^T*(L+omegaa*M)
   Core::LinAlg::Matrix<6, 1> transpCLomegaaMv(false);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(transpCLomegaaM, transpCLomegaaMv);
 
   // generalized invariants including active material properties
-  double detC = C.Determinant();  // detC = det(C)
+  double detC = C.determinant();  // detC = det(C)
   // I = C:(L+omegaa*M) = tr(C^T (L+omegaa*M)) since A:B = tr(A^T B) for real matrices
   double I = transpCLomegaaM(0, 0) + transpCLomegaaM(1, 1) + transpCLomegaaM(2, 2);
   // J = cof(C):L = tr(cof(C)^T L) = tr(adj(C) L) = tr(det(C) C^-1 L) = det(C)*tr(C^-1 L)
@@ -323,30 +323,30 @@ void Mat::MuscleWeickenmeier::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // compute second Piola-Kirchhoff stress
   Core::LinAlg::Matrix<3, 3> stressM(false);
-  stressM.Update(expalpha, LomegaaM, 0.0);  // add contributions
-  stressM.Update(-expbeta * detC, invCLinvC, 1.0);
-  stressM.Update(J * expbeta - std::pow(detC, -kappa), invC, 1.0);
-  stressM.Scale(0.5 * gamma);
+  stressM.update(expalpha, LomegaaM, 0.0);  // add contributions
+  stressM.update(-expbeta * detC, invCLinvC, 1.0);
+  stressM.update(J * expbeta - std::pow(detC, -kappa), invC, 1.0);
+  stressM.scale(0.5 * gamma);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(
       stressM, Sc_stress);  // convert to Voigt notation and update stress
 
   // compute cmat
-  ccmat.MultiplyNT(alpha * expalpha, LomegaaMv, LomegaaMv, 1.0);  // add contributions
-  ccmat.MultiplyNT(alpha * std::pow(lambdaM, 2.) * expalpha, LfacomegaaMv, domegaadCv, 1.0);
-  ccmat.MultiplyNT(beta * expbeta * std::pow(detC, 2.), invCLinvCv, invCLinvCv, 1.0);
-  ccmat.MultiplyNT(-(beta * J + 1.) * expbeta * detC, invCv, invCLinvCv, 1.0);
-  ccmat.MultiplyNT(-(beta * J + 1.) * expbeta * detC, invCLinvCv, invCv, 1.0);
-  ccmat.MultiplyNT(
+  ccmat.multiply_nt(alpha * expalpha, LomegaaMv, LomegaaMv, 1.0);  // add contributions
+  ccmat.multiply_nt(alpha * std::pow(lambdaM, 2.) * expalpha, LfacomegaaMv, domegaadCv, 1.0);
+  ccmat.multiply_nt(beta * expbeta * std::pow(detC, 2.), invCLinvCv, invCLinvCv, 1.0);
+  ccmat.multiply_nt(-(beta * J + 1.) * expbeta * detC, invCv, invCLinvCv, 1.0);
+  ccmat.multiply_nt(-(beta * J + 1.) * expbeta * detC, invCLinvCv, invCv, 1.0);
+  ccmat.multiply_nt(
       (beta * J + 1.) * J * expbeta + kappa * std::pow(detC, -kappa), invCv, invCv, 1.0);
   // adds scalar * (invC boeppel invC) to cmat, see Holzapfel2000, p. 254
   Mat::add_holzapfel_product(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
   // adds -expbeta*detC * dinvCLinvCdCv to cmats
   Mat::add_derivative_of_inva_b_inva_product(-expbeta * detC, invCv, invCLinvCv, ccmat);
-  ccmat.Scale(gamma);
+  ccmat.scale(gamma);
 
   // update stress and material tangent with the computed stress and cmat values
-  stress->Update(1.0, Sc_stress, 1.0);
-  cmat->Update(1.0, ccmat, 1.0);
+  stress->update(1.0, Sc_stress, 1.0);
+  cmat->update(1.0, ccmat, 1.0);
 }
 
 void Mat::MuscleWeickenmeier::evaluate_active_nominal_stress(

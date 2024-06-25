@@ -110,8 +110,8 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_gauss_points_on_segment_to_o
   StartValues<other::geometry_type_>::set(xi_start);
   for (unsigned int i = 0; i < (unsigned int)gauss_points.nquad; i++)
   {
-    scalar_type eta = segment.GetEtaA() +
-                      (segment.GetEtaB() - segment.GetEtaA()) * 0.5 * (gauss_points.qxg[i][0] + 1.);
+    scalar_type eta = segment.GetEtadata() + (segment.GetEtaB() - segment.GetEtadata()) * 0.5 *
+                                                 (gauss_points.qxg[i][0] + 1.);
     projection_points.push_back(
         ProjectionPoint1DTo3D<scalar_type>(eta, xi_start, gauss_points.qwgt[i]));
   }
@@ -146,7 +146,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::project_gauss_points_on_segment_to_o
       error_message << "\n  line parameter coordinate: "
                     << Core::FADUtils::CastToDouble(projection_point.GetEta());
       error_message << "\n  other parameter coordinate: ";
-      Core::FADUtils::CastToDouble(projection_point.GetXi()).Print(error_message);
+      Core::FADUtils::CastToDouble(projection_point.GetXi()).print(error_message);
       error_message << "  projection result: " << (int)projection_point.GetProjectionResult();
     };
 
@@ -455,7 +455,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::evaluate(const pair_type* pa
           eta = 0.5 * (start_point.GetEta() + end_point.GetEta());
           xi_start = start_point.GetXi();
           xi_start += end_point.GetXi();
-          xi_start.Scale(0.5);
+          xi_start.scale(0.5);
 
           // Project and check result.
           LineTo3DBase<pair_type>::project_point_on_line_to_other(

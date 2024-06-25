@@ -221,7 +221,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::Update(
             [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
                     deformation_gradient,
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
-            { solid_material.Update(deformation_gradient, gp, params, ele.Id()); });
+            { solid_material.update(deformation_gradient, gp, params, ele.Id()); });
       });
 
   solid_material.update();

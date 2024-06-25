@@ -109,7 +109,7 @@ namespace Core::Conditions
      *\brief Print this Manager
      *
      */
-    void Print() const;
+    void print() const;
 
     /*!
      * \brief Get Epetra communicator

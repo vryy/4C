@@ -138,13 +138,13 @@ namespace Core::Geo
       }
 
       /*! \brief Print the coordinates of the nodes on screen */
-      void Print()
+      void print()
       {
-        nodes_[0]->Print();
+        nodes_[0]->print();
         for (unsigned i = 1; i < nodes_.size(); ++i)
         {
           std::cout << "--";
-          nodes_[i]->Print();
+          nodes_[i]->print();
         }
       }
 
@@ -378,13 +378,13 @@ namespace Core::Geo
 
             Core::LinAlg::Matrix<probDim, 1> x1;
             Core::LinAlg::Matrix<probDim, 1> x2;
-            BeginNode()->Coordinates(x1.A());
-            EndNode()->Coordinates(x2.A());
+            BeginNode()->Coordinates(x1.data());
+            EndNode()->Coordinates(x2.data());
 
             Core::LinAlg::Matrix<probDim, 1> x;
-            x.Update(-1., x1, 1., x2, 0.);
-            x.Update(1., x1, z);
-            Point* p = Point::NewPoint(mesh, x.A(), 2. * z - 1., this, &side, 0.0);
+            x.update(-1., x1, 1., x2, 0.);
+            x.update(1., x1, z);
+            Point* p = Point::NewPoint(mesh, x.data(), 2. * z - 1., this, &side, 0.0);
             cuts.insert(p);
           }
         }

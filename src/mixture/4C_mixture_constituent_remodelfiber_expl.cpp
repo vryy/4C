@@ -31,14 +31,14 @@ namespace
   [[nodiscard]] Core::LinAlg::Matrix<3, 3> EvaluateC(const Core::LinAlg::Matrix<3, 3>& F)
   {
     Core::LinAlg::Matrix<3, 3> C(false);
-    C.MultiplyTN(F, F);
+    C.multiply_tn(F, F);
     return C;
   }
 
   [[nodiscard]] Core::LinAlg::Matrix<3, 3> EvaluateiCext(const Core::LinAlg::Matrix<3, 3>& iFext)
   {
     Core::LinAlg::Matrix<3, 3> iCext(false);
-    iCext.MultiplyNT(iFext, iFext);
+    iCext.multiply_nt(iFext, iFext);
     return iCext;
   }
 }  // namespace
@@ -242,7 +242,7 @@ Core::LinAlg::Matrix<6, 1> MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate
   Core::LinAlg::Matrix<6, 1> S_stress(false);
   const double fiber_pk2 = remodel_fiber_[gp].evaluate_current_fiber_p_k2_stress();
 
-  S_stress.Update(fiber_pk2, anisotropy_extension_.get_structural_tensor_stress(gp, 0));
+  S_stress.update(fiber_pk2, anisotropy_extension_.get_structural_tensor_stress(gp, 0));
 
   return S_stress;
 }
@@ -254,7 +254,7 @@ Core::LinAlg::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate
       remodel_fiber_[gp].evaluate_d_current_fiber_p_k2_stress_d_lambdafsq();
 
   Core::LinAlg::Matrix<6, 6> cmat(false);
-  cmat.MultiplyNT(2.0 * dPK2dlambdafsq, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
+  cmat.multiply_nt(2.0 * dPK2dlambdafsq, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
       anisotropy_extension_.get_structural_tensor_stress(gp, 0));
   return cmat;
 }
@@ -277,8 +277,8 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate(const Core::LinAlg::M
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, 1.0);
 
-  S_stress.Update(evaluate_current_p_k2(gp, eleGID));
-  cmat.Update(evaluate_current_cmat(gp, eleGID));
+  S_stress.update(evaluate_current_p_k2(gp, eleGID));
+  cmat.update(evaluate_current_cmat(gp, eleGID));
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_elastic_part(
@@ -301,8 +301,8 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_elastic_part(
   const double lambda_ext = evaluate_lambda_ext(iFextin, gp, eleGID);
   remodel_fiber_[gp].set_state(lambda_f, lambda_ext);
 
-  S_stress.Update(evaluate_current_p_k2(gp, eleGID));
-  cmat.Update(evaluate_current_cmat(gp, eleGID));
+  S_stress.update(evaluate_current_p_k2(gp, eleGID));
+  cmat.update(evaluate_current_cmat(gp, eleGID));
 }
 
 double MIXTURE::MixtureConstituentRemodelFiberExpl::get_growth_scalar(int gp) const
@@ -349,13 +349,13 @@ void MIXTURE::MixtureConstituentRemodelFiberExpl::update_homeostatic_values(
 double MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_lambdaf(
     const Core::LinAlg::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
-  return std::sqrt(C.Dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
+  return std::sqrt(C.dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
 }
 
 double MIXTURE::MixtureConstituentRemodelFiberExpl::evaluate_lambda_ext(
     const Core::LinAlg::Matrix<3, 3>& iFext, const int gp, const int eleGID) const
 {
   return 1.0 /
-         std::sqrt(EvaluateiCext(iFext).Dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
+         std::sqrt(EvaluateiCext(iFext).dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
 }
 FOUR_C_NAMESPACE_CLOSE

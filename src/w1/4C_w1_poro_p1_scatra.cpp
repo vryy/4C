@@ -142,10 +142,10 @@ bool Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::ReadElement(
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::Wall1PoroP1Scatra<distype>::print(std::ostream& os) const
 {
   os << "Wall1_PoroP1Scatra ";
-  Core::Elements::Element::Print(os);
+  Core::Elements::Element::print(os);
   std::cout << std::endl;
   return;
 }

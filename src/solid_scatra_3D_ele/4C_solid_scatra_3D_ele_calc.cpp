@@ -71,7 +71,7 @@ namespace
 
     for (std::size_t k = 0; k < nodal_quantities.size(); ++k)
     {
-      quantities_at_gp[k] = shape_functions.shapefunctions_.Dot(nodal_quantities[k]);
+      quantities_at_gp[k] = shape_functions.shapefunctions_.dot(nodal_quantities[k]);
     }
     return quantities_at_gp;
   }
@@ -81,7 +81,7 @@ namespace
       const Discret::ELEMENTS::ShapeFunctionsAndDerivatives<celltype>& shape_functions,
       const Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>& nodal_quantity)
   {
-    return shape_functions.shapefunctions_.Dot(nodal_quantity);
+    return shape_functions.shapefunctions_.dot(nodal_quantity);
   }
 
 
@@ -228,11 +228,11 @@ namespace
       static Core::LinAlg::Matrix<9, 1> d_F_dc(true);
       mat.evaluate_linearization_od(deformation_gradient, (*scalars_at_xi)[0], &d_F_dc);
 
-      double d_cauchyndir_ds_gp = (*linearization_dependencies.d_cauchyndir_dF).Dot(d_F_dc);
+      double d_cauchyndir_ds_gp = (*linearization_dependencies.d_cauchyndir_dF).dot(d_F_dc);
 
       Core::LinAlg::Matrix<Core::FE::num_nodes<celltype>, 1>(
           linearizations.d_cauchyndir_ds->values(), true)
-          .Update(d_cauchyndir_ds_gp, shape_functions.shapefunctions_, 1.0);
+          .update(d_cauchyndir_ds_gp, shape_functions.shapefunctions_, 1.0);
     }
     return cauchy_n_dir;
   }
@@ -412,7 +412,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::evaluate
               // Assemble matrix
               // k_dS = B^T . dS/dc * detJ * N * w(gp)
               Core::LinAlg::Matrix<num_dof_per_ele, 1> BdSdc(true);
-              BdSdc.MultiplyTN(integration_factor, bop, dSdc);
+              BdSdc.multiply_tn(integration_factor, bop, dSdc);
 
               // loop over rows
               for (int rowi = 0; rowi < num_dof_per_ele; ++rowi)
@@ -467,7 +467,7 @@ void Discret::ELEMENTS::SolidScatraEleCalc<celltype, SolidFormulation>::Update(
             [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
                     deformation_gradient,
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
-            { solid_material.Update(deformation_gradient, gp, params, ele.Id()); });
+            { solid_material.update(deformation_gradient, gp, params, ele.Id()); });
       });
 
   solid_material.update();

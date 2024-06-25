@@ -146,7 +146,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
   // get condition specific parameters
   const int kineticmodel = scatra_parameter_boundary->KineticModel();
   const double kr = scatra_parameter_boundary->charge_transfer_constant();
-  const double alphaa = scatra_parameter_boundary->AlphaA();
+  const double alphaa = scatra_parameter_boundary->Alphadata();
   const double alphac = scatra_parameter_boundary->AlphaC();
   const double peltier = scatra_parameter_boundary->Peltier();
   const double thermoperm = scatra_parameter_boundary->ThermoPerm();
@@ -154,13 +154,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
 
   // evaluate dof values at current integration point on present and opposite side of scatra-scatra
   // interface
-  const double eslavetempint = funct_slave.Dot(eslavetempnp);
-  const double emastertempint = funct_master.Dot(emastertempnp);
+  const double eslavetempint = funct_slave.dot(eslavetempnp);
+  const double emastertempint = funct_master.dot(emastertempnp);
   if (eslavetempint <= 0.) FOUR_C_THROW("Temperature is non-positive!");
-  const double eslavephiint = funct_slave.Dot(eslavephinp[0]);
-  const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
-  const double emasterphiint = funct_master.Dot(emasterphinp[0]);
-  const double emasterpotint = funct_master.Dot(emasterphinp[1]);
+  const double eslavephiint = funct_slave.dot(eslavephinp[0]);
+  const double eslavepotint = funct_slave.dot(eslavephinp[1]);
+  const double emasterphiint = funct_master.dot(emasterphinp[0]);
+  const double emasterpotint = funct_master.dot(emasterphinp[1]);
 
   const int nen_master = Core::FE::num_nodes<distype_master>;
 
@@ -377,7 +377,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype,
     if (differentiationtype == ScaTra::DifferentiationType::disp)
     {
       static Core::LinAlg::Matrix<nen_, nsd_> xyze_transposed;
-      xyze_transposed.UpdateT(my::xyze_);
+      xyze_transposed.update_t(my::xyze_);
       Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
           my::derxy_, my::deriv_, xyze_transposed, normal);
       my::evaluate_spatial_derivative_of_area_integration_factor(intpoints, gpid, dsqrtdetg_dd);
@@ -414,7 +414,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::
   // get condition specific parameters
   const int kineticmodel = scatra_parameter_boundary->KineticModel();
   const double kr = scatra_parameter_boundary->charge_transfer_constant();
-  const double alphaa = scatra_parameter_boundary->AlphaA();
+  const double alphaa = scatra_parameter_boundary->Alphadata();
   const double alphac = scatra_parameter_boundary->AlphaC();
   const double peltier = scatra_parameter_boundary->Peltier();
   const double thermoperm = scatra_parameter_boundary->ThermoPerm();
@@ -425,13 +425,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::
 
   // evaluate dof values at current integration point on present and opposite side of scatra-scatra
   // interface
-  const double eslavetempint = funct_slave.Dot(eslavetempnp);
+  const double eslavetempint = funct_slave.dot(eslavetempnp);
   if (eslavetempint <= 0.0) FOUR_C_THROW("Temperature is non-positive!");
-  const double emastertempint = funct_master.Dot(emastertempnp);
-  const double eslavephiint = funct_slave.Dot(eslavephinp[0]);
-  const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
-  const double emasterphiint = funct_master.Dot(emasterphinp[0]);
-  const double emasterpotint = funct_master.Dot(emasterphinp[1]);
+  const double emastertempint = funct_master.dot(emastertempnp);
+  const double eslavephiint = funct_slave.dot(eslavephinp[0]);
+  const double eslavepotint = funct_slave.dot(eslavephinp[1]);
+  const double emasterphiint = funct_master.dot(emasterphinp[0]);
+  const double emasterpotint = funct_master.dot(emasterphinp[1]);
 
   // compute derivatives of scatra-scatra interface coupling residuals w.r.t. concentration and
   // electric potential according to kinetic model for current thermo-thermo interface coupling

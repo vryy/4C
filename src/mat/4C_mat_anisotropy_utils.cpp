@@ -62,7 +62,7 @@ void Mat::compute_structural_tensors(
       T A(false);
       strategy->setup_structural_tensor(fibers[gp].at(i), A);
 
-      structural_tensor[gp].at(i).Update(A);
+      structural_tensor[gp].at(i).update(A);
     }
   }
 }

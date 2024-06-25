@@ -137,15 +137,15 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::add_stress_aniso_principal(
   double stressFact_ =
       Global::Problem::Instance()
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
-          .evaluate(element_center_coordinates_ref.A(), time_, 0);
+          .evaluate(element_center_coordinates_ref.data(), time_, 0);
 
 
   // double stressFact_=params.get<double>("scalar");
-  stress.Update(2 * (params_->c_) * stressFact_, structural_tensor_, 1.0);
+  stress.update(2 * (params_->c_) * stressFact_, structural_tensor_, 1.0);
 
   // no contribution to cmat
   // double delta = 0.0;
-  // cmat.MultiplyNT(delta, A_, A_, 1.0);
+  // cmat.multiply_nt(delta, A_, A_, 1.0);
 }
 
 void Mat::Elastic::CoupAnisoNeoHookeVarProp::GetFiberVecs(
@@ -180,10 +180,10 @@ void Mat::Elastic::CoupAnisoNeoHookeVarProp::SetFiberVecs(const double newgamma,
   // pull back in reference configuration
   Core::LinAlg::Matrix<3, 1> a_0(true);
   Core::LinAlg::Matrix<3, 3> idefgrd(true);
-  idefgrd.Invert(defgrd);
+  idefgrd.invert(defgrd);
 
-  a_0.Multiply(idefgrd, ca);
-  a_.Update(1. / a_0.Norm2(), a_0);
+  a_0.multiply(idefgrd, ca);
+  a_.update(1. / a_0.norm2(), a_0);
 
   params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
 }

@@ -776,7 +776,7 @@ void Adapter::CouplingNonLinMortar::SetupSpringDashpot(
 /*----------------------------------------------------------------------*
  |  print interface                                         farah 10/14|
  *----------------------------------------------------------------------*/
-void Adapter::CouplingNonLinMortar::PrintInterface(std::ostream& os) { interface_->Print(os); }
+void Adapter::CouplingNonLinMortar::PrintInterface(std::ostream& os) { interface_->print(os); }
 
 
 /*----------------------------------------------------------------------*

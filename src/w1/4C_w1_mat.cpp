@@ -246,8 +246,8 @@ void Discret::ELEMENTS::Wall1::material_response3d_plane(Core::LinAlg::SerialDen
       rr(2) = -pk2(5);
       // solution
       // an in-place inversion is used, 'coz the inverse is needed below
-      crr.Invert();
-      ir.Multiply(crr, rr);
+      crr.invert();
+      ir.multiply(crr, rr);
       // update
       gl(2) += ir(0);
       gl(4) += 2.0 * ir(1);  // NOT SURE ABOUT 2.0, LACKED TESTING MATERIAL
@@ -289,9 +289,9 @@ void Discret::ELEMENTS::Wall1::material_response3d_plane(Core::LinAlg::SerialDen
       cfr(2, 1) = cmat(3, 4);
       cfr(2, 2) = cmat(3, 5);
       Core::LinAlg::Matrix<3, 3> crrrf(false);
-      crrrf.MultiplyNT(crr, cfr);
+      crrrf.multiply_nt(crr, cfr);
       Core::LinAlg::Matrix<3, 3> cfrrrrf(false);
-      cfrrrrf.MultiplyNN(cfr, crrrf);
+      cfrrrrf.multiply_nn(cfr, crrrf);
       // update constitutive matrix of free components
       cmat(0, 0) -= cfrrrrf(0, 0);
       cmat(0, 1) -= cfrrrrf(0, 1);

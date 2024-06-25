@@ -407,14 +407,14 @@ namespace BEAMINTERACTION
 
       int GetClId() const { return clgid_; };
 
-      std::pair<int, int> const& GetEleToUpdate() const { return eletoupdate_; };
+      std::pair<int, int> const& GetEleToupdate() const { return eletoupdate_; };
 
       Inpar::BEAMINTERACTION::CrosslinkerType GetLinkerType() const { return linkertype_; };
 
 
       void SetClId(int clgid) { clgid_ = clgid; };
 
-      void SetEleToUpdate(std::pair<int, int> eletoupdate) { eletoupdate_ = eletoupdate; };
+      void SetEleToupdate(std::pair<int, int> eletoupdate) { eletoupdate_ = eletoupdate; };
 
       void SetLinkerType(Inpar::BEAMINTERACTION::CrosslinkerType linkertype)
       {

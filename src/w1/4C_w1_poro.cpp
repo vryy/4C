@@ -165,10 +165,10 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::Wall1Poro<distype>::print(std::ostream& os) const
 {
   os << "Wall1_Poro ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
 }
 

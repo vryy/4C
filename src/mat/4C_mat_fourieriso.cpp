@@ -115,7 +115,7 @@ void Mat::FourierIso::evaluate(const Core::LinAlg::Matrix<1, 1>& gradtemp,
   cmat(0, 0) = params_->conduct_;
 
   // heatflux
-  heatflux.MultiplyNN(cmat, gradtemp);
+  heatflux.multiply_nn(cmat, gradtemp);
 }
 
 /*----------------------------------------------------------------------*
@@ -129,7 +129,7 @@ void Mat::FourierIso::evaluate(const Core::LinAlg::Matrix<2, 1>& gradtemp,
   for (int i = 0; i < 2; ++i) cmat(i, i) = params_->conduct_;
 
   // heatflux
-  heatflux.MultiplyNN(cmat, gradtemp);
+  heatflux.multiply_nn(cmat, gradtemp);
 }
 
 /*----------------------------------------------------------------------*
@@ -143,7 +143,7 @@ void Mat::FourierIso::evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
   for (int i = 0; i < 3; ++i) cmat(i, i) = params_->conduct_;
 
   // heatflux
-  heatflux.MultiplyNN(cmat, gradtemp);
+  heatflux.multiply_nn(cmat, gradtemp);
 }
 
 FOUR_C_NAMESPACE_CLOSE

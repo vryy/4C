@@ -91,10 +91,10 @@ Discret::ELEMENTS::Nurbs::Ale3Nurbs::Ale3Nurbs(const Discret::ELEMENTS::Nurbs::A
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::Ale3Nurbs::Print(std::ostream& os) const
+void Discret::ELEMENTS::Nurbs::Ale3Nurbs::print(std::ostream& os) const
 {
   os << "Ale3Nurbs ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

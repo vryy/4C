@@ -68,7 +68,7 @@ Core::Geo::Cut::Impl::PointGraph::PointGraph(
     else
     {
       std::ofstream f("graph0.txt");
-      get_graph().Print(f);
+      get_graph().print(f);
       FOUR_C_THROW(
           "Pointgraph has single point.This shouldn't happen or we should understand why!");
     }
@@ -244,8 +244,8 @@ void Core::Geo::Cut::Impl::PointGraph::add_cut_lines_to_graph(
     bool element_cut = l->IsCut(element);
     if (strategy == all_lines or element_cut) get_graph().AddEdge(l->BeginPoint(), l->EndPoint());
 #if DEBUG_POINTGRAPH
-    l->BeginPoint()->Print();
-    l->EndPoint()->Print();
+    l->BeginPoint()->print();
+    l->EndPoint()->print();
 #endif
   }
 }
@@ -270,7 +270,7 @@ void Core::Geo::Cut::Impl::PointGraph::Graph::AddEdge(Point *p1, Point *p2)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Impl::PointGraph::Graph::Print(std::ostream &stream)
+void Core::Geo::Cut::Impl::PointGraph::Graph::print(std::ostream &stream)
 {
   stream << "--- PointGraph::Graph ---\n";
   for (std::map<int, plain_int_set>::iterator i = graph_.begin(); i != graph_.end(); ++i)
@@ -364,7 +364,7 @@ bool Core::Geo::Cut::Impl::find_cycles(graph_t &g, Core::Geo::Cut::Cycle &cycle,
       std::cout << "Second coordinate before substrication " << std::setprecision(16) << d
                 << std::endl;
 #endif
-      d.Update(-1, pos, 1);
+      d.update(-1, pos, 1);
 
 #ifdef CLN_CALC_OUTSIDE_KERNEL
       //                      Order of arguments is  __x___  ___y___
@@ -932,7 +932,7 @@ bool Core::Geo::Cut::Impl::PointGraph::Graph::HasTouchingEdge(Element *element, 
       Core::LinAlg::Matrix<3, 1> cut_pointxyz;
       // if there is  point in the poingraph, that have no less than neighbors
       Point *cut_point = all_points_[i->first];
-      cut_point->Coordinates(cut_pointxyz.A());
+      cut_point->Coordinates(cut_pointxyz.data());
 
       for (plain_edge_set::const_iterator e = cut_point->CutEdges().begin();
            e != cut_point->CutEdges().end(); ++e)
@@ -945,17 +945,17 @@ bool Core::Geo::Cut::Impl::PointGraph::Graph::HasTouchingEdge(Element *element, 
         {
           if (ed->Nodes()[0]->point() == cut_point)
           {
-            (ed->Nodes()[1]->point())->Coordinates(edge_vector.A());
+            (ed->Nodes()[1]->point())->Coordinates(edge_vector.data());
           }
 
           else if (ed->Nodes()[1]->point() == cut_point)
           {
-            (ed->Nodes()[0]->point())->Coordinates(edge_vector.A());
+            (ed->Nodes()[0]->point())->Coordinates(edge_vector.data());
           }
           else
             FOUR_C_THROW("This should not happen or not implemented");
 
-          edge_vector.Update(-1.0, cut_pointxyz, 1.0);
+          edge_vector.update(-1.0, cut_pointxyz, 1.0);
           for (plain_side_set::const_iterator s = ed->Sides().begin(); s != ed->Sides().end(); ++s)
           {
             // getting side normal with respect to resp(0,0) by default local coordiantes
@@ -982,10 +982,10 @@ bool Core::Geo::Cut::Impl::PointGraph::Graph::HasTouchingEdge(Element *element, 
               elmnt->element_center(element_center);
               // getting vector pointing outward the element
               Core::LinAlg::Matrix<3, 1> out_vec;
-              out_vec.Update(1.0, cut_pointxyz, -1.0, element_center);
+              out_vec.update(1.0, cut_pointxyz, -1.0, element_center);
               // if normal is pointing inwards, reverse it to point outwards
-              if (out_vec.Dot(norm_vec) < 0) norm_vec.Scale(-1.0);
-              if (norm_vec.Dot(edge_vector) < 0)
+              if (out_vec.dot(norm_vec) < 0) norm_vec.scale(-1.0);
+              if (norm_vec.dot(edge_vector) < 0)
               {
                 FOUR_C_THROW("Single point problem, one elements is going inside another");
               }

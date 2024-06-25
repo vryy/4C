@@ -79,7 +79,7 @@ namespace Core::Geo
         {
           Core::Geo::Cut::Point* p = cpoints[i];
           const Core::LinAlg::Matrix<2, 1>& xi = local_coordinates(p);
-          std::copy(xi.A(), xi.A() + 2, &xie(0, i));
+          std::copy(xi.data(), xi.data() + 2, &xie(0, i));
         }
 
         Teuchos::RCP<Core::FE::GaussPoints> gp =
@@ -100,7 +100,7 @@ namespace Core::Geo
         }
         Core::LinAlg::Matrix<2, 1>& rst = local_coordinates_[p];
         Core::LinAlg::Matrix<3, 1> xyz;
-        p->Coordinates(xyz.A());
+        p->Coordinates(xyz.data());
         local_coordinates(xyz, rst);
         return rst;
       }

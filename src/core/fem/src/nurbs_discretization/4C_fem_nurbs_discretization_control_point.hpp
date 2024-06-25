@@ -145,7 +145,7 @@ namespace Core::FE
 
       \param os ofstrem
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       //@}
 

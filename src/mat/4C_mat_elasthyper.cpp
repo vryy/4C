@@ -387,21 +387,21 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   cauchy_n_dir = 0.0;
 
   static Core::LinAlg::Matrix<3, 3> b(true);
-  b.MultiplyNT(1.0, defgrd, defgrd, 0.0);
+  b.multiply_nt(1.0, defgrd, defgrd, 0.0);
   static Core::LinAlg::Matrix<3, 1> bdn(true);
-  bdn.Multiply(1.0, b, n, 0.0);
+  bdn.multiply(1.0, b, n, 0.0);
   static Core::LinAlg::Matrix<3, 1> bddir(true);
-  bddir.Multiply(1.0, b, dir, 0.0);
-  const double bdnddir = bdn.Dot(dir);
+  bddir.multiply(1.0, b, dir, 0.0);
+  const double bdnddir = bdn.dot(dir);
 
   static Core::LinAlg::Matrix<3, 3> ib(true);
-  ib.Invert(b);
+  ib.invert(b);
   static Core::LinAlg::Matrix<3, 1> ibdn(true);
-  ibdn.Multiply(1.0, ib, n, 0.0);
+  ibdn.multiply(1.0, ib, n, 0.0);
   static Core::LinAlg::Matrix<3, 1> ibddir(true);
-  ibddir.Multiply(1.0, ib, dir, 0.0);
-  const double ibdnddir = ibdn.Dot(dir);
-  const double nddir = n.Dot(dir);
+  ibddir.multiply(1.0, ib, dir, 0.0);
+  const double ibdnddir = ibdn.dot(dir);
+  const double nddir = n.dot(dir);
 
   static Core::LinAlg::Matrix<6, 1> bV_strain(true);
   Core::LinAlg::Voigt::Strains::matrix_to_vector(b, bV_strain);
@@ -423,68 +423,68 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
 
   if (d_cauchyndir_dn != nullptr)
   {
-    d_cauchyndir_dn->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), dir, 0.0);
-    d_cauchyndir_dn->Update(dPI(0), bddir, 1.0);
-    d_cauchyndir_dn->Update(-prinv(2) * dPI(1), ibddir, 1.0);
-    d_cauchyndir_dn->Scale(prefac);
+    d_cauchyndir_dn->update(prinv(1) * dPI(1) + prinv(2) * dPI(2), dir, 0.0);
+    d_cauchyndir_dn->update(dPI(0), bddir, 1.0);
+    d_cauchyndir_dn->update(-prinv(2) * dPI(1), ibddir, 1.0);
+    d_cauchyndir_dn->scale(prefac);
   }
 
   if (d_cauchyndir_ddir != nullptr)
   {
-    d_cauchyndir_ddir->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);
-    d_cauchyndir_ddir->Update(dPI(0), bdn, 1.0);
-    d_cauchyndir_ddir->Update(-prinv(2) * dPI(1), ibdn, 1.0);
-    d_cauchyndir_ddir->Scale(prefac);
+    d_cauchyndir_ddir->update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);
+    d_cauchyndir_ddir->update(dPI(0), bdn, 1.0);
+    d_cauchyndir_ddir->update(-prinv(2) * dPI(1), ibdn, 1.0);
+    d_cauchyndir_ddir->scale(prefac);
   }
 
   // calculate stuff that is needed for evaluations of derivatives w.r.t. F
   static Core::LinAlg::Matrix<9, 1> FV(true);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(defgrd, FV);
   static Core::LinAlg::Matrix<3, 3> iF(true);
-  iF.Invert(defgrd);
+  iF.invert(defgrd);
   static Core::LinAlg::Matrix<3, 3> iFT(true);
-  iFT.UpdateT(iF);
+  iFT.update_t(iF);
   static Core::LinAlg::Matrix<9, 1> iFTV(true);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(iFT, iFTV);
 
   // calculation of dI_i/dF (derivatives of invariants of b w.r.t. deformation gradient)
   static Core::LinAlg::Matrix<3, 3> bdF(true);
-  bdF.Multiply(1.0, b, defgrd, 0.0);
+  bdF.multiply(1.0, b, defgrd, 0.0);
   static Core::LinAlg::Matrix<9, 1> bdFV(true);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(bdF, bdFV);
   static Core::LinAlg::Matrix<3, 3> ibdF(true);
-  ibdF.Multiply(1.0, ib, defgrd, 0.0);
+  ibdF.multiply(1.0, ib, defgrd, 0.0);
   static Core::LinAlg::Matrix<9, 1> ibdFV(true);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(ibdF, ibdFV);
   static Core::LinAlg::Matrix<9, 1> d_I1_dF(true);
-  d_I1_dF.Update(2.0, FV, 0.0);
+  d_I1_dF.update(2.0, FV, 0.0);
   static Core::LinAlg::Matrix<9, 1> d_I2_dF(true);
-  d_I2_dF.Update(prinv(0), FV, 0.0);
-  d_I2_dF.Update(-1.0, bdFV, 1.0);
-  d_I2_dF.Scale(2.0);
+  d_I2_dF.update(prinv(0), FV, 0.0);
+  d_I2_dF.update(-1.0, bdFV, 1.0);
+  d_I2_dF.scale(2.0);
   static Core::LinAlg::Matrix<9, 1> d_I3_dF(true);
-  d_I3_dF.Update(2.0 * prinv(2), ibdFV, 0.0);
+  d_I3_dF.update(2.0 * prinv(2), ibdFV, 0.0);
 
   // calculate d(b \cdot n \cdot t)/dF
   static Core::LinAlg::Matrix<3, 1> tempvec3x1(true);
   static Core::LinAlg::Matrix<1, 3> tempvec1x3(true);
-  tempvec1x3.MultiplyTN(1.0, dir, defgrd, 0.0);
+  tempvec1x3.multiply_tn(1.0, dir, defgrd, 0.0);
   static Core::LinAlg::Matrix<3, 3> d_bdnddir_dF(true);
-  d_bdnddir_dF.MultiplyNN(1.0, n, tempvec1x3, 0.0);
-  tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
-  d_bdnddir_dF.MultiplyNN(1.0, dir, tempvec1x3, 1.0);
+  d_bdnddir_dF.multiply_nn(1.0, n, tempvec1x3, 0.0);
+  tempvec1x3.multiply_tn(1.0, n, defgrd, 0.0);
+  d_bdnddir_dF.multiply_nn(1.0, dir, tempvec1x3, 1.0);
   static Core::LinAlg::Matrix<9, 1> d_bdnddir_dFV(true);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(d_bdnddir_dF, d_bdnddir_dFV);
 
   // calculate d(b^{-1} \cdot n \cdot t)/dF
   static Core::LinAlg::Matrix<1, 3> dirdibdF(true);
   static Core::LinAlg::Matrix<1, 3> ndibdF(true);
-  dirdibdF.MultiplyTN(1.0, dir, ibdF, 0.0);
+  dirdibdF.multiply_tn(1.0, dir, ibdF, 0.0);
   static Core::LinAlg::Matrix<3, 3> d_ibdnddir_dF(true);
-  d_ibdnddir_dF.MultiplyNN(1.0, ibdn, dirdibdF, 0.0);
-  ndibdF.MultiplyTN(1.0, n, ibdF, 0.0);
-  d_ibdnddir_dF.MultiplyNN(1.0, ibddir, ndibdF, 1.0);
-  d_ibdnddir_dF.Scale(-1.0);
+  d_ibdnddir_dF.multiply_nn(1.0, ibdn, dirdibdF, 0.0);
+  ndibdF.multiply_tn(1.0, n, ibdF, 0.0);
+  d_ibdnddir_dF.multiply_nn(1.0, ibddir, ndibdF, 1.0);
+  d_ibdnddir_dF.scale(-1.0);
   static Core::LinAlg::Matrix<9, 1> d_ibdnddir_dFV(true);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(d_ibdnddir_dF, d_ibdnddir_dFV);
 
@@ -496,24 +496,24 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   {
     // next 3 updates add partial derivative of (\sigma * n * v) w.r.t. F for constant invariants
     // 1. part is term arising from d(J^{-1})/dF
-    d_cauchyndir_dF->Update(-prefac * (prinv(1) * dPI(1) * nddir + prinv(2) * dPI(2) * nddir +
+    d_cauchyndir_dF->update(-prefac * (prinv(1) * dPI(1) * nddir + prinv(2) * dPI(2) * nddir +
                                           dPI(0) * bdnddir - prinv(2) * dPI(1) * ibdnddir),
         iFTV, 0.0);  // DsntDF is cleared here
     // 2. part is term arising from d(b * n * v)/dF
-    d_cauchyndir_dF->Update(prefac * dPI(0), d_bdnddir_dFV, 1.0);
+    d_cauchyndir_dF->update(prefac * dPI(0), d_bdnddir_dFV, 1.0);
     // 3. part is term arising from d(b_el^{-1} * n * v)/dF
-    d_cauchyndir_dF->Update(-prefac * prinv(2) * dPI(1), d_ibdnddir_dFV, 1.0);
+    d_cauchyndir_dF->update(-prefac * prinv(2) * dPI(1), d_ibdnddir_dFV, 1.0);
     // add d(sigma * n * v)/dI1 \otimes dI1/dF
-    d_cauchyndir_dF->Update(prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir +
+    d_cauchyndir_dF->update(prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir +
                                          ddPII(0) * bdnddir - prinv(2) * ddPII(5) * ibdnddir),
         d_I1_dF, 1.0);
     // add d(sigma * n * v)/dI2 \otimes dI2/dF
-    d_cauchyndir_dF->Update(
+    d_cauchyndir_dF->update(
         prefac * (dPI(1) * nddir + prinv(1) * ddPII(1) * nddir + prinv(2) * ddPII(3) * nddir +
                      ddPII(5) * bdnddir - prinv(2) * ddPII(1) * ibdnddir),
         d_I2_dF, 1.0);
     // add d(sigma * n * v)/dI3 \otimes dI3/dF
-    d_cauchyndir_dF->Update(
+    d_cauchyndir_dF->update(
         prefac * (prinv(1) * ddPII(3) * nddir + dPI(2) * nddir + prinv(2) * ddPII(2) * nddir +
                      ddPII(4) * bdnddir - dPI(1) * ibdnddir - prinv(2) * ddPII(3) * ibdnddir),
         d_I3_dF, 1.0);
@@ -523,14 +523,14 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
   {
     // next three blocks add d/dn(d(\sigma * n * v)/dF) for constant invariants
     // first part is term arising from d/dn(dJ^{-1}/dF)
-    tempvec3x1.Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), dir, 0.0);
-    tempvec3x1.Update(dPI(0), bddir, 1.0);
-    tempvec3x1.Update(-prinv(2) * dPI(1), ibddir, 1.0);
-    d2_cauchyndir_dF_dn->MultiplyNT(-prefac, iFTV, tempvec3x1, 0.0);
+    tempvec3x1.update(prinv(1) * dPI(1) + prinv(2) * dPI(2), dir, 0.0);
+    tempvec3x1.update(dPI(0), bddir, 1.0);
+    tempvec3x1.update(-prinv(2) * dPI(1), ibddir, 1.0);
+    d2_cauchyndir_dF_dn->multiply_nt(-prefac, iFTV, tempvec3x1, 0.0);
 
     // second part is term arising from d/dn(d(b * n * v)/dF
     const double fac = prefac * dPI(0);
-    tempvec1x3.MultiplyTN(1.0, dir, defgrd, 0.0);
+    tempvec1x3.multiply_tn(1.0, dir, defgrd, 0.0);
     for (int k = 0; k < 3; ++k)
     {
       for (int l = 0; l < 3; ++l)
@@ -556,36 +556,36 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
     }
 
     // add parts originating from d/dn(d(sigma * n * t)/dI1 \otimes dI1/dF)
-    tempvec3x1.Update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), dir, 0.0);
-    tempvec3x1.Update(ddPII(0), bddir, 1.0);
-    tempvec3x1.Update(-prinv(2) * ddPII(5), ibddir, 1.0);
-    d2_cauchyndir_dF_dn->MultiplyNT(prefac, d_I1_dF, tempvec3x1, 1.0);
+    tempvec3x1.update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), dir, 0.0);
+    tempvec3x1.update(ddPII(0), bddir, 1.0);
+    tempvec3x1.update(-prinv(2) * ddPII(5), ibddir, 1.0);
+    d2_cauchyndir_dF_dn->multiply_nt(prefac, d_I1_dF, tempvec3x1, 1.0);
 
     // add parts originating from d/dn(d(sigma * n * t)/dI2 \otimes dI2/dF)
-    tempvec3x1.Update(dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(3), dir, 0.0);
-    tempvec3x1.Update(ddPII(5), bddir, 1.0);
-    tempvec3x1.Update(-prinv(2) * ddPII(1), ibddir, 1.0);
-    d2_cauchyndir_dF_dn->MultiplyNT(prefac, d_I2_dF, tempvec3x1, 1.0);
+    tempvec3x1.update(dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(3), dir, 0.0);
+    tempvec3x1.update(ddPII(5), bddir, 1.0);
+    tempvec3x1.update(-prinv(2) * ddPII(1), ibddir, 1.0);
+    d2_cauchyndir_dF_dn->multiply_nt(prefac, d_I2_dF, tempvec3x1, 1.0);
 
     // add parts originating from d/dn(d(sigma * n * t)/dI3 \otimes dI3/dF)
-    tempvec3x1.Update(prinv(1) * ddPII(3) + dPI(2) + prinv(2) * ddPII(2), dir, 0.0);
-    tempvec3x1.Update(ddPII(4), bddir, 1.0);
-    tempvec3x1.Update(-dPI(1) - prinv(2) * ddPII(3), ibddir, 1.0);
-    d2_cauchyndir_dF_dn->MultiplyNT(prefac, d_I3_dF, tempvec3x1, 1.0);
+    tempvec3x1.update(prinv(1) * ddPII(3) + dPI(2) + prinv(2) * ddPII(2), dir, 0.0);
+    tempvec3x1.update(ddPII(4), bddir, 1.0);
+    tempvec3x1.update(-dPI(1) - prinv(2) * ddPII(3), ibddir, 1.0);
+    d2_cauchyndir_dF_dn->multiply_nt(prefac, d_I3_dF, tempvec3x1, 1.0);
   }
 
   if (d2_cauchyndir_dF_ddir != nullptr)
   {
     // next three blocks add d/dt(d(\sigma * n * v)/dF) for constant invariants
     // first part is term arising from d/dt(dJ^{-1}/dF)
-    tempvec3x1.Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);
-    tempvec3x1.Update(dPI(0), bdn, 1.0);
-    tempvec3x1.Update(-prinv(2) * dPI(1), ibdn, 1.0);
-    d2_cauchyndir_dF_ddir->MultiplyNT(-prefac, iFTV, tempvec3x1, 0.0);
+    tempvec3x1.update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);
+    tempvec3x1.update(dPI(0), bdn, 1.0);
+    tempvec3x1.update(-prinv(2) * dPI(1), ibdn, 1.0);
+    d2_cauchyndir_dF_ddir->multiply_nt(-prefac, iFTV, tempvec3x1, 0.0);
 
     // second part is term arising from d/dt(d(b * n * v)/dF
     const double fac = prefac * dPI(0);
-    tempvec1x3.MultiplyTN(1.0, n, defgrd, 0.0);
+    tempvec1x3.multiply_tn(1.0, n, defgrd, 0.0);
     for (int k = 0; k < 3; ++k)
     {
       for (int l = 0; l < 3; ++l)
@@ -611,22 +611,22 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
     }
 
     // add parts originating from d/dt(d(sigma * n * v)/dI1 \otimes dI1/dF)
-    tempvec3x1.Update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), n, 0.0);
-    tempvec3x1.Update(ddPII(0), bdn, 1.0);
-    tempvec3x1.Update(-prinv(2) * ddPII(5), ibdn, 1.0);
-    d2_cauchyndir_dF_ddir->MultiplyNT(prefac, d_I1_dF, tempvec3x1, 1.0);
+    tempvec3x1.update(prinv(1) * ddPII(5) + prinv(2) * ddPII(4), n, 0.0);
+    tempvec3x1.update(ddPII(0), bdn, 1.0);
+    tempvec3x1.update(-prinv(2) * ddPII(5), ibdn, 1.0);
+    d2_cauchyndir_dF_ddir->multiply_nt(prefac, d_I1_dF, tempvec3x1, 1.0);
 
     // add parts originating from d/dt(d(sigma * n * v)/dI2 \otimes dI2/dF)
-    tempvec3x1.Update(dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(3), n, 0.0);
-    tempvec3x1.Update(ddPII(5), bdn, 1.0);
-    tempvec3x1.Update(-prinv(2) * ddPII(1), ibdn, 1.0);
-    d2_cauchyndir_dF_ddir->MultiplyNT(prefac, d_I2_dF, tempvec3x1, 1.0);
+    tempvec3x1.update(dPI(1) + prinv(1) * ddPII(1) + prinv(2) * ddPII(3), n, 0.0);
+    tempvec3x1.update(ddPII(5), bdn, 1.0);
+    tempvec3x1.update(-prinv(2) * ddPII(1), ibdn, 1.0);
+    d2_cauchyndir_dF_ddir->multiply_nt(prefac, d_I2_dF, tempvec3x1, 1.0);
 
     // add parts originating from d/dt(d(sigma * n * v)/dI3 \otimes dI3/dF)
-    tempvec3x1.Update(prinv(1) * ddPII(3) + dPI(2) + prinv(2) * ddPII(2), n, 0.0);
-    tempvec3x1.Update(ddPII(4), bdn, 1.0);
-    tempvec3x1.Update(-dPI(1) - prinv(2) * ddPII(3), ibdn, 1.0);
-    d2_cauchyndir_dF_ddir->MultiplyNT(prefac, d_I3_dF, tempvec3x1, 1.0);
+    tempvec3x1.update(prinv(1) * ddPII(3) + dPI(2) + prinv(2) * ddPII(2), n, 0.0);
+    tempvec3x1.update(ddPII(4), bdn, 1.0);
+    tempvec3x1.update(-dPI(1) - prinv(2) * ddPII(3), ibdn, 1.0);
+    d2_cauchyndir_dF_ddir->multiply_nt(prefac, d_I3_dF, tempvec3x1, 1.0);
   }
 
   if (d2_cauchyndir_dF2 != nullptr)
@@ -646,7 +646,7 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
     d2_I3_dF2.clear();
 
     static Core::LinAlg::Matrix<3, 3> C(true);
-    C.MultiplyTN(1.0, defgrd, defgrd, 0.0);
+    C.multiply_tn(1.0, defgrd, defgrd, 0.0);
 
     using map = Core::LinAlg::Voigt::IndexMappings;
 
@@ -686,114 +686,114 @@ void Mat::ElastHyper::evaluate_cauchy_n_dir_and_derivatives(
     }
 
     // terms below add contributions originating from d(1st term of DsntDF)/dF
-    d2_cauchyndir_dF2->MultiplyNT(prefac * (prinv(1) * dPI(1) * nddir + prinv(2) * dPI(2) * nddir +
-                                               dPI(0) * bdnddir - prinv(2) * dPI(1) * ibdnddir),
+    d2_cauchyndir_dF2->multiply_nt(prefac * (prinv(1) * dPI(1) * nddir + prinv(2) * dPI(2) * nddir +
+                                                dPI(0) * bdnddir - prinv(2) * dPI(1) * ibdnddir),
         iFTV, iFTV, 0.0);  // D2sntDF2 is cleared here
-    d2_cauchyndir_dF2->Update(-prefac * (prinv(1) * dPI(1) * nddir + prinv(2) * dPI(2) * nddir +
+    d2_cauchyndir_dF2->update(-prefac * (prinv(1) * dPI(1) * nddir + prinv(2) * dPI(2) * nddir +
                                             dPI(0) * bdnddir - prinv(2) * dPI(1) * ibdnddir),
         d_iFT_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(-prefac * dPI(0), iFTV, d_bdnddir_dFV, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(prefac * prinv(2) * dPI(1), iFTV, d_ibdnddir_dFV, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(-prefac * dPI(0), iFTV, d_bdnddir_dFV, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(prefac * prinv(2) * dPI(1), iFTV, d_ibdnddir_dFV, 1.0);
 
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         -prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir + ddPII(0) * bdnddir -
                       prinv(2) * ddPII(5) * ibdnddir),
         iFTV, d_I1_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         -prefac * (dPI(1) * nddir + prinv(1) * ddPII(1) * nddir + prinv(2) * ddPII(3) * nddir +
                       ddPII(5) * bdnddir - prinv(2) * ddPII(1) * ibdnddir),
         iFTV, d_I2_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         -prefac * (prinv(1) * ddPII(3) * nddir + dPI(2) * nddir + prinv(2) * ddPII(2) * nddir +
                       ddPII(4) * bdnddir - dPI(1) * ibdnddir - prinv(2) * ddPII(3) * ibdnddir),
         iFTV, d_I3_dF, 1.0);
 
     // terms below add contributions originating from d(2nd term of DsntDF)/dF
-    d2_cauchyndir_dF2->MultiplyNT(-prefac * dPI(0), d_bdnddir_dFV, iFTV, 1.0);
-    d2_cauchyndir_dF2->Update(prefac * dPI(0), d2_bdnddir_dF2, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(prefac * ddPII(0), d_bdnddir_dFV, d_I1_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(prefac * ddPII(5), d_bdnddir_dFV, d_I2_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(prefac * ddPII(4), d_bdnddir_dFV, d_I3_dF, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(-prefac * dPI(0), d_bdnddir_dFV, iFTV, 1.0);
+    d2_cauchyndir_dF2->update(prefac * dPI(0), d2_bdnddir_dF2, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(prefac * ddPII(0), d_bdnddir_dFV, d_I1_dF, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(prefac * ddPII(5), d_bdnddir_dFV, d_I2_dF, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(prefac * ddPII(4), d_bdnddir_dFV, d_I3_dF, 1.0);
 
     // terms below add contributions originating from d(3rd term of DsntDF)/dF
-    d2_cauchyndir_dF2->MultiplyNT(prefac * prinv(2) * dPI(1), d_ibdnddir_dFV, iFTV, 1.0);
-    d2_cauchyndir_dF2->Update(-prefac * prinv(2) * dPI(1), d2_ibdnddir_dF2, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(-prefac * prinv(2) * ddPII(5), d_ibdnddir_dFV, d_I1_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(-prefac * prinv(2) * ddPII(1), d_ibdnddir_dFV, d_I2_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(prefac * prinv(2) * dPI(1), d_ibdnddir_dFV, iFTV, 1.0);
+    d2_cauchyndir_dF2->update(-prefac * prinv(2) * dPI(1), d2_ibdnddir_dF2, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(-prefac * prinv(2) * ddPII(5), d_ibdnddir_dFV, d_I1_dF, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(-prefac * prinv(2) * ddPII(1), d_ibdnddir_dFV, d_I2_dF, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(
         -prefac * (dPI(1) + prinv(2) * ddPII(3)), d_ibdnddir_dFV, d_I3_dF, 1.0);
 
     // terms below add contributions originating from d(4th term of DsntDF)/dF
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         -prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir + ddPII(0) * bdnddir -
                       prinv(2) * ddPII(5) * ibdnddir),
         d_I1_dF, iFTV, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(prefac * ddPII(0), d_I1_dF, d_bdnddir_dFV, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(-prefac * prinv(2) * ddPII(5), d_I1_dF, d_ibdnddir_dFV, 1.0);
-    d2_cauchyndir_dF2->Update(prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir +
+    d2_cauchyndir_dF2->multiply_nt(prefac * ddPII(0), d_I1_dF, d_bdnddir_dFV, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(-prefac * prinv(2) * ddPII(5), d_I1_dF, d_ibdnddir_dFV, 1.0);
+    d2_cauchyndir_dF2->update(prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir +
                                            ddPII(0) * bdnddir - prinv(2) * ddPII(5) * ibdnddir),
         d2_I1_dF2, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         prefac * (prinv(1) * dddPIII(5) * nddir + prinv(2) * dddPIII(6) * nddir +
                      dddPIII(0) * bdnddir - prinv(2) * dddPIII(5) * ibdnddir),
         d_I1_dF, d_I1_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         prefac * (ddPII(5) * nddir + prinv(1) * dddPIII(3) * nddir + prinv(2) * dddPIII(9) * nddir +
                      dddPIII(5) * bdnddir - prinv(2) * dddPIII(3) * ibdnddir),
         d_I1_dF, d_I2_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         prefac * (prinv(1) * dddPIII(9) * nddir + ddPII(4) * nddir + prinv(2) * dddPIII(4) * nddir +
                      dddPIII(6) * bdnddir - ddPII(5) * ibdnddir - prinv(2) * dddPIII(9) * ibdnddir),
         d_I1_dF, d_I3_dF, 1.0);
 
     // terms below add contributions originating from d(5th term of DsntDF)/dF
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         -prefac * (dPI(1) * nddir + prinv(1) * ddPII(1) * nddir + prinv(2) * ddPII(3) * nddir +
                       ddPII(5) * bdnddir - prinv(2) * ddPII(1) * ibdnddir),
         d_I2_dF, iFTV, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(prefac * ddPII(5), d_I2_dF, d_bdnddir_dFV, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(-prefac * prinv(2) * ddPII(1), d_I2_dF, d_ibdnddir_dFV, 1.0);
-    d2_cauchyndir_dF2->Update(
+    d2_cauchyndir_dF2->multiply_nt(prefac * ddPII(5), d_I2_dF, d_bdnddir_dFV, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(-prefac * prinv(2) * ddPII(1), d_I2_dF, d_ibdnddir_dFV, 1.0);
+    d2_cauchyndir_dF2->update(
         prefac * (dPI(1) * nddir + prinv(1) * ddPII(1) * nddir + prinv(2) * ddPII(3) * nddir +
                      ddPII(5) * bdnddir - prinv(2) * ddPII(1) * ibdnddir),
         d2_I2_dF2, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         prefac * (ddPII(5) * nddir + prinv(1) * dddPIII(3) * nddir + prinv(2) * dddPIII(9) * nddir +
                      dddPIII(5) * bdnddir - prinv(2) * dddPIII(3) * ibdnddir),
         d_I2_dF, d_I1_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         prefac * (2.0 * ddPII(1) * nddir + prinv(1) * dddPIII(1) * nddir +
                      prinv(2) * dddPIII(7) * nddir + dddPIII(3) * bdnddir -
                      prinv(2) * dddPIII(1) * ibdnddir),
         d_I2_dF, d_I2_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         prefac * (2.0 * ddPII(3) * nddir + prinv(1) * dddPIII(7) * nddir +
                      prinv(2) * dddPIII(8) * nddir + dddPIII(9) * bdnddir - ddPII(1) * ibdnddir -
                      prinv(2) * dddPIII(7) * ibdnddir),
         d_I2_dF, d_I3_dF, 1.0);
 
     // terms below add contributions originating from d(6th term of DsntDF)/dF
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         -prefac * (prinv(1) * ddPII(3) * nddir + dPI(2) * nddir + prinv(2) * ddPII(2) * nddir +
                       ddPII(4) * bdnddir - dPI(1) * ibdnddir - prinv(2) * ddPII(3) * ibdnddir),
         d_I3_dF, iFTV, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(prefac * ddPII(4), d_I3_dF, d_bdnddir_dFV, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(prefac * ddPII(4), d_I3_dF, d_bdnddir_dFV, 1.0);
+    d2_cauchyndir_dF2->multiply_nt(
         -prefac * (dPI(1) + prinv(2) * ddPII(3)), d_I3_dF, d_ibdnddir_dFV, 1.0);
-    d2_cauchyndir_dF2->Update(
+    d2_cauchyndir_dF2->update(
         prefac * (prinv(1) * ddPII(3) * nddir + dPI(2) * nddir + prinv(2) * ddPII(2) * nddir +
                      ddPII(4) * bdnddir - dPI(1) * ibdnddir - prinv(2) * ddPII(3) * ibdnddir),
         d2_I3_dF2, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         prefac * (prinv(1) * dddPIII(9) * nddir + ddPII(4) * nddir + prinv(2) * dddPIII(4) * nddir +
                      dddPIII(6) * bdnddir - ddPII(5) * ibdnddir - prinv(2) * dddPIII(9) * ibdnddir),
         d_I3_dF, d_I1_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         prefac * (2.0 * ddPII(3) * nddir + prinv(1) * dddPIII(7) * nddir +
                      prinv(2) * dddPIII(8) * nddir + dddPIII(9) * bdnddir - ddPII(1) * ibdnddir -
                      prinv(2) * dddPIII(7) * ibdnddir),
         d_I3_dF, d_I2_dF, 1.0);
-    d2_cauchyndir_dF2->MultiplyNT(
+    d2_cauchyndir_dF2->multiply_nt(
         prefac * (prinv(1) * dddPIII(8) * nddir + 2.0 * ddPII(2) * nddir +
                      prinv(2) * dddPIII(2) * nddir + dddPIII(4) * bdnddir -
                      2.0 * ddPII(3) * ibdnddir - prinv(2) * dddPIII(8) * ibdnddir),

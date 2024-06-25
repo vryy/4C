@@ -308,8 +308,8 @@ void Discret::ELEMENTS::Beam3Base::get_background_velocity(
    * In 2D the velocity increases linearly in y and equals zero for y = 0. */
 
   // default values for background velocity and its gradient
-  velbackground.PutScalar(0.0);
-  velbackgroundgrad.PutScalar(0.0);
+  velbackground.put_scalar(0.0);
+  velbackgroundgrad.put_scalar(0.0);
 }
 
 /*-----------------------------------------------------------------------------*

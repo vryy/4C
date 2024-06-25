@@ -197,8 +197,8 @@ namespace Discret
       )
       {
         // set local values of thermo variables at time t_(n+1) or t_(n+alpha_F)
-        temp_ = funct.Dot(etempnp);  // temperature
-        gradtemp_.Multiply(derxy, etempnp);
+        temp_ = funct.dot(etempnp);  // temperature
+        gradtemp_.multiply(derxy, etempnp);
       };
 
       //! return temperature

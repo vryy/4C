@@ -565,7 +565,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::Update(Core::Elements::Element&
                   strains.defgrd_, strains.gl_strain_, defgrd_enh);
               strains.defgrd_ = defgrd_enh;
             }
-            solid_material.Update(strains.defgrd_, gp, params, ele.Id());
+            solid_material.update(strains.defgrd_, gp, params, ele.Id());
           }
         });
   }

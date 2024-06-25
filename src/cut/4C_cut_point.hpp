@@ -200,7 +200,7 @@ namespace Core::Geo
 
       void CutEdge(Side* side, Line* other_line, std::vector<Edge*>& matches);
 
-      void Print(std::ostream& stream = std::cout) const
+      void print(std::ostream& stream = std::cout) const
       {
         stream << "(" << pid_ << "; " << std::setprecision(16) << x_[0] << ","
                << std::setprecision(16) << x_[1] << "," << std::setprecision(16) << x_[2] << ")";
@@ -675,8 +675,8 @@ namespace Core::Geo
         const Core::LinAlg::Matrix<probDim, 1>& coord_b)
     {
       Core::LinAlg::Matrix<probDim, 1> diff;
-      diff.Update(1, coord_a, -1, coord_b);
-      return diff.Norm2();
+      diff.update(1, coord_a, -1, coord_b);
+      return diff.norm2();
     }
 
     /// Find distance between points

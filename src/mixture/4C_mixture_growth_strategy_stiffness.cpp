@@ -49,14 +49,14 @@ void MIXTURE::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
     Core::LinAlg::Matrix<6, 6>& cmat, const int gp, const int eleGID) const
 {
   Core::LinAlg::Matrix<3, 3> iC(false);
-  iC.MultiplyTN(F, F);
-  iC.Invert();
+  iC.multiply_tn(F, F);
+  iC.invert();
 
   Core::LinAlg::Matrix<6, 1> iC_stress(false);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(iC, iC_stress);
 
   const double kappa = params_->kappa_;
-  const double detF = F.Determinant();
+  const double detF = F.determinant();
   const double I3 = detF * detF;
 
   const double dPi = 0.5 * kappa * (1.0 - currentReferenceGrowthScalar / detF);
@@ -70,13 +70,13 @@ void MIXTURE::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
   const double delta6 = -4.0 * I3 * dPi;
 
 
-  S_stress.Update(gamma2, iC_stress, 0.0);
+  S_stress.update(gamma2, iC_stress, 0.0);
 
   // contribution: Cinv \otimes Cinv
-  cmat.MultiplyNT(delta5, iC_stress, iC_stress, 0.0);
+  cmat.multiply_nt(delta5, iC_stress, iC_stress, 0.0);
   // contribution: Cinv \odot Cinv
   Mat::add_holzapfel_product(cmat, iC_stress, delta6);
 
-  cmat.MultiplyNN(dgamma2DGrowthScalar, iC_stress, dCurrentReferenceGrowthScalarDC, 1.0);
+  cmat.multiply_nn(dgamma2DGrowthScalar, iC_stress, dCurrentReferenceGrowthScalarDC, 1.0);
 }
 FOUR_C_NAMESPACE_CLOSE

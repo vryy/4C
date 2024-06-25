@@ -121,7 +121,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::pre_evaluate()
  *
  */
 template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::Print(std::ostream& out) const
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::print(std::ostream& out) const
 {
   this->check_init_setup();
 
@@ -160,7 +160,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
        index_segment++)
   {
     out << "    segment " << index_segment << ": ";
-    out << "eta in [" << this->line_to_3D_segments_[index_segment].GetEtaA() << ", "
+    out << "eta in [" << this->line_to_3D_segments_[index_segment].GetEtadata() << ", "
         << this->line_to_3D_segments_[index_segment].GetEtaB() << "]";
     out << ", Gauss points = "
         << this->line_to_3D_segments_[index_segment].get_number_of_projection_points();
@@ -236,7 +236,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visual
     for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the left and right boundary point of the segment.
-      for (const auto& segmentation_point : {segment.GetEtaA(), segment.GetEtaB()})
+      for (const auto& segmentation_point : {segment.GetEtadata(), segment.GetEtaB()})
       {
         GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1posref_, X);
         GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1pos_, r);

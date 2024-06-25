@@ -322,10 +322,10 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::NumVolume() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidMultiPhase::Print(std::ostream& os) const
+void Discret::ELEMENTS::PoroFluidMultiPhase::print(std::ostream& os) const
 {
   os << "PoroFluidMultiPhase element";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
@@ -477,10 +477,10 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::unpack(const std::vector<ch
 /*----------------------------------------------------------------------*
  |  print this element (public)                             vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::PoroFluidMultiPhaseBoundary::print(std::ostream& os) const
 {
   os << "PoroFluidMultiPhaseBoundary element";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(Shape()) << std::endl;
   std::cout << std::endl;

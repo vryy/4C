@@ -803,7 +803,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxpla
 
     for (int j = 0; j < 3; ++j) P(j, 1) = t1[j];
 
-    P.Invert();
+    P.invert();
     double lambda1 = P(0, 0) * (globgp[0] - auxc[0]) + P(0, 1) * (globgp[1] - auxc[1]) +
                      P(0, 2) * (globgp[2] - auxc[2]);
     double lambda2 = P(1, 0) * (globgp[0] - auxc[0]) + P(1, 1) * (globgp[1] - auxc[1]) +
@@ -832,7 +832,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxpla
 
     for (int j = 0; j < 3; ++j) T(j, 2) = auxc[j];
 
-    T.Invert();
+    T.invert();
     a1 = T(0, 0) * proj_gp[0] + T(0, 1) * proj_gp[1] + T(0, 2) * proj_gp[2];
 
     if (a1 > 0.0) all_negative = false;
@@ -851,7 +851,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxpla
 
     for (int j = 0; j < 3; ++j) T(j, 2) = auxc[j];
 
-    T.Invert();
+    T.invert();
 
     a1 = T(0, 0) * proj_gp[0] + T(0, 1) * proj_gp[1] + T(0, 2) * proj_gp[2];
     // a2=T(1,0)*proj_gp[0] + T(1,1)*proj_gp[1] + T(1,2)*proj_gp[2];
@@ -956,7 +956,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
       evaluate_grad_f_gauss_point3_d(df, gpx, gpn, ele, eta, alpha);
 
       // safety check: if projection normal is parallel to the master element --> det can be zero
-      double det = df.Determinant();
+      double det = df.determinant();
       if (det > -1e-12 and det < 1e-12)
       {
         std::cout << "WARNING: GPProjection parallel to master element --> GP skipped for this "
@@ -967,7 +967,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
       }
 
       // solve deta = - inv(df) * f
-      double jacdet = df.Invert();
+      double jacdet = df.invert();
       if (abs(jacdet) < 1.0e-12) FOUR_C_THROW("Singular Jacobian for projection");
 
       // update eta and alpha
@@ -1058,7 +1058,7 @@ bool Mortar::ProjectorCalc<distype>::project_gauss_point_auxn3_d(
       evaluate_grad_f_gauss_point_auxn3_d(df, globgp, auxn, ele, eta, alpha);
 
       // solve deta = - inv(df) * f
-      double jacdet = df.Invert();
+      double jacdet = df.invert();
       if (abs(jacdet) < 1.0e-12)
       {
         FOUR_C_THROW("Singular Jacobian for projection");
@@ -1245,7 +1245,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d(
     //**********************************************
     //   solve deta = - inv(dF) * F               //
     //**********************************************
-    double jacdet = df.Invert();
+    double jacdet = df.invert();
     if (abs(jacdet) < 1.0e-12) FOUR_C_THROW("Singular Jacobian for projection");
 
     // update eta and alpha
@@ -1408,7 +1408,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal3_d_lin(Mortar::N
     //**********************************************
     //   solve deta = - inv(dF) * F               //
     //**********************************************
-    double jacdet = df.Invert();
+    double jacdet = df.invert();
     if (abs(jacdet) < 1.0e-12) FOUR_C_THROW("Singular Jacobian for projection");
 
     // update eta and alpha
@@ -1556,7 +1556,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal3_d_lin(Mor
     //**********************************************
     //   solve deta = - inv(dF) * F               //
     //**********************************************
-    double jacdet = df.Invert();
+    double jacdet = df.invert();
     if (abs(jacdet) < 1.0e-12) FOUR_C_THROW("Singular Jacobian for projection");
 
     // update eta and alpha
@@ -1866,7 +1866,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_nodal_normal2_d_lin(Mor
     //**********************************************
     //   solve deta = - inv(dF) * F               //
     //**********************************************
-    double jacdet = df.Invert();
+    double jacdet = df.invert();
     if (abs(jacdet) < 1.0e-12) FOUR_C_THROW("Singular Jacobian for projection");
 
     // update eta and alpha
@@ -2163,7 +2163,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d(
     //**********************************************
     //   solve deta = - inv(dF) * F               //
     //**********************************************
-    double jacdet = df.Invert();
+    double jacdet = df.invert();
     if (abs(jacdet) < 1.0e-12) FOUR_C_THROW("Singular Jacobian for projection");
 
     // update eta and alpha
@@ -2314,7 +2314,7 @@ bool Mortar::ProjectorCalc<distype>::project_s_node_by_m_normal2_d_lin(Mortar::N
     //**********************************************
     //   solve deta = - inv(dF) * F               //
     //**********************************************
-    double jacdet = df.Invert();
+    double jacdet = df.invert();
     if (abs(jacdet) < 1.0e-12) FOUR_C_THROW("Singular Jacobian for projection");
 
     // update eta and alpha

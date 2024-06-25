@@ -26,10 +26,10 @@ namespace
   {
     Core::LinAlg::Matrix<3, 3> fiber1fiber2T(false);
 
-    fiber1fiber2T.MultiplyNT(fiber1, fiber2);
+    fiber1fiber2T.multiply_nt(fiber1, fiber2);
 
-    structuralTensor.Update(0.5, fiber1fiber2T);
-    structuralTensor.UpdateT(0.5, fiber1fiber2T, 1.0);
+    structuralTensor.update(0.5, fiber1fiber2T);
+    structuralTensor.update_t(0.5, fiber1fiber2T, 1.0);
   }
 
   class CoupAnisoExpoShearGaussPointFibersTest
@@ -81,7 +81,7 @@ namespace
 
         // setup scalar product
         gpScalarProducts_[gp] =
-            gpFibers_[gp][GetFiberIds()[0]].Dot(gpFibers_[gp][GetFiberIds()[1]]);
+            gpFibers_[gp][GetFiberIds()[0]].dot(gpFibers_[gp][GetFiberIds()[1]]);
       }
 
       setup_anisotropy_extension(GetFiberIds());

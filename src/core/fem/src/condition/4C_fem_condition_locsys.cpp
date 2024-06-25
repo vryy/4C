@@ -252,7 +252,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
     }
   }
 
-  if (time < 0.0) Print();
+  if (time < 0.0) print();
 
   // When building the transformation matrix we apply a node-by-node
   // strategy. The global matrix trafo_ will consist of nodal blocks
@@ -437,7 +437,7 @@ void Core::Conditions::LocsysManager::Update(const double time,
 /*----------------------------------------------------------------------*
  |  print manager (public)                                   meier 06/13|
  *----------------------------------------------------------------------*/
-void Core::Conditions::LocsysManager::Print() const
+void Core::Conditions::LocsysManager::print() const
 {
   if (Comm().MyPID() == 0)
   {

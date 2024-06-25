@@ -1032,7 +1032,7 @@ Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::eval_shape_func_and_der
     FOUR_C_THROW("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
 
   // compute global spatial derivatives
-  derxy_.Multiply(xij_, deriv_);
+  derxy_.multiply(xij_, deriv_);
 
   // set integration factor: fac = Gauss weight * det(J)
   const double fac = intpoints.IP().qwgt[iquad] * det;
@@ -1076,8 +1076,8 @@ double Discret::ELEMENTS::LubricationEleCalc<distype,
       +-            -+        +-            -+
     */
 
-    xjm_.MultiplyNT(deriv_, xyze_);
-    det = xij_.Invert(xjm_);
+    xjm_.multiply_nt(deriv_, xyze_);
+    det = xij_.invert(xjm_);
   }
   else  // element dimension is smaller than problem dimension -> mannifold
   {
@@ -1103,7 +1103,7 @@ double Discret::ELEMENTS::LubricationEleCalc<distype,
     // transform the derivatives and Jacobians to the higher dimensional coordinates(problem
     // dimension)
     static Core::LinAlg::Matrix<nsd_ele_, nsd_> xjm_red;
-    xjm_red.MultiplyNT(deriv_red, xyze_);
+    xjm_red.multiply_nt(deriv_red, xyze_);
 
     for (int i = 0; i < nsd_; i++)
     {
@@ -1136,7 +1136,7 @@ double Discret::ELEMENTS::LubricationEleCalc<distype,
       for (int i = 0; i < nen_; i++) deriv_(2, i) = 0.0;
     }
 
-    xij_.Invert(xjm_);
+    xij_.invert(xjm_);
   }
 
   return det;
@@ -1189,7 +1189,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_avr_vel_at_in
 )
 {
   // interpolate the velocities at the integration point
-  avrvel.Multiply(1., eAvTangVel_, funct_, 0.);
+  avrvel.multiply(1., eAvTangVel_, funct_, 0.);
 
   return;
 }
@@ -1204,7 +1204,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::calc_rel_vel_at_in
 )
 {
   // interpolate the velocities at the integration point
-  relvel.Multiply(1., eRelTangVel_, funct_, 0.);
+  relvel.multiply(1., eRelTangVel_, funct_, 0.);
 
   return;
 }
@@ -1339,7 +1339,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
         // get coordinates at integration point
         // gp reference coordinates
         Core::LinAlg::Matrix<nsd_, 1> xyzint(true);
-        xyzint.Multiply(xyze_, funct_);
+        xyzint.multiply(xyze_, funct_);
 
         // function evaluation requires a 3D position vector!!
         double position[3] = {0.0, 0.0, 0.0};
@@ -1347,9 +1347,9 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
         for (int dim = 0; dim < nsd_; ++dim) position[dim] = xyzint(dim);
 
         // pressure at integration point at time step n+1
-        const double prenp = funct_.Dot(eprenp_);
+        const double prenp = funct_.dot(eprenp_);
         // spatial gradient of current pressure value
-        gradpre.Multiply(derxy_, eprenp_);
+        gradpre.multiply(derxy_, eprenp_);
 
         pre_exact = Global::Problem::Instance()
                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
@@ -1380,7 +1380,7 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
 
         // error at gauss point
         deltapre = prenp - pre_exact;
-        deltagradpre.Update(1.0, gradpre, -1.0, gradpre_exact);
+        deltagradpre.update(1.0, gradpre, -1.0, gradpre_exact);
 
         // 0: delta pressure for L2-error norm
         // 1: delta pressure for H1-error norm
@@ -1399,9 +1399,9 @@ void Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::cal_error_compared
         errors(3) += pre_exact * pre_exact * fac;
 
         // integrate delta pressure derivative for H1-error norm
-        errors(1) += deltagradpre.Dot(deltagradpre) * fac;
+        errors(1) += deltagradpre.dot(deltagradpre) * fac;
         // integrate analytical pressure derivative for H1 norm
-        errors(3) += gradpre_exact.Dot(gradpre_exact) * fac;
+        errors(3) += gradpre_exact.dot(gradpre_exact) * fac;
       }  // loop over integration points
     }
     break;

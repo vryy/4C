@@ -249,7 +249,7 @@ namespace CONTACT
         void reset();
 
         /// print the state
-        void Print(std::ostream& os) const;
+        void print(std::ostream& os) const;
 
         /// current full direction vector
         Teuchos::RCP<const Epetra_Vector> full_direction_ = Teuchos::null;

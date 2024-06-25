@@ -435,19 +435,19 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   // strain^{e,trial}_{n+1} = strain_{n+1} - strain^p_n
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> trialstrain_e(false);
-  trialstrain_e.Update(1.0, strain, (-1.0), strain_p);
+  trialstrain_e.update(1.0, strain, (-1.0), strain_p);
 
   // volumetric strain
   // trace of strain vector
   double tracestrain = trialstrain_e(0) + trialstrain_e(1) + trialstrain_e(2);
   // volstrain = 1/3 . tr( strain ) . Id
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> volumetricstrain(false);
-  volumetricstrain.Update((tracestrain / 3.0), id2);
+  volumetricstrain.update((tracestrain / 3.0), id2);
 
   // deviatoric strain
   // devstrain^e = strain^e - volstrain^e
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> devstrain(false);
-  devstrain.Update(1.0, trialstrain_e, (-1.0), volumetricstrain);
+  devstrain.update(1.0, trialstrain_e, (-1.0), volumetricstrain);
 
   // ------------------------------------------------------- trial stress
   // pressure = kappa . tr( strain ): saved as scalar
@@ -455,7 +455,7 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   // deviatoric stress = 2 . G . devstrain
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> devstress(false);
-  devstress.Update((2.0 * G), devstrain);
+  devstress.update((2.0 * G), devstrain);
   // be careful for shear stresses (sigma_12)
   // in Voigt-notation the shear strains have to be scaled with 1/2
   // normally done in the material tangent (cf. id4sharp)
@@ -681,28 +681,28 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
     // ---------------------------------------------- update flow vectors
     // unit flow vector Nbar = eta_{n+1}^{trial} / || eta_{n+1}^{trial} ||
-    Nbar.Update(eta);
-    Nbar.Scale(1.0 / etanorm);
+    Nbar.update(eta);
+    Nbar.scale(1.0 / etanorm);
 
     // flow vector N = sqrt(3/2) eta_{n+1}^{trial} / || eta_{n+1}^{trial} ||
-    N.Update((sqrt(3.0 / 2.0)), Nbar);
+    N.update((sqrt(3.0 / 2.0)), Nbar);
 
     // update relative stress eta_{n+1}, cf. (7.193)
     // eta = ( 1 - (Delta gamma / qbar_{n+1}^{trial}) . [ 3 . G + Hkin] ) eta_{n+1}^{trial}
     // H_iso is not needed for update of the stress
     const double etafac = 1.0 - ((Dgamma / qbar) * (3.0 * G + Hkin));
-    eta.Scale(etafac);
+    eta.scale(etafac);
 
     // update back stress, cf. (7.197)
     // beta_{n+1} = beta_n . sqrt(2/3) . (betabar - betabarold) . eta / etanorm;
     // sqrt(2/3) N =  2/3 . ( sqrt(3/2) eta / etanorm)
     const double facbeta = 2.0 / 3.0 * (betabar - betabarold);
-    beta.Update(facbeta, N, 1.0);
+    beta.update(facbeta, N, 1.0);
 
     // deviatoric stress
     // s = s_{n+1}^{trial} - 2 . G . Delta gamma . N
     const double facdevstress = (-2.0) * G * Dgamma;
-    devstress.Update(facdevstress, N, 1.0);
+    devstress.update(facdevstress, N, 1.0);
 
     // total stress
     // sigma_{n+1} = s_{n+1} + p_{n+1} . id2
@@ -712,10 +712,10 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     // total strains
     // strain^e_{n+1} = strain^(e,trial)_{n+1} - Dgamma . N
     // compute converged engineering strain components (Voigt-notation)
-    strain_e.Update(1.0, trialstrain_e, (-Dgamma), N);
+    strain_e.update(1.0, trialstrain_e, (-Dgamma), N);
 
     // strain^p_{n+1} = strain^p_n + Dgamma . N
-    strain_p.Update(Dgamma, N, 1.0);
+    strain_p.update(Dgamma, N, 1.0);
 
     // compute converged engineering strain components (Voigt-notation)
     for (int i = 3; i < 6; ++i) strain_e(i) *= 2.0;
@@ -763,7 +763,7 @@ void Mat::ThermoPlasticLinElast::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     // total strains
     // strain^e_{n+1} = strain^(e,trial)_{n+1}
     // compute converged engineering strain components (Voigt-notation)
-    strain_e.Update(trialstrain_e);
+    strain_e.update(trialstrain_e);
     for (int i = 3; i < 6; ++i) strain_e(i) *= 2.0;
 
     // no plastic yielding
@@ -894,7 +894,7 @@ void Mat::ThermoPlasticLinElast::Stress(const double p,       // volumetric stre
 {
   // total stress = deviatoric + hydrostatic pressure . I
   // sigma = s + p . I
-  stress.Update(devstress);
+  stress.update(devstress);
   for (int i = 0; i < 3; ++i) stress(i) += p;
 
 }  // Stress()
@@ -911,7 +911,7 @@ void Mat::ThermoPlasticLinElast::RelDevStress(
 {
   // relative stress = deviatoric - back stress
   // eta = s - beta
-  eta.Update(1.0, devstress, (-1.0), beta);
+  eta.update(1.0, devstress, (-1.0), beta);
 
 }  // RelDevStress()
 
@@ -1017,7 +1017,7 @@ void Mat::ThermoPlasticLinElast::setup_cmat_elasto_plastic(
   // unit flow vector Nbar (cf. de Souza Neto (7.117)/(7.210) )
   // Nbar = eta^{trial}_{n+1} / || eta^{trial}_{n+1} || = sqrt(2/3) . N
   double flowfac = sqrt(2.0 / 3.0);
-  flowvector.Scale(flowfac);
+  flowvector.scale(flowfac);
 
   // ------------------------------------------------------- elastic term
   // C_ep = C_e
@@ -1037,11 +1037,11 @@ void Mat::ThermoPlasticLinElast::setup_cmat_elasto_plastic(
   // constitutive tensor
   // I_d = id4sharp - 1/3 Id \otimes Id
   // contribution: Id4^#
-  cmat.Update(epfac, id4sharp, 1.0);
+  cmat.update(epfac, id4sharp, 1.0);
   // contribution: Id \otimes Id
   double epfac1 = 0.0;
   epfac1 = epfac / (-3.0);
-  cmat.MultiplyNT(epfac1, id2, id2, 1.0);
+  cmat.multiply_nt(epfac1, id2, id2, 1.0);
 
   // ------------------------------------------------ second plastic term
   // +  H^ . 6 . G^2 ( Dgamma/qbar^{trial} - 1/(3 G + Hkin + Hiso) ) Nbar \otimes Nbar
@@ -1128,7 +1128,7 @@ void Mat::ThermoPlasticLinElast::Dissipation(int gp,  // current Gauss point
   // --------------------------------------- kinematic hardening for fint
   // stressdiff = stress_d_{n+1} - beta_{n+1} = s_{n+1} + p_{n+1} . I - beta_{n+1}
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> stressdiff(false);
-  stressdiff.Update(1.0, stress, (-1.0), (backstresscurr_->at(gp)));
+  stressdiff.update(1.0, stress, (-1.0), (backstresscurr_->at(gp)));
 
   // Dmech = (stress_d + sigma_T - beta) : Inc_strain^p_{n+1}
   double stressIncstrainpl = 0.0;
@@ -1219,7 +1219,7 @@ void Mat::ThermoPlasticLinElast::dissipation_coupl_cond(
   // d(sigma_d - beta)/dstrain = dstress_d/dstrain = C_ep
   // calculate C_ep . Inc_strain^p_{n+1}
   Core::LinAlg::Matrix<6, 1> cmatstrainpinc(false);
-  cmatstrainpinc.Multiply(cmat, incstrainpl_->at(gp));
+  cmatstrainpinc.multiply(cmat, incstrainpl_->at(gp));
   // --> divide by dt in thermo_ele
 
   // (sigma_d - beta) . [(dstrain^p')/ dstrain] = eta_{n+1} . [(dstrain^p')/ dstrain]
@@ -1242,9 +1242,9 @@ void Mat::ThermoPlasticLinElast::dissipation_coupl_cond(
   double fac_kinlin2 = 0.0;
   fac_kinlin2 = fac_kinlin1 / (-3.0);
   // contribution: Id4^#
-  Dmech_kin_d.Update(fac_kinlin1, id4sharp);
+  Dmech_kin_d.update(fac_kinlin1, id4sharp);
   // contribution: Id \otimes Id
-  Dmech_kin_d.MultiplyNT(fac_kinlin2, id2, id2, 1.0);
+  Dmech_kin_d.multiply_nt(fac_kinlin2, id2, id2, 1.0);
 
   double fac_lin_3 = 0.0;
   double fac_lin_4 = 0.0;
@@ -1293,9 +1293,9 @@ void Mat::ThermoPlasticLinElast::dissipation_coupl_cond(
   // ------------------------------------------------------ term for k_Td
   // add the linearisation term to D_mech_d
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> D_mech_d(false);
-  D_mech_d.Multiply(Dmech_kin_d, stress);
-  D_mech_d.Update((-1.0), cmatstrainpinc, (-1.0));
-  D_mech_d.Update((fac_liniso), N, 1.0);
+  D_mech_d.multiply(Dmech_kin_d, stress);
+  D_mech_d.update((-1.0), cmatstrainpinc, (-1.0));
+  D_mech_d.update((fac_liniso), N, 1.0);
   // update history
   dmech_d_->at(gp) = D_mech_d;
 
@@ -1316,11 +1316,11 @@ void Mat::ThermoPlasticLinElast::evaluate(
   init(0, 0) = (params_->thetainit_);
   // Delta T = T - T_0
   Core::LinAlg::Matrix<1, 1> deltaT(false);
-  deltaT.Update(1.0, Ntemp, (-1.0), init);
+  deltaT.update(1.0, Ntemp, (-1.0), init);
 
   // temperature dependent stress
   // sigma = C_theta * Delta T = (m*I) * Delta T
-  stresstemp.MultiplyNN(ctemp, deltaT);
+  stresstemp.multiply_nn(ctemp, deltaT);
 
   // if stresstemp(i,i)=const.: (sigma_T : strainp' == 0), because (tr(strainp') == 0)
   // for different thermal stresses, term has to be considered!!!

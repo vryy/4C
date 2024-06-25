@@ -56,7 +56,7 @@ namespace Core::LinAlg
   void Zero(SerialDenseMatrix& mat, int length);
 
   /*!
-    \brief Determinant Computation using the Sarrus rule.
+    \brief determinant Computation using the Sarrus rule.
     Internal computation is based on the long double data type (80/128 bit depending on platform)
     this allows for higher precision when used on a bigger matrix. Long double is also used for
     output, therefore it has to be expicitly casted to a double if used in a "double only" context.

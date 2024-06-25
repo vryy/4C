@@ -147,7 +147,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
     activationFunction =
         Global::Problem::Instance()
             ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->sourceactiv_ - 1)
-            .evaluate(element_center_coordinates_ref.A(), totaltime, 0);
+            .evaluate(element_center_coordinates_ref.data(), totaltime, 0);
   }
 
   double lambda = 0.0;
@@ -178,7 +178,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
   double abs_u_ = abs(activationFunction);
   double absplus_u_ = abs_u_ * static_cast<double>(activationFunction > 0.0);
   tauc_np_ = (tauc_n_ / dt + n0 * params_->sigma_ * absplus_u_) / (1 / dt + abs_u_);
-  stress.Update(tauc_np_, A, 1.0);
+  stress.update(tauc_np_, A, 1.0);
 
   // only contribution to cmat if we have strain dependency!
   if (params_->strain_dep_)
@@ -195,7 +195,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
     {
       dtauc_np_dC = 0.0;
     }
-    cmat.MultiplyNT(dtauc_np_dC, A, A, 1.0);
+    cmat.multiply_nt(dtauc_np_dC, A, A, 1.0);
   }
 }
 

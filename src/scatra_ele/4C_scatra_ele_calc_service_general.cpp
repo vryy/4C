@@ -392,7 +392,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
 
           // get velocity at integration point
           Core::LinAlg::Matrix<nsd_, 1> convelint(true);
-          convelint.Multiply(econvelnp_, funct_);
+          convelint.multiply(econvelnp_, funct_);
 
           // calculate characteristic element length
           double hk = calc_ref_length(vol, convelint);
@@ -571,7 +571,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
         // loop over all Gauss points
         for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
           // update multi-scale scalar transport material
-          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())->Update(iquad);
+          Teuchos::rcp_static_cast<Mat::ScatraMultiScale>(ele->Material())->update(iquad);
       }
 
       break;
@@ -668,14 +668,14 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
           for (unsigned int n = 0; n < nen_; ++n) x_eval(d, 0) += funct_(n, 0) * xyze_(d, n);
           x_eval(d, 0) -= x_real(d, 0);
         }
-        diff.MultiplyTN(xij_, x_eval);
+        diff.multiply_tn(xij_, x_eval);
 
         for (unsigned int d = 0; d < nsd_; ++d)
         {
           xsi_(d, 0) -= diff(d, 0);
           if (xsi_(d, 0) > 10.0 || xsi_(d, 0) < -10.0) inside = false;
         }
-      } while (count < 20 && diff.Norm1() > 1.0e-10 && inside);
+      } while (count < 20 && diff.norm1() > 1.0e-10 && inside);
 
       inside = true;
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -711,7 +711,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
             "you requested the pointvalue of the %d-th scalar but there is only %d scalars",
             params.get<int>("numscal"), numscal_);
 
-      const double value = funct_.Dot(ephinp_[params.get<int>("numscal")]);
+      const double value = funct_.dot(ephinp_[params.get<int>("numscal")]);
 
       params.set<double>("value", value);
 
@@ -967,7 +967,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         get_laplacian_strong_form(diff);
-        diff.Scale(diffmanager_->GetIsotropicDiff(k));
+        diff.scale(diffmanager_->GetIsotropicDiff(k));
       }
 
       // calculation of stabilization parameter at integration point
@@ -1130,12 +1130,12 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
     // get velocity at integration point
     Core::LinAlg::Matrix<nsd_, 1> velint(true);
     Core::LinAlg::Matrix<nsd_, 1> convelint(true);
-    velint.Multiply(evelnp_, funct_);
-    convelint.Multiply(econvelnp_, funct_);
+    velint.multiply(evelnp_, funct_);
+    convelint.multiply(econvelnp_, funct_);
 
     // get gradient of scalar at integration point
     Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
-    gradphi.Multiply(derxy_, ephinp_[k]);
+    gradphi.multiply(derxy_, ephinp_[k]);
 
     // allocate and initialize!
     Core::LinAlg::Matrix<nsd_, 1> q(true);
@@ -1145,12 +1145,12 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
     {
       case Inpar::ScaTra::flux_total:
         // convective flux contribution
-        q.Update(densnp[k] * scatravarmanager_->Phinp(k), convelint);
+        q.update(densnp[k] * scatravarmanager_->Phinp(k), convelint);
 
         [[fallthrough]];
       case Inpar::ScaTra::flux_diffusive:
         // diffusive flux contribution
-        q.Update(-(diffmanager_->GetIsotropicDiff(k)), gradphi, 1.0);
+        q.update(-(diffmanager_->GetIsotropicDiff(k)), gradphi, 1.0);
 
         break;
       default:
@@ -1245,7 +1245,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
       }
 
       // project phi or 1.0/phi to current GP and multiply with domain integration factor
-      const double phi_gp = funct_.Dot(inverting ? inv_ephinp : ephinp_[k]);
+      const double phi_gp = funct_.dot(inverting ? inv_ephinp : ephinp_[k]);
       scalars[k] += phi_gp * fac;
     }
     scalars[numdofpernode_] += fac;
@@ -1256,7 +1256,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
 
       for (int k = 0; k < numscal_; k++)
       {
-        const double gradphi_l2norm_gp = scatravarmanager_->GradPhi()[k].Norm2();
+        const double gradphi_l2norm_gp = scatravarmanager_->GradPhi()[k].norm2();
         scalars[numdofpernode_ + 1 + k] += gradphi_l2norm_gp * fac;
       }
     }
@@ -1620,7 +1620,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
         // get coordinates at integration point
         // gp reference coordinates
         Core::LinAlg::Matrix<nsd_, 1> xyzint(true);
-        xyzint.Multiply(xyze_, funct_);
+        xyzint.multiply(xyze_, funct_);
 
         // function evaluation requires a 3D position vector!!
         double position[3] = {0.0, 0.0, 0.0};
@@ -1630,9 +1630,9 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
         for (int k = 0; k < numdofpernode_; ++k)
         {
           // scalar at integration point at time step n+1
-          const double phinp = funct_.Dot(ephinp_[k]);
+          const double phinp = funct_.dot(ephinp_[k]);
           // spatial gradient of current scalar value
-          gradphi.Multiply(derxy_, ephinp_[k]);
+          gradphi.multiply(derxy_, ephinp_[k]);
 
           phi_exact = Global::Problem::Instance()
                           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(errorfunctno - 1)
@@ -1662,7 +1662,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
 
           // error at gauss point
           deltaphi = phinp - phi_exact;
-          deltagradphi.Update(1.0, gradphi, -1.0, gradphi_exact);
+          deltagradphi.update(1.0, gradphi, -1.0, gradphi_exact);
 
           // 0: delta scalar for L2-error norm
           // 1: delta scalar for H1-error norm
@@ -1681,9 +1681,9 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
           errors(k * 4 + 3) += phi_exact * phi_exact * fac;
 
           // integrate delta scalar derivative for H1-error norm
-          errors(k * 4 + 1) += deltagradphi.Dot(deltagradphi) * fac;
+          errors(k * 4 + 1) += deltagradphi.dot(deltagradphi) * fac;
           // integrate analytical scalar derivative for H1 norm
-          errors(k * 4 + 3) += gradphi_exact.Dot(gradphi_exact) * fac;
+          errors(k * 4 + 3) += gradphi_exact.dot(gradphi_exact) * fac;
         }
       }  // loop over integration points
     }
@@ -1707,7 +1707,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
         // get coordinates at integration point
         // gp reference coordinates
         Core::LinAlg::Matrix<nsd_, 1> xyzint(true);
-        xyzint.Multiply(xyze_, funct_);
+        xyzint.multiply(xyze_, funct_);
 
         for (int k = 0; k < numscal_; k++)
         {
@@ -1716,9 +1716,9 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
           const double z = xyzint(2);
 
           // scalar at integration point at time step n+1
-          const double phinp = funct_.Dot(ephinp_[k]);
+          const double phinp = funct_.dot(ephinp_[k]);
           // spatial gradient of current scalar value
-          gradphi.Multiply(derxy_, ephinp_[k]);
+          gradphi.multiply(derxy_, ephinp_[k]);
 
           phi_exact = exp(-6 * t) * x * y + 10;
 
@@ -1728,7 +1728,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
 
           // error at gauss point
           deltaphi = phinp - phi_exact;
-          deltagradphi.Update(1.0, gradphi, -1.0, gradphi_exact);
+          deltagradphi.update(1.0, gradphi, -1.0, gradphi_exact);
 
           // 0: delta scalar for L2-error norm
           // 1: delta scalar for H1-error norm
@@ -1747,9 +1747,9 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
           errors(k * numscal_ + 3) += phi_exact * phi_exact * fac;
 
           // integrate delta scalar derivative for H1-error norm
-          errors(k * numscal_ + 1) += deltagradphi.Dot(deltagradphi) * fac;
+          errors(k * numscal_ + 1) += deltagradphi.dot(deltagradphi) * fac;
           // integrate analytical scalar derivative for H1 norm
-          errors(k * numscal_ + 3) += gradphi_exact.Dot(gradphi_exact) * fac;
+          errors(k * numscal_ + 3) += gradphi_exact.dot(gradphi_exact) * fac;
         }
       }  // loop over integration points
     }
@@ -1881,7 +1881,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         get_laplacian_strong_form(diff);
-        diff.Scale(diffmanager_->GetIsotropicDiff(k));
+        diff.scale(diffmanager_->GetIsotropicDiff(k));
       }
 
       // including stabilization
@@ -1947,9 +1947,9 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_det_f_at_int_poi
 
   // compute derivative of parameter coordinates w.r.t. reference coordinates
   Core::LinAlg::Matrix<nsd_ele_, nsd_ele_> dXds;
-  dXds.MultiplyNT(deriv_ele, XYZe);
+  dXds.multiply_nt(deriv_ele, XYZe);
 
-  return det_dxds / dXds.Determinant();
+  return det_dxds / dXds.determinant();
 }
 
 FOUR_C_NAMESPACE_CLOSE

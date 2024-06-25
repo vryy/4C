@@ -1149,7 +1149,7 @@ void XFEM::LevelSetCouplingNeumann::update_configuration_map_gp(
   if (inflow_stab_)
   {
     // Configuration of Penalty Terms
-    double veln = normal.Dot(vel_m);  // as the normal is the structural body, inflow is positive
+    double veln = normal.dot(vel_m);  // as the normal is the structural body, inflow is positive
     if (veln < 0)
     {
       configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, -density_m * veln);
@@ -1383,7 +1383,7 @@ void XFEM::LevelSetCouplingNavierSlip::GetSlipCoefficient(
   if (is_constant_sliplength_)
     slipcoeff = sliplength_;
   else
-    evaluate_scalar_function(slipcoeff, x.A(), sliplength_, cond, time_);
+    evaluate_scalar_function(slipcoeff, x.data(), sliplength_, cond, time_);
 }
 
 /*--------------------------------------------------------------------------*

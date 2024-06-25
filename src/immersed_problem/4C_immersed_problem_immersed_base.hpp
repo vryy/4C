@@ -1055,7 +1055,7 @@ namespace Immersed
                           << "\n"
                              " is lying within bounding box of immersed element "
                           << sourceele->Id() << "." << std::endl;
-                bbside->Print();
+                bbside->print();
                 // we assume not in bounding box. point is lying outside sourcele.
                 xi(0) = 2.0;
                 xi(1) = 2.0;
@@ -1464,7 +1464,7 @@ namespace Immersed
 
                     // calculate velocity in gp
                     Core::LinAlg::Matrix<3, 1> vel_at_gp(true);
-                    vel_at_gp.MultiplyTN(myvelocitynp, shapefcts);
+                    vel_at_gp.multiply_tn(myvelocitynp, shapefcts);
 
                     // update velocity and position
                     for (int idim = 0; idim < 3; ++idim)

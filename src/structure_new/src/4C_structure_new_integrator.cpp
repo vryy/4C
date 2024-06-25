@@ -411,7 +411,7 @@ double STR::Integrator::get_total_mid_time_str_energy(const Epetra_Vector& x)
   global_state().get_fext_np()->Dot(*dis_avg, &mt_energy_.ext_energy_np_);
 
   Core::IO::cout(Core::IO::debug) << __LINE__ << " -- " << __PRETTY_FUNCTION__ << "\n";
-  mt_energy_.Print(Core::IO::cout.os(Core::IO::debug));
+  mt_energy_.print(Core::IO::cout.os(Core::IO::debug));
 
   return mt_energy_.get_total();
 }
@@ -722,7 +722,7 @@ STR::Integrator::MidTimeEnergy::MidTimeEnergy(const Integrator& integrator)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::MidTimeEnergy::Print(std::ostream& os) const
+void STR::Integrator::MidTimeEnergy::print(std::ostream& os) const
 {
   const double time_fac = integrator_.get_int_param();
 

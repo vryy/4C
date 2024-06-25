@@ -655,7 +655,7 @@ namespace Core::FE
     |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
      */
     Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, probdim, valueType> dxyzdrs;
-    dxyzdrs.MultiplyNT(deriv, xyze);
+    dxyzdrs.multiply_nt(deriv, xyze);
 
     /* 2D boundary Element
     |
@@ -678,7 +678,7 @@ namespace Core::FE
      */
 
     metrictensor.clear();
-    metrictensor.MultiplyNT(dxyzdrs, dxyzdrs);
+    metrictensor.multiply_nt(dxyzdrs, dxyzdrs);
 
     /*
                               +--------------+
@@ -686,7 +686,7 @@ namespace Core::FE
                sqrtdetg =   /  g11*g22-g12^2
                           \/
     */
-    sqrtdetg = metrictensor.Determinant();
+    sqrtdetg = metrictensor.determinant();
     if (sqrtdetg > 0.0)
       sqrtdetg = Core::MathOperations<valueType>::sqrt(sqrtdetg);
     else if (throw_error)
@@ -734,12 +734,12 @@ namespace Core::FE
       // compute unit normal (outward pointing)
       if (unit_normal)
       {
-        const valueType norm2 = normalvec->Norm2();
+        const valueType norm2 = normalvec->norm2();
         if (norm2 < 0.0)
         {
           FOUR_C_THROW("The L2-norm of the normal vector is smaller than 0.0!");
         }
-        normalvec->Scale(1.0 / norm2);
+        normalvec->scale(1.0 / norm2);
       }
     }
   }

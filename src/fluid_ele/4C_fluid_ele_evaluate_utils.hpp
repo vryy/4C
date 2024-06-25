@@ -321,7 +321,7 @@ namespace FLD
           //                           component of
           //                          node coordinate
           //
-          xjm.MultiplyNT(deriv, xyze);
+          xjm.multiply_nt(deriv, xyze);
 
           // we assume that every plane parallel to the wall is preserved
           // hence we can compute the jacobian determinant of the 2d cutting
@@ -721,7 +721,7 @@ namespace FLD
           //                           component of
           //                          node coordinate
           //
-          xjm.MultiplyNT(deriv, xyze);
+          xjm.multiply_nt(deriv, xyze);
 
           // we assume that every plane parallel to the wall is preserved
           // hence we can compute the jacobian determinant of the 2d cutting
@@ -1788,7 +1788,7 @@ namespace FLD
     if (fldpara->PhysicalType() == Inpar::FLUID::loma)
     {
       CI_numerator = restress_hat(0, 0) + restress_hat(1, 1) + restress_hat(2, 2) -
-                     densvelint_hat.Dot(densvelint_hat) / densint_hat;
+                     densvelint_hat.dot(densvelint_hat) / densint_hat;
       CI_denominator =
           densint_hat * filterwidthratio * filterwidthratio * rateofstrain_hat * rateofstrain_hat -
           densstrainrateint_hat;
@@ -2093,8 +2093,8 @@ namespace FLD
       // get Jacobian matrix and determinant
       Core::LinAlg::Matrix<NSD, NSD> xjm;
       // Core::LinAlg::Matrix<NSD,NSD> xji;
-      xjm.MultiplyNT(deriv, xyze);
-      double det = xji.Invert(xjm);
+      xjm.multiply_nt(deriv, xyze);
+      double det = xji.invert(xjm);
       // check for degenerated elements
       if (det < 1E-16)
         FOUR_C_THROW(
@@ -2104,7 +2104,7 @@ namespace FLD
       vol = wquad * det;
 
       // compute global first derivatives
-      derxy.Multiply(xji, deriv);
+      derxy.multiply(xji, deriv);
     }
 
     // calculate parameters of multifractal subgrid-scales
@@ -2135,7 +2135,7 @@ namespace FLD
     //          |          \   / ij        \   / ij |
     //          +-                                 -+
     //
-    velintderxy.MultiplyNT(evel, derxy);
+    velintderxy.multiply_nt(evel, derxy);
     Core::LinAlg::Matrix<NSD, NSD> twoeps;
     for (int idim = 0; idim < NSD; idim++)
     {
@@ -2164,11 +2164,11 @@ namespace FLD
       double scale_ratio = 0.0;
 
       // get velocity at element center
-      velint.Multiply(evel, funct);
-      fsvelint.Multiply(efsvel, funct);
+      velint.multiply(evel, funct);
+      fsvelint.multiply(efsvel, funct);
       // get norm
-      const double vel_norm = velint.Norm2();
-      const double fsvel_norm = fsvelint.Norm2();
+      const double vel_norm = velint.norm2();
+      const double fsvel_norm = fsvelint.norm2();
 
       // calculate characteristic element length
       // cf. stabilization parameters
@@ -2193,15 +2193,15 @@ namespace FLD
           // normed velocity vector
           Core::LinAlg::Matrix<NSD, 1> velino(true);
           if (vel_norm >= 1e-6)
-            velino.Update(1.0 / vel_norm, velint);
+            velino.update(1.0 / vel_norm, velint);
           else
           {
             velino.clear();
             velino(0, 0) = 1.0;
           }
           Core::LinAlg::Matrix<NEN, 1> tmp;
-          tmp.MultiplyTN(derxy, velino);
-          const double val = tmp.Norm1();
+          tmp.multiply_tn(derxy, velino);
+          const double val = tmp.norm1();
           hk = 2.0 / val;
 
           break;
@@ -2264,7 +2264,7 @@ namespace FLD
         }
         case Inpar::FLUID::gradient_based:
         {
-          velintderxy.MultiplyNT(evel, derxy);
+          velintderxy.multiply_nt(evel, derxy);
           Core::LinAlg::Matrix<3, 1> normed_velgrad;
 
           for (int rr = 0; rr < 3; ++rr)
@@ -2273,7 +2273,7 @@ namespace FLD
                                       velintderxy(1, rr) * velintderxy(1, rr) +
                                       velintderxy(2, rr) * velintderxy(2, rr));
           }
-          double norm = normed_velgrad.Norm2();
+          double norm = normed_velgrad.norm2();
 
           // normed gradient
           if (norm > 1e-6)
@@ -2622,8 +2622,8 @@ namespace FLD
       //          +-                                 -+
       //
       Core::LinAlg::Matrix<NSD, NSD> velderxy(true);
-      velintderxy.MultiplyNT(evel, derxy);
-      fsvelintderxy.MultiplyNT(efsvel, derxy);
+      velintderxy.multiply_nt(evel, derxy);
+      fsvelintderxy.multiply_nt(efsvel, derxy);
 
       if (params.sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC", "No") ==
           "Smagorinsky_all")
@@ -2801,8 +2801,8 @@ namespace FLD
       Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv);
 
       // get Jacobian matrix and determinant
-      xjm.MultiplyNT(deriv, xyze);
-      double det = xji.Invert(xjm);
+      xjm.multiply_nt(deriv, xyze);
+      double det = xji.invert(xjm);
       // check for degenerated elements
       if (det < 1E-16)
         FOUR_C_THROW(
@@ -2832,8 +2832,8 @@ namespace FLD
         Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv);
 
         // get Jacobian matrix and determinant
-        xjm.MultiplyNT(deriv, xyze);
-        det = xji.Invert(xjm);
+        xjm.multiply_nt(deriv, xyze);
+        det = xji.invert(xjm);
         // check for degenerated elements
         if (det < 1E-16)
           FOUR_C_THROW(
@@ -2842,10 +2842,10 @@ namespace FLD
         double fac = wquad * det;
 
         // compute global first derivatives
-        derxy.Multiply(xji, deriv);
+        derxy.multiply(xji, deriv);
 
         // get velocity at integration point
-        velint.Multiply(evel, funct);
+        velint.multiply(evel, funct);
 
         // get material
         double dens = 0.0;
@@ -2883,19 +2883,19 @@ namespace FLD
           {
             // a) streamlength due to Tezduyar et al. (1992)
             // get norm of velocity
-            const double vel_norm = velint.Norm2();
+            const double vel_norm = velint.norm2();
             // normed velocity vector
             Core::LinAlg::Matrix<NSD, 1> velino(true);
             if (vel_norm >= 1e-6)
-              velino.Update(1.0 / vel_norm, velint);
+              velino.update(1.0 / vel_norm, velint);
             else
             {
               velino.clear();
               velino(0, 0) = 1.0;
             }
             Core::LinAlg::Matrix<NEN, 1> tmp;
-            tmp.MultiplyTN(derxy, velino);
-            const double val = tmp.Norm1();
+            tmp.multiply_tn(derxy, velino);
+            const double val = tmp.norm1();
             hk = 2.0 / val;
 
             break;
@@ -2958,7 +2958,7 @@ namespace FLD
           }
           case Inpar::FLUID::gradient_based:
           {
-            velintderxy.MultiplyNT(evel, derxy);
+            velintderxy.multiply_nt(evel, derxy);
             Core::LinAlg::Matrix<3, 1> normed_velgrad;
 
             for (int rr = 0; rr < 3; ++rr)
@@ -2967,7 +2967,7 @@ namespace FLD
                                         velintderxy(1, rr) * velintderxy(1, rr) +
                                         velintderxy(2, rr) * velintderxy(2, rr));
             }
-            double norm = normed_velgrad.Norm2();
+            double norm = normed_velgrad.norm2();
 
             // normed gradient
             if (norm > 1e-6)
@@ -3006,7 +3006,7 @@ namespace FLD
         //          |          \   / ij        \   / ij |
         //          +-                                 -+
         //
-        velintderxy.MultiplyNT(evel, derxy);
+        velintderxy.multiply_nt(evel, derxy);
         Core::LinAlg::Matrix<NSD, NSD> twoeps;
         for (int idim = 0; idim < NSD; idim++)
         {
@@ -3241,10 +3241,10 @@ namespace FLD
 
       // compute jacobian matrix
       // determine jacobian at point r,s,t
-      xjm.MultiplyNT(deriv, xyze);
+      xjm.multiply_nt(deriv, xyze);
 
       // determinant and inverse of jacobian
-      const double det = xji.Invert(xjm);
+      const double det = xji.invert(xjm);
 
       // check for degenerated elements
       if (det < 0.0)

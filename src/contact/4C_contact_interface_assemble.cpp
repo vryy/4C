@@ -4261,7 +4261,7 @@ void CONTACT::Interface::assemble_normal_contact_regularization(
 
     Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
     Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
-    const double lm_n = lm.Dot(n);
+    const double lm_n = lm.dot(n);
 
     const double gLM = gmax * (1. - exp(-k / gmax * lm_n));
     const double d_gLM = k * exp(-k / gmax * lm_n);

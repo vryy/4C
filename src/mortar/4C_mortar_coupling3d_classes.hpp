@@ -300,7 +300,7 @@ namespace Mortar
     virtual bool LocalToGlobal(const double* xi, double* globcoord, int inttype);
 
     // output functionality
-    virtual void Print();
+    virtual void print();
 
     /*!
     \brief Evaluate shape functions and derivatives

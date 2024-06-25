@@ -189,7 +189,7 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   Core::LinAlg::Matrix<6, 1> rcg(*glstrain);
-  rcg.Scale(2.0);
+  rcg.scale(2.0);
   rcg += identity;
 
   // invariants
@@ -217,7 +217,7 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   invc(4) = 0.25 * rcg(3) * rcg(5) - 0.5 * rcg(0) * rcg(4);
   invc(5) = 0.25 * rcg(3) * rcg(4) - 0.5 * rcg(5) * rcg(1);
 
-  invc.Scale(invdet);
+  invc.scale(invdet);
 
   //--- prepare some constants -----------------------------------------------------------
   const double third = 1.0 / 3.0;
@@ -264,7 +264,7 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // contribution: Cinv
   Core::LinAlg::Matrix<6, 1> pktwoiso(invc);
-  pktwoiso.Scale(isochor2);
+  pktwoiso.scale(isochor2);
 
   // contribution: I
   for (int i = 0; i < 3; i++) pktwoiso(i) += isochor1;
@@ -276,7 +276,7 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // initialise PKtwo with volumetric part
   Core::LinAlg::Matrix<6, 1> pktwovol(invc);
-  pktwovol.Scale(scalar);
+  pktwovol.scale(scalar);
 
   // 3rd step: add everything up
   //============================
@@ -359,7 +359,7 @@ void Mat::AAAneohooke::StrainEnergy(
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   Core::LinAlg::Matrix<6, 1> rcg(glstrain);
-  rcg.Scale(2.0);
+  rcg.scale(2.0);
   rcg += identity;
 
   // invariants

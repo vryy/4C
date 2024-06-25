@@ -123,7 +123,7 @@ namespace CONTACT::CONSTITUTIVELAW
     }  // todo does not override anything.. is it supposed to be this way?
 
     /// Print this ConstitutiveLaw
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     /// Return type of constitutivelaw
     [[nodiscard]] inline virtual Inpar::CONTACT::ConstitutiveLawType Type() const { return type_; }

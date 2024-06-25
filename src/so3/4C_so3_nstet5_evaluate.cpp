@@ -46,7 +46,7 @@ void Discret::ELEMENTS::NStet5::init_element()
     }
     for (double& i : midX_) i /= 4;
 
-    V_ = J.Determinant() / 6.0;
+    V_ = J.determinant() / 6.0;
     if (V_ == 0.0)
       FOUR_C_THROW("Element volume is zero");
     else if (V_ < 0.0)
@@ -98,14 +98,14 @@ void Discret::ELEMENTS::NStet5::init_element()
       J(j, 2) = xrefe(j, 1);
       J(j, 3) = xrefe(j, 2);
     }
-    subV_[i] = J.Determinant() / 6.0;
+    subV_[i] = J.determinant() / 6.0;
     if (subV_[i] == 0.0)
       FOUR_C_THROW("NSTET5 %d Subelement %d volume is zero %10.6e", Id(), i, subV_[i]);
     else if (subV_[i] < 0.0)
       FOUR_C_THROW("NSTET5 %d Subelement %d volume is negative %10.6e", Id(), i, subV_[i]);
 
     // spatial derivatives of shape functions
-    tmp.MultiplyTN(xrefe, deriv);
+    tmp.multiply_tn(xrefe, deriv);
     for (int j = 0; j < 4; j++) J(0, j) = 1;
     for (int row = 0; row < 3; row++)
       for (int col = 0; col < 4; col++) J(row + 1, col) = tmp(row, col);
@@ -120,7 +120,7 @@ void Discret::ELEMENTS::NStet5::init_element()
     int err = solver.Factor();
     int err2 = solver.Solve();
     if (err || err2) FOUR_C_THROW("Inversion of Jacobian failed");
-    subnxyz_[i].Multiply(deriv, partials);
+    subnxyz_[i].multiply(deriv, partials);
   }  // for (int i=0; i<4; ++i)
 
 
@@ -213,7 +213,7 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
       Core::LinAlg::Matrix<15, 15>* elemat1ptr = nullptr;
-      if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
+      if (elemat1.is_initialized()) elemat1ptr = &elemat1;
       nstet5nlnstiffmass(lm, mydisp, elemat1ptr, nullptr, &elevec1, nullptr, nullptr,
           Inpar::STR::stress_none, Inpar::STR::strain_none);
     }
@@ -395,7 +395,7 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
 
     //--------------------------- Right Cauchy-Green tensor C = = F^T * F
     Core::LinAlg::Matrix<3, 3> cauchygreen;
-    cauchygreen.MultiplyTN(F, F);
+    cauchygreen.multiply_tn(F, F);
 
     // --Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -471,14 +471,14 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
       stress = stressdev;
       cmat = cmatdev;
 
-      stress.Scale(ALPHA_NSTET5);
-      cmat.Scale(ALPHA_NSTET5);
+      stress.scale(ALPHA_NSTET5);
+      cmat.scale(ALPHA_NSTET5);
     }
 #else
     {
       select_material(stress, cmat, density, glstrain, F, 0);
-      stress.Scale(ALPHA_NSTET5);
-      cmat.Scale(ALPHA_NSTET5);
+      stress.scale(ALPHA_NSTET5);
+      cmat.scale(ALPHA_NSTET5);
       glstrainbar = glstrain;
     }
 #endif
@@ -489,9 +489,9 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
       if (iostrain != Inpar::STR::strain_none)
       {
         // do deviatoric F, C, E
-        const double J = F.Determinant();
+        const double J = F.determinant();
         Core::LinAlg::Matrix<3, 3> Cbar(cauchygreen);
-        Cbar.Scale(pow(J, -2. / 3.));
+        Cbar.scale(pow(J, -2. / 3.));
         glstrainbar(0) = 0.5 * (Cbar(0, 0) - 1.0);
         glstrainbar(1) = 0.5 * (Cbar(1, 1) - 1.0);
         glstrainbar(2) = 0.5 * (Cbar(2, 2) - 1.0);
@@ -526,17 +526,17 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
           gl(2, 2) = glstrainbar(2);
 
           Core::LinAlg::Matrix<3, 3> Fbar(true);
-          Fbar.SetCopy(F.A());
+          Fbar.set_copy(F.data());
 #ifndef PUSO_NSTET5
-          Fbar.Scale(pow(F.Determinant(), -1. / 3.));
+          Fbar.scale(pow(F.determinant(), -1. / 3.));
 #endif
           Core::LinAlg::Matrix<3, 3> invdefgrd;
-          invdefgrd.Invert(Fbar);
+          invdefgrd.invert(Fbar);
 
           Core::LinAlg::Matrix<3, 3> temp;
           Core::LinAlg::Matrix<3, 3> euler_almansi;
-          temp.Multiply(gl, invdefgrd);
-          euler_almansi.MultiplyTN(invdefgrd, temp);
+          temp.multiply(gl, invdefgrd);
+          euler_almansi.multiply_tn(invdefgrd, temp);
 
 
           (*elestrain)(0, 0) += (sub_v(sub) / vol() * ALPHA_NSTET5 * euler_almansi(0, 0));
@@ -583,12 +583,12 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
           Core::LinAlg::Matrix<3, 3> cauchystress;
 
           Core::LinAlg::Matrix<3, 3> Fbar(true);
-          Fbar.SetCopy(F.A());
+          Fbar.set_copy(F.data());
 #ifndef PUSO_NSTET5
-          Fbar.Scale(pow(F.Determinant(), -1. / 3.));
+          Fbar.scale(pow(F.determinant(), -1. / 3.));
 #endif
-          temp.Multiply(1.0 / Fbar.Determinant(), Fbar, pkstress);
-          cauchystress.MultiplyNT(temp, Fbar);
+          temp.multiply(1.0 / Fbar.determinant(), Fbar, pkstress);
+          cauchystress.multiply_nt(temp, Fbar);
 
           (*elestress)(0, 0) += (sub_v(sub) / vol() * cauchystress(0, 0));
           (*elestress)(0, 1) += (sub_v(sub) / vol() * cauchystress(1, 1));
@@ -611,7 +611,7 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
     {
       Core::LinAlg::Matrix<12, 1> subforce(true);
       // integrate internal force vector f = f + (B^T . sigma) * V
-      subforce.MultiplyTN(sub_v(sub), bop, stress, 0.0);
+      subforce.multiply_tn(sub_v(sub), bop, stress, 0.0);
 
       for (int i = 0; i < 4; ++i)  // loop 4 nodes of subelement
       {
@@ -629,8 +629,8 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
       // integrate elastic stiffness matrix
       // keu = keu + (B^T . C . B) * V
       Core::LinAlg::Matrix<6, 12> cb;
-      cb.Multiply(cmat, bop);
-      substiffmatrix.MultiplyTN(V, bop, cb, 0.0);
+      cb.multiply(cmat, bop);
+      substiffmatrix.multiply_tn(V, bop, cb, 0.0);
 
       // integrate `geometric' stiffness matrix and add to keu
       double sBL[3];
@@ -779,10 +779,11 @@ void Discret::ELEMENTS::NStet5::select_material(Core::LinAlg::Matrix<6, 1>& stre
     Core::LinAlg::Matrix<6, 6>& cmat, double& density, Core::LinAlg::Matrix<6, 1>& glstrain,
     Core::LinAlg::Matrix<3, 3>& defgrd, int gp)
 {
-  Core::LinAlg::SerialDenseVector stress_e(Teuchos::View, stress.A(), stress.numRows());
+  Core::LinAlg::SerialDenseVector stress_e(Teuchos::View, stress.data(), stress.numRows());
   Core::LinAlg::SerialDenseMatrix cmat_e(
-      Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
-  const Core::LinAlg::SerialDenseVector glstrain_e(Teuchos::View, glstrain.A(), glstrain.numRows());
+      Teuchos::View, cmat.data(), cmat.numRows(), cmat.numRows(), cmat.numCols());
+  const Core::LinAlg::SerialDenseVector glstrain_e(
+      Teuchos::View, glstrain.data(), glstrain.numRows());
 
   Teuchos::RCP<Core::Mat::Material> mat = Material();
   switch (mat->MaterialType())

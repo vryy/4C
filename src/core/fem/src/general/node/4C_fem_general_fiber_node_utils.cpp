@@ -69,7 +69,7 @@ void Core::Nodes::ProjectFibersToGaussPoints(const Core::Nodes::Node* const* nod
     // normalize fiber vectors
     for (Core::LinAlg::Matrix<3, 1>& quantity : gpQuantity)
     {
-      quantity.Scale(1.0 / quantity.Norm2());
+      quantity.scale(1.0 / quantity.norm2());
     }
 
     // add quantity to the fiber holder
@@ -87,7 +87,7 @@ void Core::Nodes::ProjectFibersToGaussPoints(const Core::Nodes::Node* const* nod
     // normalize fiber vectors
     for (Core::LinAlg::Matrix<3, 1>& quantity : gpQuantity)
     {
-      quantity.Scale(1.0 / quantity.Norm2());
+      quantity.scale(1.0 / quantity.norm2());
     }
 
     // add quantity to the fiber holder
@@ -118,9 +118,9 @@ void Core::Nodes::ProjectFibersToGaussPoints(const Core::Nodes::Node* const* nod
     // orthogonalize tangential vector, preserve circular direction
     for (std::size_t gp = 0; gp < tan.size(); ++gp)
     {
-      double tancir = tan[gp].Dot(cir[gp]);
-      tan[gp].Update(-tancir, cir[gp], 1.0);
-      tan[gp].Scale(1.0 / tan[gp].Norm2());
+      double tancir = tan[gp].dot(cir[gp]);
+      tan[gp].update(-tancir, cir[gp], 1.0);
+      tan[gp].scale(1.0 / tan[gp].norm2());
     }
 
     // orthogonalize radial vector, preserve circular and tangential direction
@@ -130,11 +130,11 @@ void Core::Nodes::ProjectFibersToGaussPoints(const Core::Nodes::Node* const* nod
           gpFiberHolder.get_coordinate_system_direction_mutual(CoordinateSystemDirection::Radial);
       for (std::size_t gp = 0; gp < tan.size(); ++gp)
       {
-        double radcir = rad[gp].Dot(cir[gp]);
-        double radtan = rad[gp].Dot(tan[gp]);
+        double radcir = rad[gp].dot(cir[gp]);
+        double radtan = rad[gp].dot(tan[gp]);
         // double
-        rad[gp].Update(-radcir, cir[gp], -radtan, tan[gp], 1.0);
-        rad[gp].Scale(1.0 / rad[gp].Norm2());
+        rad[gp].update(-radcir, cir[gp], -radtan, tan[gp], 1.0);
+        rad[gp].scale(1.0 / rad[gp].norm2());
       }
     }
   }

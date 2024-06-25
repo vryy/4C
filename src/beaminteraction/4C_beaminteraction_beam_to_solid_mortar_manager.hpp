@@ -244,7 +244,7 @@ namespace BEAMINTERACTION
     get_penalty_regularization(const bool compute_linearization = false) const;
 
     /**
-     * \brief Invert the scaling vector \ref kappa_ vector.
+     * \brief invert the scaling vector \ref kappa_ vector.
      *
      * The inversion is performed with accounting for non active Lagrange multipliers. Furthermore,
      * the inverted matrix is scaled with the the corresponding penalty parameter.

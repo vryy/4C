@@ -59,7 +59,7 @@ int Discret::ELEMENTS::SoSh18::init_jacobian_mapping()
 
         invJ_[gp](2, dim) += .5 * shapefunct_q9(k) * (xrefe(k + 9, dim) - xrefe(k, dim));
       }
-    detJ_[gp] = invJ_[gp].Invert();
+    detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] < 0.) return 1;
   }
 
@@ -116,9 +116,9 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     if (not IsParamsInterface())
       if (stiffmatrix)
       {
-        feas_.Multiply(1., Kad_, res_d, 1.);
-        alpha_eas_inc_.Multiply(-1., KaaInv_, feas_, 0.);
-        alpha_eas_.Update(1., alpha_eas_inc_, 1.);
+        feas_.multiply(1., Kad_, res_d, 1.);
+        alpha_eas_inc_.multiply(-1., KaaInv_, feas_, 0.);
+        alpha_eas_.update(1., alpha_eas_inc_, 1.);
       }
     // recover EAS **************************************
 
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
 
         jac(2, dim) += .5 * shapefunct_q9(k) * (xrefe(k + 9, dim) - xrefe(k, dim));
       }
-    double detJ = jac.Determinant();
+    double detJ = jac.determinant();
 
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
@@ -172,7 +172,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH18> bop_loc(true);
     calculate_bop_loc(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, bop_loc);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH18> bop;
-    bop.Multiply(TinvT, bop_loc);
+    bop.multiply(TinvT, bop_loc);
 
     // **************************************************************************
     // shell-like calculation of strains
@@ -181,7 +181,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> lstrain(true);
     calculate_loc_strain(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, lstrain);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain;
-    glstrain.Multiply(TinvT, lstrain);
+    glstrain.multiply(TinvT, lstrain);
     // **************************************************************************
     // shell-like calculation of strains
     // **************************************************************************
@@ -192,8 +192,8 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
       double t33 = 0.;
       for (int dim = 0; dim < 3; ++dim) t33 += jac(2, dim) * G3_0_contra(dim);
 
-      M.Multiply(t33 * t33 / detJ, TinvT, M_gp[gp], 0.);
-      glstrain.Multiply(1., M, alpha_eas_, 1.);
+      M.multiply(t33 * t33 / detJ, TinvT, M_gp[gp], 0.);
+      glstrain.multiply(1., M, alpha_eas_, 1.);
     }
     // end EAS: enhance the strains *******************************************
 
@@ -220,7 +220,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
 
       // displacement-based deformation gradient
       Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd_disp;
-      defgrd_disp.MultiplyNT(defgrd_loc, invJ_[gp]);
+      defgrd_disp.multiply_nt(defgrd_loc, invJ_[gp]);
       calc_consistent_defgrd(defgrd_disp, glstrain, defgrd);
     }
 
@@ -258,8 +258,8 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
         case Inpar::STR::strain_ea:
         {
           Core::LinAlg::Matrix<3, 3> bi;
-          bi.MultiplyNT(defgrd, defgrd);
-          bi.Invert();
+          bi.multiply_nt(defgrd, defgrd);
+          bi.invert();
           for (int i = 0; i < 3; i++) (*elestrain)(gp, i) = .5 * (1. - bi(i, i));
           (*elestrain)(gp, 3) = -bi(0, 1);
           (*elestrain)(gp, 4) = -bi(2, 1);
@@ -306,8 +306,8 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
 
           Core::LinAlg::Matrix<3, 3> cauchystress;
           Core::LinAlg::Matrix<3, 3> temp;
-          temp.Multiply(1.0 / defgrd.Determinant(), defgrd, pkstress);
-          cauchystress.MultiplyNT(temp, defgrd);
+          temp.multiply(1.0 / defgrd.determinant(), defgrd, pkstress);
+          cauchystress.multiply_nt(temp, defgrd);
 
           (*elestress)(gp, 0) = cauchystress(0, 0);
           (*elestress)(gp, 1) = cauchystress(1, 1);
@@ -328,7 +328,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
 
     double detJ_w = detJ * wgt_[gp];
     // update internal force vector
-    if (force != nullptr) force->MultiplyTN(detJ_w, bop, stress, 1.0);
+    if (force != nullptr) force->multiply_tn(detJ_w, bop, stress, 1.0);
 
     // update stiffness matrix
     if (stiffmatrix != nullptr)
@@ -336,8 +336,8 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH18> cb;
-      cb.Multiply(cmat, bop);
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);  // standard hex8 evaluation
+      cb.multiply(cmat, bop);
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);  // standard hex8 evaluation
       // intergrate `geometric' stiffness matrix and add to keu *****************
       calculate_geo_stiff(shapefunct_q9, deriv_q9, TinvT, gp, detJ_w, stress, stiffmatrix);
 
@@ -345,10 +345,10 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
       if (eas_)
       {
         Core::LinAlg::Matrix<6, num_eas> cM;
-        cM.Multiply(cmat, M);
-        KaaInv_.MultiplyTN(detJ_w, M, cM, 1.);
-        Kad_.MultiplyTN(detJ_w, M, cb, 1.);
-        feas_.MultiplyTN(detJ_w, M, stress, 1.);
+        cM.multiply(cmat, M);
+        KaaInv_.multiply_tn(detJ_w, M, cM, 1.);
+        Kad_.multiply_tn(detJ_w, M, cb, 1.);
+        feas_.multiply_tn(detJ_w, M, stress, 1.);
       }
       // EAS technology: integrate matrices --------------------------------- EAS
     }
@@ -386,13 +386,13 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     Core::LinAlg::FixedSizeSerialDenseSolver<num_eas, num_eas, 1> solve_for_KaaInv;
     solve_for_KaaInv.SetMatrix(KaaInv_);
     int err2 = solve_for_KaaInv.Factor();
-    int err = solve_for_KaaInv.Invert();
+    int err = solve_for_KaaInv.invert();
     if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of Kaa failed");
 
     Core::LinAlg::Matrix<NUMDOF_SOH18, num_eas> KdaKaa;
-    KdaKaa.MultiplyTN(Kad_, KaaInv_);
-    stiffmatrix->Multiply(-1., KdaKaa, Kad_, 1.);
-    force->Multiply(-1., KdaKaa, feas_, 1.);
+    KdaKaa.multiply_tn(Kad_, KaaInv_);
+    stiffmatrix->multiply(-1., KdaKaa, Kad_, 1.);
+    force->multiply(-1., KdaKaa, feas_, 1.);
   }
 
   return;
@@ -538,7 +538,7 @@ void Discret::ELEMENTS::SoSh18::evaluate_t(
       solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
   int err2 = solve_for_inverseT.Factor();
-  int err = solve_for_inverseT.Invert();
+  int err = solve_for_inverseT.invert();
   if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
 }
@@ -1043,29 +1043,29 @@ void Discret::ELEMENTS::SoSh18::calculate_geo_stiff(const Core::LinAlg::Matrix<9
       }
 
       Core::LinAlg::Matrix<6, 1> G_kl_g;
-      G_kl_g.Multiply(TinvT, G_kl);
-      const double Gkl = detJ_w * stress.Dot(G_kl_g);
+      G_kl_g.multiply(TinvT, G_kl);
+      const double Gkl = detJ_w * stress.dot(G_kl_g);
       Core::LinAlg::Matrix<6, 1> G_klp_g;
-      G_klp_g.Multiply(TinvT, G_klp);
-      const double Gklp = detJ_w * stress.Dot(G_klp_g);
+      G_klp_g.multiply(TinvT, G_klp);
+      const double Gklp = detJ_w * stress.dot(G_klp_g);
       Core::LinAlg::Matrix<6, 1> G_kpl_g;
-      G_kpl_g.Multiply(TinvT, G_kpl);
-      const double Gkpl = detJ_w * stress.Dot(G_kpl_g);
+      G_kpl_g.multiply(TinvT, G_kpl);
+      const double Gkpl = detJ_w * stress.dot(G_kpl_g);
       Core::LinAlg::Matrix<6, 1> G_kplp_g;
-      G_kplp_g.Multiply(TinvT, G_kplp);
-      const double Gkplp = detJ_w * stress.Dot(G_kplp_g);
+      G_kplp_g.multiply(TinvT, G_kplp);
+      const double Gkplp = detJ_w * stress.dot(G_kplp_g);
       Core::LinAlg::Matrix<6, 1> G_lk_g;
-      G_lk_g.Multiply(TinvT, G_lk);
-      const double Glk = detJ_w * stress.Dot(G_lk_g);
+      G_lk_g.multiply(TinvT, G_lk);
+      const double Glk = detJ_w * stress.dot(G_lk_g);
       Core::LinAlg::Matrix<6, 1> G_lkp_g;
-      G_lkp_g.Multiply(TinvT, G_lkp);
-      const double Glkp = detJ_w * stress.Dot(G_lkp_g);
+      G_lkp_g.multiply(TinvT, G_lkp);
+      const double Glkp = detJ_w * stress.dot(G_lkp_g);
       Core::LinAlg::Matrix<6, 1> G_lpk_g;
-      G_lpk_g.Multiply(TinvT, G_lpk);
-      const double Glpk = detJ_w * stress.Dot(G_lpk_g);
+      G_lpk_g.multiply(TinvT, G_lpk);
+      const double Glpk = detJ_w * stress.dot(G_lpk_g);
       Core::LinAlg::Matrix<6, 1> G_lpkp_g;
-      G_lpkp_g.Multiply(TinvT, G_lpkp);
-      const double Glpkp = detJ_w * stress.Dot(G_lpkp_g);
+      G_lpkp_g.multiply(TinvT, G_lpkp);
+      const double Glpkp = detJ_w * stress.dot(G_lpkp_g);
       for (int dim = 0; dim < 3; ++dim)
       {
         (*stiffmatrix)(k * 3 + dim, l * 3 + dim) += Gkl;
@@ -1106,27 +1106,27 @@ void Discret::ELEMENTS::SoSh18::calc_consistent_defgrd(
 
   Core::LinAlg::SYEV(U_mod, EW, U_mod);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
-  tmp.Multiply(U_mod, EW);
-  tmp2.MultiplyNT(tmp, U_mod);
-  U_mod.Update(tmp2);
+  tmp.multiply(U_mod, EW);
+  tmp2.multiply_nt(tmp, U_mod);
+  U_mod.update(tmp2);
 
   // ******************************************************************
   // calculate displacement-based right stretch tensor
   // ******************************************************************
-  U_disp.MultiplyTN(defgrd_disp, defgrd_disp);
+  U_disp.multiply_tn(defgrd_disp, defgrd_disp);
 
   Core::LinAlg::SYEV(U_disp, EW, U_disp);
   for (int i = 0; i < 3; ++i) EW(i, i) = sqrt(EW(i, i));
-  tmp.Multiply(U_disp, EW);
-  tmp2.MultiplyNT(tmp, U_disp);
-  U_disp.Update(tmp2);
+  tmp.multiply(U_disp, EW);
+  tmp2.multiply_nt(tmp, U_disp);
+  U_disp.update(tmp2);
 
   // ******************************************************************
   // compose consistent deformation gradient
   // ******************************************************************
-  U_disp.Invert();
-  R.Multiply(defgrd_disp, U_disp);
-  defgrd_mod.Multiply(R, U_mod);
+  U_disp.invert();
+  R.multiply(defgrd_disp, U_disp);
+  defgrd_mod.multiply(R, U_mod);
 
   // you're done here
   return;
@@ -1541,7 +1541,7 @@ void Discret::ELEMENTS::SoSh18::eas_setup(
       M[gp](2, 7) = r * s * s;
       M[gp](2, 8) = 1. - 9. * r * r * s * s;
 
-      M[gp].Scale(t);
+      M[gp].scale(t);
     }
     eval = true;
   }
@@ -1559,7 +1559,7 @@ void Discret::ELEMENTS::SoSh18::eas_setup(
       jac0inv(1, dim) += .5 * deriv_q9(1, k) * (xrefe(k + 9, dim) + xrefe(k, dim));
       jac0inv(2, dim) += .5 * shapefunct_q9(k) * (xrefe(k + 9, dim) - xrefe(k, dim));
     }
-  jac0inv.Invert();
+  jac0inv.invert();
 
   for (int dim = 0; dim < 3; ++dim) G3_c(dim) = jac0inv(2, dim);
 
@@ -1576,9 +1576,9 @@ void Discret::ELEMENTS::SoSh18::update()
 {
   if (eas_)
   {
-    alpha_eas_delta_over_last_timestep_.Update(alpha_eas_last_timestep_);
-    alpha_eas_delta_over_last_timestep_.Update(1., alpha_eas_, -1.);
-    alpha_eas_last_timestep_.Update(alpha_eas_);
+    alpha_eas_delta_over_last_timestep_.update(alpha_eas_last_timestep_);
+    alpha_eas_delta_over_last_timestep_.update(1., alpha_eas_, -1.);
+    alpha_eas_last_timestep_.update(alpha_eas_);
     Kad_.clear();
     KaaInv_.clear();
     feas_.clear();
@@ -1597,22 +1597,22 @@ void Discret::ELEMENTS::SoSh18::recover(const std::vector<double>& residual)
   {
     // first, store the eas state of the previous accepted Newton step
     str_params_interface().sum_into_my_previous_sol_norm(
-        NOX::Nln::StatusTest::quantity_eas, num_eas, alpha_eas_.A(), Owner());
+        NOX::Nln::StatusTest::quantity_eas, num_eas, alpha_eas_.data(), Owner());
 
-    feas_.Multiply(1., Kad_, res_d, 1.);
-    alpha_eas_inc_.Multiply(-1., KaaInv_, feas_, 0.);
-    alpha_eas_.Update(step_length, alpha_eas_inc_, 1.);
+    feas_.multiply(1., Kad_, res_d, 1.);
+    alpha_eas_inc_.multiply(-1., KaaInv_, feas_, 0.);
+    alpha_eas_.update(step_length, alpha_eas_inc_, 1.);
   }
   else
   {
-    alpha_eas_.Update(-old_step_length_, alpha_eas_inc_, 1.);
-    alpha_eas_inc_.Scale(step_length / old_step_length_);
-    alpha_eas_.Update(1., alpha_eas_inc_, 1.);
+    alpha_eas_.update(-old_step_length_, alpha_eas_inc_, 1.);
+    alpha_eas_inc_.scale(step_length / old_step_length_);
+    alpha_eas_.update(1., alpha_eas_inc_, 1.);
   }
   old_step_length_ = step_length;
 
   str_params_interface().sum_into_my_update_norm(NOX::Nln::StatusTest::quantity_eas, num_eas,
-      alpha_eas_inc_.A(), alpha_eas_.A(), step_length, Owner());
+      alpha_eas_inc_.data(), alpha_eas_.data(), step_length, Owner());
 }
 
 FOUR_C_NAMESPACE_CLOSE

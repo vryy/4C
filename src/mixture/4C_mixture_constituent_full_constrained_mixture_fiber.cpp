@@ -30,7 +30,7 @@ namespace
       const Core::LinAlg::Matrix<3, 3>& F)
   {
     Core::LinAlg::Matrix<3, 3> C(false);
-    C.MultiplyTN(F, F);
+    C.multiply_tn(F, F);
     return C;
   }
 
@@ -270,7 +270,7 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_d_lambdafsq_dc(
     int gp, int eleGID) const
 {
   Core::LinAlg::Matrix<1, 6> dLambdafDC(false);
-  dLambdafDC.UpdateT(anisotropy_extension_.get_structural_tensor_stress(gp, 0));
+  dLambdafDC.update_t(anisotropy_extension_.get_structural_tensor_stress(gp, 0));
   return dLambdafDC;
 }
 
@@ -281,7 +281,7 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_p_k2(
   Core::LinAlg::Matrix<6, 1> S_stress(false);
   const double fiber_pk2 = full_constrained_mixture_fiber_[gp].evaluate_current_second_pk_stress();
 
-  S_stress.Update(fiber_pk2, anisotropy_extension_.get_structural_tensor_stress(gp, 0));
+  S_stress.update(fiber_pk2, anisotropy_extension_.get_structural_tensor_stress(gp, 0));
 
   return S_stress;
 }
@@ -294,7 +294,7 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_current_cmat(
       full_constrained_mixture_fiber_[gp].evaluate_d_current_fiber_p_k2_stress_d_lambdafsq();
 
   Core::LinAlg::Matrix<6, 6> cmat(false);
-  cmat.MultiplyNN(2.0 * dPK2dlambdafsq, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
+  cmat.multiply_nn(2.0 * dPK2dlambdafsq, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
       evaluate_d_lambdafsq_dc(gp, eleGID));
 
   return cmat;
@@ -313,8 +313,8 @@ void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate(
   const double lambda_f = evaluate_lambdaf(C, gp, eleGID);
   full_constrained_mixture_fiber_[gp].recompute_state(lambda_f, time, delta_time);
 
-  S_stress.Update(evaluate_current_p_k2(gp, eleGID));
-  cmat.Update(evaluate_current_cmat(gp, eleGID));
+  S_stress.update(evaluate_current_p_k2(gp, eleGID));
+  cmat.update(evaluate_current_cmat(gp, eleGID));
 }
 
 void MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_elastic_part(
@@ -338,7 +338,7 @@ MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::get_d_growth_scalar_d_cg
 {
   if (!params_->growth_enabled_) return Core::LinAlg::Matrix<1, 6>(true);
   Core::LinAlg::Matrix<1, 6> dGrowthScalarDE = evaluate_d_lambdafsq_dc(gp, eleGID);
-  dGrowthScalarDE.Scale(
+  dGrowthScalarDE.scale(
       2.0 * full_constrained_mixture_fiber_[gp].computed_dgrowth_scalar_dlambda_f_sq_);
   return dGrowthScalarDE;
 }
@@ -360,6 +360,6 @@ double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_initial_
 double MIXTURE::MixtureConstituentFullConstrainedMixtureFiber::evaluate_lambdaf(
     const Core::LinAlg::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
-  return std::sqrt(C.Dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
+  return std::sqrt(C.dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
 }
 FOUR_C_NAMESPACE_CLOSE

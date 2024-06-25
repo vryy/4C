@@ -220,7 +220,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 05/16 */
-    virtual void Print(std::ostream& out) const = 0;
+    virtual void print(std::ostream& out) const = 0;
 
     /** \brief print this beam contact element pair to screen
      *

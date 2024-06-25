@@ -55,7 +55,7 @@ double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::evaluate(double gap, CONT
   double result = 1.0;
   gap = -gap;
   result = -1.0;
-  result *= params_->GetA() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) *
+  result *= params_->Getdata() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) *
                 (gap - params_->GetOffset()) +
             params_->GetB() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) +
             params_->GetC() * (gap - params_->GetOffset()) + params_->GetD();
@@ -76,7 +76,7 @@ double CONTACT::CONSTITUTIVELAW::CubicConstitutiveLaw::EvaluateDeriv(
     FOUR_C_THROW("You should not be here. The Evaluate function is only tested for active nodes. ");
   }
   gap = -gap;
-  return 3 * params_->GetA() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) +
+  return 3 * params_->Getdata() * (gap - params_->GetOffset()) * (gap - params_->GetOffset()) +
          2 * params_->GetB() * (gap - params_->GetOffset()) + params_->GetC();
 }
 

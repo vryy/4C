@@ -70,7 +70,7 @@ namespace Core::VolMortar
     \brief output for coordinates
 
     */
-    void Print();
+    void print();
 
     /*!
     \brief get shape

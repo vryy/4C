@@ -223,7 +223,7 @@ namespace
     Mat::add_contraction_matrix_four_tensor(result, 1.0, T, stress);
 
     Core::LinAlg::Matrix<3, 3> result_ref = stress;
-    result_ref.Scale(std::pow(stress.Norm2(), 2));
+    result_ref.scale(std::pow(stress.norm2(), 2));
 
     FOUR_C_EXPECT_NEAR(result, result_ref, 1.0e-10);
   }

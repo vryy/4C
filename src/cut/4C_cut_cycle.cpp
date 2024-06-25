@@ -167,7 +167,7 @@ void Core::Geo::Cut::Cycle::TestUnique()
       if (num_el_erased == 0)
       {
         int num_occ = std::count(points_.begin(), points_.end(), (*it));
-        Print();
+        print();
         std::stringstream str;
         str << "Multiple( " << num_occ << " ) occcurence of point " << (*it)->Id()
             << " in the cycle" << std::endl;
@@ -211,7 +211,7 @@ void Core::Geo::Cut::Cycle::reverse() { std::reverse(points_.begin(), points_.en
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Cycle::Print() const
+void Core::Geo::Cut::Cycle::print() const
 {
   std::cout << "--- Cycle ---" << std::endl;
   for (std::vector<Point*>::const_iterator cit = points_.begin(); cit != points_.end(); ++cit)

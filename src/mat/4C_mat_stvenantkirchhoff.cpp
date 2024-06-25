@@ -166,7 +166,7 @@ void Mat::StVenantKirchhoff::evaluate(const Core::LinAlg::SerialDenseVector* gls
 
   setup_cmat(cmat);
   // evaluate stresses
-  stress.MultiplyNN(cmat, glstrain);  // sigma = C . epsilon
+  stress.multiply_nn(cmat, glstrain);  // sigma = C . epsilon
 }
 
 
@@ -180,7 +180,7 @@ void Mat::StVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 {
   setup_cmat(*cmat);
   // evaluate stresses
-  stress->MultiplyNN(*cmat, *glstrain);  // sigma = C . epsilon
+  stress->multiply_nn(*cmat, *glstrain);  // sigma = C . epsilon
 }
 
 
@@ -194,7 +194,7 @@ void Mat::StVenantKirchhoff::StrainEnergy(
   setup_cmat(cmat);
 
   Core::LinAlg::Matrix<6, 1> stress(true);
-  stress.MultiplyNN(cmat, glstrain);
+  stress.multiply_nn(cmat, glstrain);
 
   for (int k = 0; k < 6; ++k) psi += glstrain(k) * stress(k);
   psi /= 2.0;

@@ -53,11 +53,11 @@ namespace
       // compute norm of fibers
       for (std::size_t i = 0; i < fibersa.size(); ++i)
       {
-        scalar_products_[i] = fibersa[i].Dot(fibersb[i]);
+        scalar_products_[i] = fibersa[i].dot(fibersb[i]);
         Core::LinAlg::Matrix<3, 3> tmp;
-        tmp.MultiplyNT(fibersa[i], fibersb[i]);
-        tensors_[i].Update(0.5, tmp);
-        tensors_[i].UpdateT(0.5, tmp, 1.0);
+        tmp.multiply_nt(fibersa[i], fibersb[i]);
+        tensors_[i].update(0.5, tmp);
+        tensors_[i].update_t(0.5, tmp, 1.0);
         Core::LinAlg::Voigt::Stresses::matrix_to_vector(tensors_[i], tensors_stress_[i]);
       }
     }
@@ -138,8 +138,8 @@ namespace
       C2_(1, 2) = C2_(2, 1) = 0.03214;
       C2_(0, 2) = C2_(2, 0) = 0.0523;
 
-      E1_.Update(0.5, C1_, -0.5, Id);
-      E2_.Update(0.5, C2_, -0.5, Id);
+      E1_.update(0.5, C1_, -0.5, Id);
+      E2_.update(0.5, C2_, -0.5, Id);
 
       Core::LinAlg::Voigt::Strains::matrix_to_vector(C1_, C1_strain_);
       Core::LinAlg::Voigt::Strains::matrix_to_vector(C2_, C2_strain_);

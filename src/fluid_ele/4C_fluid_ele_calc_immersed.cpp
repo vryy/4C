@@ -104,7 +104,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
   gp_iquad_ = iquad;
   // compute convective conservative term from previous iteration u_old(u_old*nabla)
   Core::LinAlg::Matrix<nsd_, 1> conv_old_cons(true);
-  conv_old_cons.Update(my::vdiv_, my::convvelint_, 0.0);
+  conv_old_cons.update(my::vdiv_, my::convvelint_, 0.0);
 
   //----------------------------------------------------------------------
   // compute residual of momentum equation
@@ -122,16 +122,16 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
             "has only been tested for BDF2-equivalent time integration parameters! "
             "Feel free to remove this error at your own risk!");
 
-      my::rhsmom_.Update(my::deltadens_, my::bodyforce_, 0.0);
+      my::rhsmom_.update(my::deltadens_, my::bodyforce_, 0.0);
     }
     else
-      my::rhsmom_.Update(my::densaf_, my::bodyforce_, 0.0);
+      my::rhsmom_.update(my::densaf_, my::bodyforce_, 0.0);
 
     // add pressure gradient prescribed as body force (caution: not density weighted)
-    my::rhsmom_.Update(1.0, my::generalbodyforce_, 1.0);
+    my::rhsmom_.update(1.0, my::generalbodyforce_, 1.0);
 
     // get acceleration at time n+alpha_M at integration point
-    my::accint_.Multiply(eaccam, my::funct_);
+    my::accint_.multiply(eaccam, my::funct_);
 
     // evaluate momentum residual once for all stabilization right hand sides
     for (int rr = 0; rr < nsd_; ++rr)
@@ -160,14 +160,14 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
       // rho_0)*g else:                                      f = rho * g Changed density from densn_
       // to densaf_. Makes the OST consistent with the gen-alpha.
       if (my::fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
-        my::rhsmom_.Update((my::densaf_ / my::fldparatimint_->Dt() / my::fldparatimint_->Theta()),
+        my::rhsmom_.update((my::densaf_ / my::fldparatimint_->Dt() / my::fldparatimint_->Theta()),
             my::histmom_, my::deltadens_, my::bodyforce_);
       else
-        my::rhsmom_.Update((my::densaf_ / my::fldparatimint_->Dt() / my::fldparatimint_->Theta()),
+        my::rhsmom_.update((my::densaf_ / my::fldparatimint_->Dt() / my::fldparatimint_->Theta()),
             my::histmom_, my::densaf_, my::bodyforce_);
 
       // add pressure gradient prescribed as body force (caution: not density weighted)
-      my::rhsmom_.Update(1.0, my::generalbodyforce_, 1.0);
+      my::rhsmom_.update(1.0, my::generalbodyforce_, 1.0);
 
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
@@ -198,9 +198,9 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
       // rho_0)*g else:                                      f = rho * g and pressure gradient
       // prescribed as body force (not density weighted)
       if (my::fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
-        my::rhsmom_.Update(my::deltadens_, my::bodyforce_, 1.0, my::generalbodyforce_);
+        my::rhsmom_.update(my::deltadens_, my::bodyforce_, 1.0, my::generalbodyforce_);
       else
-        my::rhsmom_.Update(my::densaf_, my::bodyforce_, 1.0, my::generalbodyforce_);
+        my::rhsmom_.update(my::densaf_, my::bodyforce_, 1.0, my::generalbodyforce_);
 
       // compute stationary momentum residual:
       for (int rr = 0; rr < nsd_; ++rr)
@@ -228,7 +228,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
   // ... Definition of subgrid velocity used by Hughes
   if (my::fldpara_->Tds() == Inpar::FLUID::subscales_quasistatic)
   {
-    my::sgvelint_.Update(-my::tau_(1), my::momres_old_, 0.0);
+    my::sgvelint_.update(-my::tau_(1), my::momres_old_, 0.0);
   }
   // 2) time-dependent subgrid scales
   else
@@ -338,7 +338,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
       my::fldpara_->Reynolds() != Inpar::FLUID::reynolds_stress_stab_none or
       my::fldpara_->ContiCross() != Inpar::FLUID::cross_stress_stab_none or
       my::fldpara_->ContiReynolds() != Inpar::FLUID::reynolds_stress_stab_none)
-    my::sgconv_c_.MultiplyTN(my::derxy_, my::sgvelint_);
+    my::sgconv_c_.multiply_tn(my::derxy_, my::sgvelint_);
   else
     my::sgconv_c_.clear();
 
@@ -471,10 +471,10 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::continuity_gal_part(
   }  // end for(idim)
 
   // continuity term on right-hand side
-  if (not immersedele_->IsImmersed()) preforce.Update(-rhsfac * my::vdiv_, my::funct_, 1.0);
+  if (not immersedele_->IsImmersed()) preforce.update(-rhsfac * my::vdiv_, my::funct_, 1.0);
 
   if (immersedele_->IsBoundaryImmersed())
-    preforce.Update(
+    preforce.update(
         rhsfac * immersedele_->projected_int_point_divergence(gp_iquad_), my::funct_, 1.0);
 
 

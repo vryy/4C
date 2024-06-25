@@ -218,7 +218,7 @@ namespace Discret
     */
       int num_dof_per_element() const override { return 0; }
 
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       Core::Elements::ElementType& ElementType() const override { return Vele3Type::Instance(); }
 
@@ -375,7 +375,7 @@ namespace Discret
 
       int NumDofPerNode(const Core::Nodes::Node&) const override { return 3; }
       int num_dof_per_element() const override { return 0; }
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
       Core::Elements::ElementType& ElementType() const override
       {
         return Vele3SurfaceType::Instance();
@@ -529,7 +529,7 @@ namespace Discret
 
       int num_dof_per_element() const override { return 0; }
 
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       Core::Elements::ElementType& ElementType() const override
       {

@@ -387,7 +387,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   }
 
   Core::LinAlg::Matrix<3, 3> deformation_gradient_invert(*defgrd);
-  deformation_gradient_invert.Invert();
+  deformation_gradient_invert.invert();
 
   /*
    **********************************************************
@@ -406,7 +406,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
    */
   // b = F * F^T
   Core::LinAlg::Matrix<3, 3> cauchy_green_tensor(true);
-  cauchy_green_tensor.MultiplyNT(*defgrd, *defgrd);
+  cauchy_green_tensor.multiply_nt(*defgrd, *defgrd);
 
   // To compute the spectral decomposition, the Cauchy-Green tensor
   // must be converted to Epetra format
@@ -445,13 +445,13 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     }
 
     Core::LinAlg::Matrix<3, 1> material_principal_direction(true);
-    material_principal_direction.MultiplyNN(
+    material_principal_direction.multiply_nn(
         deformation_gradient_invert, spatial_principal_directions.at(i));
-    material_principal_direction.Scale(cauchy_green_eigenvalues(i));
+    material_principal_direction.scale(cauchy_green_eigenvalues(i));
 
-    spatial_principal_matrices.at(i).MultiplyNT(
+    spatial_principal_matrices.at(i).multiply_nt(
         spatial_principal_directions.at(i), spatial_principal_directions.at(i));
-    material_principal_matrices.at(i).MultiplyNT(
+    material_principal_matrices.at(i).multiply_nt(
         material_principal_direction, material_principal_direction);
   }
 
@@ -474,9 +474,9 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     logarithmic_strain_deviatoric_norm += std::pow(logarithmic_strain_principal_deviatoric, 2.0);
 
     // Compute the deviatoric logarithmic strain matrix
-    logarithmic_strain_deviatoric_tensor.Update(
+    logarithmic_strain_deviatoric_tensor.update(
         logarithmic_strain_principal_deviatoric, spatial_principal_matrices.at(i), 1.0);
-    material_scaled_load_deviatoric_tensor.Update(
+    material_scaled_load_deviatoric_tensor.update(
         logarithmic_strain_principal_deviatoric, spatial_principal_matrices.at(i), 1.0);
   }
   logarithmic_strain_deviatoric_norm = std::sqrt(logarithmic_strain_deviatoric_norm);
@@ -485,8 +485,8 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   if (logarithmic_strain_deviatoric_norm != 0.0)
   {
-    scaled_load_deviatoric_tensor.Scale(1.0 / logarithmic_strain_deviatoric_norm);
-    material_scaled_load_deviatoric_tensor.Scale(1.0 / logarithmic_strain_deviatoric_norm);
+    scaled_load_deviatoric_tensor.scale(1.0 / logarithmic_strain_deviatoric_norm);
+    material_scaled_load_deviatoric_tensor.scale(1.0 / logarithmic_strain_deviatoric_norm);
   }
 
   /*
@@ -636,8 +636,8 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         loading.H_SA = H_SA;
         R_k = compute_local_newton_residual(lambda_S, xi_s_tmp, loading, matdata);
         d_R_d_lambda = compute_local_newton_jacobian(lambda_S, xi_s_tmp, loading, matdata);
-        d_R_d_lambda_inv.Invert(d_R_d_lambda);
-        res_vec.MultiplyNN(d_R_d_lambda_inv, R_k);  // Eqn. 57
+        d_R_d_lambda_inv.invert(d_R_d_lambda);
+        res_vec.multiply_nn(d_R_d_lambda_inv, R_k);  // Eqn. 57
 
         // Compute function, that has to be minimized
         fk = std::pow(R_k(0), 2.0) + std::pow(R_k(1), 2.0);
@@ -646,7 +646,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
         do
         {
-          lambda_S_p.Update(1.0, lambda_S, -gamma * damping, res_vec);  // Eqn. 57
+          lambda_S_p.update(1.0, lambda_S, -gamma * damping, res_vec);  // Eqn. 57
           double xi_s_p = xi_S + lambda_S_p(0) + lambda_S_p(1);
           LoadingData loading_p = compute_local_newton_loading(
               xi_s_p, logarithmic_strain_volumetric, logarithmic_strain_deviatoric_norm, matdata);
@@ -672,7 +672,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         } while (!accept && innerdamp_iter < innerdamp_iter_max);
 
         // Updagte lambda_S with the one calculated with Armijo
-        lambda_S.Update(1.0, lambda_S_p);  // Eqn. 57
+        lambda_S.update(1.0, lambda_S_p);  // Eqn. 57
 
         if (fp < tol)
         {
@@ -730,7 +730,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   double kirchhoff_stress_deviatoric_norm =
       2.0 * matdata.shear * (logarithmic_strain_deviatoric_norm - matdata.epsilon_L * xi_S);
   Core::LinAlg::Matrix<3, 3> kirchhoff_stress_deviatoric(scaled_load_deviatoric_tensor);
-  kirchhoff_stress_deviatoric.Scale(kirchhoff_stress_deviatoric_norm);
+  kirchhoff_stress_deviatoric.scale(kirchhoff_stress_deviatoric_norm);
 
   Core::LinAlg::Matrix<3, 3> kirchhoff_stress(kirchhoff_stress_deviatoric);
   for (int i = 0; i < 3; i++) kirchhoff_stress(i, i) += kirchhoff_stress_volumetric;
@@ -739,8 +739,8 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Matrix<3, 3> PK2(true);
   Core::LinAlg::Matrix<3, 3> tmp(true);
 
-  tmp.MultiplyNN(deformation_gradient_invert, kirchhoff_stress);
-  PK2.MultiplyNT(tmp, deformation_gradient_invert);
+  tmp.multiply_nn(deformation_gradient_invert, kirchhoff_stress);
+  PK2.multiply_nt(tmp, deformation_gradient_invert);
 
   // Convert PK2 into Voigt-Notation
   (*stress)(0) = PK2(0, 0);
@@ -874,7 +874,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     // Build up (1 (x) 1) and scale with K*
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++) cmat_eul_1(i, j) = 1.0;
-    cmat_eul_1.Scale(kappa_star);
+    cmat_eul_1.scale(kappa_star);
 
     // Build up I_dev and scale with 2G*
     for (int i = 0; i < 3; i++)
@@ -884,7 +884,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         else
           cmat_eul_2(i, j) = -1.0 / 3.0;
     for (int i = 3; i < 6; i++) cmat_eul_2(i, i) = 0.5;
-    cmat_eul_2.Scale(2.0 * G_star);
+    cmat_eul_2.scale(2.0 * G_star);
 
     // Build up (n (x) n) and scale with M1*
     add_elasticity_tensor_product(
@@ -894,13 +894,13 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     add_elasticity_tensor_product(cmat_eul_4, -M2_star, scaled_load_deviatoric_tensor, eye, 0.0);
     add_elasticity_tensor_product(
         cmat_eul_4_tmp, -M2_star, eye, scaled_load_deviatoric_tensor, 0.0);
-    cmat_eul_4.Update(1.0, cmat_eul_4_tmp, 1.0);
+    cmat_eul_4.update(1.0, cmat_eul_4_tmp, 1.0);
 
 
-    cmat_eul.Update(1.0, cmat_eul_1, 1.0);
-    cmat_eul.Update(1.0, cmat_eul_2, 1.0);
-    cmat_eul.Update(1.0, cmat_eul_3, 1.0);
-    cmat_eul.Update(1.0, cmat_eul_4, 1.0);
+    cmat_eul.update(1.0, cmat_eul_1, 1.0);
+    cmat_eul.update(1.0, cmat_eul_2, 1.0);
+    cmat_eul.update(1.0, cmat_eul_3, 1.0);
+    cmat_eul.update(1.0, cmat_eul_4, 1.0);
 
 
     pullback4th_tensor_voigt(cauchy_green_jacobian, deformation_gradient_invert, cmat_eul, cmat);
@@ -928,7 +928,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
     // linear elasticity tensor in principal directions
     Core::LinAlg::Matrix<3, 3> D_ep_principal(Idev);
-    D_ep_principal.Scale(2.0 * matdata.shear);
+    D_ep_principal.scale(2.0 * matdata.shear);
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++) D_ep_principal(i, j) += matdata.bulk;
 
@@ -942,7 +942,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
     for (int i = 0; i < 3; i++)
     {
-      material_principal_directions.at(i).Multiply(
+      material_principal_directions.at(i).multiply(
           deformation_gradient_invert, spatial_principal_directions.at(i));
       double logStrainPrincipal = std::log(
           std::pow(cauchy_green_jacobian, -1.0 / 3.0) * std::sqrt(cauchy_green_eigenvalues(i)));
@@ -959,7 +959,7 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     for (int a = 0; a < 3; a++)
     {
       // - sum_1^3 (2 * tau N_aaaa)
-      tmp1.MultiplyNT(
+      tmp1.multiply_nt(
           material_principal_directions.at(a), material_principal_directions.at(a));  // N_{aa}
       add_elasticity_tensor_product(*cmat, -2.0 * (dev_KH(a) + pressure), tmp1, tmp1, 1.0);
 
@@ -967,9 +967,9 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       {
         // c_ab N_aabb
         // result of return mapping of deviatoric component c_ab
-        tmp1.MultiplyNT(
+        tmp1.multiply_nt(
             material_principal_directions.at(a), material_principal_directions.at(a));  // N_{aa}
-        tmp2.MultiplyNT(
+        tmp2.multiply_nt(
             material_principal_directions.at(b), material_principal_directions.at(b));  // N_{bb}
         add_elasticity_tensor_product(*cmat, D_ep_principal(a, b), tmp1, tmp2, 1.0);
 
@@ -990,9 +990,9 @@ void Mat::SuperElasticSMA::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
             // - tau_bb, cf. (6.91)
             fac = 0.5 * (D_ep_principal(b, b) - D_ep_principal(a, b)) - (dev_KH(b) + pressure);
           }  // end lambda_a = lambda_b
-          tmp1.MultiplyNT(
+          tmp1.multiply_nt(
               material_principal_directions.at(a), material_principal_directions.at(b));  // N_{ab}
-          tmp2.MultiplyNT(
+          tmp2.multiply_nt(
               material_principal_directions.at(b), material_principal_directions.at(a));  // N_{ba}
           add_elasticity_tensor_product(*cmat, fac, tmp1, tmp1, 1.0);  // N_{abab}
           add_elasticity_tensor_product(*cmat, fac, tmp1, tmp2, 1.0);  // N_{abba}

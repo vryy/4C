@@ -247,9 +247,9 @@ void Core::Geo::Cut::TetMeshIntersection::find_edge_cuts()
           {
             std::cout << "\n-------------------\n";
             std::cout << "\nCut Edge\n";
-            ce->Print();
+            ce->print();
             std::cout << "\nOther Edge\n";
-            e->Print();
+            e->print();
             std::cout << "\n-------------------\n";
 
             plain_edge_set edges;

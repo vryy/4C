@@ -266,18 +266,18 @@ CONTACT::FriNode* CONTACT::FriNode::Clone() const
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const CONTACT::FriNode& frinode)
 {
-  frinode.Print(os);
+  frinode.print(os);
   return os;
 }
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                               mgit 02/10|
  *----------------------------------------------------------------------*/
-void CONTACT::FriNode::Print(std::ostream& os) const
+void CONTACT::FriNode::print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Contact ";
-  CONTACT::Node::Print(os);
+  CONTACT::Node::print(os);
   if (IsSlave())
     if (IsInitActive()) os << " InitActive ";
 

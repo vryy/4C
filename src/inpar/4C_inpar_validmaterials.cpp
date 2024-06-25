@@ -33,7 +33,7 @@ void Input::PrintEmptyMaterialDefinitions(
 
   for (auto& i : matlist)
   {
-    i->Print(stream, nullptr);
+    i->print(stream, nullptr);
   }
 }
 
@@ -2395,7 +2395,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
   /*----------------------------------------------------------------------*/
   {
     auto m = Teuchos::rcp(new Mat::MaterialDefinition("MAT_InelasticDefgradTimeFunct",
-        "Time-dependent growth law. Determinant of volume change dependent on time function "
+        "Time-dependent growth law. determinant of volume change dependent on time function "
         "defined "
         "by 'FUNCT_NUM",
         Core::Materials::mfi_time_funct));

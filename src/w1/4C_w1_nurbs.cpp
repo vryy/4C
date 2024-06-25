@@ -132,10 +132,10 @@ Core::Elements::Element* Discret::ELEMENTS::Nurbs::Wall1Nurbs::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/09|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::Wall1Nurbs::Print(std::ostream& os) const
+void Discret::ELEMENTS::Nurbs::Wall1Nurbs::print(std::ostream& os) const
 {
   os << "Wall1Nurbs ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

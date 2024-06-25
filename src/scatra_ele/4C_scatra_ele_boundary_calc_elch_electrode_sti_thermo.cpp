@@ -119,7 +119,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype,
     if (differentiationtype == ScaTra::DifferentiationType::disp)
     {
       static Core::LinAlg::Matrix<nen_, nsd_> xyze_transposed;
-      xyze_transposed.UpdateT(my::xyze_);
+      xyze_transposed.update_t(my::xyze_);
       Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
           my::derxy_, my::deriv_, xyze_transposed, normal);
       my::evaluate_spatial_derivative_of_area_integration_factor(intpoints, gpid, dsqrtdetg_dd);
@@ -167,7 +167,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, pro
   const int kineticmodel = scatra_parameter_boundary->KineticModel();
   const int numelectrons = scatra_parameter_boundary->NumElectrons();
   const double kr = scatra_parameter_boundary->charge_transfer_constant();
-  const double alphaa = scatra_parameter_boundary->AlphaA();
+  const double alphaa = scatra_parameter_boundary->Alphadata();
   const double alphac = scatra_parameter_boundary->AlphaC();
 
   // number of nodes of master-side element
@@ -175,12 +175,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, pro
 
   // evaluate dof values at current integration point on present and opposite side of scatra-scatra
   // interface
-  const double eslavephiint = funct_slave.Dot(eslavephinp[0]);
-  const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
-  const double eslavetempint = funct_slave.Dot(eslavetempnp);
-  const double emastertempint = funct_master.Dot(emastertempnp);
-  const double emasterphiint = funct_master.Dot(emasterphinp[0]);
-  const double emasterpotint = funct_master.Dot(emasterphinp[1]);
+  const double eslavephiint = funct_slave.dot(eslavephinp[0]);
+  const double eslavepotint = funct_slave.dot(eslavephinp[1]);
+  const double eslavetempint = funct_slave.dot(eslavetempnp);
+  const double emastertempint = funct_master.dot(emastertempnp);
+  const double emasterphiint = funct_master.dot(emasterphinp[0]);
+  const double emasterpotint = funct_master.dot(emasterphinp[1]);
 
   const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday();
   const double gasconstant =
@@ -439,7 +439,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype, p
     const
 {
   // evaluate local temperature value
-  const double temperature = my::funct_.Dot(etempnp_);
+  const double temperature = my::funct_.dot(etempnp_);
 
   // safety check
   if (temperature <= 0.) FOUR_C_THROW("Temperature is non-positive!");

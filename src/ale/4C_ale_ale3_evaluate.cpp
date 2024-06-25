@@ -305,10 +305,10 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::ElementNodeNormal(
 
     // compute jacobian matrix
     // determine jacobian at point r,s,t
-    xjm.MultiplyNT(deriv, xyze);
+    xjm.multiply_nt(deriv, xyze);
 
     // determinant and inverse of jacobian
-    const double det = xji.Invert(xjm);
+    const double det = xji.invert(xjm);
 
     // integrate shapefunction gradient over element
     const double fac = intpoints.qwgt[iquad] * det;
@@ -378,17 +378,17 @@ void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, i
 
   // local x-value of s xyze_dyn_tria(0,0) := (-1.0)*sq*local_x (local origin lies on plane pqr)
   // local y-value of s xyze_dyn_tria(1,0 := 0.0
-  xyze_dyn_tria(0, 0) = -sq.Dot(local_x);
+  xyze_dyn_tria(0, 0) = -sq.dot(local_x);
   xyze_dyn_tria(1, 0) = 0.0;
 
   // local_y = (sq + xyze_dyn_tria(0,0)*local_x)/|(sq + xyze_dyn_tria(0,0)*local_x)|
   // xyze_dyn_tria(1,2) = |sq + xyze_dyn_tria(0,0)*local_x|, xyze_dyn_tria(0,2) := 0.0
-  local_y.Update(xyze_dyn_tria(0, 0), local_x, 1.0, sq);  // just an intermediate step
-  xyze_dyn_tria(1, 2) = local_y.Norm2();
+  local_y.update(xyze_dyn_tria(0, 0), local_x, 1.0, sq);  // just an intermediate step
+  xyze_dyn_tria(1, 2) = local_y.norm2();
   xyze_dyn_tria(0, 2) = 0.0;
 
   if (xyze_dyn_tria(1, 2) != 0)  // == 0 will trigger the parallel check below
-    local_y.Scale(1.0 / xyze_dyn_tria(1, 2));
+    local_y.scale(1.0 / xyze_dyn_tria(1, 2));
 
   // check = (local_y x sq) * rp  If this is very small rp is parallel
   // to the plane spanned by local_y and sq.
@@ -472,7 +472,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, i
     // local x,y-values of j, using pO + Oj + jp = 0
     //(O is local origin on plane pqr)
     xyze_dyn_tria(0, 1) = 0.0;
-    p.Update(xyze_dyn_tria(1, 2), local_y, 1, qp);
+    p.update(xyze_dyn_tria(1, 2), local_y, 1, qp);
 
     ///// solve xyze_dyn_tria(1,1) * local_y = p + lambda * (-rp)
     double d;
@@ -692,7 +692,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, i
   local_x(0) = e12(1) * e23(2) - e12(2) * e23(1);
   local_x(1) = e12(2) * e23(0) - e12(0) * e23(2);
   local_x(2) = e12(0) * e23(1) - e12(1) * e23(0);
-  local_x.Scale(1.0 / local_x.Norm2());
+  local_x.scale(1.0 / local_x.norm2());
   ale3_add_tria_stiffness(tet_1, tet_2, tet_3, tet_0, e02, l02, e31, l13, e21, local_x, sys_mat);
   ale3_add_tria_stiffness(tet_1, tet_3, tet_2, tet_0, e03, l03, e21, l12, e31, local_x, sys_mat);
   ale3_add_tria_stiffness(tet_2, tet_1, tet_3, tet_0, e01, l01, e32, l23, e12, local_x, sys_mat);
@@ -700,7 +700,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, i
   local_x(0) = e23(1) * e03(2) - e23(2) * e03(1);
   local_x(1) = e23(2) * e03(0) - e23(0) * e03(2);
   local_x(2) = e23(0) * e03(1) - e23(1) * e03(0);
-  local_x.Scale(1.0 / local_x.Norm2());
+  local_x.scale(1.0 / local_x.norm2());
   ale3_add_tria_stiffness(tet_0, tet_2, tet_3, tet_1, e12, l12, e30, l03, e20, local_x, sys_mat);
   ale3_add_tria_stiffness(tet_0, tet_3, tet_2, tet_1, e13, l13, e20, l02, e30, local_x, sys_mat);
   ale3_add_tria_stiffness(tet_2, tet_0, tet_3, tet_1, e10, l01, e32, l23, e02, local_x, sys_mat);
@@ -708,7 +708,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, i
   local_x(0) = e01(1) * e03(2) - e01(2) * e03(1);
   local_x(1) = e01(2) * e03(0) - e01(0) * e03(2);
   local_x(2) = e01(0) * e03(1) - e01(1) * e03(0);
-  local_x.Scale(1.0 / local_x.Norm2());
+  local_x.scale(1.0 / local_x.norm2());
   ale3_add_tria_stiffness(tet_0, tet_1, tet_3, tet_2, e21, l12, e30, l03, e10, local_x, sys_mat);
   ale3_add_tria_stiffness(tet_1, tet_0, tet_3, tet_2, e20, l02, e31, l13, e01, local_x, sys_mat);
   ale3_add_tria_stiffness(tet_0, tet_3, tet_1, tet_2, e23, l23, e10, l01, e30, local_x, sys_mat);
@@ -716,7 +716,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, i
   local_x(0) = e01(1) * e12(2) - e01(2) * e12(1);
   local_x(1) = e01(2) * e12(0) - e01(0) * e12(2);
   local_x(2) = e01(0) * e12(1) - e01(1) * e12(0);
-  local_x.Scale(1.0 / local_x.Norm2());
+  local_x.scale(1.0 / local_x.norm2());
   ale3_add_tria_stiffness(tet_0, tet_1, tet_2, tet_3, e31, l13, e20, l02, e10, local_x, sys_mat);
   ale3_add_tria_stiffness(tet_0, tet_2, tet_1, tet_3, e32, l23, e10, l01, e20, local_x, sys_mat);
   ale3_add_tria_stiffness(tet_1, tet_0, tet_2, tet_3, e30, l03, e21, l12, e01, local_x, sys_mat);
@@ -1341,7 +1341,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
   }
 
   // compute residual
-  residual.putScalar(0.0);
+  residual.put_scalar(0.0);
   for (int i = 0; i < 3 * iel; ++i)
     for (int j = 0; j < 3 * iel; ++j) residual(i, 0) += sys_mat(i, j) * displacements[j];
 
@@ -1448,8 +1448,8 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     **         [ x_,t  y_,t  z_,t ]
     */
     Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> jac, jacinv;
-    jac.MultiplyNN(deriv, xrefe);
-    const double detJ = jac.Invert();
+    jac.multiply_nn(deriv, xrefe);
+    const double detJ = jac.invert();
 
     if (abs(detJ) < 1E-16)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
@@ -1461,15 +1461,15 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     ** Inverse of Jacobian is therefore not explicitly computed
     */
     Core::LinAlg::Matrix<NUMDIM_ALE3, iel> N_XYZ;
-    N_XYZ.MultiplyNN(jac, deriv);
+    N_XYZ.multiply_nn(jac, deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
     Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> defgrd;
-    defgrd.MultiplyTT(xcurr, N_XYZ);
+    defgrd.multiply_tt(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain;
@@ -1526,7 +1526,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat_f(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress_f(true);
-    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain_f(glstrain.A());
+    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain_f(glstrain.data());
     // QUICK HACK until so_disp exclusively uses Core::LinAlg::Matrix!!!!!
     Core::LinAlg::Matrix<NUMDIM_ALE3, NUMDIM_ALE3> fixed_defgrd(defgrd);
     Teuchos::RCP<Mat::So3Material> so3mat =
@@ -1536,17 +1536,17 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
 
     // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
     Core::LinAlg::Matrix<numdof, 1> residual(residual_epetra, true);
-    residual.MultiplyTN(detJ * intpoints.qwgt[iquad], bop, stress_f, 1.0);
+    residual.multiply_tn(detJ * intpoints.qwgt[iquad], bop, stress_f, 1.0);
 
     // integrate `elastic' and `initial-displacement' stiffness matrix
     // keu = keu + (B^T . C . B) * detJ * w(gp)
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, numdof> cb;
-    cb.MultiplyNN(cmat_f, bop);  // temporary C . B
-    sys_mat.MultiplyTN(detJ * intpoints.qwgt[iquad], bop, cb, 1.0);
+    cb.multiply_nn(cmat_f, bop);  // temporary C . B
+    sys_mat.multiply_tn(detJ * intpoints.qwgt[iquad], bop, cb, 1.0);
 
     // integrate `geometric' stiffness matrix and add to keu *****************
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> sfac(stress_f);  // auxiliary integrated stress
-    sfac.Scale(detJ * intpoints.qwgt[iquad]);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+    sfac.scale(detJ * intpoints.qwgt[iquad]);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
     double SmB_L[NUMDIM_ALE3];                 // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
     for (int inod = 0; inod < iel; ++inod)
@@ -1682,16 +1682,16 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
     }
 
     // determine jacobian matrix at point r,s,t
-    xjm.MultiplyNT(deriv, xyze);
+    xjm.multiply_nt(deriv, xyze);
 
     // determinant and inverse of jacobian
-    const double det = xji.Invert(xjm);
+    const double det = xji.invert(xjm);
 
     // calculate element volume
     const double fac = intpoints.qwgt[iquad] * det;
 
     // compute global derivatives
-    deriv_xy.Multiply(xji, deriv);
+    deriv_xy.multiply(xji, deriv);
 
     /*------------------------- diffusivity depends on displacement ---*/
     //   This is how it is done in the 2d implementation ALE2:
@@ -1706,7 +1706,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
     //   and large elements are made softer
     /*------------------------------- sort it into stiffness matrix ---*/
 
-    tempmat.MultiplyTN(fac * k_diff, deriv_xy, deriv_xy, 1.0);
+    tempmat.multiply_tn(fac * k_diff, deriv_xy, deriv_xy, 1.0);
 
   }  // integration loop
 

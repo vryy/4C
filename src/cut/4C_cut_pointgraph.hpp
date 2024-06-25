@@ -76,7 +76,7 @@ namespace Core::Geo
 
           Point *GetPoint(int i);
 
-          void Print(std::ostream &stream = std::cout);
+          void print(std::ostream &stream = std::cout);
 
           void PlotAllPoints(std::ostream &stream = std::cout);
 
@@ -140,7 +140,7 @@ namespace Core::Geo
 
         hole_iterator hend() { return get_graph().hole_cycles_.end(); }
 
-        void Print() { get_graph().Print(); }
+        void print() { get_graph().print(); }
 
        protected:
         /*! \brief Graph is filled with all edges that are created due to additional

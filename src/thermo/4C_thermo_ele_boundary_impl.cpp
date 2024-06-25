@@ -259,7 +259,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
         // build the element temperature
         Core::LinAlg::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
-        etemp_.Update(etemp);                                        // copy
+        etemp_.update(etemp);                                        // copy
       }  // discretization.HasState("temperature")
       else
         FOUR_C_THROW("No old temperature T_n+1 available");
@@ -277,7 +277,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
         Core::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
         // build the element temperature
         Core::LinAlg::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
-        etemp_.Update(etemp);                                       // copy
+        etemp_.update(etemp);                                       // copy
       }  // discretization.HasState("old temperature")
       else
         FOUR_C_THROW("No old temperature T_n available");
@@ -367,14 +367,14 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
         // tangent, consider the factor theta here, too
         const double theta = params.get<double>("theta");
         // combined tangent and conductivity matrix to one global matrix
-        etang.Scale(theta);
+        etang.scale(theta);
         break;
       }
       case Inpar::THR::dyna_genalpha:
       {
         const double alphaf = params.get<double>("alphaf");
         // combined tangent and conductivity matrix to one global matrix
-        etang.Scale(alphaf);
+        etang.scale(alphaf);
         break;
       }
       case Inpar::THR::dyna_undefined:
@@ -475,7 +475,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
             Core::FE::ExtractMyValues(*tempnp, mytempnp, la[0].lm_);
             // build the element temperature
             Core::LinAlg::Matrix<nen_, 1> etemp(mytempnp.data(), true);  // view only!
-            etemp_.Update(etemp);                                        // copy
+            etemp_.update(etemp);                                        // copy
           }  // discretization.HasState("temperature")
           else
             FOUR_C_THROW("No old temperature T_n+1 available");
@@ -493,7 +493,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
             Core::FE::ExtractMyValues(*tempn, mytempn, la[0].lm_);
             // build the element temperature
             Core::LinAlg::Matrix<nen_, 1> etemp(mytempn.data(), true);  // view only!
-            etemp_.Update(etemp);                                       // copy
+            etemp_.update(etemp);                                       // copy
           }  // discretization.HasState("old temperature")
           else
             FOUR_C_THROW("No old temperature T_n available");
@@ -548,7 +548,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
             // tangent, consider the factor theta here, too
             const double theta = params.get<double>("theta");
             // combined tangent and conductivity matrix to one global matrix
-            etangcoupl.Scale(theta);
+            etangcoupl.scale(theta);
             break;
           }
           case Inpar::THR::dyna_genalpha:
@@ -558,7 +558,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate(
             // tangent, consider the factor theta here, too
             const double alphaf = params.get<double>("alphaf");
             // combined tangent and conductivity matrix to one global matrix
-            etangcoupl.Scale(alphaf);
+            etangcoupl.scale(alphaf);
             break;
           }
           case Inpar::THR::dyna_undefined:
@@ -624,7 +624,7 @@ int Discret::ELEMENTS::TemperBoundaryImpl<distype>::evaluate_neumann(
 
     const int nsd_vol_ele = nsd_ + 1;
     Core::LinAlg::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
-    coordgp.MultiplyNN(xyze_, funct_);
+    coordgp.multiply_nn(xyze_, funct_);
 
     int functnum = -1;
     const double* coordgpref = &coordgp(0);
@@ -702,7 +702,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_c
     // funct_ describes a 2D area, for hex8: 4 nodes
     // (1x1)= (1x4)(4x1) = (nen_*numdofpernode_ x 1)^T(nen_*numdofpernode_ x 1)
     Core::LinAlg::Matrix<1, 1> Ntemp(false);
-    Ntemp.MultiplyTN(funct_, etemp_);
+    Ntemp.multiply_tn(funct_, etemp_);
 
     // substract the surface temperature: Ntemp -=  T_surf
     Core::LinAlg::Matrix<1, 1> Tsurf(true);
@@ -712,7 +712,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_c
     }
     // in the following Ntemp describes the temperature difference and not only
     // the scalar-valued temperature
-    Ntemp.Update(-1.0, Tsurf, 1.0);
+    Ntemp.update(-1.0, Tsurf, 1.0);
 
     // ---------------------------------------------- right-hand-side
     if (efext != nullptr)
@@ -721,7 +721,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_c
       // in energy balance: q_c positive, but fext = r^ + q^ + q^_c
       // we want to define q^_c = - q . n
       // q^_cr = k . Grad T = h (T - T_oo), vgl. Farhat(1992)
-      efext->Multiply(coefffac_, funct_, Ntemp, 1.0);
+      efext->multiply(coefffac_, funct_, Ntemp, 1.0);
     }  // efext != nullptr
 
     // ------------------------------------------------------ tangent
@@ -735,7 +735,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_convection_fint_c
       if (econd != nullptr)
       {
         // k_TT^e = k_TT^e + (N^T . coeff . N) * detJ * w(gp)
-        econd->MultiplyNT((-1.0) * coefffac_, funct_, funct_, 1.0);
+        econd->multiply_nt((-1.0) * coefffac_, funct_, funct_, 1.0);
       }  // econd != nullptr
 
     }  // Tempnp
@@ -819,12 +819,12 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
     Core::LinAlg::Matrix<((nsd_ + 1) * nen_), 1> jacobi_deriv(true);  // (3*4x1)=(12x1)
 
     // with derxy_ (2x4) --> (nsd_xnen_)
-    // derxy_== (LENA) dxyzdrs.Multiply('N','N',1.0,deriv,x,0.0);
+    // derxy_== (LENA) dxyzdrs.multiply('N','N',1.0,deriv,x,0.0);
     // compute global derivatives
     // (nsd_x(nsd_+1)) = (nsdxnen_) . (nen_x(nsd_+1))
     // (2x3) = (2x4) . (4x3)
     Core::LinAlg::Matrix<nsd_, (nsd_ + 1)> dxyzdrs(false);  // (2x3)
-    dxyzdrs.Multiply(deriv_, xcurr);
+    dxyzdrs.multiply(deriv_, xcurr);
 
     // derivation of minor determiants of the Jacobian with respect to the
     // displacements
@@ -884,7 +884,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
     // funct_ describes a 2D area, for hex8: 4 nodes
     // (1x1)= (1x4)(4x1) = (nen_*numdofpernode_ x 1)^T(nen_*numdofpernode_ x 1)
     Core::LinAlg::Matrix<1, 1> Ntemp(false);
-    Ntemp.MultiplyTN(funct_, etemp_);
+    Ntemp.multiply_tn(funct_, etemp_);
 
     // T - T_surf
     Core::LinAlg::Matrix<1, 1> Tsurf(false);
@@ -893,7 +893,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
     // Ntemp -= T_surf
     // in the following Ntemp describes the temperature difference and not only
     // the scalar-valued temperature
-    Ntemp.Update(-1.0, Tsurf, 1.0);
+    Ntemp.update(-1.0, Tsurf, 1.0);
 
     // ---------------------------------------------- right-hand-side
     if (efext != nullptr)
@@ -904,7 +904,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
       // in energy balance: q_c positive, but fext = r + q^ + q_c^
       // we want to define q_c^ = - q . n
       // q_c^ = k . Grad T = h (T - T_oo)
-      efext->Multiply(coeffA, funct_, Ntemp, 1.0);
+      efext->multiply(coeffA, funct_, Ntemp, 1.0);
     }  // efext != nullptr
 
     // ------------------------------------------------------ tangent
@@ -919,7 +919,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
       {
         // ke = ke + (N^T . coeff . N) . detJ . w(gp)
         // (nsd_xnsd_) = (4x4)
-        econd->MultiplyNT((-1.0) * coeffA, funct_, funct_, 1.0);
+        econd->multiply_nt((-1.0) * coeffA, funct_, funct_, 1.0);
       }  // etang != nullptr
 
     }  // Tempnp
@@ -934,8 +934,8 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::calculate_nln_convection_fi
       // but fext is included as negative --> scale with (-1)
 
       Core::LinAlg::Matrix<nen_, 1> NNtemp;
-      NNtemp.Multiply(funct_, Ntemp);
-      etangcoupl->MultiplyNT((-1.0) * coeffA, NNtemp, Adiff, 1.0);
+      NNtemp.multiply(funct_, Ntemp);
+      etangcoupl->multiply_nt((-1.0) * coeffA, NNtemp, Adiff, 1.0);
     }
 
   }  // ---------------------------------- end loop over Gauss Points
@@ -1033,9 +1033,9 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::get_const_normal(
   }  // switch(nsd)
 
   // length of normal to this element
-  const double length = normal.Norm2();
+  const double length = normal.norm2();
   // outward-pointing normal of length 1.0
-  normal.Scale(1 / length);
+  normal.scale(1 / length);
 
   return;
 }  // get_const_normal()
@@ -1100,7 +1100,7 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::surface_integration(
 {
   // determine normal to this element
   Core::LinAlg::Matrix<nsd_, (nsd_ + 1)> dxyzdrs(false);
-  dxyzdrs.MultiplyNN(deriv_, xcurr);
+  dxyzdrs.multiply_nn(deriv_, xcurr);
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |
@@ -1114,12 +1114,12 @@ void Discret::ELEMENTS::TemperBoundaryImpl<distype>::surface_integration(
   */
 
   Core::LinAlg::Matrix<(nsd_ + 1), nen_> xcurr_T(false);
-  xcurr_T.UpdateT(xcurr);
+  xcurr_T.update_t(xcurr);
 
   // the metric tensor and the area of an infinitesimal surface/line element
   // compute dXYZ / drs is included in ComputeMetricTensorForBoundaryEle
   // dxyzdrs = deriv . xyze
-  // dxyzdrs.MultiplyNT(1.0,deriv,xyze,0.0) = (LENA)dxyzdrs
+  // dxyzdrs.multiply_nt(1.0,deriv,xyze,0.0) = (LENA)dxyzdrs
   // be careful: normal
   Core::FE::ComputeMetricTensorForBoundaryEle<distype>(xcurr_T, deriv_,
       metrictensor_,  // metric tensor between coordinate space and AK

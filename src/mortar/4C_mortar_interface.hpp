@@ -604,7 +604,7 @@ namespace Mortar
 
     \param[in] os Output stream used for printing
     */
-    virtual void Print(std::ostream& os) const;
+    virtual void print(std::ostream& os) const;
 
     /*!
     \brief Check whether interface was called fill_complete

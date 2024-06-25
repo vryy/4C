@@ -145,7 +145,7 @@ namespace Core::LinAlg
    \param b (in):        Vector b
    \param c (out):       Vector c
    */
-  inline int multiplyTN(SerialDenseVector::Base& c, const SerialDenseMatrix::Base& A,
+  inline int multiply_tn(SerialDenseVector::Base& c, const SerialDenseMatrix::Base& A,
       const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, A, b, 0.0);
@@ -160,7 +160,7 @@ namespace Core::LinAlg
    \param b (in):        Vector b
    \param c (out):       Vector c
    */
-  inline int multiplyTN(double beta, SerialDenseVector::Base& c, double alpha,
+  inline int multiply_tn(double beta, SerialDenseVector::Base& c, double alpha,
       const SerialDenseMatrix::Base& A, const SerialDenseVector::Base& b)
   {
     const int err = c.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, A, b, beta);
@@ -205,7 +205,7 @@ namespace Core::LinAlg
    \param b (in):        Matrix B
    \param c (out):       Matrix C
    */
-  inline int multiplyTN(SerialDenseMatrix::Base& C, const SerialDenseMatrix::Base& A,
+  inline int multiply_tn(SerialDenseMatrix::Base& C, const SerialDenseMatrix::Base& A,
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, A, B, 0.0);
@@ -220,7 +220,7 @@ namespace Core::LinAlg
    \param b (in):        Matrix B
    \param c (out):       Matrix C
    */
-  inline int multiplyTN(double beta, SerialDenseMatrix::Base& C, double alpha,
+  inline int multiply_tn(double beta, SerialDenseMatrix::Base& C, double alpha,
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, alpha, A, B, beta);
@@ -235,7 +235,7 @@ namespace Core::LinAlg
    \param b (in):        Matrix B
    \param c (out):       Matrix C
    */
-  inline int multiplyNT(SerialDenseMatrix::Base& C, const SerialDenseMatrix::Base& A,
+  inline int multiply_nt(SerialDenseMatrix::Base& C, const SerialDenseMatrix::Base& A,
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, A, B, 0.0);
@@ -250,7 +250,7 @@ namespace Core::LinAlg
    \param b (in):        Matrix B
    \param c (out):       Matrix C
    */
-  inline int multiplyNT(double beta, SerialDenseMatrix::Base& C, double alpha,
+  inline int multiply_nt(double beta, SerialDenseMatrix::Base& C, double alpha,
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, alpha, A, B, beta);
@@ -265,7 +265,7 @@ namespace Core::LinAlg
    \param b (in):        Matrix B
    \param c (out):       Matrix C
    */
-  inline int multiplyTT(SerialDenseMatrix::Base& C, const SerialDenseMatrix::Base& A,
+  inline int multiply_tt(SerialDenseMatrix::Base& C, const SerialDenseMatrix::Base& A,
       const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, A, B, 0.0);
@@ -280,7 +280,7 @@ namespace Core::LinAlg
    \param b (in):        Matrix B
    \param c (out):       Matrix C
    */
-  inline int multiplyTT(double beta, SerialDenseMatrix::Base& C, double alpha,
+  inline int multiply_tt(double beta, SerialDenseMatrix::Base& C, double alpha,
       const SerialDenseMatrix::Base& A, const SerialDenseMatrix::Base& B)
   {
     const int err = C.multiply(Teuchos::TRANS, Teuchos::TRANS, alpha, A, B, beta);

@@ -678,7 +678,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> TinvT;
     sosh8_evaluate_t(jac, TinvT);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8> bop;
-    bop.Multiply(TinvT, bop_loc);
+    bop.multiply(TinvT, bop_loc);
 
     // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> lstrain;
@@ -686,7 +686,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
 
     // transformation of local glstrains 'back' to global(material) space
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(true);
-    glstrain.Multiply(TinvT, lstrain);
+    glstrain.multiply(TinvT, lstrain);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone)
@@ -694,10 +694,10 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
       Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
-          soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).values());
+          soh8_eassosh8>(M.data(), detJ0 / detJ, T0invT.data(), M_GP->at(gp).values());
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_eassosh8, 1>(
-          1.0, glstrain.A(), 1.0, M.A(), (*alpha).values());
+          1.0, glstrain.data(), 1.0, M.data(), (*alpha).values());
     }  // ------------------------------------------------------------------ EAS
 
     const double I3 = sosh8_third_invariant(glstrain);
@@ -944,7 +944,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> TinvT;
     sosh8_evaluate_t(jac, TinvT);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8> bop;
-    bop.Multiply(TinvT, bop_loc);
+    bop.multiply(TinvT, bop_loc);
 
     // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> lstrain;
@@ -952,7 +952,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
 
     // transformation of local glstrains 'back' to global(material) space
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(true);
-    glstrain.Multiply(TinvT, lstrain);
+    glstrain.multiply(TinvT, lstrain);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ != soh8_easnone)
@@ -960,10 +960,10 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
       Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
-          soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).values());
+          soh8_eassosh8>(M.data(), detJ0 / detJ, T0invT.data(), M_GP->at(gp).values());
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_eassosh8, 1>(
-          1.0, glstrain.A(), 1.0, M.A(), (*alpha).values());
+          1.0, glstrain.data(), 1.0, M.data(), (*alpha).values());
     }  // ------------------------------------------------------------------ EAS
 
     const double I3 = sosh8_third_invariant(glstrain);
@@ -1010,7 +1010,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
 
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> defgrd;
     sosh8_get_deformationgradient(gp, derivs, xcurr, glstrain, defgrd);
-    const double det_defgrd = defgrd.Determinant();
+    const double det_defgrd = defgrd.determinant();
     if (det_defgrd <= 0.0)
     {
       soh8_error_handling(
@@ -1056,11 +1056,11 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w, bop, stress, 1.0);
+      force->multiply_tn(detJ_w, bop, stress, 1.0);
     }  // if (force!=nullptr)
 
     // structural force vector
-    if (split_res) force_str->MultiplyTN(detJ_w, bop, stress, 1.0);
+    if (split_res) force_str->multiply_tn(detJ_w, bop, stress, 1.0);
 
     // update stiffness matrix
     if (stiffmatrix != nullptr)
@@ -1068,8 +1068,8 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH8> cb;
-      cb.Multiply(cmat, bop);  // temporary C . B
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
+      cb.multiply(cmat, bop);  // temporary C . B
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
       // intergrate `geometric' stiffness matrix and add to keu *****************
       // here also the ANS interpolation comes into play
@@ -1121,10 +1121,10 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
 
           // transformation of local(parameter) space 'back' to global(material) space
           Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> G_ij_glob;
-          G_ij_glob.Multiply(TinvT, G_ij);
+          G_ij_glob.multiply(TinvT, G_ij);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
-          const double Gij = detJ_w * stress.Dot(G_ij_glob);
+          const double Gij = detJ_w * stress.dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
           (*stiffmatrix)(NUMDIM_SOH8 * inod + 0, NUMDIM_SOH8 * jnod + 0) += Gij;
@@ -1138,15 +1138,15 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
       {
         // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, soh8_eassosh8> cM;  // temporary c . M
-        cM.Multiply(cmat, M);
-        Core::LinAlg::DenseFunctions::multiplyTN<double, soh8_eassosh8, Mat::NUM_STRESS_3D,
-            soh8_eassosh8>(1.0, Kaa.values(), detJ_w, M.A(), cM.A());
+        cM.multiply(cmat, M);
+        Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_eassosh8, Mat::NUM_STRESS_3D,
+            soh8_eassosh8>(1.0, Kaa.values(), detJ_w, M.data(), cM.data());
         // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
-        Core::LinAlg::DenseFunctions::multiplyTN<double, soh8_eassosh8, Mat::NUM_STRESS_3D,
-            NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.A(), cb.A());
+        Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_eassosh8, Mat::NUM_STRESS_3D,
+            NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.data(), cb.data());
         // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
-        Core::LinAlg::DenseFunctions::multiplyTN<double, soh8_eassosh8, Mat::NUM_STRESS_3D, 1>(
-            1.0, feas.values(), detJ_w, M.A(), stress.A());
+        Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_eassosh8, Mat::NUM_STRESS_3D, 1>(
+            1.0, feas.values(), detJ_w, M.data(), stress.data());
       }  // ------------------------------------------------------------------ EAS
     }    // if (stiffmatrix != nullptr)
 
@@ -1193,14 +1193,14 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
 
       Core::LinAlg::SerialDenseMatrix KdaTKaa(
           NUMDOF_SOH8, soh8_eassosh8);  // temporary Kda^T.Kaa^{-1}
-      Core::LinAlg::DenseFunctions::multiplyTN<double, NUMDOF_SOH8, soh8_eassosh8, soh8_eassosh8>(
+      Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_SOH8, soh8_eassosh8, soh8_eassosh8>(
           KdaTKaa, Kda, Kaa);
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
       Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_eassosh8, NUMDOF_SOH8>(
-          1.0, stiffmatrix->A(), -1.0, KdaTKaa.values(), Kda.values());
+          1.0, stiffmatrix->data(), -1.0, KdaTKaa.values(), Kda.values());
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
       Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_eassosh8, 1>(
-          1.0, force->A(), -1.0, KdaTKaa.values(), feas.values());
+          1.0, force->data(), -1.0, KdaTKaa.values(), feas.values());
 
       // store current EAS data in history
       for (int i = 0; i < soh8_eassosh8; ++i)
@@ -1312,9 +1312,9 @@ void Discret::ELEMENTS::SoSh8::sosh8_anssetup(
   for (int sp = 0; sp < num_sp; ++sp)
   {
     // compute (REFERENCE) Jacobian matrix at all sampling points
-    jac_sps[sp].Multiply(df_sp[sp], xrefe);
+    jac_sps[sp].multiply(df_sp[sp], xrefe);
     // compute CURRENT Jacobian matrix at all sampling points
-    jac_cur_sps[sp].Multiply(df_sp[sp], xcurr);
+    jac_cur_sps[sp].multiply(df_sp[sp], xcurr);
   }
 
   /*
@@ -1331,7 +1331,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_anssetup(
     **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
     ** Used to transform the global displacements into parametric space
     */
-    jac_cur.Multiply(df_sp[sp], xcurr);
+    jac_cur.multiply(df_sp[sp], xcurr);
 
     // fill up B-operator
     for (int inode = 0; inode < NUMNOD_SOH8; ++inode)
@@ -1391,10 +1391,10 @@ void Discret::ELEMENTS::SoSh8::sosh8_evaluatejacobian(const unsigned gp,
   **     J = [ x_,s  y_,s  z_,s ]
   **         [ x_,t  y_,t  z_,t ]
   */
-  jac.Multiply(derivs[gp], x);
+  jac.multiply(derivs[gp], x);
 
   // compute determinant of Jacobian by Sarrus' rule
-  detJ = jac.Determinant();
+  detJ = jac.determinant();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1403,7 +1403,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_third_invariant(
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain) const
 {
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> rcg(glstrain);
-  rcg.Scale(2.0);
+  rcg.scale(2.0);
   for (unsigned i = 0; i < 3; ++i) rcg(i) += 1.0;
 
   // compute the 3rd invariant, a.k.a. the square product of the det(defGrad)
@@ -1615,9 +1615,9 @@ void Discret::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_XYZ;
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
-  N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+  N_XYZ.multiply(invJ_[gp], derivs[gp]);
   // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-  defgrd.MultiplyTT(xcurr, N_XYZ);
+  defgrd.multiply_tt(xcurr, N_XYZ);
 
   // deformation gradient consistent with (potentially EAS-modified) GL strains
   // without eas/ans this is equal to the regular defgrd.
@@ -1690,7 +1690,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_evaluate_t(
       solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
   int err2 = solve_for_inverseT.Factor();
-  int err = solve_for_inverseT.Invert();
+  int err = solve_for_inverseT.invert();
   if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
 }
@@ -1720,10 +1720,10 @@ void Discret::ELEMENTS::SoSh8::sosh8_cauchy(
   SVD(defgrd, u, s, v);  // Singular Value Decomposition
   Core::LinAlg::SerialDenseMatrix rot(NUMDIM_SOH8, NUMDIM_SOH8);
   Core::LinAlg::multiply(rot, u, v);
-  // temp.Multiply('N','N',1.0,v,s,0.0);
+  // temp.multiply('N','N',1.0,v,s,0.0);
   // Core::LinAlg::SerialDenseMatrix stretch_disp(NUMDIM_SOH8,NUMDIM_SOH8);
-  // stretch_disp.Multiply('N','T',1.0,temp,v,0.0);
-  // defgrd.Multiply('N','N',1.0,rot,stretch_disp,0.0);
+  // stretch_disp.multiply('N','T',1.0,temp,v,0.0);
+  // defgrd.multiply('N','N',1.0,rot,stretch_disp,0.0);
   // std::cout << defgrd;
 
   // get modified squared stretch (U^mod)^2 from glstrain
@@ -1747,7 +1747,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_cauchy(
   // F^mod = RU^mod
   Core::LinAlg::SerialDenseMatrix defgrd_consistent(NUMDIM_SOH8, NUMDIM_SOH8);
   Core::LinAlg::multiply(defgrd_consistent, rot, U_mod);
-  defgrd.SetView(defgrd_consistent.A());
+  defgrd.set_view(defgrd_consistent.data());
 
   /*
   double mod1 = defgrd.NormOne();
@@ -1759,7 +1759,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_cauchy(
   */
 #endif
 
-  double detF = defgrd.Determinant();
+  double detF = defgrd.determinant();
 
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> pkstress;
   pkstress(0, 0) = stress(0);
@@ -1774,8 +1774,8 @@ void Discret::ELEMENTS::SoSh8::sosh8_cauchy(
 
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> cauchystress;
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> temp;
-  temp.Multiply(1.0 / detF, defgrd, pkstress);
-  cauchystress.MultiplyNT(temp, defgrd);
+  temp.multiply(1.0 / detF, defgrd, pkstress);
+  cauchystress.multiply_nt(temp, defgrd);
 
   (*elestress)(gp, 0) = cauchystress(0, 0);
   (*elestress)(gp, 1) = cauchystress(1, 1);

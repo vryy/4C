@@ -105,7 +105,7 @@ void MultiScale::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
   int FinvIndex2[4][6] = {
       {0, 1, 2, 0, 1, 2}, {0, 1, 2, 1, 2, 0}, {0, 1, 2, 0, 1, 2}, {0, 1, 2, 1, 2, 0}};
 
-  cmat.PutScalar(0.0);
+  cmat.put_scalar(0.0);
 
   for (int i = 0; i < 6; ++i)
   {
@@ -138,7 +138,7 @@ void MultiScale::MicroStatic::ConvertMat(const Epetra_MultiVector& cmatpf,
     }
   }
 
-  cmat.Scale(0.25);
+  cmat.scale(0.25);
 
   return;
 }

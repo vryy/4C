@@ -299,7 +299,7 @@ namespace Core::IO
       std::vector<int> lm, lmowner, lmstride;
       ele.LocationVector(discret, lm, lmowner, lmstride);
       Core::FE::ExtractMyValues(*result_data_dofbased, eledisp, lm);
-      dof_result.SetView(eledisp.data());
+      dof_result.set_view(eledisp.data());
 
       // Loop over the nodes of the nurbs element.
       Core::LinAlg::Matrix<result_num_dofs_per_node, 1, double> point_result;

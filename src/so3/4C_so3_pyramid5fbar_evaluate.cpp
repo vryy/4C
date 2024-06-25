@@ -127,7 +127,7 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
       Core::LinAlg::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr, &elevec1,
@@ -301,7 +301,7 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
       {
         prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
         prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
-        Fnew.Multiply(deltaF, Fhist);
+        Fnew.multiply(deltaF, Fhist);
         prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
       }
 
@@ -384,10 +384,10 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
       {
         // inverse jacobian matrix at centroid
         Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invJ_0;
-        invJ_0.Multiply(N_rst_0, xrefe);
-        invJ_0.Invert();
+        invJ_0.multiply(N_rst_0, xrefe);
+        invJ_0.invert();
         // material derivatives at centroid
-        N_XYZ_0.Multiply(invJ_0, N_rst_0);
+        N_XYZ_0.multiply(invJ_0, N_rst_0);
       }
 
       if (Prestress::IsMulf(pstype_))
@@ -398,11 +398,11 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
         prestress_->StoragetoMatrix(NUMGPT_SOP5, invJdef_0, prestress_->JHistory());
         // get derivatives wrt to last spatial configuration
         Core::LinAlg::Matrix<3, 5> N_xyz_0;
-        N_xyz_0.Multiply(invJdef_0, N_rst_0);  // if (!Id()) std::cout << invJdef_0;
+        N_xyz_0.multiply(invJdef_0, N_rst_0);  // if (!Id()) std::cout << invJdef_0;
 
         // build multiplicative incremental defgrd
         Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-        defgrd_0.MultiplyTT(xdisp, N_xyz_0);
+        defgrd_0.multiply_tt(xdisp, N_xyz_0);
         defgrd_0(0, 0) += 1.0;
         defgrd_0(1, 1) += 1.0;
         defgrd_0(2, 2) += 1.0;
@@ -413,20 +413,20 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
 
         // build total defgrd = delta F * F_old
         Core::LinAlg::Matrix<3, 3> tmp;
-        tmp.Multiply(defgrd_0, Fhist);
+        tmp.multiply(defgrd_0, Fhist);
         defgrd_0 = tmp;
 
         // build inverse and detF
-        invdefgrd_0.Invert(defgrd_0);
-        detF_0 = defgrd_0.Determinant();
+        invdefgrd_0.invert(defgrd_0);
+        detF_0 = defgrd_0.determinant();
       }
       else  // no prestressing
       {
         // deformation gradient and its determinant at centroid
         Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-        defgrd_0.MultiplyTT(xcurr, N_XYZ_0);
-        invdefgrd_0.Invert(defgrd_0);
-        detF_0 = defgrd_0.Determinant();
+        defgrd_0.multiply_tt(xcurr, N_XYZ_0);
+        invdefgrd_0.invert(defgrd_0);
+        detF_0 = defgrd_0.determinant();
       }
 
 
@@ -445,21 +445,21 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
         // compute derivatives N_XYZ at gp w.r.t. material coordinates
         // by N_XYZ = J^-1 * N_rst
         Core::LinAlg::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_XYZ(true);
-        N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+        N_XYZ.multiply(invJ_[gp], derivs[gp]);
 
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
         Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd(true);
-        defgrd.MultiplyTT(xcurr, N_XYZ);
+        defgrd.multiply_tt(xcurr, N_XYZ);
 
         // F_bar deformation gradient =(detF_0/detF)^1/3*F
-        double detF = defgrd.Determinant();
+        double detF = defgrd.determinant();
         Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd_bar(defgrd);
         double f_bar_factor = pow(detF_0 / detF, 1.0 / 3.0);
-        defgrd_bar.Scale(f_bar_factor);
+        defgrd_bar.scale(f_bar_factor);
 
         // right Cauchy-Green tensor = F^T * F
         Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> cauchygreen;
-        cauchygreen.MultiplyTN(defgrd_bar, defgrd_bar);
+        cauchygreen.multiply_tn(defgrd_bar, defgrd_bar);
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -511,8 +511,8 @@ void Discret::ELEMENTS::SoPyramid5fbar::init_jacobian_mapping()
   for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
   {
     // invJ_[gp].Shape(NUMDIM_SOP5,NUMDIM_SOP5);
-    invJ_[gp].Multiply(derivs[gp], xrefe);
-    detJ_[gp] = invJ_[gp].Invert();
+    invJ_[gp].multiply(derivs[gp], xrefe);
+    detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
     if (Prestress::IsMulfActive(time_, pstype_, pstime_))
@@ -527,8 +527,8 @@ void Discret::ELEMENTS::SoPyramid5fbar::init_jacobian_mapping()
       Core::LinAlg::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_rst_0;
       Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, Core::FE::CellType::pyramid5);
       Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invJ_0;
-      invJ_0.Multiply(N_rst_0, xrefe);
-      invJ_0.Invert();
+      invJ_0.multiply(N_rst_0, xrefe);
+      invJ_0.invert();
       prestress_->MatrixtoStorage(NUMGPT_SOP5, invJ_0, prestress_->JHistory());
     }
 
@@ -595,10 +595,10 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate_neumann(Teuchos::ParameterList& 
   {
     // compute the Jacobian matrix
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> jac;
-    jac.Multiply(derivs[gp], xrefe);
+    jac.multiply(derivs[gp], xrefe);
 
     // compute determinant of Jacobian
-    const double detJ = jac.Determinant();
+    const double detJ = jac.determinant();
     if (detJ == 0.0)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
@@ -625,7 +625,7 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate_neumann(Teuchos::ParameterList& 
       const double functfac =
           (functnum > 0) ? Global::Problem::Instance()
                                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                               .evaluate(xrefegp.A(), time, dim)
+                               .evaluate(xrefegp.data(), time, dim)
                          : 1.0;
       const double dim_fac = (*onoff)[dim] * (*val)[dim] * fac * functfac;
       for (int nodid = 0; nodid < NUMNOD_SOP5; ++nodid)
@@ -706,10 +706,10 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
   {
     // inverse jacobian matrix at centroid
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invJ_0;
-    invJ_0.Multiply(N_rst_0, xrefe);
-    invJ_0.Invert();
+    invJ_0.multiply(N_rst_0, xrefe);
+    invJ_0.invert();
     // material derivatives at centroid
-    N_XYZ_0.Multiply(invJ_0, N_rst_0);
+    N_XYZ_0.multiply(invJ_0, N_rst_0);
   }
 
   if (Prestress::IsMulf(pstype_))
@@ -720,11 +720,11 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
     prestress_->StoragetoMatrix(NUMGPT_SOP5, invJdef_0, prestress_->JHistory());
     // get derivatives wrt to last spatial configuration
     Core::LinAlg::Matrix<3, 5> N_xyz_0;
-    N_xyz_0.Multiply(invJdef_0, N_rst_0);  // if (!Id()) std::cout << invJdef_0;
+    N_xyz_0.multiply(invJdef_0, N_rst_0);  // if (!Id()) std::cout << invJdef_0;
 
     // build multiplicative incremental defgrd
     Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-    defgrd_0.MultiplyTT(xdisp, N_xyz_0);
+    defgrd_0.multiply_tt(xdisp, N_xyz_0);
     defgrd_0(0, 0) += 1.0;
     defgrd_0(1, 1) += 1.0;
     defgrd_0(2, 2) += 1.0;
@@ -735,20 +735,20 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
 
     // build total defgrd = delta F * F_old
     Core::LinAlg::Matrix<3, 3> tmp;
-    tmp.Multiply(defgrd_0, Fhist);
+    tmp.multiply(defgrd_0, Fhist);
     defgrd_0 = tmp;
 
     // build inverse and detF
-    invdefgrd_0.Invert(defgrd_0);
-    detF_0 = defgrd_0.Determinant();
+    invdefgrd_0.invert(defgrd_0);
+    detF_0 = defgrd_0.determinant();
   }
   else  // no prestressing
   {
     // deformation gradient and its determinant at centroid
     Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-    defgrd_0.MultiplyTT(xcurr, N_XYZ_0);
-    invdefgrd_0.Invert(defgrd_0);
-    detF_0 = defgrd_0.Determinant();
+    defgrd_0.multiply_tt(xcurr, N_XYZ_0);
+    invdefgrd_0.invert(defgrd_0);
+    detF_0 = defgrd_0.determinant();
   }
   /* =========================================================================*/
   /* ================================================= Loop over Gauss Points */
@@ -766,7 +766,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+    N_XYZ.multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
     if (Prestress::IsMulf(pstype_))
@@ -776,10 +776,10 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
       prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
       Core::LinAlg::Matrix<3, 5> N_xyz;
-      N_xyz.Multiply(invJdef, derivs[gp]);
+      N_xyz.multiply(invJdef, derivs[gp]);
 
       // build multiplicative incremental defgrd
-      defgrd.MultiplyTT(xdisp, N_xyz);
+      defgrd.multiply_tt(xdisp, N_xyz);
       defgrd(0, 0) += 1.0;
       defgrd(1, 1) += 1.0;
       defgrd(2, 2) += 1.0;
@@ -790,21 +790,21 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
 
       // build total defgrd = delta F * F_old
       Core::LinAlg::Matrix<3, 3> Fnew;
-      Fnew.Multiply(defgrd, Fhist);
+      Fnew.multiply(defgrd, Fhist);
       defgrd = Fnew;
     }
     else  // no prestressing
     {
       // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-      defgrd.MultiplyTT(xcurr, N_XYZ);
+      defgrd.multiply_tt(xcurr, N_XYZ);
     }
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd;
-    invdefgrd.Invert(defgrd);
-    double detF = defgrd.Determinant();
+    invdefgrd.invert(defgrd);
+    double detF = defgrd.determinant();
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // check for negative jacobian
     if (detF_0 < 0. || detF < 0.)
@@ -825,11 +825,11 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
     // F_bar deformation gradient =(detF_0/detF)^1/3*F
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> defgrd_bar(defgrd);
     double f_bar_factor = pow(detF_0 / detF, 1.0 / 3.0);
-    defgrd_bar.Scale(f_bar_factor);
+    defgrd_bar.scale(f_bar_factor);
 
     // Right Cauchy-Green tensor(Fbar) = F_bar^T * F_bar
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> cauchygreen_bar;
-    cauchygreen_bar.MultiplyTN(defgrd_bar, defgrd_bar);
+    cauchygreen_bar.multiply_tn(defgrd_bar, defgrd_bar);
 
     // Green-Lagrange strains(F_bar) matrix E = 0.5 * (Cauchygreen(F_bar) - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -869,12 +869,12 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
 
         // inverse of fbar deformation gradient
         Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invdefgrd_bar;
-        invdefgrd_bar.Invert(defgrd_bar);
+        invdefgrd_bar.invert(defgrd_bar);
 
         Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> temp;
         Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> euler_almansi_bar;
-        temp.Multiply(gl_bar, invdefgrd_bar);
-        euler_almansi_bar.MultiplyTN(invdefgrd_bar, temp);
+        temp.multiply(gl_bar, invdefgrd_bar);
+        euler_almansi_bar.multiply_tn(invdefgrd_bar, temp);
 
         (*elestrain)(gp, 0) = euler_almansi_bar(0, 0);
         (*elestrain)(gp, 1) = euler_almansi_bar(1, 1);
@@ -1054,7 +1054,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
       Core::LinAlg::Matrix<NUMNOD_SOP5, 1> funct(true);
       funct = shapefcts[gp];
       Core::LinAlg::Matrix<NUMDIM_SOP5, 1> point(true);
-      point.MultiplyTN(xrefe, funct);
+      point.multiply_tn(xrefe, funct);
       params.set("gp_coords_ref", point);
     }
 
@@ -1112,7 +1112,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
       case Inpar::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
-        const double detF_bar = defgrd_bar.Determinant();
+        const double detF_bar = defgrd_bar.determinant();
 
         Core::LinAlg::Matrix<3, 3> pkstress_bar;
         pkstress_bar(0, 0) = stress_bar(0);
@@ -1127,8 +1127,8 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
 
         Core::LinAlg::Matrix<3, 3> temp;
         Core::LinAlg::Matrix<3, 3> cauchystress_bar;
-        temp.Multiply(1.0 / detF_bar, defgrd_bar, pkstress_bar);
-        cauchystress_bar.MultiplyNT(temp, defgrd_bar);
+        temp.multiply(1.0 / detF_bar, defgrd_bar, pkstress_bar);
+        cauchystress_bar.multiply_nt(temp, defgrd_bar);
 
         (*elestress)(gp, 0) = cauchystress_bar(0, 0);
         (*elestress)(gp, 1) = cauchystress_bar(1, 1);
@@ -1151,7 +1151,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
     if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w / f_bar_factor, bop, stress_bar, 1.0);
+      force->multiply_tn(detJ_w / f_bar_factor, bop, stress_bar, 1.0);
     }
 
     // update stiffness matrix
@@ -1160,12 +1160,12 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<6, NUMDOF_SOP5> cb;
-      cb.Multiply(cmat, bop);
-      stiffmatrix->MultiplyTN(detJ_w * f_bar_factor, bop, cb, 1.0);
+      cb.multiply(cmat, bop);
+      stiffmatrix->multiply_tn(detJ_w * f_bar_factor, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       Core::LinAlg::Matrix<6, 1> sfac(stress_bar);  // auxiliary integrated stress
-      sfac.Scale(detJ_w / f_bar_factor);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      sfac.scale(detJ_w / f_bar_factor);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       std::vector<double> SmB_L(3);       // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod = 0; inod < NUMNOD_SOP5; ++inod)
@@ -1194,10 +1194,10 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
       cauchygreenvector(5) = 2 * cauchygreen(2, 0);
 
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> ccg;
-      ccg.Multiply(cmat, cauchygreenvector);
+      ccg.multiply(cmat, cauchygreenvector);
 
       Core::LinAlg::Matrix<NUMDOF_SOP5, 1> bopccg(false);  // auxiliary integrated stress
-      bopccg.MultiplyTN(detJ_w * f_bar_factor / 3.0, bop, ccg);
+      bopccg.multiply_tn(detJ_w * f_bar_factor / 3.0, bop, ccg);
 
       double htensor[NUMDOF_SOP5];
       for (int n = 0; n < NUMDOF_SOP5; n++)
@@ -1211,7 +1211,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
       }
 
       Core::LinAlg::Matrix<NUMDOF_SOP5, 1> bops(false);  // auxiliary integrated stress
-      bops.MultiplyTN(-detJ_w / f_bar_factor / 3.0, bop, stress_bar);
+      bops.multiply_tn(-detJ_w / f_bar_factor / 3.0, bop, stress_bar);
       for (int i = 0; i < NUMDOF_SOP5; i++)
       {
         for (int j = 0; j < NUMDOF_SOP5; j++)
@@ -1270,7 +1270,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
         // evaluate derivative of mass w.r.t. to right cauchy green tensor
         // Right Cauchy-Green tensor = F^T * F
         Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> cauchygreen;
-        cauchygreen.MultiplyTN(defgrd, defgrd);
+        cauchygreen.multiply_tn(defgrd, defgrd);
 
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         Core::LinAlg::SerialDenseVector glstrain_epetra(Mat::NUM_STRESS_3D);
@@ -1292,9 +1292,9 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
 
         // multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time
         // integration factor
-        linmass_disp.Scale(2.0 * timintfac_dis);
-        linmass_vel.Scale(2.0 * timintfac_vel);
-        linmass.Update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
+        linmass_disp.scale(2.0 * timintfac_dis);
+        linmass_vel.scale(2.0 * timintfac_vel);
+        linmass.update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
 
         // evaluate accelerations at time n+1 at gauss point
         Core::LinAlg::Matrix<NUMDIM_SOP5, 1> myacc(true);
@@ -1307,7 +1307,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
           // integrate linearisation of mass matrix
           //(B^T . d\rho/d disp . a) * detJ * w(gp)
           Core::LinAlg::Matrix<1, NUMDOF_SOP5> cb;
-          cb.MultiplyTN(linmass_disp, bop);
+          cb.multiply_tn(linmass_disp, bop);
           for (int inod = 0; inod < NUMNOD_SOP5; ++inod)
           {
             double factor = detJ_w * shapefcts[gp](inod);
@@ -1386,11 +1386,11 @@ void Discret::ELEMENTS::SoPyramid5fbar::def_gradient(const std::vector<double>& 
 
     // by N_XYZ = J^-1 * N_rst
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_xyz;
-    N_xyz.Multiply(invJdef, derivs[gp]);
+    N_xyz.multiply(invJdef, derivs[gp]);
 
     // build defgrd (independent of xrefe!)
     Core::LinAlg::Matrix<3, 3> defgrd;
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
@@ -1405,11 +1405,11 @@ void Discret::ELEMENTS::SoPyramid5fbar::def_gradient(const std::vector<double>& 
 
     // by N_XYZ = J^-1 * N_rst
     Core::LinAlg::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_xyz;
-    N_xyz.Multiply(invJdef, N_rst_0);
+    N_xyz.multiply(invJdef, N_rst_0);
 
     // build defgrd (independent of xrefe!)
     Core::LinAlg::Matrix<3, 3> defgrd;
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
@@ -1451,16 +1451,16 @@ void Discret::ELEMENTS::SoPyramid5fbar::update_jacobian_mapping(
     // get the invJ old state
     prestress.StoragetoMatrix(gp, invJhist, prestress.JHistory());
     // get derivatives wrt to invJhist
-    N_xyz.Multiply(invJhist, derivs[gp]);
+    N_xyz.multiply(invJhist, derivs[gp]);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
     // make inverse of this defgrd
-    defgrd.Invert();
+    defgrd.invert();
     // push-forward of Jinv
-    invJnew.MultiplyTN(defgrd, invJhist);
+    invJnew.multiply_tn(defgrd, invJhist);
     // store new reference configuration
     prestress.MatrixtoStorage(gp, invJnew, prestress.JHistory());
   }  // for (int gp=0; gp<NUMGPT_SOP5; ++gp)
@@ -1469,16 +1469,16 @@ void Discret::ELEMENTS::SoPyramid5fbar::update_jacobian_mapping(
     // get the invJ old state
     prestress.StoragetoMatrix(NUMGPT_SOP5, invJhist, prestress.JHistory());
     // get derivatives wrt to invJhist
-    N_xyz.Multiply(invJhist, N_rst_0);
+    N_xyz.multiply(invJhist, N_rst_0);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
     // make inverse of this defgrd
-    defgrd.Invert();
+    defgrd.invert();
     // push-forward of Jinv
-    invJnew.MultiplyTN(defgrd, invJhist);
+    invJnew.multiply_tn(defgrd, invJhist);
     // store new reference configuration
     prestress.MatrixtoStorage(NUMGPT_SOP5, invJnew, prestress.JHistory());
   }

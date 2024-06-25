@@ -79,11 +79,11 @@ Core::Geo::Cut::Quad4SideHandle::Quad4SideHandle(
   Core::FE::shape_function_2D(funct, 0.0, 0.0, Core::FE::CellType::quad4);
 
   Core::LinAlg::Matrix<3, 1> xyz;
-  xyz.Multiply(xyze, funct);
+  xyz.multiply(xyze, funct);
 
   plain_int_set node_nids;
   node_nids.insert(node_ids.begin(), node_ids.end());
-  Node* middle = mesh.GetNode(node_nids, xyz.A());
+  Node* middle = mesh.GetNode(node_nids, xyz.data());
   int middle_id = middle->Id();
 
   std::vector<int> nids(3);
@@ -176,11 +176,11 @@ Core::Geo::Cut::Quad8SideHandle::Quad8SideHandle(
     Core::FE::shape_function_2D(funct, 0.0, 0.0, Core::FE::CellType::quad8);
 
     Core::LinAlg::Matrix<3, 1> xyz;
-    xyz.Multiply(xyze, funct);
+    xyz.multiply(xyze, funct);
 
     plain_int_set node_nids;
     std::copy(node_ids.begin(), node_ids.end(), std::inserter(node_nids, node_nids.begin()));
-    Node* middle = mesh.GetNode(node_nids, xyz.A());
+    Node* middle = mesh.GetNode(node_nids, xyz.data());
     int middle_id = middle->Id();
 
     std::vector<int> nids(4);

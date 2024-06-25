@@ -144,7 +144,7 @@ namespace Core::Conditions
     /*!
     \brief Print this Condition
     */
-    void Print(std::ostream& os) const;
+    void print(std::ostream& os) const;
 
     /*!
     \brief Return type of condition

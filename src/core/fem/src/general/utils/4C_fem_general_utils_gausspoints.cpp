@@ -63,7 +63,7 @@ namespace Core::FE
 
       double Weight(int point) const override { return cub_weights_(point); }
 
-      void Print() const override
+      void print() const override
       {
         // cell type: tetrahedron
         shards::CellTopology cellType = shards::getCellTopologyData<topology>();
@@ -136,7 +136,7 @@ namespace Core::FE
 
       double Weight(int point) const override { return cub_weights_(point); }
 
-      void Print() const override
+      void print() const override
       {
         // cell type: tetrahedron
         shards::CellTopology cellType = shards::getCellTopologyData<shards::Pyramid<5>>();

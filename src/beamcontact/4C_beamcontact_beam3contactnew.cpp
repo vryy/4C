@@ -133,8 +133,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
     lvec1(i) = (element1_->Nodes())[0]->X()[i] - (element1_->Nodes())[1]->X()[i];
     lvec2(i) = (element2_->Nodes())[0]->X()[i] - (element2_->Nodes())[1]->X()[i];
   }
-  ele1length_ = lvec1.Norm2();
-  ele2length_ = lvec2.Norm2();
+  ele1length_ = lvec1.norm2();
+  ele2length_ = lvec2.norm2();
 
   FOUR_C_THROW_UNLESS(element1->ElementType() == element2->ElementType(),
       "The class beam3contact only works for contact pairs of the same beam element type!");
@@ -1909,7 +1909,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_lin_xi_and_lin_
   // invert L by hand
   TYPE det_L = L(0, 0) * L(1, 1) - L(0, 1) * L(1, 0);
   if (Core::FADUtils::CastToDouble(Core::FADUtils::Norm(det_L)) < DETERMINANTTOL)
-    FOUR_C_THROW("ERROR: Determinant of L = 0");
+    FOUR_C_THROW("ERROR: determinant of L = 0");
   L_inv(0, 0) = L(1, 1) / det_L;
   L_inv(0, 1) = -L(0, 1) / det_L;
   L_inv(1, 0) = -L(1, 0) / det_L;
@@ -1934,7 +1934,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::compute_lin_xi_and_lin_
   }
 
   // compute D = L^-1 * B
-  D.Multiply(L_inv, B);
+  D.multiply(L_inv, B);
 
   // finally the linearizations / directional derivatives
   for (int i = 0; i < dim1 + dim2; i++)
@@ -3630,7 +3630,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
 
   bool beamsclose = false;
 
-  if (delta_r.Norm2() < (radius1_ + radius2_ + 2 * MAXDELTADFAC * searchboxinc_)) beamsclose = true;
+  if (delta_r.norm2() < (radius1_ + radius2_ + 2 * MAXDELTADFAC * searchboxinc_)) beamsclose = true;
 
   // bool indicating that this method has been called
   neighbornormalrequired_ = true;
@@ -3804,7 +3804,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_neighbor_normal_old
     std::cout << "Pair: " << element1_->Id() << " / " << element2_->Id() << std::endl;
     std::cout << "xi1: " << xi1_ << "xi2: " << xi2_ << std::endl;
     std::cout << "xi1_old_: " << xi1_old_ << "xi2_old_: " << xi2_old_ << std::endl;
-    std::cout << "delta_r.Norm2(): " << delta_r.Norm2() << std::endl;
+    std::cout << "delta_r.norm2(): " << delta_r.norm2() << std::endl;
     std::cout << "tangentproduct_: " << tangentproduct_ << std::endl;
     std::cout
         << "Warning: Neighbor normal required for an element with |xi1_-xi1_old_|>MAXDELTAXIETA or "
@@ -3943,7 +3943,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::fad_check_lin_xi_and_li
   }
 
   // compute D = L^-1 * B
-  D.Multiply(L_inv, B);
+  D.multiply(L_inv, B);
 
   std::cout << "linxi and lineta: " << std::endl;
 

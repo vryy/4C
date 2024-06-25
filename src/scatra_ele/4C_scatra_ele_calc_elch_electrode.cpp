@@ -151,7 +151,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
   calc_rhs_pot_equ_divi_ohm(erhs, rhsfac, var_manager()->InvF(), var_manager()->GradPot(), 1.);
 
   // safety check
-  if (my::bodyforce_[my::numscal_].Dot(my::funct_) != 0.0)
+  if (my::bodyforce_[my::numscal_].dot(my::funct_) != 0.0)
     FOUR_C_THROW("body force not implemented for potential equation");
 }
 

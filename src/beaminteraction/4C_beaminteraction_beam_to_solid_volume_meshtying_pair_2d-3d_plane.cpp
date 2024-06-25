@@ -104,7 +104,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
     // Get the jacobian in the reference configuration.
     GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
         projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
-    beam_jacobian = 0.5 * dr_beam_ref.Norm2();
+    beam_jacobian = 0.5 * dr_beam_ref.norm2();
 
     // Get the current positions on beam and solid.
     GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
@@ -113,7 +113,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
     r_cross_section_ref(0) = 0.0;
     r_cross_section_ref(1) = projected_gauss_point.GetEtaCrossSection()(0);
     r_cross_section_ref(2) = projected_gauss_point.GetEtaCrossSection()(1);
-    r_cross_section.Multiply(triad, r_cross_section_ref);
+    r_cross_section.multiply(triad, r_cross_section_ref);
     r_beam += r_cross_section;
     GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
 
@@ -121,7 +121,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
     // that acts on the beam.
     force = r_solid;
     force -= r_beam;
-    force.Scale(penalty_parameter);
+    force.scale(penalty_parameter);
 
     // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
     // dof. This is done with the virtual work equation $F \delta r = f \delta q$.

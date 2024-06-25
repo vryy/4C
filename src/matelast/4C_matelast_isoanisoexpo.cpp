@@ -114,28 +114,28 @@ void Mat::Elastic::IsoAnisoExpo::add_stress_aniso_modified(const Core::LinAlg::M
 
   Core::LinAlg::Matrix<6, 1> Saniso(structural_tensor_);  // first compute Sfbar = 2 dW/dJ4 A_
   double gammabar = 2. * (k1 * (J4 - 1.) * exp(k2 * (J4 - 1.) * (J4 - 1.)));  // 2 dW/dJ4
-  Saniso.Scale(gammabar);                                                     // Sfbar
+  Saniso.scale(gammabar);                                                     // Sfbar
 
   double traceCSfbar = Saniso(0) * rcg(0) + Saniso(1) * rcg(1) + Saniso(2) * rcg(2) +
                        1. * (Saniso(3) * rcg(3) + Saniso(4) * rcg(4) + Saniso(5) * rcg(5));
-  Saniso.Update(-incJ / 3. * traceCSfbar, icg, incJ);
+  Saniso.update(-incJ / 3. * traceCSfbar, icg, incJ);
 
   Core::LinAlg::Matrix<6, 6> Psl(true);  // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   add_holzapfel_product(Psl, icg, 1.0);
-  Psl.MultiplyNT(-1. / 3., icg, icg, 1.0);
+  Psl.multiply_nt(-1. / 3., icg, icg, 1.0);
 
   Core::LinAlg::Matrix<6, 1> Aiso(structural_tensor_);
-  Aiso.Update(-J4 / 3.0, icg, incJ);
+  Aiso.update(-J4 / 3.0, icg, incJ);
   Core::LinAlg::Matrix<6, 6> cmataniso(true);  // isochoric elastic cmat
   double deltabar = 2. * (1. + 2. * k2 * (J4 - 1.) * (J4 - 1.)) * 2. * k1 *
                     exp(k2 * (J4 - 1.) * (J4 - 1.));  // 4 d^2Wf/dJ4dJ4
-  cmataniso.MultiplyNT(deltabar, Aiso, Aiso);
-  cmataniso.Update(2. / 3. * incJ * traceCSfbar, Psl, 1.0);
-  cmataniso.MultiplyNT(-2. / 3., icg, Saniso, 1.0);
-  cmataniso.MultiplyNT(-2. / 3., Saniso, icg, 1.0);
+  cmataniso.multiply_nt(deltabar, Aiso, Aiso);
+  cmataniso.update(2. / 3. * incJ * traceCSfbar, Psl, 1.0);
+  cmataniso.multiply_nt(-2. / 3., icg, Saniso, 1.0);
+  cmataniso.multiply_nt(-2. / 3., Saniso, icg, 1.0);
 
-  stress.Update(1.0, Saniso, 1.0);
-  cmat.Update(1.0, cmataniso, 1.0);
+  stress.update(1.0, Saniso, 1.0);
+  cmat.update(1.0, cmataniso, 1.0);
 }
 
 void Mat::Elastic::IsoAnisoExpo::GetDerivativesAniso(Core::LinAlg::Matrix<2, 1>& dPI_aniso,
@@ -193,10 +193,10 @@ void Mat::Elastic::IsoAnisoExpo::SetFiberVecs(const double newgamma,
   // pull back in reference configuration
   Core::LinAlg::Matrix<3, 1> a_0(true);
   Core::LinAlg::Matrix<3, 3> idefgrd(true);
-  idefgrd.Invert(defgrd);
+  idefgrd.invert(defgrd);
 
-  a_0.Multiply(idefgrd, ca);
-  a_.Update(1. / a_0.Norm2(), a_0);
+  a_0.multiply(idefgrd, ca);
+  a_.update(1. / a_0.norm2(), a_0);
 
   params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
 }

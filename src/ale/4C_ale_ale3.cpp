@@ -194,10 +194,10 @@ void Discret::ELEMENTS::Ale3::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3::Print(std::ostream& os) const
+void Discret::ELEMENTS::Ale3::print(std::ostream& os) const
 {
   os << "Ale3 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   // cout << data_;
   return;

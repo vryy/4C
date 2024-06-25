@@ -389,24 +389,24 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
 
   if (isnodalporosity_)
   {
-    porosity = eporosity_.Dot(my::funct_);
+    porosity = eporosity_.dot(my::funct_);
   }
   else
   {
     // gauss point displacements
     Core::LinAlg::Matrix<nsd_, 1> dispint(false);
-    dispint.Multiply(my::edispnp_, my::funct_);
+    dispint.multiply(my::edispnp_, my::funct_);
 
     //------------------------get determinant of Jacobian dX / ds
     // transposed jacobian "dX/ds"
     Core::LinAlg::Matrix<nsd_, nsd_> xjm0;
-    xjm0.MultiplyNT(my::deriv_, xyze0_);
+    xjm0.multiply_nt(my::deriv_, xyze0_);
 
     // inverse of transposed jacobian "ds/dX"
-    const double det0 = xjm0.Determinant();
+    const double det0 = xjm0.determinant();
 
-    my::xjm_.MultiplyNT(my::deriv_, my::xyze_);
-    const double det = my::xjm_.Determinant();
+    my::xjm_.multiply_nt(my::deriv_, my::xyze_);
+    const double det = my::xjm_.determinant();
 
     // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
     // )^-1
@@ -429,7 +429,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
     Teuchos::RCP<std::vector<double>> scalars = Teuchos::rcp(new std::vector<double>(0));
     for (int k = 0; k < my::numscal_; ++k)
     {
-      const double phinp = my::ephinp_[k].Dot(my::funct_);
+      const double phinp = my::ephinp_[k].dot(my::funct_);
       scalars->push_back(phinp);
     }
     params.set<Teuchos::RCP<std::vector<double>>>("scalar", scalars);
@@ -453,7 +453,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
 template <Core::FE::CellType distype>
 double Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_pore_pressure()
 {
-  return my::eprenp_.Dot(my::funct_);
+  return my::eprenp_.dot(my::funct_);
 }
 
 /*----------------------------------------------------------------------*

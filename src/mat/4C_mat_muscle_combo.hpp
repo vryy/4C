@@ -169,7 +169,7 @@ namespace Mat
 
     bool UsesExtendedUpdate() override { return true; };
 
-    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
+    void update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params, int const eleGID) override;
 
     void evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,

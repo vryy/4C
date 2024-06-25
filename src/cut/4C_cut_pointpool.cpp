@@ -54,9 +54,9 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::NewPoint(const double* x, Ed
     info << "// Initial coordinates" << std::setprecision(15) << px << std::endl;
     // merged_to point coordinates
     Core::LinAlg::Matrix<3, 1> nx;
-    p->Coordinates(nx.A());
-    px.Update(-1, nx, 1);
-    info << "// Merged with tolerance of " << std::setprecision(15) << px.Norm2() << std::endl;
+    p->Coordinates(nx.data());
+    px.update(-1, nx, 1);
+    info << "// Merged with tolerance of " << std::setprecision(15) << px.norm2() << std::endl;
     p->AddAdditionalCreationInfo(info.str());
   }
 
@@ -140,9 +140,9 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
     {
       Point* p = &**i;
 
-      p->Coordinates(nx.A());
-      nx.Update(-1, px, 1);
-      if (nx.Norm2() <= tol)
+      p->Coordinates(nx.data());
+      nx.update(-1, px, 1);
+      if (nx.norm2() <= tol)
       {
         merge_candidates.push_back(p);
       }
@@ -225,8 +225,8 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
         // For now we just merge into the closest one
         // Otherwise One possible idea is is would be to
         // merge into the point that is "the most close". To do this we just need to find minimum
-        // merge_candidates[i] ->Coordinates( nx.A() )
-        // min (nx  - px).Norm2()  and merge into that one.
+        // merge_candidates[i] ->Coordinates( nx.data() )
+        // min (nx  - px).norm2()  and merge into that one.
         if (merge_candidates.size() > 1)
         {
           std::cout << "NOTE: More then one merge candidate in the pointpool that fit into the "
@@ -261,8 +261,8 @@ Core::Geo::Cut::Point* Core::Geo::Cut::OctTreeNode::GetPoint(const double* x, Ed
       if (mymerge != nullptr)
       {  // just a safety check
 
-        mymerge->Coordinates(nx.A());
-        nx.Update(-1, px, 1);
+        mymerge->Coordinates(nx.data());
+        nx.update(-1, px, 1);
         if (not mymerge->IsCut(cut_side, cut_edge))
         {
           if (cut_edge != nullptr)
@@ -383,16 +383,16 @@ void Core::Geo::Cut::OctTreeNode::split(int level)
       if (first)
       {
         first = false;
-        p->Coordinates(splitpoint_.A());
+        p->Coordinates(splitpoint_.data());
       }
       else
       {
-        p->Coordinates(x.A());
-        splitpoint_.Update(1, x, 1);
+        p->Coordinates(x.data());
+        splitpoint_.update(1, x, 1);
       }
     }
 
-    splitpoint_.Scale(1. / points_.size());
+    splitpoint_.scale(1. / points_.size());
 
     for (int i = 0; i < 8; ++i)
     {
@@ -575,13 +575,13 @@ void Core::Geo::Cut::OctTreeNode::ResetOutsidePoints()
 /*-----------------------------------------------------------------------------------------*
  * print the tree at a given level
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::OctTreeNode::Print(int level, std::ostream& stream)
+void Core::Geo::Cut::OctTreeNode::print(int level, std::ostream& stream)
 {
   if (not IsLeaf())
   {
     for (int i = 0; i < 8; ++i)
     {
-      nodes_[i]->Print(level + 1, stream);
+      nodes_[i]->print(level + 1, stream);
     }
   }
   else

@@ -261,10 +261,10 @@ int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakComp::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidHDGWeakComp::print(std::ostream& os) const
 {
   os << "FluidHDGWeakComp ";
-  Element::Print(os);
+  Element::print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

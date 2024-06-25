@@ -127,7 +127,7 @@ namespace Discret
 
       int NumDofPerNode(const Core::Nodes::Node&) const override { return numdofpernode_; }
       int num_dof_per_element() const override { return 0; }
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
       Core::Elements::ElementType& ElementType() const override { return Bele3Type::Instance(); }
 
       //@}
@@ -342,7 +342,7 @@ namespace Discret
 
       int num_dof_per_element() const override { return 0; }
 
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       Core::Elements::ElementType& ElementType() const override
       {

@@ -701,12 +701,12 @@ inline void Discret::ELEMENTS::Beam3r::pushforward(const Core::LinAlg::Matrix<3,
   Core::LinAlg::Matrix<3, 3, T> temp;
 
   // push forward stress vector
-  stress_spatial.Multiply(Lambda, stress_mat);
+  stress_spatial.multiply(Lambda, stress_mat);
 
   // push forward constitutive matrix according to Jelenic 1999, paragraph following to (2.22) on
   // page 148
-  temp.Multiply(Lambda, C_mat);
-  c_spatial.MultiplyNT(temp, Lambda);
+  temp.multiply(Lambda, C_mat);
+  c_spatial.multiply_nt(temp, Lambda);
 }
 
 /*----------------------------------------------------------------------------*
@@ -755,7 +755,7 @@ void Discret::ELEMENTS::Beam3r::calc_internal_and_inertia_forces_and_stiff(
 
     if (force != nullptr)
     {
-      internal_force.SetView(&((*force)(0)));
+      internal_force.set_view(&((*force)(0)));
     }
 
     calc_internal_force_and_stiff<nnodetriad, nnodecl, vpernode, double>(
@@ -1261,7 +1261,7 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
     const double wgtmass = gausspoints_mass.qwgt[gp];
 
     Core::LinAlg::Matrix<3, 3> Jp_bar(Jp);
-    Jp_bar.Scale(diff_factor_acc);
+    Jp_bar.scale(diff_factor_acc);
 
     Core::LinAlg::Matrix<3, 1> dL(true);
 
@@ -1297,10 +1297,10 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
     Core::LinAlg::Matrix<3, 1> Anewmass(true);
     Core::LinAlg::Matrix<3, 1> Amodconvmass(true);
     Core::LinAlg::Matrix<3, 1> Amodnewmass(true);
-    deltaTHETA.MultiplyTN(Lambdanewmass, deltatheta);
-    Wconvmass.MultiplyTN(Lambdaconvmass, wconv_gp_mass_[gp]);
-    Aconvmass.MultiplyTN(Lambdaconvmass, aconv_gp_mass_[gp]);
-    Amodconvmass.MultiplyTN(Lambdaconvmass, amodconv_gp_mass_[gp]);
+    deltaTHETA.multiply_tn(Lambdanewmass, deltatheta);
+    Wconvmass.multiply_tn(Lambdaconvmass, wconv_gp_mass_[gp]);
+    Aconvmass.multiply_tn(Lambdaconvmass, aconv_gp_mass_[gp]);
+    Amodconvmass.multiply_tn(Lambdaconvmass, amodconv_gp_mass_[gp]);
 
     /* update angular velocities and accelerations according to Newmark time integration scheme in
      * material description (see Jelenic, 1999, p. 146, equations (2.8) and (2.9)).
@@ -1329,9 +1329,9 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
             1.0 / (1.0 - alpha_m) *
             ((1.0 - alpha_f) * Anewmass(i) + alpha_f * Aconvmass(i) - alpha_m * Amodconvmass(i));
       }
-      wnew_gp_mass_[gp].Multiply(Lambdanewmass, Wnewmass);
-      anew_gp_mass_[gp].Multiply(Lambdanewmass, Anewmass);
-      amodnew_gp_mass_[gp].Multiply(Lambdanewmass, Amodnewmass);
+      wnew_gp_mass_[gp].multiply(Lambdanewmass, Wnewmass);
+      anew_gp_mass_[gp].multiply(Lambdanewmass, Anewmass);
+      amodnew_gp_mass_[gp].multiply(Lambdanewmass, Amodnewmass);
     }
     else
     {
@@ -1354,9 +1354,9 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
             ((1.0 - alpha_f) * anew_gp_mass_[gp](i) + alpha_f * aconv_gp_mass_[gp](i) -
                 alpha_m * amodconv_gp_mass_[gp](i));
       }
-      Wnewmass.MultiplyTN(Lambdanewmass, wnew_gp_mass_[gp]);
-      Anewmass.MultiplyTN(Lambdanewmass, anew_gp_mass_[gp]);
-      Amodnewmass.MultiplyTN(Lambdanewmass, amodnew_gp_mass_[gp]);
+      Wnewmass.multiply_tn(Lambdanewmass, wnew_gp_mass_[gp]);
+      Anewmass.multiply_tn(Lambdanewmass, anew_gp_mass_[gp]);
+      Amodnewmass.multiply_tn(Lambdanewmass, amodnew_gp_mass_[gp]);
     }
 
     Core::LinAlg::Matrix<3, 1> deltar(true);
@@ -1389,12 +1389,12 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
     Core::LinAlg::Matrix<3, 1> Jp_Wnewmass(true);
     Core::LinAlg::Matrix<3, 1> auxvector1(true);
     Core::LinAlg::Matrix<3, 1> Pi_t(true);
-    Jp_Wnewmass.Multiply(Jp, Wnewmass);
+    Jp_Wnewmass.multiply(Jp, Wnewmass);
     for (unsigned int i = 0; i < 3; i++)
       for (unsigned int j = 0; j < 3; j++)
         auxvector1(i) += SWnewmass(i, j) * Jp_Wnewmass(j) + Jp(i, j) * Anewmass(j);
 
-    Pi_t.Multiply(Lambdanewmass, auxvector1);
+    Pi_t.multiply(Lambdanewmass, auxvector1);
     Core::LinAlg::Matrix<3, 1> r_tt(true);
     Core::LinAlg::Matrix<3, 1> r_t(true);
     Core::LinAlg::Matrix<3, 1> r(true);
@@ -1405,11 +1405,11 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
 
     Core::LinAlg::Matrix<3, 3> S_r(true);
     Core::LargeRotations::computespin<double>(S_r, r);
-    dL.Multiply(S_r, r_t);
-    dL.Scale(mass_inertia_translational);
+    dL.multiply(S_r, r_t);
+    dL.scale(mass_inertia_translational);
     Core::LinAlg::Matrix<3, 1> Lambdanewmass_Jp_Wnewmass(true);
-    Lambdanewmass_Jp_Wnewmass.Multiply(Lambdanewmass, Jp_Wnewmass);
-    dL.Update(1.0, Lambdanewmass_Jp_Wnewmass, 1.0);
+    Lambdanewmass_Jp_Wnewmass.multiply(Lambdanewmass, Jp_Wnewmass);
+    dL.update(1.0, Lambdanewmass_Jp_Wnewmass, 1.0);
     for (unsigned int i = 0; i < 3; i++)
     {
       l_(i) += wgtmass * jacobi_gp_mass_[gp] * dL(i);
@@ -1421,23 +1421,23 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
     Core::LinAlg::Matrix<3, 3> SJpWnewmass(true);
     Core::LargeRotations::computespin<double>(SJpWnewmass, Jp_Wnewmass);
     Core::LinAlg::Matrix<3, 3> SWnewmass_Jp(true);
-    SWnewmass_Jp.Multiply(SWnewmass, Jp);
-    Jp_bar.Update(diff_factor_vel, SWnewmass_Jp, 1.0);
-    Jp_bar.Update(-diff_factor_vel, SJpWnewmass, 1.0);
+    SWnewmass_Jp.multiply(SWnewmass, Jp);
+    Jp_bar.update(diff_factor_vel, SWnewmass_Jp, 1.0);
+    Jp_bar.update(-diff_factor_vel, SJpWnewmass, 1.0);
 
     Core::LinAlg::Matrix<3, 3> Tmatrix(true);
     Tmatrix = Core::LargeRotations::Tmatrix(deltatheta);
 
     Core::LinAlg::Matrix<3, 3> Lambdanewmass_Jpbar(true);
-    Lambdanewmass_Jpbar.Multiply(Lambdanewmass, Jp_bar);
+    Lambdanewmass_Jpbar.multiply(Lambdanewmass, Jp_bar);
     Core::LinAlg::Matrix<3, 3> LambdaconvmassT_Tmatrix(true);
-    LambdaconvmassT_Tmatrix.MultiplyTN(Lambdaconvmass, Tmatrix);
+    LambdaconvmassT_Tmatrix.multiply_tn(Lambdaconvmass, Tmatrix);
     Core::LinAlg::Matrix<3, 3> Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix(true);
-    Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix.Multiply(
+    Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix.multiply(
         Lambdanewmass_Jpbar, LambdaconvmassT_Tmatrix);
     Core::LinAlg::Matrix<3, 3> auxmatrix1(true);
-    auxmatrix1.Update(-1.0, S_Pit, 1.0);
-    auxmatrix1.Update(1.0, Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix, 1.0);
+    auxmatrix1.update(-1.0, S_Pit, 1.0);
+    auxmatrix1.update(1.0, Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix, 1.0);
 
     if (inertia_force != nullptr)
     {
@@ -1496,7 +1496,7 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
 
         // rotational contribution
         Core::LinAlg::Matrix<3, 3> auxmatrix2(true);
-        auxmatrix2.Multiply(auxmatrix1, Itilde[jnode]);
+        auxmatrix2.multiply(auxmatrix1, Itilde[jnode]);
         for (unsigned int inode = 0; inode < nnodecl; inode++)
         {
           for (unsigned int i = 0; i < 3; i++)
@@ -1519,7 +1519,7 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
       {
         // rotational contribution
         Core::LinAlg::Matrix<3, 3> auxmatrix2(true);
-        auxmatrix2.Multiply(auxmatrix1, Itilde[jnode]);
+        auxmatrix2.multiply(auxmatrix1, Itilde[jnode]);
         for (unsigned int inode = 0; inode < nnodecl; inode++)
         {
           for (unsigned int i = 0; i < 3; i++)
@@ -1543,17 +1543,17 @@ void Discret::ELEMENTS::Beam3r::calc_inertia_force_and_mass_matrix(
     // Calculation of kinetic energy
     Core::LinAlg::Matrix<1, 1> ekinrot(true);
     Core::LinAlg::Matrix<1, 1> ekintrans(true);
-    ekinrot.MultiplyTN(Wnewmass, Jp_Wnewmass);
-    ekintrans.MultiplyTN(r_t, r_t);
-    ekin_ += 0.5 * (ekinrot.Norm2() + mass_inertia_translational * ekintrans.Norm2()) *
+    ekinrot.multiply_tn(Wnewmass, Jp_Wnewmass);
+    ekintrans.multiply_tn(r_t, r_t);
+    ekin_ += 0.5 * (ekinrot.norm2() + mass_inertia_translational * ekintrans.norm2()) *
              jacobi_gp_mass_[gp] * wgtmass;
     ekintorsion_ += 0.5 * Wnewmass(0) * Jp_Wnewmass(0) * jacobi_gp_mass_[gp] * wgtmass;
     ekinbending_ += 0.5 * Wnewmass(1) * Jp_Wnewmass(1) * jacobi_gp_mass_[gp] * wgtmass;
     ekinbending_ += 0.5 * Wnewmass(2) * Jp_Wnewmass(2) * jacobi_gp_mass_[gp] * wgtmass;
     ekintrans_ +=
-        0.5 * mass_inertia_translational * ekintrans.Norm2() * jacobi_gp_mass_[gp] * wgtmass;
+        0.5 * mass_inertia_translational * ekintrans.norm2() * jacobi_gp_mass_[gp] * wgtmass;
 
-    Jp_Wnewmass.Multiply(Jp, Wnewmass);
+    Jp_Wnewmass.multiply(Jp, Wnewmass);
   }
 
   // In Lie group GenAlpha algorithm, the mass matrix is multiplied with factor
@@ -1625,10 +1625,10 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_force_contributions(
 
       // lower left block; note: error in eq. (4.7), Jelenic 1999: the first factor should be I^i
       // instead of I^j
-      auxmatrix2.Multiply(r_s_hat, cn);
+      auxmatrix2.multiply(r_s_hat, cn);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
       auxmatrix1 -= auxmatrix2;
-      auxmatrix1.Scale(I_i(nodei));
+      auxmatrix1.scale(I_i(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
         {
@@ -1640,11 +1640,11 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_force_contributions(
         }
 
       // upper right block
-      auxmatrix2.Multiply(cn, r_s_hat);
+      auxmatrix2.multiply(cn, r_s_hat);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
       auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
 
-      auxmatrix3.Multiply(auxmatrix2, Itilde[nodej]);
+      auxmatrix3.multiply(auxmatrix2, Itilde[nodej]);
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
         {
@@ -1658,12 +1658,12 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_force_contributions(
       // lower right block
       // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
       // should be \hat{\Lambda N} instead of \Lambda N
-      auxmatrix1.Multiply(
+      auxmatrix1.multiply(
           auxmatrix2, Itilde[nodej]);  // term in parantheses is the same as in upper right block
                                        // but with opposite sign (note '-=' below)
 
-      auxmatrix3.Multiply(r_s_hat, auxmatrix1);
-      auxmatrix3.Scale(I_i(nodei));
+      auxmatrix3.multiply(r_s_hat, auxmatrix1);
+      auxmatrix3.scale(I_i(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofpercombinode * nodei + 3 + i, dofpercombinode * nodej + 3 + j) -=
@@ -1673,11 +1673,11 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_force_contributions(
          nodej++)  // this loop is only entered in case of nnodetriad>nnodecl
     {
       // upper right block
-      auxmatrix2.Multiply(cn, r_s_hat);
+      auxmatrix2.multiply(cn, r_s_hat);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
       auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
 
-      auxmatrix3.Multiply(auxmatrix2, Itilde[nodej]);
+      auxmatrix3.multiply(auxmatrix2, Itilde[nodej]);
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
         {
@@ -1693,12 +1693,12 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_force_contributions(
       // lower right block
       // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
       // should be \hat{\Lambda N} instead of \Lambda N
-      auxmatrix1.Multiply(
+      auxmatrix1.multiply(
           auxmatrix2, Itilde[nodej]);  // term in parantheses is the same as in upper right block
                                        // but with opposite sign (note '-=' below)
 
-      auxmatrix3.Multiply(r_s_hat, auxmatrix1);
-      auxmatrix3.Scale(I_i(nodei));
+      auxmatrix3.multiply(r_s_hat, auxmatrix1);
+      auxmatrix3.scale(I_i(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofpercombinode * nodei + 3 + i,
@@ -1713,10 +1713,10 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_force_contributions(
     {
       // lower left block; note: error in eq. (4.7), Jelenic 1999: the first factor should be I^i
       // instead of I^j
-      auxmatrix2.Multiply(r_s_hat, cn);
+      auxmatrix2.multiply(r_s_hat, cn);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
       auxmatrix1 -= auxmatrix2;
-      auxmatrix1.Scale(I_i(nodei));
+      auxmatrix1.scale(I_i(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
         {
@@ -1731,16 +1731,16 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_force_contributions(
       // lower right block
       // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
       // should be \hat{\Lambda N} instead of \Lambda N
-      auxmatrix2.Multiply(cn, r_s_hat);
+      auxmatrix2.multiply(cn, r_s_hat);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
       auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
 
-      auxmatrix1.Multiply(
+      auxmatrix1.multiply(
           auxmatrix2, Itilde[nodej]);  // term in parantheses is the same as in upper right block
                                        // but with opposite sign (note '-=' below)
 
-      auxmatrix3.Multiply(r_s_hat, auxmatrix1);
-      auxmatrix3.Scale(I_i(nodei));
+      auxmatrix3.multiply(r_s_hat, auxmatrix1);
+      auxmatrix3.scale(I_i(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * nodei + i,
@@ -1751,16 +1751,16 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_force_contributions(
       // lower right block
       // third summand; note: error in eq. (4.7), Jelenic 1999: the first summand in the parantheses
       // should be \hat{\Lambda N} instead of \Lambda N
-      auxmatrix2.Multiply(cn, r_s_hat);
+      auxmatrix2.multiply(cn, r_s_hat);
       Core::LargeRotations::computespin(auxmatrix1, stressn);
       auxmatrix2 -= auxmatrix1;  // auxmatrix2: term in parantheses
 
-      auxmatrix1.Multiply(
+      auxmatrix1.multiply(
           auxmatrix2, Itilde[nodej]);  // term in parantheses is the same as in upper right block
                                        // but with opposite sign (note '-=' below)
 
-      auxmatrix3.Multiply(r_s_hat, auxmatrix1);
-      auxmatrix3.Scale(I_i(nodei));
+      auxmatrix3.multiply(r_s_hat, auxmatrix1);
+      auxmatrix3.scale(I_i(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * nodei + i,
@@ -1814,8 +1814,8 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_moment_contributions(
     {
       // lower right block
       // first summand
-      auxmatrix1.Multiply(cm, Itildeprime[nodej]);
-      auxmatrix1.Scale(I_i_xi(nodei));
+      auxmatrix1.multiply(cm, Itildeprime[nodej]);
+      auxmatrix1.scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofpercombinode * nodei + 3 + i, dofpercombinode * nodej + 3 + j) +=
@@ -1823,8 +1823,8 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_moment_contributions(
 
       // second summand
       Core::LargeRotations::computespin(auxmatrix2, stressm);
-      auxmatrix1.Multiply(auxmatrix2, Itilde[nodej]);
-      auxmatrix1.Scale(I_i_xi(nodei));
+      auxmatrix1.multiply(auxmatrix2, Itilde[nodej]);
+      auxmatrix1.scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofpercombinode * nodei + 3 + i, dofpercombinode * nodej + 3 + j) -=
@@ -1835,8 +1835,8 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_moment_contributions(
     {
       // lower right block
       // first summand
-      auxmatrix1.Multiply(cm, Itildeprime[nodej]);
-      auxmatrix1.Scale(I_i_xi(nodei));
+      auxmatrix1.multiply(cm, Itildeprime[nodej]);
+      auxmatrix1.scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofpercombinode * nodei + 3 + i,
@@ -1844,8 +1844,8 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_moment_contributions(
 
       // second summand
       Core::LargeRotations::computespin(auxmatrix2, stressm);
-      auxmatrix1.Multiply(auxmatrix2, Itilde[nodej]);
-      auxmatrix1.Scale(I_i_xi(nodei));
+      auxmatrix1.multiply(auxmatrix2, Itilde[nodej]);
+      auxmatrix1.scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofpercombinode * nodei + 3 + i,
@@ -1860,8 +1860,8 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_moment_contributions(
     {
       // lower right block
       // first summand
-      auxmatrix1.Multiply(cm, Itildeprime[nodej]);
-      auxmatrix1.Scale(I_i_xi(nodei));
+      auxmatrix1.multiply(cm, Itildeprime[nodej]);
+      auxmatrix1.scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * nodei + i,
@@ -1869,8 +1869,8 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_moment_contributions(
 
       // second summand
       Core::LargeRotations::computespin(auxmatrix2, stressm);
-      auxmatrix1.Multiply(auxmatrix2, Itilde[nodej]);
-      auxmatrix1.Scale(I_i_xi(nodei));
+      auxmatrix1.multiply(auxmatrix2, Itilde[nodej]);
+      auxmatrix1.scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * nodei + i,
@@ -1880,8 +1880,8 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_moment_contributions(
     {
       // lower right block
       // first summand
-      auxmatrix1.Multiply(cm, Itildeprime[nodej]);
-      auxmatrix1.Scale(I_i_xi(nodei));
+      auxmatrix1.multiply(cm, Itildeprime[nodej]);
+      auxmatrix1.scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * nodei + i,
@@ -1889,8 +1889,8 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_analytic_moment_contributions(
 
       // second summand
       Core::LargeRotations::computespin(auxmatrix2, stressm);
-      auxmatrix1.Multiply(auxmatrix2, Itilde[nodej]);
-      auxmatrix1.Scale(I_i_xi(nodei));
+      auxmatrix1.multiply(auxmatrix2, Itilde[nodej]);
+      auxmatrix1.scale(I_i_xi(nodei));
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
           stiffmatrix(dofperclnode * nnodecl + dofpertriadnode * nodei + i,
@@ -1949,7 +1949,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
           tempmat(i, j) = stiffmatrix(dofpercombinode * inode + i, dofpercombinode * jnode + 3 + j);
 
       newstiffmat.clear();
-      newstiffmat.MultiplyNN(tempmat, Tmat);
+      newstiffmat.multiply_nn(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
@@ -1963,7 +1963,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
               stiffmatrix(dofpercombinode * inode + 3 + i, dofpercombinode * jnode + 3 + j);
 
       newstiffmat.clear();
-      newstiffmat.MultiplyNN(tempmat, Tmat);
+      newstiffmat.multiply_nn(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
@@ -1979,7 +1979,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
                 stiffmatrix(dofpercombinode * inode + 6 + i, dofpercombinode * jnode + 3 + j);
 
         newstiffmat.clear();
-        newstiffmat.MultiplyNN(tempmat, Tmat);
+        newstiffmat.multiply_nn(tempmat, Tmat);
 
         for (unsigned int i = 0; i < 3; ++i)
           for (unsigned int j = 0; j < 3; ++j)
@@ -1997,7 +1997,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
               dofpercombinode * jnode + 3 + j);
 
       newstiffmat.clear();
-      newstiffmat.MultiplyNN(tempmat, Tmat);
+      newstiffmat.multiply_nn(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
@@ -2024,7 +2024,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
               dofpercombinode * inode + i, dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
       newstiffmat.clear();
-      newstiffmat.MultiplyNN(tempmat, Tmat);
+      newstiffmat.multiply_nn(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
@@ -2038,7 +2038,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
               dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
       newstiffmat.clear();
-      newstiffmat.MultiplyNN(tempmat, Tmat);
+      newstiffmat.multiply_nn(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
@@ -2054,7 +2054,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
                 dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
         newstiffmat.clear();
-        newstiffmat.MultiplyNN(tempmat, Tmat);
+        newstiffmat.multiply_nn(tempmat, Tmat);
 
         for (unsigned int i = 0; i < 3; ++i)
           for (unsigned int j = 0; j < 3; ++j)
@@ -2071,7 +2071,7 @@ void Discret::ELEMENTS::Beam3r::calc_stiffmat_automatic_differentiation(
               dofperclnode * nnodecl + dofpertriadnode * jnode + j);
 
       newstiffmat.clear();
-      newstiffmat.MultiplyNN(tempmat, Tmat);
+      newstiffmat.multiply_nn(tempmat, Tmat);
 
       for (unsigned int i = 0; i < 3; ++i)
         for (unsigned int j = 0; j < 3; ++j)
@@ -2203,7 +2203,7 @@ void Discret::ELEMENTS::Beam3r::EvaluatePTC(
     artstiff = Core::LargeRotations::Tmatrix(deltatheta);
 
     // scale artificial damping with crotptc parameter for PTC method
-    artstiff.Scale(params.get<double>("crotptc", 0.0));
+    artstiff.scale(params.get<double>("crotptc", 0.0));
 
     // each node gets a block diagonal damping term; the Lobatto integration weight is 0.5 for
     // 2-noded elements jacobi determinant is constant and equals 0.5*refelelength for 2-noded
@@ -2339,7 +2339,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
 
     // compute quaternion of relative rotation from converged to current state
     Core::LinAlg::Matrix<3, 3, double> deltatriad(true);
-    deltatriad.MultiplyNT(LambdaGP, triad_mat_conv);
+    deltatriad.multiply_nt(LambdaGP, triad_mat_conv);
 
     Core::LinAlg::Matrix<4, 1, double> deltaQ(true);
     Core::LargeRotations::triadtoquaternion(deltatriad, deltaQ);
@@ -2352,7 +2352,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
 
     // angular velocity at this Gauss point according to backward Euler scheme
     Core::LinAlg::Matrix<3, 1> omega(true);
-    omega.Update(dt_inv, deltatheta);
+    omega.update(dt_inv, deltatheta);
 
     // compute matrix Lambda*[gamma(2) 0 0 \\ 0 0 0 \\ 0 0 0]*Lambda^t = gamma(2) * g_1 \otimes g_1
     // where g_1 is first base vector, i.e. first column of Lambda
@@ -2362,7 +2362,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
 
     // compute vector gamma(2) * g_1 \otimes g_1 * \omega
     Core::LinAlg::Matrix<3, 1> g1g1gammaomega;
-    g1g1gammaomega.Multiply(g1g1gamma, omega);
+    g1g1gammaomega.multiply(g1g1gamma, omega);
 
     const double jacobifac_gp_weight = jacobi_gp_dampstoch_[gp] * gausspoints.qwgt[gp];
 
@@ -2398,7 +2398,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
 
       // compute matrix gamma(2) * g_1 \otimes g_1 * \omega * Tmat
       Core::LinAlg::Matrix<3, 3> g1g1oldgammaTmat;
-      g1g1oldgammaTmat.Multiply(g1g1oldgamma, Core::LargeRotations::Tmatrix(deltatheta));
+      g1g1oldgammaTmat.multiply(g1g1oldgamma, Core::LargeRotations::Tmatrix(deltatheta));
 
       // compute spin matrix S(\omega)
       Core::LinAlg::Matrix<3, 3> Sofomega;
@@ -2406,7 +2406,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
 
       // compute matrix gamma(2) * g_1 \otimes g_1 *S(\omega)
       Core::LinAlg::Matrix<3, 3> g1g1gammaSofomega;
-      g1g1gammaSofomega.Multiply(g1g1gamma, Sofomega);
+      g1g1gammaSofomega.multiply(g1g1gamma, Sofomega);
 
       // compute spin matrix S(gamma(2) * g_1 \otimes g_1 *\omega)
       Core::LinAlg::Matrix<3, 3> Sofg1g1gammaomega;
@@ -2417,7 +2417,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
       Core::LinAlg::Matrix<3, 3> auxmatrix(true);
 
       sum += g1g1oldgammaTmat;
-      sum.Scale(dt_inv);
+      sum.scale(dt_inv);
       sum += g1g1gammaSofomega;
       sum -= Sofg1g1gammaomega;
 
@@ -2427,7 +2427,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
         // loop over first nnodecl column nodes
         for (unsigned int jnode = 0; jnode < nnodecl; jnode++)
         {
-          auxmatrix.Multiply(sum, Itilde[jnode]);
+          auxmatrix.multiply(sum, Itilde[jnode]);
 
           // loop over three dimensions in row and column direction
           for (unsigned int idim = 0; idim < ndim; idim++)
@@ -2441,7 +2441,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
         for (unsigned int jnode = nnodecl; jnode < nnodetriad;
              jnode++)  // this loop is only entered in case of nnodetriad>nnodecl
         {
-          auxmatrix.Multiply(sum, Itilde[jnode]);
+          auxmatrix.multiply(sum, Itilde[jnode]);
 
           // loop over three dimensions in row and column direction
           for (unsigned int idim = 0; idim < ndim; idim++)
@@ -2459,7 +2459,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
         // loop over all column nodes
         for (unsigned int jnode = 0; jnode < nnodecl; jnode++)
         {
-          auxmatrix.Multiply(sum, Itilde[jnode]);
+          auxmatrix.multiply(sum, Itilde[jnode]);
 
           // loop over three dimensions in row and column direction
           for (unsigned int idim = 0; idim < ndim; idim++)
@@ -2473,7 +2473,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_rotational_damping(
         for (unsigned int jnode = nnodecl; jnode < nnodetriad;
              jnode++)  // this loop is only entered in case of nnodetriad>nnodecl
         {
-          auxmatrix.Multiply(sum, Itilde[jnode]);
+          auxmatrix.multiply(sum, Itilde[jnode]);
 
           // loop over three dimensions in row and column direction
           for (unsigned int idim = 0; idim < ndim; idim++)
@@ -2570,7 +2570,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
             (idim == jdim) * gamma(1) + (gamma(0) - gamma(1)) * r_s(idim) * r_s(jdim);
 
     // compute viscous force vector per unit length at current GP
-    f_visc.Multiply(damp_mat, vel_rel);
+    f_visc.multiply(damp_mat, vel_rel);
 
     const double jacobifac_gp_weight = jacobi_gp_dampstoch_[gp] * gausspoints.qwgt[gp];
 
@@ -2593,7 +2593,7 @@ void Discret::ELEMENTS::Beam3r::evaluate_translational_damping(Teuchos::Paramete
     {
       // compute matrix product of damping matrix and gradient of background velocity
       Core::LinAlg::Matrix<ndim, ndim> dampmatvelbackgroundgrad(true);
-      dampmatvelbackgroundgrad.Multiply(damp_mat, velbackgroundgrad);
+      dampmatvelbackgroundgrad.multiply(damp_mat, velbackgroundgrad);
 
 
       // loop over all nodes used for centerline interpolation

@@ -164,8 +164,9 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_an
     if (diffcondmat_ == Inpar::ElCh::diffcondmat_newman)
     {
       calc_mat_cond_conc(emat, k, timefacfac,
-          var_manager()->RTFFC() / diff_manager()->GetValence(k), diffcondparams_->NewmanConstA(),
-          diffcondparams_->NewmanConstB(), var_manager()->GradPhi(k), var_manager()->ConIntInv());
+          var_manager()->RTFFC() / diff_manager()->GetValence(k),
+          diffcondparams_->NewmanConstdata(), diffcondparams_->NewmanConstB(),
+          var_manager()->GradPhi(k), var_manager()->ConIntInv());
     }
   }
   // equation for current is solved independently
@@ -233,7 +234,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calc_mat_an
     if (diffcondmat_ == Inpar::ElCh::diffcondmat_newman)
     {
       calc_rhs_cond_conc(erhs, k, rhsfac, var_manager()->RTFFC() / diff_manager()->GetValence(k),
-          diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
+          diffcondparams_->NewmanConstdata(), diffcondparams_->NewmanConstB(),
           var_manager()->GradPhi(k), var_manager()->ConIntInv());
     }
   }
@@ -295,13 +296,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
       {
         //
         calc_mat_pot_equ_divi_conc(emat, k, timefacfac, var_manager()->RTFFC(),
-            var_manager()->RTF(), var_manager()->InvF(), diffcondparams_->NewmanConstA(),
+            var_manager()->RTF(), var_manager()->InvF(), diffcondparams_->NewmanConstdata(),
             diffcondparams_->NewmanConstB(), var_manager()->GradPhi(k),
             var_manager()->ConIntInv(k));
 
         //
         calc_rhs_pot_equ_divi_conc(erhs, k, rhsfac, var_manager()->RTF(), diff_manager()->InvFVal(),
-            var_manager()->RTFFC(), diffcondparams_->NewmanConstA(),
+            var_manager()->RTFFC(), diffcondparams_->NewmanConstdata(),
             diffcondparams_->NewmanConstB(), var_manager()->GradPhi(k),
             var_manager()->ConIntInv(k));
       }
@@ -341,8 +342,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
     calc_mat_cur_equ_conc(emat, timefacfac, var_manager()->RTF(), var_manager()->RTFFC(),
-        diff_manager()->InvFVal(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
-        var_manager()->GradPhi(), var_manager()->ConIntInv());
+        diff_manager()->InvFVal(), diffcondparams_->NewmanConstdata(),
+        diffcondparams_->NewmanConstB(), var_manager()->GradPhi(), var_manager()->ConIntInv());
 
     // (xsi_i,Di)
     calc_rhs_cur_equ_cur(erhs, rhsfac, var_manager()->InvF(), var_manager()->CurInt());
@@ -352,7 +353,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
 
     // (xsi, -D(RT/F kappa (thermfactor) f(t_k) nabla ln c_k))
     calc_rhs_cur_equ_conc(erhs, rhsfac, var_manager()->RTF(), diff_manager()->InvFVal(),
-        var_manager()->RTFFC(), diffcondparams_->NewmanConstA(), diffcondparams_->NewmanConstB(),
+        var_manager()->RTFFC(), diffcondparams_->NewmanConstdata(), diffcondparams_->NewmanConstB(),
         var_manager()->GradPhi(), var_manager()->ConIntInv());
 
     //------------------------------------------------------------------------------------------

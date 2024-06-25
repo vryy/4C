@@ -91,7 +91,7 @@ namespace NOX
           virtual StatusType GetStatus() const = 0;
 
           //! Output formatted description of inner stopping test to output stream.
-          virtual std::ostream& Print(std::ostream& stream, int indent = 0) const = 0;
+          virtual std::ostream& print(std::ostream& stream, int indent = 0) const = 0;
         };
 
         // non-member function

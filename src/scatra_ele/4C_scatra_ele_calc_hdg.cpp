@@ -790,7 +790,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype,
     polySpace->evaluate(gp_coord, shape_gp[q]);
   }
 
-  double jacdet = shapes_->xjm.Determinant();
+  double jacdet = shapes_->xjm.determinant();
 
   Core::LinAlg::SerialDenseMatrix massPartD(hdgele->ndofs_, shape_gp.size());
 
@@ -838,17 +838,17 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype,
 
   for (unsigned int d = 0; d < nsd_; ++d)
     for (unsigned int e = 0; e < nsd_; ++e)
-      Core::LinAlg::multiplyNT(DW[d * nsd_ + e], massPartD, massPartDW[d * nsd_ + e]);
+      Core::LinAlg::multiply_nt(DW[d * nsd_ + e], massPartD, massPartDW[d * nsd_ + e]);
 
 
   // multiply matrices to perform summation over quadrature points
   if (not scatraparatimint_->IsStationary())
   {
-    Core::LinAlg::multiplyNT(hdgele->Mmat_, massPart, massPartW);
+    Core::LinAlg::multiply_nt(hdgele->Mmat_, massPart, massPartW);
   }
-  Core::LinAlg::multiplyNT(0.0, hdgele->Amat_, -1.0, gradPartVel,
+  Core::LinAlg::multiply_nt(0.0, hdgele->Amat_, -1.0, gradPartVel,
       massPartW);  // first part of A matrix (only if velocity field not zero)
-  Core::LinAlg::multiplyNT(0.0, hdgele->Bmat_, -1.0, massPartW, gradPart);
+  Core::LinAlg::multiply_nt(0.0, hdgele->Bmat_, -1.0, massPartW, gradPart);
 
   for (unsigned int j = 0; j < hdgele->ndofs_; ++j)
     for (unsigned int i = 0; i < hdgele->ndofs_; ++i)
@@ -935,17 +935,17 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype,
 
   for (unsigned int d = 0; d < nsd_; ++d)
     for (unsigned int e = 0; e < nsd_; ++e)
-      Core::LinAlg::multiplyNT(DW[d * nsd_ + e], massPart, massPartDW[d * nsd_ + e]);
+      Core::LinAlg::multiply_nt(DW[d * nsd_ + e], massPart, massPartDW[d * nsd_ + e]);
 
 
   // multiply matrices to perform summation over quadrature points
   if (not scatraparatimint_->IsStationary())
   {
-    Core::LinAlg::multiplyNT(hdgele->Mmat_, massPart, massPartW);
+    Core::LinAlg::multiply_nt(hdgele->Mmat_, massPart, massPartW);
   }
-  Core::LinAlg::multiplyNT(0.0, hdgele->Amat_, -1.0, gradPartVel,
+  Core::LinAlg::multiply_nt(0.0, hdgele->Amat_, -1.0, gradPartVel,
       massPartW);  // first part of A matrix (only if velocity field not zero)
-  Core::LinAlg::multiplyNT(0.0, hdgele->Bmat_, -1.0, massPartW, gradPart);
+  Core::LinAlg::multiply_nt(0.0, hdgele->Bmat_, -1.0, massPartW, gradPart);
 
   for (unsigned int j = 0; j < hdgele->ndofs_; ++j)
     for (unsigned int i = 0; i < hdgele->ndofs_; ++i)
@@ -1155,7 +1155,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::Compute
           source += shapes_->shderxy(j * nsd_ + d, q) *
                     Global::Problem::Instance()
                         ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funcno - 1)
-                        .evaluate(xyz.A(), time, d);
+                        .evaluate(xyz.data(), time, d);
         elevec1(i) += shapes_->shfunct(i, q) * source * shapes_->jfac(q);
       }
   }
@@ -1692,7 +1692,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(
       }
     }
 
-    Core::LinAlg::multiplyNT(Mmat, massPart, massPartW);
+    Core::LinAlg::multiply_nt(Mmat, massPart, massPartW);
     {
       using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
       using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
@@ -2216,10 +2216,10 @@ int Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcError(
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = highshapes.xyzreal(idim, q);
     double funct = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func - 1)
-                       .evaluate(xsi.A(), time, 0);
+                       .evaluate(xsi.data(), time, 0);
     std::vector<double> deriv = Global::Problem::Instance()
                                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(func - 1)
-                                    .evaluate_spatial_derivative(xsi.A(), time, 0);
+                                    .evaluate_spatial_derivative(xsi.data(), time, 0);
 
     error_phi += std::pow((funct - phi), 2) * highshapes.jfac(q);
     exact_phi += std::pow(funct, 2) * highshapes.jfac(q);

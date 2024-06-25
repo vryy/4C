@@ -280,9 +280,9 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
   if (NSD == 3)
   {
     Core::LinAlg::SerialDenseMatrix xjm(NSD, NSD);
-    Core::LinAlg::multiplyNT(xjm, deriv, xyze);
+    Core::LinAlg::multiply_nt(xjm, deriv, xyze);
     Core::LinAlg::Matrix<3, 3> jac(xjm.values(), true);
-    const double det = jac.Determinant();
+    const double det = jac.determinant();
 
     if (abs(det) < 1E-16)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT FOR ELEMENT %d: DET = %f", eleid, det);
@@ -382,7 +382,7 @@ int EXODUS::EleSaneSign(
   {
     Core::FE::shape_function_3D_deriv1(
         deriv, local_nodecoords(i, 0), local_nodecoords(i, 1), local_nodecoords(i, 2), distype);
-    Core::LinAlg::multiplyNT(xjm, deriv, xyze);
+    Core::LinAlg::multiply_nt(xjm, deriv, xyze);
     const double det = xjm(0, 0) * xjm(1, 1) * xjm(2, 2) + xjm(0, 1) * xjm(1, 2) * xjm(2, 0) +
                        xjm(0, 2) * xjm(1, 0) * xjm(2, 1) - xjm(0, 2) * xjm(1, 1) * xjm(2, 0) -
                        xjm(0, 0) * xjm(1, 2) * xjm(2, 1) - xjm(0, 1) * xjm(1, 0) * xjm(2, 2);

@@ -167,9 +167,9 @@ void Mat::ScalarDepInterp::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // do the linear interpolation between stresses:
   // ... = (1-\lambda(C)) * 2* \frac{\partial}{\partial \mym C} \Psi_0) + \lambda(C) * 2 *
   // \frac{\partial}{\partial \mym C} \Psi_1
-  stress->Update(1.0 - lambda, stress_lambda_zero, lambda, stress_lambda_unit, 0.0);
+  stress->update(1.0 - lambda, stress_lambda_zero, lambda, stress_lambda_unit, 0.0);
 
-  cmat->Update(1.0 - lambda, cmat_zero_conc, lambda, cmat_infty_conc, 0.0);
+  cmat->update(1.0 - lambda, cmat_zero_conc, lambda, cmat_infty_conc, 0.0);
 
   if (params.isParameter("dlambda_dC"))
   {
@@ -187,7 +187,7 @@ void Mat::ScalarDepInterp::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     // and add the stresses due to possible dependency of the ratio w.r.t. to C
     // ... - 2 * \Psi_0 * \frac{\partial}{\partial \mym C} \lambda(C) ) + * 2 * \Psi_1 *
     // \frac{\partial}{\partial \mym C} \lambda(C)
-    stress->Update(-2.0 * psi_lambda_zero, *dlambda_dC, +2.0 * psi_lambda_unit, *dlambda_dC, 1.0);
+    stress->update(-2.0 * psi_lambda_zero, *dlambda_dC, +2.0 * psi_lambda_unit, *dlambda_dC, 1.0);
 
     // Note: for the linearization we do neglect the derivatives of the ratio w.r.t. glstrain
   }

@@ -92,7 +92,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the shape function matrices.
       N_mortar.clear();
@@ -247,8 +247,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
              i_curve_segment++)
         {
           // Get the position, displacement and lambda value at the current point.
-          xi = segment.GetEtaA() +
-               i_curve_segment * (segment.GetEtaB() - segment.GetEtaA()) / (double)mortar_segments;
+          xi = segment.GetEtadata() + i_curve_segment * (segment.GetEtaB() - segment.GetEtadata()) /
+                                          (double)mortar_segments;
           GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, current_beamposition);
           GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, ref_beamposition);
           beamdisplacement = current_beamposition;
@@ -278,7 +278,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::evalu
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
     Core::LinAlg::Matrix<3, 1, scalar_type> v_beam) const
 {
-  force.PutScalar(0.);
+  force.put_scalar(0.);
 }
 /**
  * Explicit template initialization of template class.

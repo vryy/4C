@@ -110,10 +110,10 @@ void Core::FE::Nurbs::ControlPoint::unpack(const std::vector<char>& data)
 /*
   Print this control point
 */
-void Core::FE::Nurbs::ControlPoint::Print(std::ostream& os) const
+void Core::FE::Nurbs::ControlPoint::print(std::ostream& os) const
 {
   os << "Control Point :";
-  Core::Nodes::Node::Print(os);
+  Core::Nodes::Node::print(os);
   os << "\n+ additional weight ";
   os << w_ << "\n";
   return;

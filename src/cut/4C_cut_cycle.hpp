@@ -113,7 +113,7 @@ namespace Core::Geo
       void GmshDump(std::ofstream& file) const;
 
       /// Print the stored points to the screen
-      void Print() const;
+      void print() const;
 
      private:
       std::vector<Point*> points_;

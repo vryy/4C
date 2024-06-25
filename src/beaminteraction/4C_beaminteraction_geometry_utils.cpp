@@ -240,8 +240,8 @@ void BEAMINTERACTION::Geo::CalcLinearizationPointToCurveProjectionParameterCoord
           orthogon_condition_partial_r_xi_master(idim) * N_xi_master(idim, jdof);
     }
 
-  lin_xi_master_slaveDofs.Scale(-1.0 / orthogon_condition_partial_xi_master);
-  lin_xi_master_masterDofs.Scale(-1.0 / orthogon_condition_partial_xi_master);
+  lin_xi_master_slaveDofs.scale(-1.0 / orthogon_condition_partial_xi_master);
+  lin_xi_master_masterDofs.scale(-1.0 / orthogon_condition_partial_xi_master);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -279,13 +279,13 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
       orthogon_condition_partial_r_xi_master, delta_r);
 
   // finally compute the partial/directional derivatives
-  xi_master_partial_r_slave.Update(
+  xi_master_partial_r_slave.update(
       -1.0 / orthogon_condition_partial_xi_master, orthogon_condition_partial_r_slave);
 
-  xi_master_partial_r_master.Update(
+  xi_master_partial_r_master.update(
       -1.0 / orthogon_condition_partial_xi_master, orthogon_condition_partial_r_master);
 
-  xi_master_partial_r_xi_master.Update(
+  xi_master_partial_r_xi_master.update(
       -1.0 / orthogon_condition_partial_xi_master, orthogon_condition_partial_r_xi_master);
 }
 
@@ -358,32 +358,32 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
     }
 
   // 1)
-  xi_master_partial_r_slave_partial_r_xi_master.Update(
+  xi_master_partial_r_slave_partial_r_xi_master.update(
       -2.0 * orthogon_condition_partial_xi_master_inverse *
           orthogon_condition_partial_xi_master_inverse,
       r_xi_master_tensorproduct_r_xi_master);
 
-  xi_master_partial_r_slave_partial_r_xi_master.Update(
+  xi_master_partial_r_slave_partial_r_xi_master.update(
       -1.0 * orthogon_condition_partial_xi_master_inverse, unit_matrix, 1.0);
 
-  xi_master_partial_r_master_partial_r_xi_master.Update(
+  xi_master_partial_r_master_partial_r_xi_master.update(
       -1.0, xi_master_partial_r_slave_partial_r_xi_master);
 
 
-  xi_master_partial_r_slave_partial_r_xixi_master.Update(
+  xi_master_partial_r_slave_partial_r_xixi_master.update(
       orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
       r_xi_master_tensorproduct_delta_r);
 
-  xi_master_partial_r_master_partial_r_xixi_master.Update(
+  xi_master_partial_r_master_partial_r_xixi_master.update(
       -1.0, xi_master_partial_r_slave_partial_r_xixi_master);
 
 
-  xi_master_partial_r_xi_master_partial_r_xi_master.UpdateT(
+  xi_master_partial_r_xi_master_partial_r_xi_master.update_t(
       -2.0 * orthogon_condition_partial_xi_master_inverse *
           orthogon_condition_partial_xi_master_inverse,
       r_xi_master_tensorproduct_delta_r);
 
-  xi_master_partial_r_xi_master_partial_r_xixi_master.Update(
+  xi_master_partial_r_xi_master_partial_r_xixi_master.update(
       orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
       delta_r_tensorproduct_delta_r);
 
@@ -392,7 +392,7 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
   // add contributions from linearization of master parameter coordinate xi_master
   // to [.]_deriv_r_xi_master expressions (according to chain rule)
   Core::LinAlg::Matrix<3, 1, T> tmp_vec2;
-  tmp_vec2.Multiply(xi_master_partial_r_slave_partial_r_xi_master, r_xixi_master);
+  tmp_vec2.multiply(xi_master_partial_r_slave_partial_r_xi_master, r_xixi_master);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
   {
@@ -409,7 +409,7 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
     }
   }
 
-  tmp_vec2.Multiply(xi_master_partial_r_master_partial_r_xi_master, r_xixi_master);
+  tmp_vec2.multiply(xi_master_partial_r_master_partial_r_xi_master, r_xixi_master);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
   {
@@ -426,7 +426,7 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
     }
   }
 
-  tmp_vec2.Multiply(xi_master_partial_r_xi_master_partial_r_xi_master, r_xixi_master);
+  tmp_vec2.multiply(xi_master_partial_r_xi_master_partial_r_xi_master, r_xixi_master);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
   {
@@ -446,7 +446,7 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
 
   // add contributions from linearization of master parameter coordinate xi_master
   // to [.]_deriv_r_xixi_master expressions (according to chain rule)
-  tmp_vec2.Multiply(xi_master_partial_r_slave_partial_r_xixi_master, r_xixixi_master);
+  tmp_vec2.multiply(xi_master_partial_r_slave_partial_r_xixi_master, r_xixixi_master);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
   {
@@ -463,7 +463,7 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
     }
   }
 
-  tmp_vec2.Multiply(xi_master_partial_r_master_partial_r_xixi_master, r_xixixi_master);
+  tmp_vec2.multiply(xi_master_partial_r_master_partial_r_xixi_master, r_xixixi_master);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
   {
@@ -480,7 +480,7 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
     }
   }
 
-  tmp_vec2.Multiply(xi_master_partial_r_xi_master_partial_r_xixi_master, r_xixixi_master);
+  tmp_vec2.multiply(xi_master_partial_r_xi_master_partial_r_xixi_master, r_xixixi_master);
 
   for (unsigned int irow = 0; irow < 3; ++irow)
   {
@@ -499,54 +499,54 @@ void BEAMINTERACTION::Geo::CalcPointToCurveProjectionParameterCoordMasterPartial
 
 
   // 3)
-  xi_master_partial_r_xi_master_partial_r_slave.Update(
+  xi_master_partial_r_xi_master_partial_r_slave.update(
       -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_slave, 1.0);
 
-  xi_master_partial_r_xi_master_partial_r_master.Update(
+  xi_master_partial_r_xi_master_partial_r_master.update(
       -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_master, 1.0);
 
-  xi_master_partial_r_xi_master_partial_r_xi_master.Update(
+  xi_master_partial_r_xi_master_partial_r_xi_master.update(
       -1.0 * orthogon_condition_partial_xi_master_inverse, delta_r_deriv_r_xi_master, 1.0);
 
 
-  xi_master_partial_r_slave_partial_r_slave.Multiply(
+  xi_master_partial_r_slave_partial_r_slave.multiply(
       orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
       r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_slave, 1.0);
 
-  xi_master_partial_r_slave_partial_r_master.Multiply(
+  xi_master_partial_r_slave_partial_r_master.multiply(
       orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
       r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_master, 1.0);
 
-  xi_master_partial_r_slave_partial_r_xi_master.Multiply(
+  xi_master_partial_r_slave_partial_r_xi_master.multiply(
       orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
       r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_xi_master, 1.0);
 
 
-  xi_master_partial_r_master_partial_r_slave.Multiply(
+  xi_master_partial_r_master_partial_r_slave.multiply(
       -1.0 * orthogon_condition_partial_xi_master_inverse *
           orthogon_condition_partial_xi_master_inverse,
       r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_slave, 1.0);
 
-  xi_master_partial_r_master_partial_r_master.Multiply(
+  xi_master_partial_r_master_partial_r_master.multiply(
       -1.0 * orthogon_condition_partial_xi_master_inverse *
           orthogon_condition_partial_xi_master_inverse,
       r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_master, 1.0);
 
-  xi_master_partial_r_master_partial_r_xi_master.Multiply(
+  xi_master_partial_r_master_partial_r_xi_master.multiply(
       -1.0 * orthogon_condition_partial_xi_master_inverse *
           orthogon_condition_partial_xi_master_inverse,
       r_xi_master_tensorproduct_r_xixi_master, delta_r_deriv_r_xi_master, 1.0);
 
 
-  xi_master_partial_r_xi_master_partial_r_slave.Multiply(
+  xi_master_partial_r_xi_master_partial_r_slave.multiply(
       orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
       delta_r_tensorproduct_r_xixi_master, delta_r_deriv_r_slave, 1.0);
 
-  xi_master_partial_r_xi_master_partial_r_master.Multiply(
+  xi_master_partial_r_xi_master_partial_r_master.multiply(
       orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
       delta_r_tensorproduct_r_xixi_master, delta_r_deriv_r_master, 1.0);
 
-  xi_master_partial_r_xi_master_partial_r_xi_master.Multiply(
+  xi_master_partial_r_xi_master_partial_r_xi_master.multiply(
       orthogon_condition_partial_xi_master_inverse * orthogon_condition_partial_xi_master_inverse,
       delta_r_tensorproduct_r_xixi_master, delta_r_deriv_r_xi_master, 1.0);
 
@@ -597,7 +597,7 @@ void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivPa
     const Core::LinAlg::Matrix<3, 1, T>& r_xi_master,
     const Core::LinAlg::Matrix<3, 1, T>& r_xixi_master)
 {
-  orthogon_condition_partial_xi_master = -r_xi_master.Dot(r_xi_master) + delta_r.Dot(r_xixi_master);
+  orthogon_condition_partial_xi_master = -r_xi_master.dot(r_xi_master) + delta_r.dot(r_xixi_master);
 
   if (std::abs(Core::FADUtils::CastToDouble(orthogon_condition_partial_xi_master)) <
       POINT_TO_CURVE_PROJECTION_NONUNIQUE_MINIMAL_DISTANCE_TOLERANCE)
@@ -613,7 +613,7 @@ void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivCl
     Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_slave,
     const Core::LinAlg::Matrix<3, 1, T>& r_xi_master)
 {
-  orthogon_condition_partial_r_slave.UpdateT(r_xi_master);
+  orthogon_condition_partial_r_slave.update_t(r_xi_master);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -623,7 +623,7 @@ void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivCl
     Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_master,
     const Core::LinAlg::Matrix<3, 1, T>& r_xi_master)
 {
-  orthogon_condition_partial_r_master.UpdateT(-1.0, r_xi_master);
+  orthogon_condition_partial_r_master.update_t(-1.0, r_xi_master);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -633,7 +633,7 @@ void BEAMINTERACTION::Geo::CalcPTCProjectionOrthogonalityConditionPartialDerivCl
     Core::LinAlg::Matrix<1, 3, T>& orthogon_condition_partial_r_xi_master,
     const Core::LinAlg::Matrix<3, 1, T>& delta_r)
 {
-  orthogon_condition_partial_r_xi_master.UpdateT(delta_r);
+  orthogon_condition_partial_r_xi_master.update_t(delta_r);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -646,7 +646,7 @@ void BEAMINTERACTION::Geo::CalcEnclosedAngle(T& angle, T& cosine_angle,
     FOUR_C_THROW("Cannot determine angle for zero vector!");
 
   cosine_angle = Core::FADUtils::Norm<T>(
-      a.Dot(b) / (Core::FADUtils::VectorNorm(a) * Core::FADUtils::VectorNorm(b)));
+      a.dot(b) / (Core::FADUtils::VectorNorm(a) * Core::FADUtils::VectorNorm(b)));
 
   if (cosine_angle < 1.0)
   {

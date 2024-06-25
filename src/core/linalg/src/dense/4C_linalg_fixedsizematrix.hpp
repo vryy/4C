@@ -68,7 +68,7 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_left, class value_type_right>
-    inline void multiplyNN(value_type_out* out, const value_type_left* const left,
+    inline void multiply_nn(value_type_out* out, const value_type_left* const left,
         const value_type_right* const right);
 
     /// Multiplication: \e out = \e left*\e right^T
@@ -87,7 +87,7 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_left, class value_type_right>
-    inline void multiplyNT(value_type_out* out, const value_type_left* const left,
+    inline void multiply_nt(value_type_out* out, const value_type_left* const left,
         const value_type_right* const right);
 
     /// Multiplication: \e out = \e left^T*\e right
@@ -106,7 +106,7 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_left, class value_type_right>
-    inline void multiplyTN(value_type_out* out, const value_type_left* const left,
+    inline void multiply_tn(value_type_out* out, const value_type_left* const left,
         const value_type_right* const right);
 
     /// Multiplication: \e out = \e left^T*\e right^T
@@ -126,7 +126,7 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_left, class value_type_right>
-    inline void multiplyTT(value_type_out* out, const value_type_left* const left,
+    inline void multiply_tt(value_type_out* out, const value_type_left* const left,
         const value_type_right* const right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right
@@ -166,7 +166,7 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_infac, class value_type_left, class value_type_right>
-    inline void multiplyNN(value_type_out* out, const value_type_infac infac,
+    inline void multiply_nn(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right^T
@@ -187,7 +187,7 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_infac, class value_type_left, class value_type_right>
-    inline void multiplyNT(value_type_out* out, const value_type_infac infac,
+    inline void multiply_nt(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right
@@ -208,7 +208,7 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_infac, class value_type_left, class value_type_right>
-    inline void multiplyTN(value_type_out* out, const value_type_infac infac,
+    inline void multiply_tn(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right^T
@@ -230,7 +230,7 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_infac, class value_type_left, class value_type_right>
-    inline void multiplyTT(value_type_out* out, const value_type_infac infac,
+    inline void multiply_tt(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
@@ -277,7 +277,7 @@ namespace Core::LinAlg
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_outfac, class value_type_infac, class value_type_left,
         class value_type_right>
-    inline void multiplyNN(const value_type_outfac outfac, value_type_out* out,
+    inline void multiply_nn(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right);
 
@@ -302,7 +302,7 @@ namespace Core::LinAlg
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_outfac, class value_type_infac, class value_type_left,
         class value_type_right>
-    inline void multiplyNT(const value_type_outfac outfac, value_type_out* out,
+    inline void multiply_nt(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right);
 
@@ -327,7 +327,7 @@ namespace Core::LinAlg
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_outfac, class value_type_infac, class value_type_left,
         class value_type_right>
-    inline void multiplyTN(const value_type_outfac outfac, value_type_out* out,
+    inline void multiply_tn(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right);
 
@@ -353,13 +353,13 @@ namespace Core::LinAlg
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_outfac, class value_type_infac, class value_type_left,
         class value_type_right>
-    inline void multiplyTT(const value_type_outfac outfac, value_type_out* out,
+    inline void multiply_tt(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right);
 
-    /// Invert matrix: \e out = inv(\e in)
+    /// invert matrix: \e out = inv(\e in)
     /*!
-      Invert the matrix \e in and store the result in \e out. To keep a
+      invert the matrix \e in and store the result in \e out. To keep a
       common interface there are two template parameters \c i and \c j, but
       they must be the same number. The sizes of \e in and \e out are
       expected to be (\c i)x(\c j), and they must be square.
@@ -372,9 +372,9 @@ namespace Core::LinAlg
     template <class value_type, unsigned int i, unsigned int j>
     inline value_type invert(value_type* out, const value_type* in);
 
-    /// Invert matrix: \e mat = inv(\e mat)
+    /// invert matrix: \e mat = inv(\e mat)
     /*!
-      Invert the matrix \e mat in place. To keep a common interface there
+      invert the matrix \e mat in place. To keep a common interface there
       are two template parameters \c i and \c j, but they must be the same
       number. The size of \e mat is expected to be (\c i)x(\c j), and it must
       be square.
@@ -527,7 +527,7 @@ namespace Core::LinAlg
         pointer to the matrix to be copied, size (\c j)x(\c i)
      */
     template <class value_type_out, unsigned int i, unsigned int j, class value_type_in>
-    inline void updateT(value_type_out* out, const value_type_in* in);
+    inline void update_t(value_type_out* out, const value_type_in* in);
 
     /// Scaled transposed copy: \e out = \e infac * \e in^T
     /*!
@@ -543,7 +543,8 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, class value_type_infac,
         class value_type_in>
-    inline void updateT(value_type_out* out, const value_type_infac infac, const value_type_in* in);
+    inline void update_t(
+        value_type_out* out, const value_type_infac infac, const value_type_in* in);
 
     /// Transposed addition: \e out = \e outfac * \e out + \e infac * \e in^T
     /*!
@@ -561,7 +562,7 @@ namespace Core::LinAlg
      */
     template <class value_type_out, unsigned int i, unsigned int j, class value_type_outfac,
         class value_type_infac, class value_type_in>
-    inline void updateT(const value_type_outfac outfac, value_type_out* out,
+    inline void update_t(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_in* in);
 
     /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
@@ -575,7 +576,7 @@ namespace Core::LinAlg
         pointer to second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(value_type* out, const value_type* in);
+    inline void elementwise_multiply(value_type* out, const value_type* in);
 
     /// Multiply element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
     /*!
@@ -590,7 +591,7 @@ namespace Core::LinAlg
         pointer to second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type fac, value_type* out, const value_type* in);
+    inline void elementwise_multiply(const value_type fac, value_type* out, const value_type* in);
 
     /// Multiply element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
     /*!
@@ -605,7 +606,8 @@ namespace Core::LinAlg
         pointer to second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(value_type* out, const value_type* left, const value_type* right);
+    inline void elementwise_multiply(
+        value_type* out, const value_type* left, const value_type* right);
 
     /// Multiply element-wise, \e out(m,n) = \e infac*\e left(m,n)*\e right(m,n)
     /*!
@@ -622,7 +624,7 @@ namespace Core::LinAlg
          pointer to second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(
+    inline void elementwise_multiply(
         value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Multiply element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)*\e
@@ -635,8 +637,8 @@ namespace Core::LinAlg
       factor, size (\c i)x(\c j) \param right pointer to second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* left, const value_type* right);
+    inline void elementwise_multiply(const value_type outfac, value_type* out,
+        const value_type infac, const value_type* left, const value_type* right);
 
     /// Divide element-wise, \e out(m,n) = \e out(m,n)/\e in(m,n)
     /*!
@@ -649,7 +651,7 @@ namespace Core::LinAlg
         pointer to divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(value_type* out, const value_type* in);
+    inline void elementwise_divide(value_type* out, const value_type* in);
 
     /// Divide element-wise, \e out(m,n) = \e fac*\e out(m,n)/\e in(m,n)
     /*!
@@ -664,7 +666,7 @@ namespace Core::LinAlg
         pointer to divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type fac, value_type* out, const value_type* in);
+    inline void elementwise_divide(const value_type fac, value_type* out, const value_type* in);
 
     /// Divide element-wise, \e out(m,n) = \e left(m,n)/\e right(m,n)
     /*!
@@ -679,7 +681,8 @@ namespace Core::LinAlg
         pointer to divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(value_type* out, const value_type* left, const value_type* right);
+    inline void elementwise_divide(
+        value_type* out, const value_type* left, const value_type* right);
 
     /// Divide element-wise, \e out(m,n) = \e infac*\e left(m,n)/\e right(m,n)
     /*!
@@ -696,7 +699,7 @@ namespace Core::LinAlg
          pointer to divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(
+    inline void elementwise_divide(
         value_type* out, const value_type infac, const value_type* left, const value_type* right);
 
     /// Divide element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)/\e
@@ -709,7 +712,7 @@ namespace Core::LinAlg
       size (\c i)x(\c j) \param right pointer to divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type outfac, value_type* out, const value_type infac,
+    inline void elementwise_divide(const value_type outfac, value_type* out, const value_type infac,
         const value_type* left, const value_type* right);
 
     /// Scale matrix
@@ -723,7 +726,7 @@ namespace Core::LinAlg
         pointer to the matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void scaleMatrix(const value_type factor, value_type* mat);
+    inline void scale_matrix(const value_type factor, value_type* mat);
 
     /// Dot product
     /*!
@@ -745,13 +748,13 @@ namespace Core::LinAlg
       Set matrix \e mat to zero. This function takes two template
       parameters i and j denoting the size of the matrix.
 
-      This is the same as \e putScalar<\c i, \c j>(0.0, \e mat), but it should be faster.
+      This is the same as \e put_scalar<\c i, \c j>(0.0, \e mat), but it should be faster.
 
       \param mat
         pointer to the matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void clearMatrix(value_type* mat);
+    inline void clear_matrix(value_type* mat);
 
     /// Fill matrix with scalar value
     /*!
@@ -764,7 +767,7 @@ namespace Core::LinAlg
         pointer to the matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void putScalar(const value_type scalar, value_type* mat);
+    inline void put_scalar(const value_type scalar, value_type* mat);
 
     /// Calculate absolut values of a matrix
     /*!
@@ -828,7 +831,7 @@ namespace Core::LinAlg
       \return inf-norm of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type normInf(const value_type* mat);
+    inline value_type norm_inf(const value_type* mat);
 
     /// Minimum value of a matrix
     /*!
@@ -839,7 +842,7 @@ namespace Core::LinAlg
       \return minimum value of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type minValue(const value_type* mat);
+    inline value_type min_value(const value_type* mat);
 
     /// Maximum value of a matrix
     /*!
@@ -850,7 +853,7 @@ namespace Core::LinAlg
       \return maximum value of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type maxValue(const value_type* mat);
+    inline value_type max_value(const value_type* mat);
 
     /// Mean value of a matrix
     /*!
@@ -861,7 +864,7 @@ namespace Core::LinAlg
       \return mean value of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type meanValue(const value_type* mat);
+    inline value_type mean_value(const value_type* mat);
 
     /*
      * Declaration of the functions taking Core::LinAlg::SerialDenseMatrix::Base
@@ -901,7 +904,7 @@ namespace Core::LinAlg
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_nn(Core::LinAlg::SerialDenseMatrix::Base& out,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -920,7 +923,7 @@ namespace Core::LinAlg
         j)x(\e k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_nt(Core::LinAlg::SerialDenseMatrix::Base& out,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -939,7 +942,7 @@ namespace Core::LinAlg
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_tn(Core::LinAlg::SerialDenseMatrix::Base& out,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -959,7 +962,7 @@ namespace Core::LinAlg
         j)x(\e k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_tt(Core::LinAlg::SerialDenseMatrix::Base& out,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -999,7 +1002,7 @@ namespace Core::LinAlg
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
+    inline void multiply_nn(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -1019,7 +1022,7 @@ namespace Core::LinAlg
         second factor, size (\c k)x(\c j) so that \e right^T has size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
+    inline void multiply_nt(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -1040,7 +1043,7 @@ namespace Core::LinAlg
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
+    inline void multiply_tn(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -1061,7 +1064,7 @@ namespace Core::LinAlg
         second factor, size (\c k)x(\c j) so that \e right^T has size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
+    inline void multiply_tt(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -1105,7 +1108,7 @@ namespace Core::LinAlg
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_nn(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -1128,7 +1131,7 @@ namespace Core::LinAlg
         (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_nt(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -1151,7 +1154,7 @@ namespace Core::LinAlg
         second factor, size (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_tn(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
@@ -1175,13 +1178,13 @@ namespace Core::LinAlg
         (\c j)x(\c k)
      */
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_tt(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right);
 
-    /// Invert matrix: \e out = inv(\e in)
+    /// invert matrix: \e out = inv(\e in)
     /*!
-      Invert the matrix \e in and store the result in \e out. To keep a
+      invert the matrix \e in and store the result in \e out. To keep a
       common interface there are two template parameters \c i and \c j, but
       they must be the same number. The sizes of \e in and \e out are
       expected to be (\c i)x(\c j), and they must be square.
@@ -1198,9 +1201,9 @@ namespace Core::LinAlg
     inline value_type invert(Core::LinAlg::SerialDenseMatrix::Base& out,
         const Core::LinAlg::SerialDenseMatrix::Base& in);
 
-    /// Invert matrix: \e mat = inv(\e mat)
+    /// invert matrix: \e mat = inv(\e mat)
     /*!
-      Invert the matrix \e mat in place. To keep a common interface there
+      invert the matrix \e mat in place. To keep a common interface there
       are two template parameters \c i and \c j, but they must be the same
       number. The size of \e mat is expected to be (\c i)x(\c j), and it must
       be square.
@@ -1354,7 +1357,7 @@ namespace Core::LinAlg
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(
+    inline void elementwise_multiply(
         Core::LinAlg::SerialDenseMatrix::Base out, const Core::LinAlg::SerialDenseMatrix::Base in);
 
     /// Multiply element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
@@ -1370,8 +1373,8 @@ namespace Core::LinAlg
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type fac, Core::LinAlg::SerialDenseMatrix::Base out,
-        const Core::LinAlg::SerialDenseMatrix::Base in);
+    inline void elementwise_multiply(const value_type fac,
+        Core::LinAlg::SerialDenseMatrix::Base out, const Core::LinAlg::SerialDenseMatrix::Base in);
 
     /// Multiply element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
     /*!
@@ -1386,7 +1389,7 @@ namespace Core::LinAlg
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Core::LinAlg::SerialDenseMatrix::Base out,
+    inline void elementwise_multiply(Core::LinAlg::SerialDenseMatrix::Base out,
         const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right);
 
@@ -1405,8 +1408,8 @@ namespace Core::LinAlg
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Core::LinAlg::SerialDenseMatrix::Base out, const value_type infac,
-        const Core::LinAlg::SerialDenseMatrix::Base left,
+    inline void elementwise_multiply(Core::LinAlg::SerialDenseMatrix::Base out,
+        const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right);
 
     /// Multiply element-wise, \e out(m,n) = \e outfac*out(m,n) + \e infac*\e left(m,n)*\e
@@ -1420,8 +1423,9 @@ namespace Core::LinAlg
         second factor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base out,
-        const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base left,
+    inline void elementwise_multiply(const value_type outfac,
+        Core::LinAlg::SerialDenseMatrix::Base out, const value_type infac,
+        const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right);
 
     /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
@@ -1435,7 +1439,7 @@ namespace Core::LinAlg
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(
+    inline void elementwise_divide(
         Core::LinAlg::SerialDenseMatrix::Base out, const Core::LinAlg::SerialDenseMatrix::Base in);
 
     /// Divide element-wise, \e out(m,n) = \e fac*\e out(m,n)*\e in(m,n)
@@ -1451,7 +1455,7 @@ namespace Core::LinAlg
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type fac, Core::LinAlg::SerialDenseMatrix::Base out,
+    inline void elementwise_divide(const value_type fac, Core::LinAlg::SerialDenseMatrix::Base out,
         const Core::LinAlg::SerialDenseMatrix::Base in);
 
     /// Divide element-wise, \e out(m,n) = \e left(m,n)*\e right(m,n)
@@ -1467,7 +1471,7 @@ namespace Core::LinAlg
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Core::LinAlg::SerialDenseMatrix::Base out,
+    inline void elementwise_divide(Core::LinAlg::SerialDenseMatrix::Base out,
         const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right);
 
@@ -1486,8 +1490,8 @@ namespace Core::LinAlg
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Core::LinAlg::SerialDenseMatrix::Base out, const value_type infac,
-        const Core::LinAlg::SerialDenseMatrix::Base left,
+    inline void elementwise_divide(Core::LinAlg::SerialDenseMatrix::Base out,
+        const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right);
 
     /// Divide element-wise, \e out(m,n) = \e outfac*\e out(m,n) + \e infac*\e left(m,n)*\e
@@ -1501,8 +1505,9 @@ namespace Core::LinAlg
         divisor, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base out,
-        const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base left,
+    inline void elementwise_divide(const value_type outfac,
+        Core::LinAlg::SerialDenseMatrix::Base out, const value_type infac,
+        const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right);
 
     /// Scale matrix
@@ -1516,7 +1521,7 @@ namespace Core::LinAlg
         matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void scaleMatrix(const value_type scalar, Core::LinAlg::SerialDenseMatrix::Base& mat)
+    inline void scale_matrix(const value_type scalar, Core::LinAlg::SerialDenseMatrix::Base& mat)
     {
       mat.scale(scalar);
     }
@@ -1544,13 +1549,13 @@ namespace Core::LinAlg
       Set matrix \e mat to zero. This function takes two template
       parameters i and j denoting the size of the matrix.
 
-      This is the same as \e putScalar<\c i,\c j>(0.0, \e mat), but it should be faster.
+      This is the same as \e put_scalar<\c i,\c j>(0.0, \e mat), but it should be faster.
 
       \param mat
         matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void clearMatrix(Core::LinAlg::SerialDenseMatrix::Base& mat)
+    inline void clear_matrix(Core::LinAlg::SerialDenseMatrix::Base& mat)
     {
       mat.putScalar(0.0);
     }
@@ -1566,7 +1571,7 @@ namespace Core::LinAlg
         matrix, size (\c i)x(\c j)
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline void putScalar(const value_type scalar, Core::LinAlg::SerialDenseMatrix::Base& mat)
+    inline void put_scalar(const value_type scalar, Core::LinAlg::SerialDenseMatrix::Base& mat)
     {
       mat.putScalar(scalar);
     }
@@ -1637,9 +1642,9 @@ namespace Core::LinAlg
       \return inf-norm of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type normInf(const Core::LinAlg::SerialDenseMatrix::Base& mat)
+    inline value_type norm_inf(const Core::LinAlg::SerialDenseMatrix::Base& mat)
     {
-      return normInf<value_type, i, j>(mat.values());
+      return norm_inf<value_type, i, j>(mat.values());
     }
 
     /// Minimum value of a matrix
@@ -1651,9 +1656,9 @@ namespace Core::LinAlg
       \return minimum value of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type minValue(const Core::LinAlg::SerialDenseMatrix::Base& mat)
+    inline value_type min_value(const Core::LinAlg::SerialDenseMatrix::Base& mat)
     {
-      return minValue<value_type, i, j>(mat.values());
+      return min_value<value_type, i, j>(mat.values());
     }
 
     /// Maximum value of a matrix
@@ -1665,9 +1670,9 @@ namespace Core::LinAlg
       \return maximum value of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type maxValue(const Core::LinAlg::SerialDenseMatrix::Base& mat)
+    inline value_type max_value(const Core::LinAlg::SerialDenseMatrix::Base& mat)
     {
-      return maxValue<value_type, i, j>(mat.values());
+      return max_value<value_type, i, j>(mat.values());
     }
 
     /// Mean value of a matrix
@@ -1679,9 +1684,9 @@ namespace Core::LinAlg
       \return mean value of \e mat
      */
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type meanValue(const Core::LinAlg::SerialDenseMatrix::Base& mat)
+    inline value_type mean_value(const Core::LinAlg::SerialDenseMatrix::Base& mat)
     {
-      return meanValue<value_type, i, j>(mat.values());
+      return mean_value<value_type, i, j>(mat.values());
     }
 
     /*
@@ -1717,7 +1722,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_left, class value_type_right>
-    inline void multiplyNN(
+    inline void multiply_nn(
         value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef FOUR_C_DEBUG
@@ -1743,7 +1748,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_left, class value_type_right>
-    inline void multiplyNT(
+    inline void multiply_nt(
         value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef FOUR_C_DEBUG
@@ -1769,7 +1774,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_left, class value_type_right>
-    inline void multiplyTN(
+    inline void multiply_tn(
         value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef FOUR_C_DEBUG
@@ -1795,7 +1800,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_left, class value_type_right>
-    inline void multiplyTT(
+    inline void multiply_tt(
         value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef FOUR_C_DEBUG
@@ -1847,7 +1852,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_infac, class value_type_left, class value_type_right>
-    inline void multiplyNN(value_type_out* out, const value_type_infac infac,
+    inline void multiply_nn(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef FOUR_C_DEBUG
@@ -1873,7 +1878,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_infac, class value_type_left, class value_type_right>
-    inline void multiplyNT(value_type_out* out, const value_type_infac infac,
+    inline void multiply_nt(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef FOUR_C_DEBUG
@@ -1899,7 +1904,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_infac, class value_type_left, class value_type_right>
-    inline void multiplyTN(value_type_out* out, const value_type_infac infac,
+    inline void multiply_tn(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef FOUR_C_DEBUG
@@ -1925,7 +1930,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_infac, class value_type_left, class value_type_right>
-    inline void multiplyTT(value_type_out* out, const value_type_infac infac,
+    inline void multiply_tt(value_type_out* out, const value_type_infac infac,
         const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef FOUR_C_DEBUG
@@ -1980,7 +1985,7 @@ namespace Core::LinAlg
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_outfac, class value_type_infac, class value_type_left,
         class value_type_right>
-    inline void multiplyNN(const value_type_outfac outfac, value_type_out* out,
+    inline void multiply_nn(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right)
     {
@@ -2008,7 +2013,7 @@ namespace Core::LinAlg
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_outfac, class value_type_infac, class value_type_left,
         class value_type_right>
-    inline void multiplyNT(const value_type_outfac outfac, value_type_out* out,
+    inline void multiply_nt(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right)
     {
@@ -2036,7 +2041,7 @@ namespace Core::LinAlg
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_outfac, class value_type_infac, class value_type_left,
         class value_type_right>
-    inline void multiplyTN(const value_type_outfac outfac, value_type_out* out,
+    inline void multiply_tn(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right)
     {
@@ -2064,7 +2069,7 @@ namespace Core::LinAlg
     template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
         class value_type_outfac, class value_type_infac, class value_type_left,
         class value_type_right>
-    inline void multiplyTT(const value_type_outfac outfac, value_type_out* out,
+    inline void multiply_tt(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_left* const left,
         const value_type_right* const right)
     {
@@ -2096,7 +2101,7 @@ namespace Core::LinAlg
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       const value_type det = in[0];
-      if (det == 0.0) FOUR_C_THROW("Determinant of 1x1 matrix is zero");
+      if (det == 0.0) FOUR_C_THROW("determinant of 1x1 matrix is zero");
       out[0] = 1.0 / in[0];
       return det;
     }
@@ -2108,7 +2113,7 @@ namespace Core::LinAlg
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
 #endif
       const value_type det = in[0] * in[1 + 1 * 2] - in[1] * in[1 * 2];
-      if (det == 0.0) FOUR_C_THROW("Determinant of 2x2 matrix is zero");
+      if (det == 0.0) FOUR_C_THROW("determinant of 2x2 matrix is zero");
       const value_type invdet = 1.0 / det;
       out[0] = invdet * in[1 + 1 * 2];
       out[1] = -invdet * in[1];
@@ -2134,7 +2139,7 @@ namespace Core::LinAlg
       //                   in[0+3*2]*in[1+3*1]*in[2+3*0] -
       //                   in[0+3*0]*in[1+3*2]*in[2+3*1] -
       //                   in[0+3*1]*in[1+3*0]*in[2+3*2];
-      if (det == 0.0) FOUR_C_THROW("Determinant of 3x3 matrix is zero");
+      if (det == 0.0) FOUR_C_THROW("determinant of 3x3 matrix is zero");
       const value_type invdet = 1.0 / det;
       out[0] *= invdet;
       out[1] *= invdet;
@@ -2175,7 +2180,7 @@ namespace Core::LinAlg
     inline value_type invert1x1(value_type* mat)
     {
       const value_type det = mat[0];
-      if (det == 0.0) FOUR_C_THROW("Determinant of 1x1 matrix is zero");
+      if (det == 0.0) FOUR_C_THROW("determinant of 1x1 matrix is zero");
       mat[0] = 1.0 / mat[0];
       return det;
     }
@@ -2185,7 +2190,7 @@ namespace Core::LinAlg
     {
       value_type tmp;
       const value_type det = mat[0] * mat[1 + 1 * 2] - mat[1] * mat[1 * 2];
-      if (det == 0.0) FOUR_C_THROW("Determinant of 2x2 matrix is zero");
+      if (det == 0.0) FOUR_C_THROW("determinant of 2x2 matrix is zero");
       const value_type invdet = 1.0 / det;
       tmp = mat[0];
       mat[0] = invdet * mat[1 + 1 * 2];
@@ -2209,7 +2214,7 @@ namespace Core::LinAlg
       //                    mat[0+3*2]*mat[1+3*1]*mat[2+3*0] -
       //                    mat[0+3*0]*mat[1+3*2]*mat[2+3*1] -
       //                    mat[0+3*1]*mat[1+3*0]*mat[2+3*2];
-      if (det == 0.0) FOUR_C_THROW("Determinant of 3x3 matrix is zero");
+      if (det == 0.0) FOUR_C_THROW("determinant of 3x3 matrix is zero");
       const value_type invdet = 1.0 / det;
       const value_type tmp01 = mat[1 * 3];
       const value_type tmp11 = mat[1 + 1 * 3];
@@ -2418,7 +2423,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type_out, unsigned int i, unsigned int j, class value_type_in>
-    inline void updateT(value_type_out* out, const value_type_in* in)
+    inline void update_t(value_type_out* out, const value_type_in* in)
     {
 #ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_in>)
@@ -2430,7 +2435,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, class value_type_infac,
         class value_type_in>
-    inline void updateT(value_type_out* out, const value_type_infac infac, const value_type_in* in)
+    inline void update_t(value_type_out* out, const value_type_infac infac, const value_type_in* in)
     {
 #ifdef FOUR_C_DEBUG
       if constexpr (std::is_same_v<value_type_out, value_type_in>)
@@ -2442,7 +2447,7 @@ namespace Core::LinAlg
 
     template <class value_type_out, unsigned int i, unsigned int j, class value_type_outfac,
         class value_type_infac, class value_type_in>
-    inline void updateT(const value_type_outfac outfac, value_type_out* out,
+    inline void update_t(const value_type_outfac outfac, value_type_out* out,
         const value_type_infac infac, const value_type_in* in)
     {
 #ifdef FOUR_C_DEBUG
@@ -2451,7 +2456,7 @@ namespace Core::LinAlg
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {  // cannot handle this case here, because 0*nan==nan
-        updateT<value_type_out, i, j>(out, infac, in);
+        update_t<value_type_out, i, j>(out, infac, in);
         return;
       }
       for (unsigned int c2 = 0; c2 < j; c2 += 1)
@@ -2465,7 +2470,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(value_type* out, const value_type* in)
+    inline void elementwise_multiply(value_type* out, const value_type* in)
     {
 #ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
@@ -2475,7 +2480,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type fac, value_type* out, const value_type* in)
+    inline void elementwise_multiply(const value_type fac, value_type* out, const value_type* in)
     {
 #ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
@@ -2485,7 +2490,8 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(value_type* out, const value_type* left, const value_type* right)
+    inline void elementwise_multiply(
+        value_type* out, const value_type* left, const value_type* right)
     {
 #ifdef FOUR_C_DEBUG
       if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
@@ -2496,7 +2502,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(
+    inline void elementwise_multiply(
         value_type* out, const value_type infac, const value_type* left, const value_type* right)
     {
 #ifdef FOUR_C_DEBUG
@@ -2508,8 +2514,8 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* left, const value_type* right)
+    inline void elementwise_multiply(const value_type outfac, value_type* out,
+        const value_type infac, const value_type* left, const value_type* right)
     {
 #ifdef FOUR_C_DEBUG
       if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
@@ -2517,7 +2523,7 @@ namespace Core::LinAlg
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {
-        eMultiply<value_type, i, j>(out, infac, left, right);
+        elementwise_multiply<value_type, i, j>(out, infac, left, right);
         return;
       }
       *out = outfac * (*out) + infac * (*left) * (*right);
@@ -2529,7 +2535,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(value_type* out, const value_type* in)
+    inline void elementwise_divide(value_type* out, const value_type* in)
     {
 #ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
@@ -2539,7 +2545,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type fac, value_type* out, const value_type* in)
+    inline void elementwise_divide(const value_type fac, value_type* out, const value_type* in)
     {
 #ifdef FOUR_C_DEBUG
       if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
@@ -2554,7 +2560,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(value_type* out, const value_type* left, const value_type* right)
+    inline void elementwise_divide(value_type* out, const value_type* left, const value_type* right)
     {
 #ifdef FOUR_C_DEBUG
       if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
@@ -2565,7 +2571,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(
+    inline void elementwise_divide(
         value_type* out, const value_type infac, const value_type* left, const value_type* right)
     {
 #ifdef FOUR_C_DEBUG
@@ -2577,7 +2583,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type outfac, value_type* out, const value_type infac,
+    inline void elementwise_divide(const value_type outfac, value_type* out, const value_type infac,
         const value_type* left, const value_type* right)
     {
 #ifdef FOUR_C_DEBUG
@@ -2586,7 +2592,7 @@ namespace Core::LinAlg
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {
-        eDivide<value_type, i, j>(out, infac, left, right);
+        elementwise_divide<value_type, i, j>(out, infac, left, right);
         return;
       }
       *out = outfac * (*out) + infac * (*left) / (*right);
@@ -2598,7 +2604,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void scaleMatrix(const value_type factor, value_type* mat)
+    inline void scale_matrix(const value_type factor, value_type* mat)
     {
       *mat *= factor;
       for (unsigned int c = 1; c < i * j; ++c) *(++mat) *= factor;
@@ -2633,7 +2639,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void clearMatrix(value_type* mat)
+    inline void clear_matrix(value_type* mat)
     {
       // the memset method is needed for arbitrary precision (cln) data types instead of the fill
       // method std::memset(mat,0,i*j*sizeof(value_type));
@@ -2642,7 +2648,7 @@ namespace Core::LinAlg
 
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void putScalar(const value_type scalar, value_type* mat)
+    inline void put_scalar(const value_type scalar, value_type* mat)
     {
       *mat = scalar;
       for (unsigned int c = 1; c < i * j; ++c)
@@ -2707,7 +2713,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type normInf(const value_type* mat)
+    inline value_type norm_inf(const value_type* mat)
     {
       value_type result = Core::MathOperations<value_type>::abs(*mat);
       value_type tmp;
@@ -2721,7 +2727,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type minValue(const value_type* mat)
+    inline value_type min_value(const value_type* mat)
     {
       value_type result = *mat;
       for (unsigned int c = 1; c < i * j; ++c)
@@ -2733,7 +2739,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type maxValue(const value_type* mat)
+    inline value_type max_value(const value_type* mat)
     {
       value_type result = *mat;
       for (unsigned int c = 1; c < i * j; ++c)
@@ -2745,7 +2751,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline value_type meanValue(const value_type* mat)
+    inline value_type mean_value(const value_type* mat)
     {
       value_type result = *mat;
       for (unsigned int c = 1; c < i * j; ++c) result += *(++mat);
@@ -2773,7 +2779,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_nn(Core::LinAlg::SerialDenseMatrix::Base& out,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2784,11 +2790,11 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyNN<value_type, i, j, k>(out.values(), left.values(), right.values());
+      multiply_nn<value_type, i, j, k>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_nt(Core::LinAlg::SerialDenseMatrix::Base& out,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2799,11 +2805,11 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyNT<value_type, i, j, k>(out.values(), left.values(), right.values());
+      multiply_nt<value_type, i, j, k>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_tn(Core::LinAlg::SerialDenseMatrix::Base& out,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2814,11 +2820,11 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyTN<value_type, i, j, k>(out.values(), left.values(), right.values());
+      multiply_tn<value_type, i, j, k>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_tt(Core::LinAlg::SerialDenseMatrix::Base& out,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2829,7 +2835,7 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyTT<value_type, i, j, k>(out.values(), left.values(), right.values());
+      multiply_tt<value_type, i, j, k>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
@@ -2848,7 +2854,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
+    inline void multiply_nn(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2859,11 +2865,11 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyNN<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
+      multiply_nn<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
+    inline void multiply_nt(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2874,11 +2880,11 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyNT<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
+      multiply_nt<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
+    inline void multiply_tn(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2889,11 +2895,11 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyTN<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
+      multiply_tn<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
+    inline void multiply_tt(Core::LinAlg::SerialDenseMatrix::Base& out, const value_type infac,
         const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2904,7 +2910,7 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyTT<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
+      multiply_tt<value_type, i, j, k>(out.values(), infac, left.values(), right.values());
     }
 
 
@@ -2924,7 +2930,7 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_nn(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2935,11 +2941,11 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyNN<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
+      multiply_nn<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_nt(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2950,11 +2956,11 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyNT<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
+      multiply_nt<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_tn(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2965,11 +2971,11 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyTN<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
+      multiply_tn<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
+    inline void multiply_tt(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base& out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base& left,
         const Core::LinAlg::SerialDenseMatrix::Base& right)
     {
@@ -2980,7 +2986,7 @@ namespace Core::LinAlg
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      multiplyTT<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
+      multiply_tt<value_type, i, j, k>(outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3091,141 +3097,148 @@ namespace Core::LinAlg
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(
+    inline void elementwise_multiply(
         Core::LinAlg::SerialDenseMatrix::Base out, const Core::LinAlg::SerialDenseMatrix::Base in)
     {
 #ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
-            out.numRows(), out.numCols(), in.numRows(), in.numCols());
+        FOUR_C_THROW("Invalid matrix sizes in elementwise_multiply<%i,%i>, (%i,%i) *= (%i,%i)", i,
+            j, out.numRows(), out.numCols(), in.numRows(), in.numCols());
 #endif
-      eMultiply<value_type, i, j>(out.values(), in.values());
+      elementwise_multiply<value_type, i, j>(out.values(), in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type fac, Core::LinAlg::SerialDenseMatrix::Base out,
-        const Core::LinAlg::SerialDenseMatrix::Base in)
+    inline void elementwise_multiply(const value_type fac,
+        Core::LinAlg::SerialDenseMatrix::Base out, const Core::LinAlg::SerialDenseMatrix::Base in)
     {
 #ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
-            out.numRows(), out.numCols(), in.numRows(), in.numCols());
+        FOUR_C_THROW("Invalid matrix sizes in elementwise_multiply<%i,%i>, (%i,%i) *= (%i,%i)", i,
+            j, out.numRows(), out.numCols(), in.numRows(), in.numCols());
 #endif
-      eMultiply<value_type, i, j>(fac, out.values(), in.values());
+      elementwise_multiply<value_type, i, j>(fac, out.values(), in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Core::LinAlg::SerialDenseMatrix::Base out,
+    inline void elementwise_multiply(Core::LinAlg::SerialDenseMatrix::Base out,
         const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right)
     {
 #ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
+        FOUR_C_THROW(
+            "Invalid matrix sizes in elementwise_multiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      eMultiply<value_type, i, j>(out.values(), left.values(), right.values());
+      elementwise_multiply<value_type, i, j>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(Core::LinAlg::SerialDenseMatrix::Base out, const value_type infac,
-        const Core::LinAlg::SerialDenseMatrix::Base left,
-        const Core::LinAlg::SerialDenseMatrix::Base right)
-    {
-#ifdef FOUR_C_DEBUG
-      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
-          right.numRows() != i or right.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
-            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
-            right.numCols());
-#endif
-      eMultiply<value_type, i, j>(out.values(), infac, left.values(), right.values());
-    }
-
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void eMultiply(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base out,
+    inline void elementwise_multiply(Core::LinAlg::SerialDenseMatrix::Base out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right)
     {
 #ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eMultiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
+        FOUR_C_THROW(
+            "Invalid matrix sizes in elementwise_multiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
             out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      eMultiply<value_type, i, j>(outfac, out.values(), infac, left.values(), right.values());
+      elementwise_multiply<value_type, i, j>(out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(
+    inline void elementwise_multiply(const value_type outfac,
+        Core::LinAlg::SerialDenseMatrix::Base out, const value_type infac,
+        const Core::LinAlg::SerialDenseMatrix::Base left,
+        const Core::LinAlg::SerialDenseMatrix::Base right)
+    {
+#ifdef FOUR_C_DEBUG
+      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
+          right.numRows() != i or right.numCols() != j)
+        FOUR_C_THROW(
+            "Invalid matrix sizes in elementwise_multiply<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
+            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
+#endif
+      elementwise_multiply<value_type, i, j>(
+          outfac, out.values(), infac, left.values(), right.values());
+    }
+
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void elementwise_divide(
         Core::LinAlg::SerialDenseMatrix::Base out, const Core::LinAlg::SerialDenseMatrix::Base in)
     {
 #ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
+        FOUR_C_THROW("Invalid matrix sizes in elementwise_divide<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
             out.numRows(), out.numCols(), in.numRows(), in.numCols());
 #endif
-      eDivide<value_type, i, j>(out.values(), in.values());
+      elementwise_divide<value_type, i, j>(out.values(), in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type fac, Core::LinAlg::SerialDenseMatrix::Base out,
+    inline void elementwise_divide(const value_type fac, Core::LinAlg::SerialDenseMatrix::Base out,
         const Core::LinAlg::SerialDenseMatrix::Base in)
     {
 #ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or in.numRows() != i or in.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
+        FOUR_C_THROW("Invalid matrix sizes in elementwise_divide<%i,%i>, (%i,%i) *= (%i,%i)", i, j,
             out.numRows(), out.numCols(), in.numRows(), in.numCols());
 #endif
-      eDivide<value_type, i, j>(fac, out.values(), in.values());
+      elementwise_divide<value_type, i, j>(fac, out.values(), in.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Core::LinAlg::SerialDenseMatrix::Base out,
+    inline void elementwise_divide(Core::LinAlg::SerialDenseMatrix::Base out,
         const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right)
     {
 #ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
-            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+        FOUR_C_THROW("Invalid matrix sizes in elementwise_divide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
+            i, j, out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      eDivide<value_type, i, j>(out.values(), left.values(), right.values());
+      elementwise_divide<value_type, i, j>(out.values(), left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(Core::LinAlg::SerialDenseMatrix::Base out, const value_type infac,
-        const Core::LinAlg::SerialDenseMatrix::Base left,
-        const Core::LinAlg::SerialDenseMatrix::Base right)
-    {
-#ifdef FOUR_C_DEBUG
-      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
-          right.numRows() != i or right.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
-            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
-            right.numCols());
-#endif
-      eDivide<value_type, i, j>(out.values(), infac, left.values(), right.values());
-    }
-
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void eDivide(const value_type outfac, Core::LinAlg::SerialDenseMatrix::Base out,
+    inline void elementwise_divide(Core::LinAlg::SerialDenseMatrix::Base out,
         const value_type infac, const Core::LinAlg::SerialDenseMatrix::Base left,
         const Core::LinAlg::SerialDenseMatrix::Base right)
     {
 #ifdef FOUR_C_DEBUG
       if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
           right.numRows() != i or right.numCols() != j)
-        FOUR_C_THROW("Invalid matrix sizes in eDivide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)", i, j,
-            out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+        FOUR_C_THROW("Invalid matrix sizes in elementwise_divide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
+            i, j, out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
             right.numCols());
 #endif
-      eDivide<value_type, i, j>(outfac, out.values(), infac, left.values(), right.values());
+      elementwise_divide<value_type, i, j>(out.values(), infac, left.values(), right.values());
+    }
+
+    template <class value_type, unsigned int i, unsigned int j>
+    inline void elementwise_divide(const value_type outfac,
+        Core::LinAlg::SerialDenseMatrix::Base out, const value_type infac,
+        const Core::LinAlg::SerialDenseMatrix::Base left,
+        const Core::LinAlg::SerialDenseMatrix::Base right)
+    {
+#ifdef FOUR_C_DEBUG
+      if (out.numRows() != i or out.numCols() != j or left.numRows() != i or left.numCols() != j or
+          right.numRows() != i or right.numCols() != j)
+        FOUR_C_THROW("Invalid matrix sizes in elementwise_divide<%i,%i>, (%i,%i) = (%i,%i)*(%i,%i)",
+            i, j, out.numRows(), out.numCols(), left.numRows(), left.numCols(), right.numRows(),
+            right.numCols());
+#endif
+      elementwise_divide<value_type, i, j>(
+          outfac, out.values(), infac, left.values(), right.values());
     }
 
     template <class value_type, unsigned int i, unsigned int j>
@@ -3407,11 +3420,11 @@ namespace Core::LinAlg
     ~Matrix();
 
     /// Return the value_type* holding the data.
-    inline const value_type* A() const { return data_; }
+    inline const value_type* data() const { return data_; }
     /// Return the value_type* holding the data.
     inline const value_type* values() const { return data_; }
     /// Return the value_type* holding the data.
-    inline value_type* A()
+    inline value_type* data()
     {
       FOUR_C_ASSERT((not isreadonly_), "No write access to read-only data!");
       return data_;
@@ -3423,25 +3436,25 @@ namespace Core::LinAlg
       return data_;
     }
     /// Return the number of rows
-    static constexpr unsigned int M() { return numRows(); }
+    static constexpr unsigned int m() { return numRows(); }
     /// Return the number of columns
-    static constexpr unsigned int N() { return numCols(); }
+    static constexpr unsigned int n() { return numCols(); }
     /// Return the number of rows
     static constexpr unsigned int numRows() { return rows; }
     /// Return the number of columns
     static constexpr unsigned int numCols() { return cols; }
     /// Check whether the matrix is initialized
     /*!
-      You cannot test whether the matrix is empty using M() and N(),
+      You cannot test whether the matrix is empty using m() and n(),
       for they will always return the templated size. Instead this
       function can be used, it tests whether the data pointer is not
       nullptr.
 
-      \note To actually get a matrix for which IsInitialized() returns
+      \note To actually get a matrix for which is_initialized() returns
       false you must construct a view to nullptr, because the default
       constructor already allocates memory.
      */
-    inline bool IsInitialized() const { return A() != nullptr; }
+    inline bool is_initialized() const { return data() != nullptr; }
 
     /// Set view
     /*!
@@ -3450,7 +3463,7 @@ namespace Core::LinAlg
       \param data
         memory to be viewed
      */
-    void SetView(value_type* data);
+    void set_view(value_type* data);
 
     /// Set view
     /*!
@@ -3459,64 +3472,63 @@ namespace Core::LinAlg
       \param source
         matrix to be viewed
      */
-    void SetView(Matrix<rows, cols, value_type>& source);
+    void set_view(Matrix<rows, cols, value_type>& source);
 
     /// Set copy
     /*!
-      Set this matrix to be a copy of \e data. The difference to Update(\e data)
+      Set this matrix to be a copy of \e data. The difference to update(\e data)
       is that this funcion will allocate it's own memory when it was a
       view before, Update would copy the data into the view.
 
       \param data
         memory to copy
      */
-    void SetCopy(const value_type* data);
+    void set_copy(const value_type* data);
 
     /// Set copy
     /*!
       Set this matrix to be a copy of source. Only the value_type array
       will be copied, the \e isview_ flag is ignored (this is equivalent to
-      SetCopy(source.values()). The difference to Update(\e source) is that this funcion will
+      set_copy(source.values()). The difference to update(\e source) is that this funcion will
       allocate it's own memory when it was a view before, Update would copy the data into the view.
 
       \param source
         matrix to copy from
      */
-    void SetCopy(const Matrix<rows, cols, value_type>& source);
+    void set_copy(const Matrix<rows, cols, value_type>& source);
 
 
     /// Calculate determinant
     /*!
       \return determinant
      */
-    inline value_type Determinant() const;
+    inline value_type determinant() const;
 
-    /// Invert in place
+    /// invert in place
     /*!
-      Invert this matrix in place.
+      invert this matrix in place.
 
       \return determinant of matrix before inversion
      */
-    inline value_type Invert();
+    inline value_type invert();
 
-    /// Invert matrix
+    /// invert matrix
     /*!
-      Invert matrix \e other and store the result in \e this.
+      invert matrix \e other and store the result in \e this.
 
       \param other
         matrix to be inverted
       \return determinant of \e other
      */
-    inline value_type Invert(const Matrix<rows, cols, value_type>& other);
+    inline value_type invert(const Matrix<rows, cols, value_type>& other);
 
     /// Set to zero
     /*!
       Sets every value in this matrix to zero. This is equivalent to
       PutScalar(0.0), but it should be faster.
      */
-    inline void clear() { DenseFunctions::clearMatrix<value_type, rows, cols>(A()); }
+    inline void clear() { DenseFunctions::clear_matrix<value_type, rows, cols>(data()); }
 
-    // Epetra-style Functions
     /// Fill with scalar
     /*!
       Sets every value in this matrix to \e scalar.
@@ -3524,22 +3536,9 @@ namespace Core::LinAlg
       \param scalar
         value to fill matrix with
      */
-    inline void PutScalar(const value_type scalar)
+    inline void put_scalar(const value_type scalar)
     {
-      DenseFunctions::putScalar<value_type, rows, cols>(scalar, A());
-    }
-
-    // Teuchos-style Functions
-    /// Fill with scalar
-    /*!
-      Sets every value in this matrix to \e scalar.
-
-      \param scalar
-        value to fill matrix with
-     */
-    inline void putScalar(const value_type scalar)
-    {
-      DenseFunctions::putScalar<value_type, rows, cols>(scalar, A());
+      DenseFunctions::put_scalar<value_type, rows, cols>(scalar, data());
     }
 
     /// Dot product
@@ -3551,9 +3550,9 @@ namespace Core::LinAlg
       \return dot product
      */
     template <class value_type_out = value_type, class value_type_other>
-    inline value_type_out Dot(const Matrix<rows, cols, value_type_other>& other) const
+    inline value_type_out dot(const Matrix<rows, cols, value_type_other>& other) const
     {
-      return DenseFunctions::dot<value_type_out, rows, cols>(A(), other.values());
+      return DenseFunctions::dot<value_type_out, rows, cols>(data(), other.values());
     }
 
     /// Cross product
@@ -3565,10 +3564,10 @@ namespace Core::LinAlg
       \return cross product
      */
     template <class value_type_left, class value_type_right>
-    inline void CrossProduct(const Matrix<rows, cols, value_type_left>& left,
+    inline void cross_product(const Matrix<rows, cols, value_type_left>& left,
         const Matrix<rows, cols, value_type_right>& right)
     {
-      DenseFunctions::crossproduct<value_type, rows, cols>(A(), left.values(), right.values());
+      DenseFunctions::crossproduct<value_type, rows, cols>(data(), left.values(), right.values());
     }
 
     /// Compute absolute value
@@ -3578,9 +3577,9 @@ namespace Core::LinAlg
       \param other
         matrix to read values from
      */
-    inline void Abs(const Matrix<rows, cols, value_type>& other)
+    inline void abs(const Matrix<rows, cols, value_type>& other)
     {
-      DenseFunctions::abs<value_type, rows, cols>(A(), other.values());
+      DenseFunctions::abs<value_type, rows, cols>(data(), other.values());
     }
 
     /// Compute reciprocal value
@@ -3590,9 +3589,9 @@ namespace Core::LinAlg
       \param other
         matrix to read values from
      */
-    inline void Reciprocal(const Matrix<rows, cols, value_type>& other)
+    inline void reciprocal(const Matrix<rows, cols, value_type>& other)
     {
-      DenseFunctions::reciprocal<value_type, rows, cols>(A(), other.values());
+      DenseFunctions::reciprocal<value_type, rows, cols>(data(), other.values());
     }
 
     /// Scale
@@ -3602,9 +3601,9 @@ namespace Core::LinAlg
       \param scalar
         scaling factor
      */
-    inline void Scale(const value_type scalar)
+    inline void scale(const value_type scalar)
     {
-      DenseFunctions::scaleMatrix<value_type, rows, cols>(scalar, A());
+      DenseFunctions::scale_matrix<value_type, rows, cols>(scalar, data());
     }
 
     /// Copy: \e this = \e other
@@ -3615,9 +3614,9 @@ namespace Core::LinAlg
         matrix to copy
      */
     template <class value_type_other>
-    inline void Update(const Matrix<rows, cols, value_type_other>& other)
+    inline void update(const Matrix<rows, cols, value_type_other>& other)
     {
-      DenseFunctions::update<value_type, rows, cols>(A(), other.values());
+      DenseFunctions::update<value_type, rows, cols>(data(), other.values());
     }
 
     /// Scaled copy: \e this = \e scalarOther * \e other
@@ -3629,9 +3628,9 @@ namespace Core::LinAlg
       \param other
         matrix to read from
      */
-    inline void Update(const value_type scalarOther, const Matrix<rows, cols, value_type>& other)
+    inline void update(const value_type scalarOther, const Matrix<rows, cols, value_type>& other)
     {
-      DenseFunctions::update<value_type, rows, cols>(A(), scalarOther, other.values());
+      DenseFunctions::update<value_type, rows, cols>(data(), scalarOther, other.values());
     }
 
     /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
@@ -3646,10 +3645,11 @@ namespace Core::LinAlg
         scaling factor for \e this
      */
     template <class value_type_scalar_other, class value_type_other, class value_type_scalar_this>
-    inline void Update(const value_type_scalar_other scalarOther,
+    inline void update(const value_type_scalar_other scalarOther,
         const Matrix<rows, cols, value_type_other>& other, const value_type_scalar_this scalarThis)
     {
-      DenseFunctions::update<value_type, rows, cols>(scalarThis, A(), scalarOther, other.values());
+      DenseFunctions::update<value_type, rows, cols>(
+          scalarThis, data(), scalarOther, other.values());
     }
 
     /// Add: \e this = \e left + \e right
@@ -3662,10 +3662,10 @@ namespace Core::LinAlg
         second matrix to add
      */
     template <class value_type_left, class value_type_right>
-    inline void Update(const Matrix<rows, cols, value_type_left>& left,
+    inline void update(const Matrix<rows, cols, value_type_left>& left,
         const Matrix<rows, cols, value_type_right>& right)
     {
-      DenseFunctions::update<value_type, rows, cols>(A(), left.values(), right.values());
+      DenseFunctions::update<value_type, rows, cols>(data(), left.values(), right.values());
     }
 
     /// Add: \e this = \e scalarLeft * \e left + \e scalarRight * \e right
@@ -3683,12 +3683,12 @@ namespace Core::LinAlg
      */
     template <class value_type_scalar_left, class value_type_left, class value_type_scalar_right,
         class value_type_right>
-    inline void Update(const value_type_scalar_left scalarLeft,
+    inline void update(const value_type_scalar_left scalarLeft,
         const Matrix<rows, cols, value_type_left>& left, const value_type_scalar_right scalarRight,
         const Matrix<rows, cols, value_type_right>& right)
     {
       DenseFunctions::update<value_type, rows, cols>(
-          A(), scalarLeft, left.values(), scalarRight, right.values());
+          data(), scalarLeft, left.values(), scalarRight, right.values());
     }
 
     /// Add: \e this = \e scalarThis * \e this + \e scalarLeft * \e left + \e scalarRight * \e right
@@ -3708,12 +3708,12 @@ namespace Core::LinAlg
      */
     template <class value_type_scalar_left, class value_type_left, class value_type_scalar_right,
         class value_type_right, class value_type_scalar_this>
-    inline void Update(const value_type_scalar_left scalarLeft,
+    inline void update(const value_type_scalar_left scalarLeft,
         const Matrix<rows, cols, value_type_left>& left, const value_type_scalar_right scalarRight,
         const Matrix<rows, cols, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
       DenseFunctions::update<value_type, rows, cols>(
-          scalarThis, A(), scalarLeft, left.values(), scalarRight, right.values());
+          scalarThis, data(), scalarLeft, left.values(), scalarRight, right.values());
     }
 
     /// Transposed copy: \e this = \e other^T
@@ -3724,9 +3724,9 @@ namespace Core::LinAlg
         matrix to copy
      */
     template <class value_type_other>
-    inline void UpdateT(const Matrix<cols, rows, value_type_other>& other)
+    inline void update_t(const Matrix<cols, rows, value_type_other>& other)
     {
-      DenseFunctions::updateT<value_type, rows, cols>(A(), other.values());
+      DenseFunctions::update_t<value_type, rows, cols>(data(), other.values());
     }
 
     /// Scaled transposed copy: \e this = \e scalarOther * \e other^T
@@ -3739,10 +3739,10 @@ namespace Core::LinAlg
         matrix to read from
      */
     template <class value_type_other_scalar, class value_type_other>
-    inline void UpdateT(const value_type_other_scalar scalarOther,
+    inline void update_t(const value_type_other_scalar scalarOther,
         const Matrix<cols, rows, value_type_other>& other)
     {
-      DenseFunctions::updateT<value_type, rows, cols>(A(), scalarOther, other.values());
+      DenseFunctions::update_t<value_type, rows, cols>(data(), scalarOther, other.values());
     }
 
     /// Add: \e this = \e scalarThis * \e this + \e scalarOther * \e other
@@ -3757,10 +3757,11 @@ namespace Core::LinAlg
         scaling factor for \e this
      */
     template <class value_type_other_scalar, class value_type_other, class value_type_this_scalar>
-    inline void UpdateT(const value_type_other_scalar scalarOther,
+    inline void update_t(const value_type_other_scalar scalarOther,
         const Matrix<cols, rows, value_type_other>& other, const value_type_this_scalar scalarThis)
     {
-      DenseFunctions::updateT<value_type, rows, cols>(scalarThis, A(), scalarOther, other.values());
+      DenseFunctions::update_t<value_type, rows, cols>(
+          scalarThis, data(), scalarOther, other.values());
     }
 
     /// Multiply element-wise: \e this(m,n) *= \e other(m,n)
@@ -3770,9 +3771,9 @@ namespace Core::LinAlg
       \param other
         factor
      */
-    inline void EMultiply(const Matrix<rows, cols, value_type>& other)
+    inline void elementwise_multiply(const Matrix<rows, cols, value_type>& other)
     {
-      DenseFunctions::eMultiply<value_type, rows, cols>(A(), other.values());
+      DenseFunctions::elementwise_multiply<value_type, rows, cols>(data(), other.values());
     }
 
     /// Multiply element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
@@ -3784,9 +3785,10 @@ namespace Core::LinAlg
       \param other
         factor
      */
-    inline void EMultiply(const value_type scalar, const Matrix<rows, cols, value_type>& other)
+    inline void elementwise_multiply(
+        const value_type scalar, const Matrix<rows, cols, value_type>& other)
     {
-      DenseFunctions::eMultiply<value_type, rows, cols>(scalar, A(), other.values());
+      DenseFunctions::elementwise_multiply<value_type, rows, cols>(scalar, data(), other.values());
     }
 
     /// Multiply element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
@@ -3798,10 +3800,11 @@ namespace Core::LinAlg
       \param right
         second factor
      */
-    inline void EMultiply(
+    inline void elementwise_multiply(
         const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
-      DenseFunctions::eMultiply<value_type, rows, cols>(A(), left.values(), right.values());
+      DenseFunctions::elementwise_multiply<value_type, rows, cols>(
+          data(), left.values(), right.values());
     }
 
     /// Multiply element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
@@ -3816,11 +3819,11 @@ namespace Core::LinAlg
       \param right
         second factor
      */
-    inline void EMultiply(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
-        const Matrix<rows, cols, value_type>& right)
+    inline void elementwise_multiply(const value_type scalarOther,
+        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
-      DenseFunctions::eMultiply<value_type, rows, cols>(
-          A(), scalarOther, left.values(), right.values());
+      DenseFunctions::elementwise_multiply<value_type, rows, cols>(
+          data(), scalarOther, left.values(), right.values());
     }
 
     /// Multiply element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e
@@ -3838,11 +3841,12 @@ namespace Core::LinAlg
       \param scalarThis
         scaling factor for \e this
      */
-    inline void EMultiply(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
-        const Matrix<rows, cols, value_type>& right, const value_type scalarThis)
+    inline void elementwise_multiply(const value_type scalarOther,
+        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right,
+        const value_type scalarThis)
     {
-      DenseFunctions::eMultiply<value_type, rows, cols>(
-          scalarThis, A(), scalarOther, left.values(), right.values());
+      DenseFunctions::elementwise_multiply<value_type, rows, cols>(
+          scalarThis, data(), scalarOther, left.values(), right.values());
     }
 
     /// Divide element-wise: \e this(m,n) *= \e other(m,n)
@@ -3852,9 +3856,9 @@ namespace Core::LinAlg
       \param other
         factor
      */
-    inline void EDivide(const Matrix<rows, cols, value_type>& other)
+    inline void elementwise_divide(const Matrix<rows, cols, value_type>& other)
     {
-      DenseFunctions::eDivide<value_type, rows, cols>(A(), other.values());
+      DenseFunctions::elementwise_divide<value_type, rows, cols>(data(), other.values());
     }
 
     /// Divide element-wise: \e this(m,n) = \e scalar * \e this(m,n)*\e other(m,n)
@@ -3866,9 +3870,10 @@ namespace Core::LinAlg
       \param other
         factor
      */
-    inline void EDivide(const value_type scalar, const Matrix<rows, cols, value_type>& other)
+    inline void elementwise_divide(
+        const value_type scalar, const Matrix<rows, cols, value_type>& other)
     {
-      DenseFunctions::eDivide<value_type, rows, cols>(scalar, A(), other.values());
+      DenseFunctions::elementwise_divide<value_type, rows, cols>(scalar, data(), other.values());
     }
 
     /// Divide element-wise: \e this(m,n) = \e left(m,n)*\e right(m,n)
@@ -3880,10 +3885,11 @@ namespace Core::LinAlg
       \param right
         divisor
      */
-    inline void EDivide(
+    inline void elementwise_divide(
         const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
-      DenseFunctions::eDivide<value_type, rows, cols>(A(), left.values(), right.values());
+      DenseFunctions::elementwise_divide<value_type, rows, cols>(
+          data(), left.values(), right.values());
     }
 
     /// Divide element-wise: \e this(m,n) = \e scalarOther*\e left(m,n)*\e right(m,n)
@@ -3898,11 +3904,11 @@ namespace Core::LinAlg
       \param right
         divisor
      */
-    inline void EDivide(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
-        const Matrix<rows, cols, value_type>& right)
+    inline void elementwise_divide(const value_type scalarOther,
+        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
     {
-      DenseFunctions::eDivide<value_type, rows, cols>(
-          A(), scalarOther, left.values(), right.values());
+      DenseFunctions::elementwise_divide<value_type, rows, cols>(
+          data(), scalarOther, left.values(), right.values());
     }
 
     /// Divide element-wise: \e this(m,n) = \e scalarThis*\e this(m,n) + \e scalarOther*\e
@@ -3920,11 +3926,12 @@ namespace Core::LinAlg
       \param scalarThis
         scaling factor for \e this
      */
-    inline void EDivide(const value_type scalarOther, const Matrix<rows, cols, value_type>& left,
-        const Matrix<rows, cols, value_type>& right, const value_type scalarThis)
+    inline void elementwise_divide(const value_type scalarOther,
+        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right,
+        const value_type scalarThis)
     {
-      DenseFunctions::eDivide<value_type, rows, cols>(
-          scalarThis, A(), scalarOther, left.values(), right.values());
+      DenseFunctions::elementwise_divide<value_type, rows, cols>(
+          scalarThis, data(), scalarOther, left.values(), right.values());
     }
 
 
@@ -3934,13 +3941,19 @@ namespace Core::LinAlg
 
       \return 1-norm
      */
-    inline value_type Norm1() const { return DenseFunctions::norm1<value_type, rows, cols>(A()); }
+    inline value_type norm1() const
+    {
+      return DenseFunctions::norm1<value_type, rows, cols>(data());
+    }
 
     /// Calculate 2-norm (Euclidean norm)
     /*!
       \return 2-norm
      */
-    inline value_type Norm2() const { return DenseFunctions::norm2<value_type, rows, cols>(A()); }
+    inline value_type norm2() const
+    {
+      return DenseFunctions::norm2<value_type, rows, cols>(data());
+    }
 
     /// Calculate inf-norm
     /*!
@@ -3948,41 +3961,41 @@ namespace Core::LinAlg
 
       \return inf-norm
      */
-    inline value_type NormInf() const
+    inline value_type norm_inf() const
     {
-      return DenseFunctions::normInf<value_type, rows, cols>(A());
+      return DenseFunctions::norm_inf<value_type, rows, cols>(data());
     }
 
     /// Calculate minimum value
     /*!
       \return minimum value
      */
-    inline value_type MinValue() const
+    inline value_type min_value() const
     {
-      return DenseFunctions::minValue<value_type, rows, cols>(A());
+      return DenseFunctions::min_value<value_type, rows, cols>(data());
     }
 
     /// Calculate maximum value
     /*!
       \return maximum value
      */
-    inline value_type MaxValue() const
+    inline value_type max_value() const
     {
-      return DenseFunctions::maxValue<value_type, rows, cols>(A());
+      return DenseFunctions::max_value<value_type, rows, cols>(data());
     }
 
     /// Calculate mean value
     /*!
       \return mean value
      */
-    inline value_type MeanValue() const
+    inline value_type mean_value() const
     {
-      return DenseFunctions::meanValue<value_type, rows, cols>(A());
+      return DenseFunctions::mean_value<value_type, rows, cols>(data());
     }
 
     /// Multiply: \e this = \e left*right
     /*!
-      This is equivalent to MultiplyNN(\e left,\e right).
+      This is equivalent to multiply_nn(\e left,\e right).
 
       \param left
         first factor
@@ -3990,10 +4003,11 @@ namespace Core::LinAlg
         second factor
      */
     template <unsigned int inner, class value_type_left, class value_type_right>
-    inline void Multiply(const Matrix<rows, inner, value_type_left>& left,
+    inline void multiply(const Matrix<rows, inner, value_type_left>& left,
         const Matrix<inner, cols, value_type_right>& right)
     {
-      DenseFunctions::multiply<value_type, rows, inner, cols>(A(), left.values(), right.values());
+      DenseFunctions::multiply<value_type, rows, inner, cols>(
+          data(), left.values(), right.values());
     }
 
     /// Multiply: \e this = \e left*right
@@ -4004,10 +4018,11 @@ namespace Core::LinAlg
         second factor
      */
     template <unsigned int inner, class value_type_left, class value_type_right>
-    inline void MultiplyNN(const Matrix<rows, inner, value_type_left>& left,
+    inline void multiply_nn(const Matrix<rows, inner, value_type_left>& left,
         const Matrix<inner, cols, value_type_right>& right)
     {
-      DenseFunctions::multiply<value_type, rows, inner, cols>(A(), left.values(), right.values());
+      DenseFunctions::multiply<value_type, rows, inner, cols>(
+          data(), left.values(), right.values());
     }
 
     /// Multiply: \e this = \e left*right^T
@@ -4018,10 +4033,11 @@ namespace Core::LinAlg
         second factor
      */
     template <unsigned int inner, class value_type_left, class value_type_right>
-    inline void MultiplyNT(const Matrix<rows, inner, value_type_left>& left,
+    inline void multiply_nt(const Matrix<rows, inner, value_type_left>& left,
         const Matrix<cols, inner, value_type_right>& right)
     {
-      DenseFunctions::multiplyNT<value_type, rows, inner, cols>(A(), left.values(), right.values());
+      DenseFunctions::multiply_nt<value_type, rows, inner, cols>(
+          data(), left.values(), right.values());
     }
 
     /// Multiply: \e this = \e left^T*right
@@ -4032,10 +4048,11 @@ namespace Core::LinAlg
         second factor
      */
     template <unsigned int inner, class value_type_left, class value_type_right>
-    inline void MultiplyTN(const Matrix<inner, rows, value_type_left>& left,
+    inline void multiply_tn(const Matrix<inner, rows, value_type_left>& left,
         const Matrix<inner, cols, value_type_right>& right)
     {
-      DenseFunctions::multiplyTN<value_type, rows, inner, cols>(A(), left.values(), right.values());
+      DenseFunctions::multiply_tn<value_type, rows, inner, cols>(
+          data(), left.values(), right.values());
     }
 
     /// Multiply: \e this = \e left^T*right^T
@@ -4046,10 +4063,11 @@ namespace Core::LinAlg
         second factor
      */
     template <unsigned int inner, class value_type_left, class value_type_right>
-    inline void MultiplyTT(const Matrix<inner, rows, value_type_left>& left,
+    inline void multiply_tt(const Matrix<inner, rows, value_type_left>& left,
         const Matrix<cols, inner, value_type_right>& right)
     {
-      DenseFunctions::multiplyTT<value_type, rows, inner, cols>(A(), left.values(), right.values());
+      DenseFunctions::multiply_tt<value_type, rows, inner, cols>(
+          data(), left.values(), right.values());
     }
 
 
@@ -4064,17 +4082,17 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right>
-    inline void Multiply(const value_type_scalar_other scalarOthers,
+    inline void multiply(const value_type_scalar_other scalarOthers,
         const Matrix<rows, inner, value_type_left>& left,
         const Matrix<inner, cols, value_type_right>& right)
     {
       DenseFunctions::multiply<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.values(), right.values());
+          data(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarOthers * \e left*right
     /*!
-      This is equivalent to MultiplyNN(\e scalarOthers,\e left,\e right).
+      This is equivalent to multiply_nn(\e scalarOthers,\e left,\e right).
 
       \param scalarOthers
         scalar factor for \e left*right
@@ -4085,12 +4103,12 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right>
-    inline void MultiplyNN(const value_type_scalar_other scalarOthers,
+    inline void multiply_nn(const value_type_scalar_other scalarOthers,
         const Matrix<rows, inner, value_type_left>& left,
         const Matrix<inner, cols, value_type_right>& right)
     {
       DenseFunctions::multiply<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.values(), right.values());
+          data(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarOthers * \e left*right^T
@@ -4104,12 +4122,12 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right>
-    inline void MultiplyNT(const value_type_scalar_other scalarOthers,
+    inline void multiply_nt(const value_type_scalar_other scalarOthers,
         const Matrix<rows, inner, value_type_left>& left,
         const Matrix<cols, inner, value_type_right>& right)
     {
-      DenseFunctions::multiplyNT<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.values(), right.values());
+      DenseFunctions::multiply_nt<value_type, rows, inner, cols>(
+          data(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarOthers * \e left^T*right
@@ -4123,12 +4141,12 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right>
-    inline void MultiplyTN(const value_type_scalar_other scalarOthers,
+    inline void multiply_tn(const value_type_scalar_other scalarOthers,
         const Matrix<inner, rows, value_type_left>& left,
         const Matrix<inner, cols, value_type_right>& right)
     {
-      DenseFunctions::multiplyTN<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.values(), right.values());
+      DenseFunctions::multiply_tn<value_type, rows, inner, cols>(
+          data(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarOthers * \e left^T*right^T
@@ -4142,17 +4160,17 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right>
-    inline void MultiplyTT(const value_type_scalar_other scalarOthers,
+    inline void multiply_tt(const value_type_scalar_other scalarOthers,
         const Matrix<inner, rows, value_type_left>& left,
         const Matrix<cols, inner, value_type_right>& right)
     {
-      DenseFunctions::multiplyTT<value_type, rows, inner, cols>(
-          A(), scalarOthers, left.values(), right.values());
+      DenseFunctions::multiply_tt<value_type, rows, inner, cols>(
+          data(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
     /*!
-      This is equivalent to MultiplyNN(\e scalarOthers,\e left,\e right,\e scalarThis).
+      This is equivalent to multiply_nn(\e scalarOthers,\e left,\e right,\e scalarThis).
 
       \param scalarOthers
         scalar factor for \e left*right
@@ -4165,12 +4183,12 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right, class value_type_scalar_this>
-    inline void Multiply(const value_type_scalar_other scalarOthers,
+    inline void multiply(const value_type_scalar_other scalarOthers,
         const Matrix<rows, inner, value_type_left>& left,
         const Matrix<inner, cols, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
       DenseFunctions::multiply<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.values(), right.values());
+          scalarThis, data(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right
@@ -4186,12 +4204,12 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right, class value_type_scalar_this>
-    inline void MultiplyNN(const value_type_scalar_other scalarOthers,
+    inline void multiply_nn(const value_type_scalar_other scalarOthers,
         const Matrix<rows, inner, value_type_left>& left,
         const Matrix<inner, cols, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
       DenseFunctions::multiply<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.values(), right.values());
+          scalarThis, data(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left*right^T
@@ -4207,12 +4225,12 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right, class value_type_scalar_this>
-    inline void MultiplyNT(const value_type_scalar_other scalarOthers,
+    inline void multiply_nt(const value_type_scalar_other scalarOthers,
         const Matrix<rows, inner, value_type_left>& left,
         const Matrix<cols, inner, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
-      DenseFunctions::multiplyNT<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.values(), right.values());
+      DenseFunctions::multiply_nt<value_type, rows, inner, cols>(
+          scalarThis, data(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right
@@ -4228,12 +4246,12 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right, class value_type_scalar_this>
-    inline void MultiplyTN(const value_type_scalar_other scalarOthers,
+    inline void multiply_tn(const value_type_scalar_other scalarOthers,
         const Matrix<inner, rows, value_type_left>& left,
         const Matrix<inner, cols, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
-      DenseFunctions::multiplyTN<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.values(), right.values());
+      DenseFunctions::multiply_tn<value_type, rows, inner, cols>(
+          scalarThis, data(), scalarOthers, left.values(), right.values());
     }
 
     /// Multiply: \e this = \e scalarThis * \e this + \e scalarOthers * \e left^T*right^T
@@ -4249,12 +4267,12 @@ namespace Core::LinAlg
      */
     template <unsigned int inner, class value_type_scalar_other, class value_type_left,
         class value_type_right, class value_type_scalar_this>
-    inline void MultiplyTT(const value_type_scalar_other scalarOthers,
+    inline void multiply_tt(const value_type_scalar_other scalarOthers,
         const Matrix<inner, rows, value_type_left>& left,
         const Matrix<cols, inner, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
-      DenseFunctions::multiplyTT<value_type, rows, inner, cols>(
-          scalarThis, A(), scalarOthers, left.values(), right.values());
+      DenseFunctions::multiply_tt<value_type, rows, inner, cols>(
+          scalarThis, data(), scalarOthers, left.values(), right.values());
     }
 
     /// Write \e this to \e out
@@ -4265,11 +4283,11 @@ namespace Core::LinAlg
       \param out
         out stream
      */
-    void Print(std::ostream& out) const;
+    void print(std::ostream& out) const;
 
     /// = operator
     /*!
-      Copy data from \e other to \e this, equivalent to Update(other).
+      Copy data from \e other to \e this, equivalent to update(other).
       \param other
         matrix to get data from
      */
@@ -4313,7 +4331,7 @@ namespace Core::LinAlg
     inline Matrix<rows, cols, value_type>& operator+=(
         const Matrix<rows, cols, value_type_other>& other)
     {
-      DenseFunctions::update<value_type, rows, cols>(1.0, A(), 1.0, other.values());
+      DenseFunctions::update<value_type, rows, cols>(1.0, data(), 1.0, other.values());
       return *this;
     }
 
@@ -4328,7 +4346,7 @@ namespace Core::LinAlg
     inline Matrix<rows, cols, value_type>& operator-=(
         const Matrix<rows, cols, value_type_other>& other)
     {
-      DenseFunctions::update<value_type, rows, cols>(1.0, A(), -1.0, other.values());
+      DenseFunctions::update<value_type, rows, cols>(1.0, data(), -1.0, other.values());
       return *this;
     }
 
@@ -4388,7 +4406,7 @@ namespace Core::LinAlg
       data_ = new value_type[rows * cols];
     else
       data_ = datafieldsmall_;
-    if (setzero) DenseFunctions::clearMatrix<value_type, rows, cols>(data_);
+    if (setzero) DenseFunctions::clear_matrix<value_type, rows, cols>(data_);
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
@@ -4511,7 +4529,7 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
-  void Matrix<rows, cols, value_type>::SetView(value_type* data)
+  void Matrix<rows, cols, value_type>::set_view(value_type* data)
   {
     if (not isview_)
     {
@@ -4522,7 +4540,7 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
-  void Matrix<rows, cols, value_type>::SetView(Matrix<rows, cols, value_type>& source)
+  void Matrix<rows, cols, value_type>::set_view(Matrix<rows, cols, value_type>& source)
   {
     if (not isview_)
     {
@@ -4533,7 +4551,7 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
-  void Matrix<rows, cols, value_type>::SetCopy(const value_type* data)
+  void Matrix<rows, cols, value_type>::set_copy(const value_type* data)
   {
     if (isview_)
     {
@@ -4547,42 +4565,42 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
-  void Matrix<rows, cols, value_type>::SetCopy(const Matrix<rows, cols, value_type>& source)
+  void Matrix<rows, cols, value_type>::set_copy(const Matrix<rows, cols, value_type>& source)
   {
-    SetCopy(source.values());
+    set_copy(source.values());
   }
 
   // Determinant
   template <unsigned int rows, unsigned int cols, class value_type>
-  inline value_type Matrix<rows, cols, value_type>::Determinant() const
+  inline value_type Matrix<rows, cols, value_type>::determinant() const
   {
     static_assert(rows == cols, "Cannot compute determinant of non-square matrix.");
-    return DenseFunctions::determinant<value_type, rows, cols>(A());
+    return DenseFunctions::determinant<value_type, rows, cols>(data());
   }
 
-  // Invert
+  // invert
   template <unsigned int rows, unsigned int cols, class value_type>
-  inline value_type Matrix<rows, cols, value_type>::Invert()
+  inline value_type Matrix<rows, cols, value_type>::invert()
   {
     static_assert(rows == cols, "Cannot compute inverse of non-square matrix");
-    return DenseFunctions::invert<value_type, rows, cols>(A());
+    return DenseFunctions::invert<value_type, rows, cols>(data());
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
-  inline value_type Matrix<rows, cols, value_type>::Invert(
+  inline value_type Matrix<rows, cols, value_type>::invert(
       const Matrix<rows, cols, value_type>& other)
   {
     static_assert(rows == cols, "Cannot compute inverse of non-square matrix");
-    return DenseFunctions::invert<value_type, rows, cols>(A(), other.values());
+    return DenseFunctions::invert<value_type, rows, cols>(data(), other.values());
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
-  void Matrix<rows, cols, value_type>::Print(std::ostream& out) const
+  void Matrix<rows, cols, value_type>::print(std::ostream& out) const
   {
     out << "Matrix<" << rows << ',' << cols << '>';
     if (isview_) out << " (view to memory only)";
     if (isreadonly_) out << "\n (read only)";
-    if (A() == nullptr)
+    if (data() == nullptr)
     {
       out << " with data_==nullptr!\n";
       return;
@@ -4595,7 +4613,7 @@ namespace Core::LinAlg
         if (i != 0) out << ' ';
         for (unsigned int j = 0; j < cols; ++j)
         {
-          out << A()[i + rows * j];
+          out << data()[i + rows * j];
           if (j + 1 < cols) out << ", ";
         }
         if (i + 1 < rows)
@@ -4610,7 +4628,7 @@ namespace Core::LinAlg
       for (unsigned int i = 0; i < rows; ++i)
       {
         if (i != 0) out << ' ';
-        out << A()[i];
+        out << data()[i];
       }
       out << "]\n";
     }
@@ -4618,12 +4636,12 @@ namespace Core::LinAlg
 
   /// output operator for Matrix
   /*!
-    Write matrix to out. This function calls matrix.Print(out).
+    Write matrix to out. This function calls matrix.print(out).
    */
   template <class value_type, unsigned int cols, unsigned int rows>
   std::ostream& operator<<(std::ostream& out, const Matrix<rows, cols, value_type>& matrix)
   {
-    matrix.Print(out);
+    matrix.print(out);
     return out;
   }
 
@@ -4631,7 +4649,7 @@ namespace Core::LinAlg
   inline Matrix<rows, cols, value_type>& Matrix<rows, cols, value_type>::operator=(
       const Matrix<rows, cols, value_type>& other)
   {
-    DenseFunctions::update<value_type, rows, cols>(A(), other.values());
+    DenseFunctions::update<value_type, rows, cols>(data(), other.values());
     return *this;
   }
 
@@ -4639,7 +4657,7 @@ namespace Core::LinAlg
   inline Matrix<rows, cols, value_type>& Matrix<rows, cols, value_type>::operator=(
       const value_type other)
   {
-    DenseFunctions::putScalar<value_type, rows, cols>(other, A());
+    DenseFunctions::put_scalar<value_type, rows, cols>(other, data());
     return *this;
   }
 
@@ -4647,11 +4665,11 @@ namespace Core::LinAlg
   inline bool Matrix<rows, cols, value_type>::operator==(
       const Matrix<rows, cols, value_type>& other) const
   {
-    if (A() == other.values()) return true;
+    if (data() == other.values()) return true;
     // unfortunately memcmp does not work, because +0 and -0 are
     // different in memory...
     for (unsigned int c = 0; c < rows * cols; ++c)
-      if (A()[c] != other.values()[c]) return false;
+      if (data()[c] != other.values()[c]) return false;
     return true;
   }
 
@@ -4671,7 +4689,7 @@ namespace Core::LinAlg
     if (r >= rows or c >= cols)
       FOUR_C_THROW("Indices %i,%i out of range in Matrix<%i,%i>.", r, c, rows, cols);
 #endif
-    return A()[r + c * rows];
+    return data()[r + c * rows];
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
@@ -4682,7 +4700,7 @@ namespace Core::LinAlg
     if (r >= rows or c >= cols)
       FOUR_C_THROW("Indices %i,%i out of range in Matrix<%i,%i>.", r, c, rows, cols);
 #endif
-    return A()[r + c * rows];
+    return data()[r + c * rows];
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
@@ -4693,7 +4711,7 @@ namespace Core::LinAlg
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
 #endif
-    return A()[r];
+    return data()[r];
   }
 
   template <unsigned int rows, unsigned int cols, class value_type>
@@ -4704,7 +4722,7 @@ namespace Core::LinAlg
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
 #endif
-    return A()[r];
+    return data()[r];
   }
 
 
@@ -4873,12 +4891,12 @@ namespace Core::LinAlg
      */
     int Solve();
 
-    /// Invert the matrix
+    /// invert the matrix
     /*
       \return integer error code. 0 if successful, negative
       otherwise. This is a LAPACK error code.
      */
-    int Invert();
+    int invert();
   };
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
@@ -4922,7 +4940,7 @@ namespace Core::LinAlg
   {
 #ifdef FOUR_C_DEBUG
     if (factored_ or inverted_)
-      FOUR_C_THROW("Cannot set equilibration after changing the matrix with Factor() or Invert().");
+      FOUR_C_THROW("Cannot set equilibration after changing the matrix with Factor() or invert().");
 #endif
     equilibrate_ = b;
   }
@@ -4938,7 +4956,7 @@ namespace Core::LinAlg
     if (equilibrate_) errnum = equilibrate_matrix();
     if (errnum != 0) return errnum;
     if (pivot_vec_.empty()) pivot_vec_.resize(rows);
-    lapack_.GETRF(rows, cols, matrix_->A(), rows, pivot_vec_.data(), &errnum);
+    lapack_.GETRF(rows, cols, matrix_->data(), rows, pivot_vec_.data(), &errnum);
     if (errnum != 0) return errnum;
 
     factored_ = true;
@@ -4963,7 +4981,7 @@ namespace Core::LinAlg
       if (vec_b_ == vec_x_) return -100;
 
       blas_.GEMM(transpose_ ? Teuchos::TRANS : Teuchos::NO_TRANS, Teuchos::NO_TRANS, cols, dim_rhs,
-          cols, 1.0, matrix_->A(), rows, vec_b_->A(), rows, 0.0, vec_x_->A(), cols);
+          cols, 1.0, matrix_->data(), rows, vec_b_->data(), rows, 0.0, vec_x_->data(), cols);
       solved_ = true;
     }
     else
@@ -4975,8 +4993,8 @@ namespace Core::LinAlg
       }
 
       if (vec_b_ != vec_x_) *vec_x_ = *vec_b_;
-      lapack_.GETRS(transpose_ ? 'T' : 'N', cols, dim_rhs, matrix_->A(), rows, pivot_vec_.data(),
-          vec_x_->A(), cols, &errnum);
+      lapack_.GETRS(transpose_ ? 'T' : 'N', cols, dim_rhs, matrix_->data(), rows, pivot_vec_.data(),
+          vec_x_->data(), cols, &errnum);
       if (errnum != 0) return errnum;
       solved_ = true;
     }
@@ -4994,7 +5012,7 @@ namespace Core::LinAlg
     r_.resize(rows);
     c_.resize(cols);
     lapack_.GEEQU(
-        rows, cols, matrix_->A(), rows, r_.data(), c_.data(), &rowcnd, &colcnd, &amax, &errnum);
+        rows, cols, matrix_->data(), rows, r_.data(), c_.data(), &rowcnd, &colcnd, &amax, &errnum);
     if (errnum != 0) return errnum;
 
     return 0;
@@ -5006,7 +5024,7 @@ namespace Core::LinAlg
     int errnum = 0;
     if (r_.empty()) errnum = compute_equilibrate_scaling();
     if (errnum != 0) return errnum;
-    double* ptr = matrix_->A();
+    double* ptr = matrix_->data();
     double s1;
     for (unsigned j = 0; j < cols; ++j)
     {
@@ -5027,7 +5045,7 @@ namespace Core::LinAlg
     if (r_.empty()) errnum = compute_equilibrate_scaling();
     if (errnum != 0) return errnum;
     std::vector<double>& r = transpose_ ? c_ : r_;
-    double* ptr = vec_b_->A();
+    double* ptr = vec_b_->data();
     for (unsigned j = 0; j < dim_rhs; ++j)
     {
       for (unsigned i = 0; i < cols; ++i)
@@ -5044,7 +5062,7 @@ namespace Core::LinAlg
   int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::unequilibrate_lhs()
   {
     std::vector<double>& c = transpose_ ? r_ : c_;
-    double* ptr = vec_x_->A();
+    double* ptr = vec_x_->data();
     for (unsigned j = 0; j < dim_rhs; ++j)
     {
       for (unsigned i = 0; i < rows; ++i)
@@ -5058,7 +5076,7 @@ namespace Core::LinAlg
   }
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
-  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::Invert()
+  int FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::invert()
   {
     int errnum;
     if (not factored_)
@@ -5069,7 +5087,7 @@ namespace Core::LinAlg
 
     int lwork = 4 * cols;
     std::vector<double> work(lwork);
-    lapack_.GETRI(cols, matrix_->A(), rows, pivot_vec_.data(), work.data(), lwork, &errnum);
+    lapack_.GETRI(cols, matrix_->data(), rows, pivot_vec_.data(), work.data(), lwork, &errnum);
     if (errnum != 0) return errnum;
     inverted_ = true;
     factored_ = false;

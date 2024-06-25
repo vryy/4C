@@ -166,26 +166,26 @@ void Mat::MembraneElastHyperEvaluateIsotropicStressCmat(Core::LinAlg::Matrix<3, 
   MembraneElastHyperCalculateGammaDelta(gamma_iso, delta_iso, prinv_iso, dPI_iso, ddPII_iso, rcg33);
 
   // isotropic 2nd Piola Kirchhoff stress
-  stress_iso.Update(gamma_iso(0), id2, 1.0);
-  stress_iso.Update(gamma_iso(1), rcg, 1.0);
-  stress_iso.Update(gamma_iso(2), icg, 1.0);
+  stress_iso.update(gamma_iso(0), id2, 1.0);
+  stress_iso.update(gamma_iso(1), rcg, 1.0);
+  stress_iso.update(gamma_iso(2), icg, 1.0);
 
   // isotropic constitutive tensor
   // contribution: Id \otimes Id
-  cmat_iso.MultiplyNT(delta_iso(0), id2, id2, 0.0);
+  cmat_iso.multiply_nt(delta_iso(0), id2, id2, 0.0);
   // contribution: Id \otimes C + C \otimes Id
-  cmat_iso.MultiplyNT(delta_iso(1), id2, rcg, 1.0);
-  cmat_iso.MultiplyNT(delta_iso(1), rcg, id2, 1.0);
+  cmat_iso.multiply_nt(delta_iso(1), id2, rcg, 1.0);
+  cmat_iso.multiply_nt(delta_iso(1), rcg, id2, 1.0);
   // contribution: Id \otimes Cinv + Cinv \otimes Id
-  cmat_iso.MultiplyNT(delta_iso(2), id2, icg, 1.0);
-  cmat_iso.MultiplyNT(delta_iso(2), icg, id2, 1.0);
+  cmat_iso.multiply_nt(delta_iso(2), id2, icg, 1.0);
+  cmat_iso.multiply_nt(delta_iso(2), icg, id2, 1.0);
   // contribution: C \otimes C
-  cmat_iso.MultiplyNT(delta_iso(3), rcg, rcg, 1.0);
+  cmat_iso.multiply_nt(delta_iso(3), rcg, rcg, 1.0);
   // contribution: C \otimes Cinv + Cinv \otimes C
-  cmat_iso.MultiplyNT(delta_iso(4), rcg, icg, 1.0);
-  cmat_iso.MultiplyNT(delta_iso(4), icg, rcg, 1.0);
+  cmat_iso.multiply_nt(delta_iso(4), rcg, icg, 1.0);
+  cmat_iso.multiply_nt(delta_iso(4), icg, rcg, 1.0);
   // contribution: Cinv \otimes Cinv
-  cmat_iso.MultiplyNT(delta_iso(5), icg, icg, 1.0);
+  cmat_iso.multiply_nt(delta_iso(5), icg, icg, 1.0);
   // contribution: Cinv \odot Cinv
   cmat_iso(0, 0) += delta_iso(6) * icg(0) * icg(0);
   cmat_iso(0, 1) += delta_iso(6) * icg(2) * icg(2);
@@ -197,7 +197,7 @@ void Mat::MembraneElastHyperEvaluateIsotropicStressCmat(Core::LinAlg::Matrix<3, 
   cmat_iso(2, 1) += delta_iso(6) * icg(1) * icg(2);
   cmat_iso(2, 2) += delta_iso(6) * 0.5 * (icg(0) * icg(1) + icg(2) * icg(2));
   // contribution: Id4^#
-  cmat_iso.Update(delta_iso(7), id4sharp, 1.0);
+  cmat_iso.update(delta_iso(7), id4sharp, 1.0);
 }
 
 void Mat::MembraneElastHyperInvariantsPrincipal(

@@ -70,16 +70,16 @@ void MIXTURE::IterativePrestressStrategy::update(
   Core::LinAlg::Matrix<3, 3> F_bar;
   if (params_->isochoric_)
   {
-    F_bar.Update(std::pow(F.Determinant(), -1.0 / 3.0), F);
+    F_bar.update(std::pow(F.determinant(), -1.0 / 3.0), F);
   }
   else
   {
-    F_bar.Update(F);
+    F_bar.update(F);
   }
 
   // Compute new predeformation gradient
   Core::LinAlg::Matrix<3, 3> G_old(G);
-  G.MultiplyNN(F_bar, G_old);
+  G.multiply_nn(F_bar, G_old);
 
 
   // Compute polar decomposition of the prestretch deformation gradient
@@ -94,7 +94,7 @@ void MIXTURE::IterativePrestressStrategy::update(
   // Compute stretch tensor G = U = V * S * VT
   Core::LinAlg::Matrix<3, 3> VS;
 
-  VS.MultiplyTN(VT, S);
-  G.MultiplyNN(VS, VT);
+  VS.multiply_tn(VT, S);
+  G.multiply_nn(VS, VT);
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -260,11 +260,11 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   for (unsigned int d = 0; d < numdim_; ++d) arterypos1(d) = ele1posref_(numdim_ + d);
 
   static Core::LinAlg::Matrix<numdim_, 1> dist;
-  dist.Update(-1.0, arterypos0, 1.0, arterypos1, 0.0);
-  arteryelelengthref_ = dist.Norm2();
+  dist.update(-1.0, arterypos0, 1.0, arterypos1, 0.0);
+  arteryelelengthref_ = dist.norm2();
 
   // get initial direction of artery element
-  lambda0_.Update(1.0 / arteryelelengthref_, dist, 0.0);
+  lambda0_.update(1.0 / arteryelelengthref_, dist, 0.0);
 
   // Set reference nodal positions for continuous discretization element
   for (unsigned int inode = 0; inode < numnodescont_; ++inode)
@@ -275,7 +275,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
   // set current nodal positions to reference nodal positions for continuous discretization
   // element
-  ele2pos_.Update(1.0, ele2posref_, 0.0);
+  ele2pos_.update(1.0, ele2posref_, 0.0);
 
   // get penalty parameter
   pp_ = penalty;
@@ -700,8 +700,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
     // compute (dX/dxi)^-1
     get2_d3_d_shape_functions<double>(N2, N2_xi, xi_[i_gp]);
-    inv_j_[i_gp].MultiplyNT(N2_xi, ele2pos_);
-    inv_j_[i_gp].Invert();
+    inv_j_[i_gp].multiply_nt(N2_xi, ele2pos_);
+    inv_j_[i_gp].invert();
   }
 }
 
@@ -1061,8 +1061,8 @@ double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
     | dr   ds   dt |        | dt   dt   dt |
     +-            -+        +-            -+
   */
-  xjm.MultiplyNT(deriv, ele2pos_);
-  double det = xji.Invert(xjm);
+  xjm.multiply_nt(deriv, ele2pos_);
+  double det = xji.invert(xjm);
 
   if (det < 1E-16) FOUR_C_THROW("GLOBAL ELEMENT ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det);
 
@@ -1108,7 +1108,7 @@ double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
     return (eta_b_ - eta_a_) / 2.0 * arteryelelengthref_;
 
   // update current configuration
-  ele2pos_.Update(1.0, ele2posref_, 1.0, edispnp, 0.0);
+  ele2pos_.update(1.0, ele2posref_, 1.0, edispnp, 0.0);
 
   static Core::LinAlg::Matrix<1, numnodescont_> N2(true);            // = N2
   static Core::LinAlg::Matrix<numdim_, numnodescont_> N2_xi(true);   // = N2,xi1
@@ -1126,11 +1126,11 @@ double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
     const std::vector<double> xi = xi_[i_gp];
     get2_d3_d_shape_functions<double>(N2, N2_xi, xi);
     // dN/dX = dN/dxi * dxi/dX = dN/dxi * (dX/dxi)^-1
-    N2_XYZ.Multiply(inv_j_[i_gp], N2_xi);
+    N2_XYZ.multiply(inv_j_[i_gp], N2_xi);
     // dx/dX = x * N_XYZ^T
-    defgrad.MultiplyNT(ele2pos_, N2_XYZ);
-    Ft0.Multiply(defgrad, lambda0_);
-    curr_segment_length_ += Ft0.Norm2() * wgp_[i_gp] * jacobi_;
+    defgrad.multiply_nt(ele2pos_, N2_XYZ);
+    Ft0.multiply(defgrad, lambda0_);
+    curr_segment_length_ += Ft0.norm2() * wgp_[i_gp] * jacobi_;
   }
 
   return curr_segment_length_;
@@ -1471,16 +1471,16 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     // Update shape functions and their derivatives for 1D and 2D/3D element
     get1_d_shape_functions<double>(N1, N1_eta, myeta);
     get2_d3_d_shape_functions<double>(N2, N2_xi, myxi);
-    N2_transpose.UpdateT(N2);
+    N2_transpose.update_t(N2);
 
-    xjm.MultiplyNT(N2_xi, ele2pos_);
-    xjm0.MultiplyNT(N2_xi, ele2posref_);
+    xjm.multiply_nt(N2_xi, ele2pos_);
+    xjm0.multiply_nt(N2_xi, ele2posref_);
 
-    const double det = xji.Invert(xjm);
+    const double det = xji.invert(xjm);
     // inverse of transposed jacobian "ds/dX"
-    const double det0 = xjm0.Determinant();
+    const double det0 = xjm0.determinant();
 
-    derxy.Multiply(xji, N2_xi);
+    derxy.multiply(xji, N2_xi);
 
     // determinant of deformationgradient
     // det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
@@ -1540,22 +1540,22 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     get1_d_shape_functions<double>(N1, N1_eta, myeta);
     get2_d3_d_shape_functions<double>(N2, N2_xi, myxi);
 
-    xjm.MultiplyNT(N2_xi, ele2pos_);
-    xji.Invert(xjm);
+    xjm.multiply_nt(N2_xi, ele2pos_);
+    xji.invert(xjm);
 
     // dX/dpsi
-    xjm0.MultiplyNT(N2_xi, ele2posref_);
+    xjm0.multiply_nt(N2_xi, ele2posref_);
     // dpsi/dX
     // note: cannot use invJ_ here -> defined at original Gauss points
-    invJ.Invert(xjm0);
+    invJ.invert(xjm0);
     // dN/dX = dN/dxi * dxi/dX = dN/dxi * (dX/dxi)^-1
-    N2_XYZ.Multiply(invJ, N2_xi);
+    N2_XYZ.multiply(invJ, N2_xi);
     // dx/dX = x * N_XYZ^T
-    defgrad.MultiplyNT(ele2pos_, N2_XYZ);
+    defgrad.multiply_nt(ele2pos_, N2_XYZ);
 
     // current direction of artery element at GP
-    lambda_t.Multiply(defgrad, lambda0_);
-    lambda_t.Scale(1.0 / lambda_t.Norm2());
+    lambda_t.multiply(defgrad, lambda0_);
+    lambda_t.scale(1.0 / lambda_t.norm2());
 
     std::vector<double> myvel(3, 0.0);
     for (unsigned int j = 0; j < numnodescont_; j++)
@@ -2160,14 +2160,14 @@ FAD PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, dis
 
     get2_d3_d_shape_functions<FAD>(N2, N2_xi, xi);
 
-    InvJ.MultiplyNT(N2_xi, ele2posref);
-    InvJ.Invert();
+    InvJ.multiply_nt(N2_xi, ele2posref);
+    InvJ.invert();
 
     // dN/dX = dN/dxi * dxi/dX = dN/dxi * (dX/dxi)^-1
-    N2_XYZ.Multiply(InvJ, N2_xi);
+    N2_XYZ.multiply(InvJ, N2_xi);
     // dx/dX = x * N_XYZ^T
-    defGrad.MultiplyNT(ele2pos, N2_XYZ);
-    Ft0.Multiply(defGrad, t0);
+    defGrad.multiply_nt(ele2pos, N2_XYZ);
+    Ft0.multiply(defGrad, t0);
     const FAD Ft0Norm = Core::FADUtils::VectorNorm(Ft0);
     // finally get the length
     length += Ft0Norm * w_gp * jacobi;
@@ -3060,13 +3060,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     // fill dr_deta into Jacobian
     for (unsigned int idim = 0; idim < numdim_; idim++) J(idim, numdim_ - 1) = -r1_eta(idim);
 
-    double jacdet = J.Determinant();
+    double jacdet = J.determinant();
 
     // If det_J = 0 we assume, that the artery and the surface edge are parallel.
     // These projection is not needed due the fact that the contact interval can also be
     // identified by other projections
     parallel = fabs(jacdet) < COLINEARTOL * first_residual;
-    if (!parallel) jacdet = J.Invert();
+    if (!parallel) jacdet = J.invert();
 
     // Check if the local Newton iteration has converged
     if (residual < CONVTOLNEWTONPROJ * first_residual && !parallel)
@@ -3316,13 +3316,13 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     for (unsigned int i = 0; i < numdim_; i++)
       for (unsigned int j = 0; j < numdim_; j++) J(i, j) = x2_xi(i, j);
 
-    const double jacdet = Core::FADUtils::CastToDouble<T, numdim_, numdim_>(J).Determinant();
+    const double jacdet = Core::FADUtils::CastToDouble<T, numdim_, numdim_>(J).determinant();
 
     // If det_J = 0 we assume, that the artery element and the surface edge are parallel.
     // These projection is not needed due the fact that the contact interval can also be
     // identified by two contact interval borders found with the GetContactLines method
     parallel = fabs(jacdet) < COLINEARTOL * first_residual;
-    if (!parallel) J.Invert();
+    if (!parallel) J.invert();
 
     // Check if the local Newton iteration has converged
     // If the start point fulfills the orthogonalty conditions (residual < CONVTOLNEWTONPROJ*

@@ -37,7 +37,7 @@ void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim(
   // dimension)
   Core::LinAlg::Matrix<nsd_ele, probdim> dx_dr_red;
   Core::LinAlg::Matrix<probdim, probdim> dx_dr, dr_dx;
-  dx_dr_red.MultiplyNN(deriv, xyze);
+  dx_dr_red.multiply_nn(deriv, xyze);
 
   for (unsigned i = 0; i < probdim; ++i)
   {
@@ -70,10 +70,10 @@ void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim(
     for (unsigned i = 0; i < nen; i++) deriv_full(2, i) = 0.0;
   }
 
-  dr_dx.Invert(dx_dr);
+  dr_dx.invert(dx_dr);
 
   // compute global spatial derivatives
-  deriv_xyz.Multiply(dr_dx, deriv_full);
+  deriv_xyz.multiply(dr_dx, deriv_full);
 }
 
 template void Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<Core::FE::CellType::line2,

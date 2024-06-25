@@ -169,10 +169,10 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro:
   return Core::Communication::GetElementSurfaces<FluidPoroBoundary, FluidPoro>(*this);
 }
 
-void Discret::ELEMENTS::FluidPoro::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidPoro::print(std::ostream& os) const
 {
   os << "FluidPoro " << (Core::FE::CellTypeToString(distype_)).c_str();
-  Element::Print(os);
+  Element::print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

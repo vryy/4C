@@ -26,9 +26,9 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::compute_porosity_and_linear
   if (myporosity == nullptr)
     FOUR_C_THROW("no porosity values given!");
   else
-    porosity = shapfct.Dot(*myporosity);
+    porosity = shapfct.dot(*myporosity);
 
-  dphi_dus.PutScalar(0.0);
+  dphi_dus.put_scalar(0.0);
 }
 
 template <class so3_ele, Core::FE::CellType distype>
@@ -42,7 +42,7 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::compute_porosity_and_linear
   if (myporosity == nullptr)
     FOUR_C_THROW("no porosity values given!");
   else
-    porosity = shapfct.Dot(*myporosity);
+    porosity = shapfct.dot(*myporosity);
 }
 
 template <class so3_ele, Core::FE::CellType distype>
@@ -97,7 +97,7 @@ int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::evaluate(Teuchos::ParameterL
       Base::extract_values_from_global_vector(
           discretization, 0, la[0].lm_, nullptr, &myporosity, "displacement");
 
-      elevec1_epetra(0) = shapefct.Dot(myporosity);
+      elevec1_epetra(0) = shapefct.dot(myporosity);
     }
     break;
     //==================================================================================
@@ -256,12 +256,12 @@ int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::my_evaluate(Teuchos::Paramet
             discretization, 0, la[0].lm_, &mydisp, &myporosity, "displacement");
 
         Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
-        if (elemat1.IsInitialized()) matptr = &elemat1;
+        if (elemat1.is_initialized()) matptr = &elemat1;
 
         enum Inpar::STR::DampKind damping =
             params.get<enum Inpar::STR::DampKind>("damping", Inpar::STR::damp_none);
         Core::LinAlg::Matrix<numdof_, numdof_>* matptr2 = nullptr;
-        if (elemat2.IsInitialized() and (damping == Inpar::STR::damp_material)) matptr2 = &elemat2;
+        if (elemat2.is_initialized() and (damping == Inpar::STR::damp_material)) matptr2 = &elemat2;
 
         // need current fluid state,
         // call the fluid discretization: fluid equates 2nd dofset
@@ -303,7 +303,7 @@ int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::my_evaluate(Teuchos::Paramet
       std::vector<int> lm = la[0].lm_;
 
       Core::LinAlg::Matrix<numdof_, (Base::numdim_ + 1)* Base::numnod_>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
@@ -548,7 +548,7 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(
 
     // inverse deformation gradient F^-1
     static Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
@@ -565,7 +565,7 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(
         J, volchange, dJ_dus, dvolchange_dus, defgrd, defgrd_inv, N_XYZ, nodaldisp);
 
     // pressure at integration point
-    double press = shapefct.Dot(epreaf);
+    double press = shapefct.dot(epreaf);
 
     // structure velocity at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> velint(true);
@@ -575,15 +575,15 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(
 
     // fluid velocity at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> fvelint;
-    fvelint.Multiply(evelnp, shapefct);
+    fvelint.multiply(evelnp, shapefct);
 
     // material fluid velocity gradient at integration point
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> fvelder;
-    fvelder.MultiplyNT(evelnp, N_XYZ);
+    fvelder.multiply_nt(evelnp, N_XYZ);
 
     // pressure gradient at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> Gradp;
-    Gradp.Multiply(N_XYZ, epreaf);
+    Gradp.multiply(N_XYZ, epreaf);
 
     // non-linear B-operator
     Core::LinAlg::Matrix<Base::numstr_, Base::numdof_> bop;
@@ -591,11 +591,11 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // inverse Right Cauchy-Green tensor
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> C_inv(false);
-    C_inv.Invert(cauchygreen);
+    C_inv.invert(cauchygreen);
 
     //------linearization of material gradient of jacobi determinant GradJ  w.r.t. strucuture
     // displacement d(GradJ)/d(us)
@@ -631,7 +631,7 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(
 
     if (init_porosity_ == Teuchos::null)
       FOUR_C_THROW("Failed to create vector of nodal intial porosity");
-    double init_porosity = shapefct.Dot(*init_porosity_);
+    double init_porosity = shapefct.dot(*init_porosity_);
     Base::struct_mat_->constitutive_derivatives(params, press, volchange, porosity, init_porosity,
         &dW_dp,  // dW_dp not needed
         &dW_dphi, &dW_dJ, nullptr, &W);
@@ -680,10 +680,10 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(
       double visc = Base::fluid_mat_->Viscosity();
       Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> CinvFvel;
       Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> visctress1;
-      CinvFvel.Multiply(C_inv, fvelder);
-      visctress1.MultiplyNT(CinvFvel, defgrd_inv);
+      CinvFvel.multiply(C_inv, fvelder);
+      visctress1.multiply_nt(CinvFvel, defgrd_inv);
       Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> visctress2(visctress1);
-      visctress1.UpdateT(1.0, visctress2, 1.0);
+      visctress1.update_t(1.0, visctress2, 1.0);
 
       fstress(0) = visctress1(0, 0);
       fstress(1) = visctress1(1, 1);
@@ -692,11 +692,11 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(
       fstress(4) = visctress1(1, 2);
       fstress(5) = visctress1(2, 0);
 
-      fstress.Scale(detJ_w * visc * J);
+      fstress.scale(detJ_w * visc * J);
 
       // B^T . C^-1
       Core::LinAlg::Matrix<Base::numdof_, 1> fstressb(true);
-      fstressb.MultiplyTN(bop, fstress);
+      fstressb.multiply_tn(bop, fstress);
 
       for (int k = 0; k < Base::numnod_; k++)
       {
@@ -804,11 +804,11 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1_od(
     Base::compute_shape_functions_and_derivatives(gp, shapefct, deriv, N_XYZ);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr, N_XYZ);  //  (6.17)
+    defgrd.multiply_nt(xcurr, N_XYZ);  //  (6.17)
 
     // inverse deformation gradient F^-1
     static Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
@@ -829,30 +829,30 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1_od(
 
     // -----------------Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     //------------------ inverse Right Cauchy-Green tensor
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> C_inv(false);
-    C_inv.Invert(cauchygreen);
+    C_inv.invert(cauchygreen);
 
     //---------------- get pressure at integration point
-    double press = shapefct.Dot(epreaf);
+    double press = shapefct.dot(epreaf);
 
     //------------------ get material pressure gradient at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> Gradp;
-    Gradp.Multiply(N_XYZ, epreaf);
+    Gradp.multiply(N_XYZ, epreaf);
 
     //--------------------- get fluid velocity at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> fvelint;
-    fvelint.Multiply(evelnp, shapefct);
+    fvelint.multiply(evelnp, shapefct);
 
     //----------------------- material fluid velocity gradient at integration point
     Core::LinAlg::Matrix<Base::numdim_, Base::numdim_> fvelder;
-    fvelder.MultiplyNT(evelnp, N_XYZ);
+    fvelder.multiply_nt(evelnp, N_XYZ);
 
     //---------------- structure velocity at integration point
     Core::LinAlg::Matrix<Base::numdim_, 1> velint;
-    velint.Multiply(nodalvel, shapefct);
+    velint.multiply(nodalvel, shapefct);
 
     //**************************************************+auxilary variables for computing the
     // porosity and linearization
@@ -874,7 +874,7 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1_od(
     }
 
     double dW_dp = 0.0;
-    double init_porosity = shapefct.Dot(*init_porosity_);
+    double init_porosity = shapefct.dot(*init_porosity_);
     Base::struct_mat_->constitutive_derivatives(params, press, J, porosity, init_porosity, &dW_dp,
         nullptr,  // not needed
         nullptr,  // not needed

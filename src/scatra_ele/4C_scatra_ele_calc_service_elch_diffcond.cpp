@@ -612,22 +612,22 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_f
   {
     case Inpar::ScaTra::flux_total:
       // convective flux contribution
-      q.Update(var_manager()->Phinp(k), var_manager()->ConVel(k));
+      q.update(var_manager()->Phinp(k), var_manager()->ConVel(k));
 
       [[fallthrough]];
     case Inpar::ScaTra::flux_diffusive:
       // diffusive flux contribution
-      q.Update(-diff_manager()->GetIsotropicDiff(k) * diff_manager()->GetPhasePoroTort(0),
+      q.update(-diff_manager()->GetIsotropicDiff(k) * diff_manager()->GetPhasePoroTort(0),
           var_manager()->GradPhi(k), 1.0);
       // flux due to ohmic overpotential
-      q.Update(-diff_manager()->GetTransNum(k) * diff_manager()->InvFVal(k) *
+      q.update(-diff_manager()->GetTransNum(k) * diff_manager()->InvFVal(k) *
                    diff_manager()->GetCond() * diff_manager()->GetPhasePoroTort(0),
           var_manager()->GradPot(), 1.0);
       // flux due to concentration overpotential
-      q.Update(-diff_manager()->GetTransNum(k) * var_manager()->RTFFC() /
+      q.update(-diff_manager()->GetTransNum(k) * var_manager()->RTFFC() /
                    diff_manager()->GetValence(k) * diff_manager()->GetCond() *
                    diff_manager()->GetPhasePoroTort(0) * diff_manager()->GetThermFac() *
-                   (diffcondparams_->NewmanConstA() +
+                   (diffcondparams_->NewmanConstdata() +
                        (diffcondparams_->NewmanConstB() * diff_manager()->GetTransNum(k))) *
                    var_manager()->ConIntInv(k),
           var_manager()->GradPhi(k), 1.0);
@@ -662,13 +662,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::calculate_c
     case Inpar::ScaTra::flux_total:
     case Inpar::ScaTra::flux_diffusive:
       // ohmic flux contribution
-      q.Update(-diff_manager()->GetCond(), var_manager()->GradPot());
+      q.update(-diff_manager()->GetCond(), var_manager()->GradPot());
       // diffusion overpotential flux contribution
       for (int k = 0; k < my::numscal_; ++k)
       {
-        q.Update(-var_manager()->RTF() / diffcondparams_->NewmanConstC() *
+        q.update(-var_manager()->RTF() / diffcondparams_->NewmanConstC() *
                      diff_manager()->GetCond() * diff_manager()->GetThermFac() *
-                     (diffcondparams_->NewmanConstA() +
+                     (diffcondparams_->NewmanConstdata() +
                          (diffcondparams_->NewmanConstB() * diff_manager()->GetTransNum(k))) *
                      var_manager()->ConIntInv(k),
             var_manager()->GradPhi(k), 1.0);
@@ -747,13 +747,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
         get_material_params(ele, densn, densnp, densam, visc);
 
         // get values of all transported scalars at integration point
-        conint(0) = my::funct_.Dot(my::ephinp_[0]);
+        conint(0) = my::funct_.dot(my::ephinp_[0]);
 
         // get el. potential solution at integration point
-        potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
+        potint = my::funct_.dot(my::ephinp_[my::numscal_]);
 
         // get global coordinate of integration point
-        xint.Multiply(my::xyze_, my::funct_);
+        xint.multiply(my::xyze_, my::funct_);
 
         const double D = diff_manager()->GetIsotropicDiff(0);
 
@@ -795,13 +795,13 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
         // ((diff_manager()->GetIsotropicDiff(1)-diff_manager()->GetIsotropicDiff(0))/d) *
         // log(c(0)/c_0_0_0_t);
         const double pot = -1 / frt *
-                           (diffcondparams_->NewmanConstA() +
+                           (diffcondparams_->NewmanConstdata() +
                                (diffcondparams_->NewmanConstB() * diff_manager()->GetTransNum(0))) /
                            diffcondparams_->NewmanConstC() * log(c(0) / c_0_0_0_t);
 
         // compute differences between analytical solution and numerical solution
         deltapot = potint - pot;
-        deltacon.Update(1.0, conint, -1.0, c);
+        deltacon.update(1.0, conint, -1.0, c);
 
         // add square to L2 error
         errors[0] += deltacon(0) * deltacon(0) * fac;  // cation concentration

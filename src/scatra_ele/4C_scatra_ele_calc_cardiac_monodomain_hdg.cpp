@@ -362,7 +362,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
   }
 
   // Jacobian determinant
-  double jacdet = this->shapes_->xjm.Determinant();
+  double jacdet = this->shapes_->xjm.determinant();
 
   for (int q = 0; q < nqpoints; ++q)
   {
@@ -448,7 +448,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::tim
 
   if (updatemat.size() > 0)  // found at least one material to be updated
   {
-    for (unsigned i = 0; i < updatemat.size(); i++) updatemat[i]->Update(Teuchos::null, 0.0);
+    for (unsigned i = 0; i < updatemat.size(); i++) updatemat[i]->update(Teuchos::null, 0.0);
   }
 
   return;
@@ -611,7 +611,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     }
   }
 
-  Core::LinAlg::multiplyNT(Mmat, massPartOld, massPartOldW);
+  Core::LinAlg::multiply_nt(Mmat, massPartOld, massPartOldW);
 
   for (unsigned int q = 0; q < shapes_old->nqpoints_; ++q)
     for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
@@ -633,7 +633,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 
   Core::LinAlg::SerialDenseMatrix tempMat2(
       shapes->nqpoints_, actmat->get_number_of_internal_state_variables());
-  Core::LinAlg::multiplyTN(tempMat2, massPart, tempMat1);
+  Core::LinAlg::multiply_tn(tempMat2, massPart, tempMat1);
 
   actmat->SetGP(shapes->nqpoints_);
   actmat->resize_internal_state_variables();
@@ -714,7 +714,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 
   this->shapes_->evaluate(*ele);
   // Jacobian determinant
-  double jacdet = this->shapes_->xjm.Determinant();
+  double jacdet = this->shapes_->xjm.determinant();
 
 
 
@@ -741,7 +741,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
     }
   }
 
-  Core::LinAlg::multiplyNT(Mmat, massPartOld, massPartOldW);
+  Core::LinAlg::multiply_nt(Mmat, massPartOld, massPartOldW);
 
   for (unsigned int q = 0; q < shape_gp_old.size(); ++q)
     for (int k = 0; k < actmat->get_number_of_internal_state_variables(); ++k)
@@ -763,7 +763,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 
   Core::LinAlg::SerialDenseMatrix tempMat2(
       shape_gp.size(), actmat->get_number_of_internal_state_variables());
-  Core::LinAlg::multiplyTN(tempMat2, massPart, tempMat1);
+  Core::LinAlg::multiply_tn(tempMat2, massPart, tempMat1);
 
   actmat->SetGP(shape_gp.size());
   actmat->resize_internal_state_variables();
@@ -813,7 +813,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::set
     for (unsigned int gp = 0; gp < cir.size(); ++gp)
     {
       Core::LinAlg::Matrix<3, 1> rad(false);
-      rad.CrossProduct(cir[gp], tan[gp]);
+      rad.cross_product(cir[gp], tan[gp]);
 
       double tmp1 = cos(helix[gp] * deg2rad) * cos(transverse[gp] * deg2rad);
       double tmp2 = sin(helix[gp] * deg2rad) * cos(transverse[gp] * deg2rad);
@@ -823,7 +823,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::set
       {
         f[gp](i) = tmp1 * cir[gp](i, 0) + tmp2 * tan[gp](i, 0) + tmp3 * rad(i, 0);
       }
-      f[gp].Scale(1.0 / f[gp].Norm2());
+      f[gp].scale(1.0 / f[gp].norm2());
     }
   }
   else

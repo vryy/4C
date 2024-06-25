@@ -531,12 +531,12 @@ namespace GEOMETRYPAIR
   struct PrintElementData
   {
     template <typename scalar_type>
-    static void Print(const ElementData<element_type, scalar_type>& element_data, std::ostream& out)
+    static void print(const ElementData<element_type, scalar_type>& element_data, std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);
       out << "\nElement state vector: ";
-      element_data.element_position_.Print(out);
+      element_data.element_position_.print(out);
     }
   };
 
@@ -548,16 +548,16 @@ namespace GEOMETRYPAIR
       typename std::enable_if<IsNurbsElement<element_type>::value_>::type>
   {
     template <typename scalar_type>
-    static void Print(const ElementData<element_type, scalar_type>& element_data, std::ostream& out)
+    static void print(const ElementData<element_type, scalar_type>& element_data, std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);
       out << "\nElement state vector: ";
-      element_data.element_position_.Print(out);
+      element_data.element_position_.print(out);
       out << "\nElement knot vectors: ";
       for (const auto& knot : element_data.shape_function_data_.myknots_) knot.print(out);
       out << "\nElement weight vector: ";
-      element_data.shape_function_data_.weights_.Print(out);
+      element_data.shape_function_data_.weights_.print(out);
     }
   };
 
@@ -568,13 +568,13 @@ namespace GEOMETRYPAIR
   struct PrintElementData<t_hermite>
   {
     template <typename scalar_type>
-    static void Print(const ElementData<t_hermite, scalar_type>& element_data, std::ostream& out)
+    static void print(const ElementData<t_hermite, scalar_type>& element_data, std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);
       out << "\nElement reference length: " << element_data.shape_function_data_.ref_length_;
       out << "\nElement state vector: ";
-      element_data.element_position_.Print(out);
+      element_data.element_position_.print(out);
     }
   };
 
@@ -586,14 +586,14 @@ namespace GEOMETRYPAIR
       typename std::enable_if<IsSurfaceAveragedNormalsElement<element_type>::value_>::type>
   {
     template <typename scalar_type>
-    static void Print(const ElementData<element_type, scalar_type>& element_data, std::ostream& out)
+    static void print(const ElementData<element_type, scalar_type>& element_data, std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);
       out << "\nElement state vector: ";
-      element_data.element_position_.Print(out);
+      element_data.element_position_.print(out);
       out << "\nElement nodal normals: ";
-      element_data.nodal_normals_.Print(out);
+      element_data.nodal_normals_.print(out);
     }
   };
 }  // namespace GEOMETRYPAIR

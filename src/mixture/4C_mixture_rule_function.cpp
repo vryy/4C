@@ -106,7 +106,7 @@ void MIXTURE::FunctionMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
 
     // evaluate the mass fraction function at the gauss point reference coordinates and current time
     const double massfrac =
-        mass_fractions_functions_[i]->evaluate(reference_coordinates.A(), time, 0);
+        mass_fractions_functions_[i]->evaluate(reference_coordinates.data(), time, 0);
     sum += massfrac;
     double constituent_density = params_->initial_reference_density_ * massfrac;
 
@@ -116,8 +116,8 @@ void MIXTURE::FunctionMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     ccmat.clear();
     constituent.evaluate(F, E_strain, params, cstress, ccmat, gp, eleGID);
 
-    S_stress.Update(constituent_density, cstress, 1.0);
-    cmat.Update(constituent_density, ccmat, 1.0);
+    S_stress.update(constituent_density, cstress, 1.0);
+    cmat.update(constituent_density, ccmat, 1.0);
   }
 
   // validity check whether mass fractions summed up to 1

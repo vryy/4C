@@ -632,7 +632,7 @@ namespace Discret
         // j : direction of derivative x/y/z
         //
         Core::LinAlg::Matrix<nsd_, nsd_> velderxy;
-        velderxy.MultiplyNT(evel, derxy_);
+        velderxy.multiply_nt(evel, derxy_);
 
         // compute (resolved) rate of strain
         //
@@ -1354,32 +1354,32 @@ namespace Discret
       {
         // fluid velocity
         Core::LinAlg::Matrix<NSD, 1> convective_fluid_velocity;
-        convective_fluid_velocity.Multiply(econvelnp, funct);
+        convective_fluid_velocity.multiply(econvelnp, funct);
 
         // velocity due to the external force
         Core::LinAlg::Matrix<NSD, 1> force_velocity;
-        force_velocity.Multiply(eforcevelocity, funct);
+        force_velocity.multiply(eforcevelocity, funct);
 
         for (int k = 0; k < numscal_; ++k)
         {
-          convelint_[k].Update(1.0, convective_fluid_velocity);
+          convelint_[k].update(1.0, convective_fluid_velocity);
           // if the scalar reacts to the external force, add the velocity due to the external force
           if (reacts_to_force_[k])
           {
             convelint_[k] += force_velocity;
           }
           // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-          conv_[k].MultiplyTN(derxy, convelint_[k]);
+          conv_[k].multiply_tn(derxy, convelint_[k]);
           // calculate scalar at t_(n+1) or t_(n+alpha_F)
-          phinp_[k] = funct.Dot(ephinp[k]);
+          phinp_[k] = funct.dot(ephinp[k]);
           // calculate scalar at t_(n)
-          phin_[k] = funct.Dot(ephin[k]);
+          phin_[k] = funct.dot(ephin[k]);
           // spatial gradient of current scalar value
-          gradphi_[k].Multiply(derxy, ephinp[k]);
+          gradphi_[k].multiply(derxy, ephinp[k]);
           // convective term
-          conv_phi_[k] = convelint_[k].Dot(gradphi_[k]);
+          conv_phi_[k] = convelint_[k].dot(gradphi_[k]);
           // history data (or acceleration)
-          hist_[k] = funct.Dot(ehist[k]);
+          hist_[k] = funct.dot(ehist[k]);
         }
       };
 

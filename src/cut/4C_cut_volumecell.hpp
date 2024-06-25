@@ -142,8 +142,8 @@ namespace Core::Geo
        */
       void Position(Core::Geo::Cut::Point::PointPosition position);
 
-      inline void Print() const { Print(std::cout); };
-      void Print(std::ostream& stream) const;
+      inline void print() const { print(std::cout); };
+      void print(std::ostream& stream) const;
 
       const plain_facet_set& Facets() const { return facets_; }
 

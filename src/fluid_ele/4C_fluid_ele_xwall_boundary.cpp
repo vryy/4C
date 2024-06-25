@@ -68,10 +68,10 @@ Core::Elements::Element* Discret::ELEMENTS::FluidXWallBoundary::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidXWallBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidXWallBoundary::print(std::ostream& os) const
 {
   os << "FluidXWallBoundary ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

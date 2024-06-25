@@ -191,7 +191,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
   inelastic_->evaluate_inverse_inelastic_def_grad(defgrad, iFinM);
 
   // determinante of inelastic deformation gradient
-  const double detFin = 1.0 / iFinM.Determinant();
+  const double detFin = 1.0 / iFinM.determinant();
 
   // static variables of kinetic quantities
   static Core::LinAlg::Matrix<6, 1> iCV(true);
@@ -231,13 +231,13 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
     // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}
     // : \frac{\partial F_{in}^{-1}}{\partial C} = cmatiso + cmatadd
     evaluate_stress_cmat_iso(iCV, iCinV, iCinCiCinV, gamma, delta, detFin, *stress, cmatiso);
-    cmat->Update(1.0, cmatiso, 0.0);
+    cmat->update(1.0, cmatiso, 0.0);
 
     // evaluate additional terms for the elasticity tensor
     // cmatadd = 2 \frac{\partial S}{\partial F_{in}^{-1}} : \frac{\partial F_{in}^{-1}}{\partial
     // C}, where F_{in}^{-1} can be multiplicatively composed of several inelastic contributions
     evaluate_additional_cmat(defgrad, iCV, dSdiFin, cmatadd);
-    cmat->Update(1.0, cmatadd, 1.0);
+    cmat->update(1.0, cmatadd, 1.0);
   }
   // evaluate OD Block
   else
@@ -281,11 +281,11 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
   static Core::LinAlg::Matrix<3, 3> iFinM(true);
   inelastic_->evaluate_inverse_inelastic_def_grad(&defgrd, iFinM);
   static Core::LinAlg::Matrix<3, 3> FeM(true);
-  FeM.MultiplyNN(1.0, defgrd, iFinM, 0.0);
+  FeM.multiply_nn(1.0, defgrd, iFinM, 0.0);
 
   // get elastic left cauchy-green tensor and corresponding principal invariants
   static Core::LinAlg::Matrix<3, 3> beM(true);
-  beM.MultiplyNT(1.0, FeM, FeM, 0.0);
+  beM.multiply_nt(1.0, FeM, FeM, 0.0);
   static Core::LinAlg::Matrix<6, 1> beV_strain(true);
   Core::LinAlg::Voigt::Strains::matrix_to_vector(beM, beV_strain);
   static Core::LinAlg::Matrix<3, 1> prinv(true);
@@ -294,28 +294,28 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(beM, beV_stress);
 
   static Core::LinAlg::Matrix<3, 1> beMdn(true);
-  beMdn.Multiply(1.0, beM, n, 0.0);
-  const double beMdnddir = beMdn.Dot(dir);
+  beMdn.multiply(1.0, beM, n, 0.0);
+  const double beMdnddir = beMdn.dot(dir);
   static Core::LinAlg::Matrix<3, 1> beMddir(true);
-  beMddir.Multiply(1.0, beM, dir, 0.0);
+  beMddir.multiply(1.0, beM, dir, 0.0);
 
   static Core::LinAlg::Matrix<3, 3> ibeM(true);
-  ibeM.Invert(beM);
+  ibeM.invert(beM);
   static Core::LinAlg::Matrix<6, 1> ibeV_stress(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(ibeM, ibeV_stress);
   static Core::LinAlg::Matrix<3, 1> ibeMdn(true);
-  ibeMdn.Multiply(1.0, ibeM, n, 0.0);
-  const double ibeMdnddir = ibeMdn.Dot(dir);
+  ibeMdn.multiply(1.0, ibeM, n, 0.0);
+  const double ibeMdnddir = ibeMdn.dot(dir);
   static Core::LinAlg::Matrix<3, 1> ibeMddir(true);
-  ibeMddir.Multiply(1.0, ibeM, dir, 0.0);
+  ibeMddir.multiply(1.0, ibeM, dir, 0.0);
 
   // derivatives of principle invariants of elastic left cauchy-green tensor
   static Core::LinAlg::Matrix<3, 1> dPI(true);
   static Core::LinAlg::Matrix<6, 1> ddPII(true);
   evaluate_invariant_derivatives(prinv, gp, eleGID, dPI, ddPII);
 
-  const double detFe = FeM.Determinant();
-  const double nddir = n.Dot(dir);
+  const double detFe = FeM.determinant();
+  const double nddir = n.dot(dir);
   const double prefac = 2.0 / detFe;
 
   // calculate \mat{\sigma} \cdot \vec{n} \cdot \vec{v}
@@ -324,18 +324,18 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
 
   if (d_cauchyndir_dn)
   {
-    d_cauchyndir_dn->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), dir, 0.0);
-    d_cauchyndir_dn->Update(dPI(0), beMddir, 1.0);
-    d_cauchyndir_dn->Update(-prinv(2) * dPI(1), ibeMddir, 1.0);
-    d_cauchyndir_dn->Scale(prefac);
+    d_cauchyndir_dn->update(prinv(1) * dPI(1) + prinv(2) * dPI(2), dir, 0.0);
+    d_cauchyndir_dn->update(dPI(0), beMddir, 1.0);
+    d_cauchyndir_dn->update(-prinv(2) * dPI(1), ibeMddir, 1.0);
+    d_cauchyndir_dn->scale(prefac);
   }
 
   if (d_cauchyndir_ddir)
   {
-    d_cauchyndir_ddir->Update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);
-    d_cauchyndir_ddir->Update(dPI(0), beMdn, 1.0);
-    d_cauchyndir_ddir->Update(-prinv(2) * dPI(1), ibeMdn, 1.0);
-    d_cauchyndir_ddir->Scale(prefac);
+    d_cauchyndir_ddir->update(prinv(1) * dPI(1) + prinv(2) * dPI(2), n, 0.0);
+    d_cauchyndir_ddir->update(dPI(0), beMdn, 1.0);
+    d_cauchyndir_ddir->update(-prinv(2) * dPI(1), ibeMdn, 1.0);
+    d_cauchyndir_ddir->scale(prefac);
   }
 
   if (d_cauchyndir_dF)
@@ -343,9 +343,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
     static Core::LinAlg::Matrix<6, 1> d_I1_dbe(true);
     d_I1_dbe = idV;
     static Core::LinAlg::Matrix<6, 1> d_I2_dbe(true);
-    d_I2_dbe.Update(prinv(0), idV, -1.0, beV_stress);
+    d_I2_dbe.update(prinv(0), idV, -1.0, beV_stress);
     static Core::LinAlg::Matrix<6, 1> d_I3_dbe(true);
-    d_I3_dbe.Update(prinv(2), ibeV_stress, 0.0);
+    d_I3_dbe.update(prinv(2), ibeV_stress, 0.0);
 
     // calculation of \partial b_{el} / \partial F (elastic left cauchy-green w.r.t. deformation
     // gradient)
@@ -356,27 +356,27 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
     d_Fe_dF.clear();
     add_non_symmetric_product(1.0, idM, iFinM, d_Fe_dF);
     static Core::LinAlg::Matrix<6, 9> d_be_dF(true);
-    d_be_dF.Multiply(1.0, d_be_dFe, d_Fe_dF, 0.0);
+    d_be_dF.multiply(1.0, d_be_dFe, d_Fe_dF, 0.0);
 
     // calculation of \partial I_i / \partial F (Invariants of b_{el} w.r.t. deformation gradient)
     static Core::LinAlg::Matrix<9, 1> d_I1_dF(true);
     static Core::LinAlg::Matrix<9, 1> d_I2_dF(true);
     static Core::LinAlg::Matrix<9, 1> d_I3_dF(true);
-    d_I1_dF.MultiplyTN(1.0, d_be_dF, d_I1_dbe, 0.0);
-    d_I2_dF.MultiplyTN(1.0, d_be_dF, d_I2_dbe, 0.0);
-    d_I3_dF.MultiplyTN(1.0, d_be_dF, d_I3_dbe, 0.0);
+    d_I1_dF.multiply_tn(1.0, d_be_dF, d_I1_dbe, 0.0);
+    d_I2_dF.multiply_tn(1.0, d_be_dF, d_I2_dbe, 0.0);
+    d_I3_dF.multiply_tn(1.0, d_be_dF, d_I3_dbe, 0.0);
 
     // add d_cauchyndir_dI1 \odot d_I1_dF and clear static matrix
-    d_cauchyndir_dF->Update(prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir +
+    d_cauchyndir_dF->update(prefac * (prinv(1) * ddPII(5) * nddir + prinv(2) * ddPII(4) * nddir +
                                          ddPII(0) * beMdnddir - prinv(2) * ddPII(5) * ibeMdnddir),
         d_I1_dF, 0.0);
     // add d_cauchyndir_dI2 \odot d_I2_dF
-    d_cauchyndir_dF->Update(
+    d_cauchyndir_dF->update(
         prefac * (dPI(1) * nddir + prinv(1) * ddPII(1) * nddir + prinv(2) * ddPII(3) * nddir +
                      ddPII(5) * beMdnddir - prinv(2) * ddPII(1) * ibeMdnddir),
         d_I2_dF, 1.0);
     // add d_cauchyndir_dI3 \odot d_I3_dF
-    d_cauchyndir_dF->Update(
+    d_cauchyndir_dF->update(
         prefac * (prinv(1) * ddPII(3) * nddir + dPI(2) * nddir + prinv(2) * ddPII(2) * nddir +
                      ddPII(4) * beMdnddir - dPI(1) * ibeMdnddir - prinv(2) * ddPII(3) * ibeMdnddir),
         d_I3_dF, 1.0);
@@ -385,44 +385,44 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_cauchy_n_dir_and_deriva
     // constant invariants first part is term arising from \partial Je^{-1} / \partial F
     static Core::LinAlg::Matrix<3, 3> iFeM(true);
     static Core::LinAlg::Matrix<3, 3> iFeTM(true);
-    iFeM.Invert(FeM);
-    iFeTM.UpdateT(1.0, iFeM, 0.0);
+    iFeM.invert(FeM);
+    iFeTM.update_t(1.0, iFeM, 0.0);
     static Core::LinAlg::Matrix<9, 1> iFeTV(true);
     Core::LinAlg::Voigt::matrix_3x3_to_9x1(iFeTM, iFeTV);
     static Core::LinAlg::Matrix<1, 9> d_iJe_dFV(true);
-    d_iJe_dFV.MultiplyTN(1.0, iFeTV, d_Fe_dF, 0.0);
-    d_cauchyndir_dF->UpdateT(-cauchy_n_dir, d_iJe_dFV, 1.0);
+    d_iJe_dFV.multiply_tn(1.0, iFeTV, d_Fe_dF, 0.0);
+    d_cauchyndir_dF->update_t(-cauchy_n_dir, d_iJe_dFV, 1.0);
 
     // second part is term arising from \partial b_el * n * v / \partial F
     static Core::LinAlg::Matrix<3, 3> FeMiFinTM(true);
-    FeMiFinTM.MultiplyNT(1.0, FeM, iFinM, 0.0);
+    FeMiFinTM.multiply_nt(1.0, FeM, iFinM, 0.0);
     static Core::LinAlg::Matrix<3, 1> tempvec(true);
-    tempvec.MultiplyTN(1.0, FeMiFinTM, n, 0.0);
+    tempvec.multiply_tn(1.0, FeMiFinTM, n, 0.0);
     static Core::LinAlg::Matrix<3, 3> d_bednddir_dF(true);
-    d_bednddir_dF.MultiplyNT(1.0, dir, tempvec, 0.0);
+    d_bednddir_dF.multiply_nt(1.0, dir, tempvec, 0.0);
     // now reuse tempvec
-    tempvec.MultiplyTN(1.0, FeMiFinTM, dir, 0.0);
-    d_bednddir_dF.MultiplyNT(1.0, n, tempvec, 1.0);
+    tempvec.multiply_tn(1.0, FeMiFinTM, dir, 0.0);
+    d_bednddir_dF.multiply_nt(1.0, n, tempvec, 1.0);
     static Core::LinAlg::Matrix<9, 1> d_bednddir_dFV(true);
     Core::LinAlg::Voigt::matrix_3x3_to_9x1(d_bednddir_dF, d_bednddir_dFV);
-    d_cauchyndir_dF->Update(prefac * dPI(0), d_bednddir_dFV, 1.0);
+    d_cauchyndir_dF->update(prefac * dPI(0), d_bednddir_dFV, 1.0);
 
     // third part is term arising from \partial b_el^{-1} * n * v / \partial F
     static Core::LinAlg::Matrix<3, 3> iFM(true);
-    iFM.Invert(defgrd);
+    iFM.invert(defgrd);
     static Core::LinAlg::Matrix<3, 1> tempvec2(true);
-    tempvec.Multiply(1.0, ibeM, dir, 0.0);
-    tempvec2.Multiply(1.0, iFM, n, 0.0);
+    tempvec.multiply(1.0, ibeM, dir, 0.0);
+    tempvec2.multiply(1.0, iFM, n, 0.0);
     static Core::LinAlg::Matrix<3, 3> d_ibednddir_dFM(true);
-    d_ibednddir_dFM.MultiplyNT(1.0, tempvec, tempvec2, 0.0);
+    d_ibednddir_dFM.multiply_nt(1.0, tempvec, tempvec2, 0.0);
     // now reuse tempvecs
-    tempvec.Multiply(1.0, ibeM, n, 0.0);
-    tempvec2.Multiply(1.0, iFM, dir, 0.0);
-    d_ibednddir_dFM.MultiplyNT(1.0, tempvec, tempvec2, 1.0);
-    d_ibednddir_dFM.Scale(-1.0);
+    tempvec.multiply(1.0, ibeM, n, 0.0);
+    tempvec2.multiply(1.0, iFM, dir, 0.0);
+    d_ibednddir_dFM.multiply_nt(1.0, tempvec, tempvec2, 1.0);
+    d_ibednddir_dFM.scale(-1.0);
     static Core::LinAlg::Matrix<9, 1> d_ibednddir_dFV(true);
     Core::LinAlg::Voigt::matrix_3x3_to_9x1(d_ibednddir_dFM, d_ibednddir_dFV);
-    d_cauchyndir_dF->Update(-prefac * prinv(2) * dPI(1), d_ibednddir_dFV, 1.0);
+    d_cauchyndir_dF->update(-prefac * prinv(2) * dPI(1), d_ibednddir_dFV, 1.0);
   }
 }
 
@@ -447,7 +447,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_linearization_od(
   static Core::LinAlg::Matrix<3, 3> idM(true);
   for (int i = 0; i < 3; ++i) idM(i, i) = 1.0;
   static Core::LinAlg::Matrix<3, 3> FeM(true);
-  FeM.MultiplyNN(1.0, defgrd, iFinM, 0.0);
+  FeM.multiply_nn(1.0, defgrd, iFinM, 0.0);
 
   // calculate the derivative of the deformation gradient w.r.t. the inelastic deformation gradient
   static Core::LinAlg::Matrix<9, 9> d_F_dFin(true);
@@ -460,12 +460,12 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_linearization_od(
   // implementation accordingly
   if (num_contributions == 1)
   {
-    facdefgradin[0].second->evaluate_inelastic_def_grad_derivative(defgrd.Determinant(), d_Fin_dx);
+    facdefgradin[0].second->evaluate_inelastic_def_grad_derivative(defgrd.determinant(), d_Fin_dx);
   }
   else
     FOUR_C_THROW("NOT YET IMPLEMENTED");
 
-  d_F_dx->MultiplyNN(1.0, d_F_dFin, d_Fin_dx, 0.0);
+  d_F_dx->multiply_nn(1.0, d_F_dFin, d_Fin_dx, 0.0);
 }
 
 /*--------------------------------------------------------------------*
@@ -481,24 +481,24 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_stress_cmat_iso(
   cmatiso.clear();
 
   // 2nd Piola Kirchhoff stresses
-  stress.Update(gamma(0), iCinV, 1.0);
-  stress.Update(gamma(1), iCinCiCinV, 1.0);
-  stress.Update(gamma(2), iCV, 1.0);
-  stress.Scale(detFin);
+  stress.update(gamma(0), iCinV, 1.0);
+  stress.update(gamma(1), iCinCiCinV, 1.0);
+  stress.update(gamma(2), iCV, 1.0);
+  stress.scale(detFin);
 
   // constitutive tensor
-  cmatiso.MultiplyNT(delta(0), iCinV, iCinV, 1.);
-  cmatiso.MultiplyNT(delta(1), iCinCiCinV, iCinV, 1.);
-  cmatiso.MultiplyNT(delta(1), iCinV, iCinCiCinV, 1.);
-  cmatiso.MultiplyNT(delta(2), iCinV, iCV, 1.);
-  cmatiso.MultiplyNT(delta(2), iCV, iCinV, 1.);
-  cmatiso.MultiplyNT(delta(3), iCinCiCinV, iCinCiCinV, 1.);
-  cmatiso.MultiplyNT(delta(4), iCinCiCinV, iCV, 1.);
-  cmatiso.MultiplyNT(delta(4), iCV, iCinCiCinV, 1.);
-  cmatiso.MultiplyNT(delta(5), iCV, iCV, 1.);
+  cmatiso.multiply_nt(delta(0), iCinV, iCinV, 1.);
+  cmatiso.multiply_nt(delta(1), iCinCiCinV, iCinV, 1.);
+  cmatiso.multiply_nt(delta(1), iCinV, iCinCiCinV, 1.);
+  cmatiso.multiply_nt(delta(2), iCinV, iCV, 1.);
+  cmatiso.multiply_nt(delta(2), iCV, iCinV, 1.);
+  cmatiso.multiply_nt(delta(3), iCinCiCinV, iCinCiCinV, 1.);
+  cmatiso.multiply_nt(delta(4), iCinCiCinV, iCV, 1.);
+  cmatiso.multiply_nt(delta(4), iCV, iCinCiCinV, 1.);
+  cmatiso.multiply_nt(delta(5), iCV, iCV, 1.);
   add_holzapfel_product(cmatiso, iCV, delta(6));
   add_holzapfel_product(cmatiso, iCinV, delta(7));
-  cmatiso.Scale(detFin);
+  cmatiso.scale(detFin);
 }
 
 /*--------------------------------------------------------------------*
@@ -513,14 +513,14 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_kin_quant_elast(
 {
   // inverse inelastic right Cauchy-Green
   static Core::LinAlg::Matrix<3, 3> iCinM(true);
-  iCinM.MultiplyNT(1.0, iFinM, iFinM, 0.0);
+  iCinM.multiply_nt(1.0, iFinM, iFinM, 0.0);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCinM, iCinV);
 
   // inverse right Cauchy-Green
   static Core::LinAlg::Matrix<3, 3> iCM(true);
   static Core::LinAlg::Matrix<3, 3> CM(true);
-  CM.MultiplyTN(1.0, *defgrad, *defgrad, 0.0);
-  iCM.Invert(CM);
+  CM.multiply_tn(1.0, *defgrad, *defgrad, 0.0);
+  iCM.invert(CM);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(iCM, iCV);
 
   // C_{in}^{-1} * C * C_{in}^{-1}
@@ -539,28 +539,28 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_kin_quant_elast(
   Core::LinAlg::Voigt::Strains::invariants_principal(prinv, CeV_strain);
 
   // C_{in}^{-1} * C
-  iCinCM.MultiplyNN(1.0, iCinM, CM, 0.0);
+  iCinCM.multiply_nn(1.0, iCinM, CM, 0.0);
 
   // F_{in}^{-1} * C_e
-  iFinCeM.MultiplyNN(1.0, iFinM, CeM, 0.0);
+  iFinCeM.multiply_nn(1.0, iFinM, CeM, 0.0);
 
   // C * F_{in}^{-1}
   static Core::LinAlg::Matrix<3, 3> CiFinM(true);
-  CiFinM.MultiplyNN(1.0, CM, iFinM, 0.0);
+  CiFinM.multiply_nn(1.0, CM, iFinM, 0.0);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(CiFinM, CiFin9x1);
 
   // C * F_{in}^{-1} * C_e
   static Core::LinAlg::Matrix<3, 3> CiFinCeM(true);
-  tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
-  CiFinCeM.MultiplyNN(1.0, tmp, CeM, 0.0);
+  tmp.multiply_nn(1.0, CM, iFinM, 0.0);
+  CiFinCeM.multiply_nn(1.0, tmp, CeM, 0.0);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(CiFinCeM, CiFinCe9x1);
 
   // C * F_{in}^{-1} * C_e^{-1}
   static Core::LinAlg::Matrix<3, 3> CiFiniCeM(true);
   static Core::LinAlg::Matrix<3, 3> iCeM(true);
-  iCeM.Invert(CeM);
-  tmp.MultiplyNN(1.0, CM, iFinM, 0.0);
-  CiFiniCeM.MultiplyNN(1.0, tmp, iCeM, 0.0);
+  iCeM.invert(CeM);
+  tmp.multiply_nn(1.0, CM, iFinM, 0.0);
+  CiFiniCeM.multiply_nn(1.0, tmp, iCeM, 0.0);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(CiFiniCeM, CiFiniCe9x1);
 }
 
@@ -604,37 +604,37 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluatedSdiFin(
   // (contribution from iFin)
   Mat::add_right_non_symmetric_holzapfel_product(dSdiFin, id, iFinM, gamma(0));
   Mat::add_right_non_symmetric_holzapfel_product(dSdiFin, iCinCM, iFinM, gamma(1));
-  dSdiFin.MultiplyNT(delta(0), iCinV, CiFin9x1, 1.);
-  dSdiFin.MultiplyNT(delta(1), iCinV, CiFinCe9x1, 1.);
-  dSdiFin.MultiplyNT(delta(1), iCinCiCinV, CiFin9x1, 1.);
-  dSdiFin.MultiplyNT(delta(2), iCinV, CiFiniCe9x1, 1.);
-  dSdiFin.MultiplyNT(delta(2), iCV, CiFin9x1, 1.);
-  dSdiFin.MultiplyNT(delta(3), iCinCiCinV, CiFinCe9x1, 1.);
-  dSdiFin.MultiplyNT(delta(4), iCinCiCinV, CiFiniCe9x1, 1.);
-  dSdiFin.MultiplyNT(delta(4), iCV, CiFinCe9x1, 1.);
-  dSdiFin.MultiplyNT(delta(5), iCV, CiFiniCe9x1, 1.);
+  dSdiFin.multiply_nt(delta(0), iCinV, CiFin9x1, 1.);
+  dSdiFin.multiply_nt(delta(1), iCinV, CiFinCe9x1, 1.);
+  dSdiFin.multiply_nt(delta(1), iCinCiCinV, CiFin9x1, 1.);
+  dSdiFin.multiply_nt(delta(2), iCinV, CiFiniCe9x1, 1.);
+  dSdiFin.multiply_nt(delta(2), iCV, CiFin9x1, 1.);
+  dSdiFin.multiply_nt(delta(3), iCinCiCinV, CiFinCe9x1, 1.);
+  dSdiFin.multiply_nt(delta(4), iCinCiCinV, CiFiniCe9x1, 1.);
+  dSdiFin.multiply_nt(delta(4), iCV, CiFinCe9x1, 1.);
+  dSdiFin.multiply_nt(delta(5), iCV, CiFiniCe9x1, 1.);
   Mat::add_right_non_symmetric_holzapfel_product(dSdiFin, id, iFinCeM, gamma(1));
-  dSdiFin.Scale(detFin);
+  dSdiFin.scale(detFin);
 
   // derivative of second Piola Kirchhoff stresses w.r.t. inverse growth deformation gradient
   // (contribution from det(Fin))
 
   // dS/d(det(Fin))
   Core::LinAlg::Matrix<6, 1> dSddetFin(true);
-  dSddetFin.Update(gamma(0), iCinV, 0.0);
-  dSddetFin.Update(gamma(1), iCinCiCinV, 1.0);
-  dSddetFin.Update(gamma(2), iCV, 1.0);
+  dSddetFin.update(gamma(0), iCinV, 0.0);
+  dSddetFin.update(gamma(1), iCinCiCinV, 1.0);
+  dSddetFin.update(gamma(2), iCV, 1.0);
 
   // d(det(Fin))/diFin
   Core::LinAlg::Matrix<9, 1> ddetFindiFinV(true);
   Core::LinAlg::Matrix<3, 3> ddetFindiFinM(true);
   Core::LinAlg::Matrix<3, 3> FinM(true);
-  FinM.Invert(iFinM);
-  ddetFindiFinM.UpdateT((-1.0) * detFin, FinM);
+  FinM.invert(iFinM);
+  ddetFindiFinM.update_t((-1.0) * detFin, FinM);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(ddetFindiFinM, ddetFindiFinV);
 
   // chain rule to get dS/d(det(Fin)) * d(det(Fin))/diFin
-  dSdiFin.MultiplyNT(1.0, dSddetFin, ddetFindiFinV, 1.0);
+  dSdiFin.multiply_nt(1.0, dSddetFin, ddetFindiFinV, 1.0);
 }
 
 /*--------------------------------------------------------------------*
@@ -688,8 +688,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
       producta = id;
       for (int j = num_contributions - 1; j > i; --j)
       {
-        producta_temp.Multiply(1.0, producta, iFinjM[j].second, 0.0);
-        producta.Update(1.0, producta_temp, 0.0);
+        producta_temp.multiply(1.0, producta, iFinjM[j].second, 0.0);
+        producta.update(1.0, producta_temp, 0.0);
       }
 
       // multiply all inelastic deformation gradients except for range between last and current
@@ -698,14 +698,14 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
       {
         for (int j = i - 1; j >= 0; --j)
         {
-          productb_temp.Multiply(1.0, productb, iFinjM[j].second, 0.0);
-          productb.Update(1.0, productb_temp, 0.0);
+          productb_temp.multiply(1.0, productb, iFinjM[j].second, 0.0);
+          productb.update(1.0, productb_temp, 0.0);
         }
       }
 
       // evaluate additional contribution to C by applying chain rule
       add_non_symmetric_product(1.0, producta, productb, diFindiFinj);
-      dSdiFinj.Multiply(1.0, dSdiFin, diFindiFinj, 0.0);
+      dSdiFinj.multiply(1.0, dSdiFin, diFindiFinj, 0.0);
       facdefgradin[i].second->evaluate_additional_cmat(
           defgrad, iFinjM[i].second, iCV, dSdiFinj, cmatadd);
     }
@@ -792,8 +792,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
         producta = id;
         for (int j = num_contributions - 1; j > i; --j)
         {
-          producta_temp.Multiply(1.0, producta, iFinjM[j].second, 0.0);
-          producta.Update(1.0, producta_temp, 0.0);
+          producta_temp.multiply(1.0, producta, iFinjM[j].second, 0.0);
+          producta.update(1.0, producta_temp, 0.0);
         }
 
         // multiply all inelastic deformation gradients except for range between last and current
@@ -802,14 +802,14 @@ void Mat::MultiplicativeSplitDefgradElastHyper::EvaluateODStiffMat(PAR::Inelasti
         {
           for (int j = i - 1; j >= 0; --j)
           {
-            productb_temp.Multiply(1.0, productb, iFinjM[j].second, 0.0);
-            productb.Update(1.0, productb_temp, 0.0);
+            productb_temp.multiply(1.0, productb, iFinjM[j].second, 0.0);
+            productb.update(1.0, productb_temp, 0.0);
           }
         }
 
         // evaluate additional contribution to OD block by applying chain rule
         add_non_symmetric_product(1.0, producta, productb, diFindiFinj);
-        dSdiFinj.Multiply(1.0, dSdiFin, diFindiFinj, 0.0);
+        dSdiFinj.multiply(1.0, dSdiFin, diFindiFinj, 0.0);
         facdefgradin[i].second->EvaluateODStiffMat(defgrad, iFinjM[i].second, dSdiFinj, dstressdx);
       }
     }
@@ -908,10 +908,10 @@ void Mat::InelasticFactorsHandler::evaluate_inverse_inelastic_def_grad(
     i_finj_[i].second = iFinp;
 
     // update inverse inelastic deformation gradient
-    iFinM.Multiply(iFin_init_store, iFinp);
+    iFinM.multiply(iFin_init_store, iFinp);
 
     // store result for next evaluation
-    iFin_init_store.Update(1.0, iFinM, 0.0);
+    iFin_init_store.update(1.0, iFinM, 0.0);
   }
 }
 

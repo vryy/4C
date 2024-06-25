@@ -127,7 +127,7 @@ int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& 
             {
               // calculate reference position of GP
               Core::LinAlg::SerialDenseMatrix gp_coord(1, numdim);
-              Core::LinAlg::multiplyTN(gp_coord, shapefcts, x);
+              Core::LinAlg::multiply_tn(gp_coord, shapefcts, x);
 
               // write coordinates in another datatype
               double gp_coord2[numdim];

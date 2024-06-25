@@ -392,9 +392,9 @@ void Mat::ViscoAnisotropic::UpdateFiberDirs(const int gp, Core::LinAlg::Matrix<3
   ca1_->at(gp).resize(3);
   ca2_->at(gp).resize(3);
   Core::LinAlg::DenseFunctions::multiply<double, 3, 3, 1>(
-      ca1_->at(gp).data(), defgrad->A(), a1_->at(gp).data());
+      ca1_->at(gp).data(), defgrad->data(), a1_->at(gp).data());
   Core::LinAlg::DenseFunctions::multiply<double, 3, 3, 1>(
-      ca2_->at(gp).data(), defgrad->A(), a2_->at(gp).data());
+      ca2_->at(gp).data(), defgrad->data(), a2_->at(gp).data());
   // std::cout << (ca1_->at(gp))[0] << ",  " << (ca1_->at(gp))[1] << ",  " << (ca1_->at(gp))[2] <<
   // std::endl; std::cout <<  (a1_->at(gp))[0] << ",  " <<  (a1_->at(gp))[1] << ",  " <<
   // (a1_->at(gp))[2] << std::endl;
@@ -419,7 +419,7 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Id(true);
   for (int i = 0; i < 3; i++) Id(i) = 1.0;
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
-  C.Scale(2.0);
+  C.scale(2.0);
   C += Id;
 
   // invariants
@@ -439,7 +439,7 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Cinv(3) = 0.25 * C(5) * C(4) - 0.5 * C(3) * C(2);
   Cinv(4) = 0.25 * C(3) * C(5) - 0.5 * C(0) * C(4);
   Cinv(5) = 0.25 * C(3) * C(4) - 0.5 * C(5) * C(1);
-  Cinv.Scale(1.0 / I3);
+  Cinv.scale(1.0 / I3);
 
   // isotropic part: NeoHooke  ************************************************
   // NeoHooke with penalty W = W^dev(C) + U(J)
@@ -543,8 +543,8 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   const double exp2 = exp(k2 * (J6 - 1.) * (J6 - 1.));
   const double fib1 = 2. * (k1 * (J4 - 1.) * exp1);  // 2 dWf/dJ4
   const double fib2 = 2. * (k1 * (J6 - 1.) * exp2);  // 2 dWf/dJ6
-  SisoEla_fib1.Scale(fib1);
-  SisoEla_fib2.Scale(fib2);
+  SisoEla_fib1.scale(fib1);
+  SisoEla_fib2.scale(fib2);
 
   const double traceCSfbar1 = SisoEla_fib1(0) * C(0) + SisoEla_fib1(1) * C(1) +
                               SisoEla_fib1(2) * C(2) +
@@ -640,19 +640,19 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // evaluate current Q's
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_nh(SisoEla_nh);
-  Q_nh.Scale(artscalar2_nh * beta_nh);
+  Q_nh.scale(artscalar2_nh * beta_nh);
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_fib1(SisoEla_fib1);
-  Q_fib1.Scale(beta_fib * artscalar2_fib);
+  Q_fib1.scale(beta_fib * artscalar2_fib);
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Q_fib2(SisoEla_fib2);
-  Q_fib2.Scale(beta_fib * artscalar2_fib);
+  Q_fib2.scale(beta_fib * artscalar2_fib);
 
   // scale history
-  SisoEla_nh_old.Scale(-beta_nh * artscalar2_nh);
-  Q_nh_old.Scale(artscalar1_nh * artscalar2_nh);
-  SisoEla_fib1_old.Scale(-beta_fib * artscalar2_fib);
-  Q_fib1_old.Scale(artscalar1_fib * artscalar2_fib);
-  SisoEla_fib2_old.Scale(-beta_fib * artscalar2_fib);
-  Q_fib2_old.Scale(artscalar1_fib * artscalar2_fib);
+  SisoEla_nh_old.scale(-beta_nh * artscalar2_nh);
+  Q_nh_old.scale(artscalar1_nh * artscalar2_nh);
+  SisoEla_fib1_old.scale(-beta_fib * artscalar2_fib);
+  Q_fib1_old.scale(artscalar1_fib * artscalar2_fib);
+  SisoEla_fib2_old.scale(-beta_fib * artscalar2_fib);
+  Q_fib2_old.scale(artscalar1_fib * artscalar2_fib);
 
 
   /* evaluate current stress */
@@ -679,16 +679,16 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   /* Time integration according Holzapfel paper */
   /*
-  CisoEla_nh.Scale(1.+beta_nh*expfac_nh);
-  CisoEla_fib1.Scale(1.+beta_fib*expfac_fib);
-  CisoEla_fib2.Scale(1.+beta_fib*expfac_fib);
+  CisoEla_nh.scale(1.+beta_nh*expfac_nh);
+  CisoEla_fib1.scale(1.+beta_fib*expfac_fib);
+  CisoEla_fib2.scale(1.+beta_fib*expfac_fib);
   */
 
 
   /* Time integration according Zien/Taylor and the viscoNeoHooke */
-  CisoEla_nh.Scale(1 + beta_nh * artscalar2_nh);
-  CisoEla_fib1.Scale(1 + beta_fib * artscalar2_fib);
-  CisoEla_fib2.Scale(1 + beta_fib * artscalar2_fib);
+  CisoEla_nh.scale(1 + beta_nh * artscalar2_nh);
+  CisoEla_fib1.scale(1 + beta_fib * artscalar2_fib);
+  CisoEla_fib2.scale(1 + beta_fib * artscalar2_fib);
 
 
   (*cmat) += CisoEla_nh;

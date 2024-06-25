@@ -84,7 +84,7 @@ namespace Core::Geo
       /// does the nodal dofset's composite of volumecells contain the point?
       virtual bool Contains(Core::Geo::Cut::Point* p);
 
-      virtual void Print();
+      virtual void print();
 
      protected:
       /** stores for each element (and its subelements) in a 1-ring around the node
@@ -143,7 +143,7 @@ namespace Core::Geo
         return false;
       }
 
-      void Print() override;
+      void print() override;
 
      private:
       std::vector<Teuchos::RCP<NodalDofSet>>
@@ -220,7 +220,7 @@ namespace Core::Geo
       /*========================================================================*/
 
       /// print node's or its point's information to the stream
-      void Print(std::ostream& f = std::cout) { point_->Print(); }
+      void print(std::ostream& f = std::cout) { point_->print(); }
 
       /// plot node's or its point's information to the stream
       void Plot(std::ostream& f) { point_->Plot(f, this->Id()); };

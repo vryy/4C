@@ -297,7 +297,7 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_XYZ;
         // compute derivatives N_XYZ at gp w.r.t. material coordinates
         // by N_XYZ = J^-1 * N_rst
-        N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+        N_XYZ.multiply(invJ_[gp], derivs[gp]);
 
         // Gauss weights and Jacobian determinant
         double fac = detJ_[gp] * gpweights[gp];
@@ -311,10 +311,10 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
           prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
           // get derivatives wrt to last spatial configuration
           Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
-          N_xyz.Multiply(invJdef, derivs[gp]);
+          N_xyz.multiply(invJdef, derivs[gp]);
 
           // build multiplicative incremental defgrd
-          defgrd.MultiplyTT(xdisp, N_xyz);
+          defgrd.multiply_tt(xdisp, N_xyz);
           defgrd(0, 0) += 1.0;
           defgrd(1, 1) += 1.0;
           defgrd(2, 2) += 1.0;
@@ -325,16 +325,16 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
 
           // build total defgrd = delta F * F_old
           Core::LinAlg::Matrix<3, 3> Fnew;
-          Fnew.Multiply(defgrd, Fhist);
+          Fnew.multiply(defgrd, Fhist);
           defgrd = Fnew;
         }
         else
           // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-          defgrd.MultiplyTT(xcurr, N_XYZ);
+          defgrd.multiply_tt(xcurr, N_XYZ);
 
         // Right Cauchy-Green tensor = F^T * F
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
-        cauchygreen.MultiplyTN(defgrd, defgrd);
+        cauchygreen.multiply_tn(defgrd, defgrd);
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -408,7 +408,7 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
       {
         prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
         prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
-        Fnew.Multiply(deltaF, Fhist);
+        Fnew.multiply(deltaF, Fhist);
         prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
       }
 
@@ -579,8 +579,8 @@ void Discret::ELEMENTS::SoWeg6::init_jacobian_mapping()
     for (int m = 0; m < NUMDIM_WEG6; ++m)
       for (int n = 0; n < NUMGPT_WEG6; ++n) deriv_gp(m, n) = (*deriv)(NUMDIM_WEG6 * gp + m, n);
 
-    invJ_[gp].Multiply(deriv_gp, xrefe);
-    detJ_[gp] = invJ_[gp].Invert();
+    invJ_[gp].multiply(deriv_gp, xrefe);
+    detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
 
     if (Prestress::IsMulfActive(time_, pstype_, pstime_))
@@ -658,7 +658,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
     Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_XYZ;
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+    N_XYZ.multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
     Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> defgrd(false);
@@ -670,10 +670,10 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
       prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
       // get derivatives wrt to last spatial configuration
       Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
-      N_xyz.Multiply(invJdef, derivs[gp]);
+      N_xyz.multiply(invJdef, derivs[gp]);
 
       // build multiplicative incremental defgrd
-      defgrd.MultiplyTT(xdisp, N_xyz);
+      defgrd.multiply_tt(xdisp, N_xyz);
       defgrd(0, 0) += 1.0;
       defgrd(1, 1) += 1.0;
       defgrd(2, 2) += 1.0;
@@ -684,16 +684,16 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
 
       // build total defgrd = delta F * F_old
       Core::LinAlg::Matrix<3, 3> Fnew;
-      Fnew.Multiply(defgrd, Fhist);
+      Fnew.multiply(defgrd, Fhist);
       defgrd = Fnew;
     }
     else
       // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-      defgrd.MultiplyTT(xcurr, N_XYZ);
+      defgrd.multiply_tt(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -734,12 +734,12 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
         // inverse of deformation gradient
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>
             invdefgrd;  // make a copy here otherwise defgrd is destroyed!
-        invdefgrd.Invert(defgrd);
+        invdefgrd.invert(defgrd);
 
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> temp;
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> euler_almansi;
-        temp.Multiply(gl, invdefgrd);
-        euler_almansi.MultiplyTN(invdefgrd, temp);
+        temp.multiply(gl, invdefgrd);
+        euler_almansi.multiply_tn(invdefgrd, temp);
 
         (*elestrain)(gp, 0) = euler_almansi(0, 0);
         (*elestrain)(gp, 1) = euler_almansi(1, 1);
@@ -811,7 +811,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
       Core::LinAlg::Matrix<NUMNOD_WEG6, 1> funct(true);
       funct = shapefcts[gp];
       Core::LinAlg::Matrix<NUMDIM_WEG6, 1> point(true);
-      point.MultiplyTN(xrefe, funct);
+      point.multiply_tn(xrefe, funct);
       params.set("gp_coords_ref", point);
     }
 
@@ -830,7 +830,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
       case Inpar::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
-        const double detF = defgrd.Determinant();
+        const double detF = defgrd.determinant();
 
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> pkstress;
         pkstress(0, 0) = stress(0);
@@ -845,8 +845,8 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
 
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> temp;
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchystress;
-        temp.Multiply(1.0 / detF, defgrd, pkstress);
-        cauchystress.MultiplyNT(temp, defgrd);
+        temp.multiply(1.0 / detF, defgrd, pkstress);
+        cauchystress.multiply_nt(temp, defgrd);
 
         (*elestress)(gp, 0) = cauchystress(0, 0);
         (*elestress)(gp, 1) = cauchystress(1, 1);
@@ -868,7 +868,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
     if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w, bop, stress, 1.0);
+      force->multiply_tn(detJ_w, bop, stress, 1.0);
     }
 
     // update stiffness matrix
@@ -877,12 +877,12 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_WEG6> cb;
-      cb.Multiply(cmat, bop);  // temporary C . B
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
+      cb.multiply(cmat, bop);  // temporary C . B
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> sfac(stress);  // auxiliary integrated stress
-      sfac.Scale(detJ_w);                      // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      sfac.scale(detJ_w);                      // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       std::vector<double> SmB_L(NUMDIM_WEG6);  // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod = 0; inod < NUMNOD_WEG6; ++inod)
@@ -952,9 +952,9 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
 
           // multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time
           // integration factor
-          linmass_disp.Scale(2.0 * timintfac_dis);
-          linmass_vel.Scale(2.0 * timintfac_vel);
-          linmass.Update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
+          linmass_disp.scale(2.0 * timintfac_dis);
+          linmass_vel.scale(2.0 * timintfac_vel);
+          linmass.update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
 
           // evaluate accelerations at time n+1 at gauss point
           Core::LinAlg::Matrix<NUMDIM_WEG6, 1> myacc(true);
@@ -967,7 +967,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
             // integrate linearisation of mass matrix
             //(B^T . d\rho/d disp . a) * detJ * w(gp)
             Core::LinAlg::Matrix<1, NUMDOF_WEG6> cb;
-            cb.MultiplyTN(linmass_disp, bop);
+            cb.multiply_tn(linmass_disp, bop);
             for (int inod = 0; inod < NUMNOD_WEG6; ++inod)
             {
               double factor = detJ_w * shapefcts[gp](inod);
@@ -1181,11 +1181,11 @@ void Discret::ELEMENTS::SoWeg6::def_gradient(const std::vector<double>& disp,
 
     // by N_XYZ = J^-1 * N_rst
     Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
-    N_xyz.Multiply(invJdef, derivs[gp]);
+    N_xyz.multiply(invJdef, derivs[gp]);
 
     // build defgrd (independent of xrefe!)
     Core::LinAlg::Matrix<3, 3> defgrd;
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
@@ -1223,16 +1223,16 @@ void Discret::ELEMENTS::SoWeg6::update_jacobian_mapping(
     // get the invJ old state
     prestress.StoragetoMatrix(gp, invJhist, prestress.JHistory());
     // get derivatives wrt to invJhist
-    N_xyz.Multiply(invJhist, derivs[gp]);
+    N_xyz.multiply(invJhist, derivs[gp]);
     // build defgrd \partial x_new / \parial x_old , where x_old != X
-    defgrd.MultiplyTT(xdisp, N_xyz);
+    defgrd.multiply_tt(xdisp, N_xyz);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
     // make inverse of this defgrd
-    defgrd.Invert();
+    defgrd.invert();
     // push-forward of Jinv
-    invJnew.MultiplyTN(defgrd, invJhist);
+    invJnew.multiply_tn(defgrd, invJhist);
     // store new reference configuration
     prestress.MatrixtoStorage(gp, invJnew, prestress.JHistory());
   }  // for (int gp=0; gp<NUMGPT_WEG6; ++gp)
@@ -1291,7 +1291,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
       */
       // compute derivatives N_XYZ at gp w.r.t. material coordinates
       // by N_XYZ = J^-1 * N_rst
-      N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+      N_XYZ.multiply(invJ_[gp], derivs[gp]);
 
       if (Prestress::IsMulf(pstype_))
       {
@@ -1300,10 +1300,10 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
         prestress_->StoragetoMatrix(gp, invJdef, prestress_->JHistory());
         // get derivatives wrt to last spatial configuration
         Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_xyz;
-        N_xyz.Multiply(invJdef, derivs[gp]);
+        N_xyz.multiply(invJdef, derivs[gp]);
 
         // build multiplicative incremental defgrd
-        defgrd.MultiplyTT(xdisp, N_xyz);
+        defgrd.multiply_tt(xdisp, N_xyz);
         defgrd(0, 0) += 1.0;
         defgrd(1, 1) += 1.0;
         defgrd(2, 2) += 1.0;
@@ -1314,21 +1314,21 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
 
         // build total defgrd = delta F * F_old
         Core::LinAlg::Matrix<3, 3> Fnew;
-        Fnew.Multiply(defgrd, Fhist);
+        Fnew.multiply(defgrd, Fhist);
         defgrd = Fnew;
       }
       else
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-        defgrd.MultiplyTT(xcurr, N_XYZ);
+        defgrd.multiply_tt(xcurr, N_XYZ);
 
       // Right Cauchy-Green tensor = F^T * F
       Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchygreen;
-      cauchygreen.MultiplyTN(defgrd, defgrd);
+      cauchygreen.multiply_tn(defgrd, defgrd);
 
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
       //    Core::LinAlg::SerialDenseVector glstrain_epetra(Mat::NUM_STRESS_3D);
-      //    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
+      //    Core::LinAlg::Matrix<Mat::NUM_STRESS_3D,1> glstrain(glstrain_epetra.data(),true);
       Core::LinAlg::Matrix<6, 1> glstrain(false);
       glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
       glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
@@ -1345,7 +1345,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
       // Cauchy stress
-      const double detF = defgrd.Determinant();
+      const double detF = defgrd.determinant();
 
       Core::LinAlg::Matrix<3, 3> pkstress;
       pkstress(0, 0) = stress(0);
@@ -1360,8 +1360,8 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
 
       Core::LinAlg::Matrix<3, 3> temp(true);
       Core::LinAlg::Matrix<3, 3> cauchystress(true);
-      temp.Multiply(1.0 / detF, defgrd, pkstress);
-      cauchystress.MultiplyNT(temp, defgrd);
+      temp.multiply(1.0 / detF, defgrd, pkstress);
+      cauchystress.multiply_nt(temp, defgrd);
 
       // evaluate eigenproblem based on stress of previous step
       Core::LinAlg::Matrix<3, 3> lambda(true);
@@ -1376,8 +1376,8 @@ void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location 
       else if (mat->MaterialType() == Core::Materials::m_elasthyper)
       {
         // we only have fibers at element center, thus we interpolate stress and defgrd
-        avg_stress.Update(1.0 / NUMGPT_WEG6, cauchystress, 1.0);
-        avg_defgrd.Update(1.0 / NUMGPT_WEG6, defgrd, 1.0);
+        avg_stress.update(1.0 / NUMGPT_WEG6, cauchystress, 1.0);
+        avg_defgrd.update(1.0 / NUMGPT_WEG6, defgrd, 1.0);
       }
       else
         FOUR_C_THROW("material not implemented for remodeling");

@@ -349,7 +349,7 @@ CONTACT::Aug::ActiveSet::Status CONTACT::Aug::ActiveSet::merge(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ActiveSet::Print(std::ostream& os) const
+void CONTACT::Aug::ActiveSet::print(std::ostream& os) const
 {
   plain_interface_set& interfaces = strategy_.interfaces();
 

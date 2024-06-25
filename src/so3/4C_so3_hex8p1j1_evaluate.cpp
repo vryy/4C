@@ -320,8 +320,8 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
       t_ -= dt_;
       p_ -= dp_;
       // scale increment
-      dt_.Scale(alpha_ls);
-      dp_.Scale(alpha_ls);
+      dt_.scale(alpha_ls);
+      dp_.scale(alpha_ls);
       // add reduced increment
       t_ += dt_;
       p_ += dp_;
@@ -329,24 +329,24 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
     else
     {
       // dt= K_tp_^-1*(-R_p_-K_pu_*du)
-      dt_.MultiplyNN(-1.0 / k_pt_, k_pu_, disi);
-      dt_.Update(-1.0 / k_pt_, r_p_, 1.0);
+      dt_.multiply_nn(-1.0 / k_pt_, k_pu_, disi);
+      dt_.update(-1.0 / k_pt_, r_p_, 1.0);
 
       // dp= K_tp_^-1 * (-R_t_ - K_tu_*du - K_tt*dt)
-      dp_.MultiplyNN(1.0, k_tu_, disi);
-      dp_.Update(k_tt_, dt_, 1.0);
-      dp_.Update(1.0, r_t_, 1.0);
-      dp_.Scale(-1.0 / k_pt_);
+      dp_.multiply_nn(1.0, k_tu_, disi);
+      dp_.update(k_tt_, dt_, 1.0);
+      dp_.update(1.0, r_t_, 1.0);
+      dp_.scale(-1.0 / k_pt_);
 
       t_ += dt_;
       p_ += dp_;
     }
   }
   k_tt_ = 0.0;
-  k_pu_.PutScalar(0.0);
-  k_tu_.PutScalar(0.0);
-  r_t_.PutScalar(0.0);
-  r_p_.PutScalar(0.0);
+  k_pu_.put_scalar(0.0);
+  k_tu_.put_scalar(0.0);
+  r_t_.put_scalar(0.0);
+  r_p_.put_scalar(0.0);
 
   //******************************************************************************************
 
@@ -368,14 +368,14 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+    N_XYZ.multiply(invJ_[gp], derivs[gp]);
     double detJ = detJ_[gp];
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr, N_XYZ);
+    defgrd.multiply_tt(xcurr, N_XYZ);
 
     // modified deformation gradient modF = (t_/J)^1/3 * F
-    const double J = defgrd.Determinant();
+    const double J = defgrd.determinant();
     // check for negative jacobian
     if ((t_(0, 0) / J) <= 0.)
     {
@@ -393,11 +393,11 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
         FOUR_C_THROW("negative jacobian determinant");
     }
     const double scalar = std::pow((t_(0, 0) / J), 1.0 / 3.0);
-    mod_defgrd.Update(scalar, defgrd);
+    mod_defgrd.update(scalar, defgrd);
 
     // Modified Right Cauchy-Green tensor = modF^T * modF
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> mod_cauchygreen;
-    mod_cauchygreen.MultiplyTN(mod_defgrd, mod_defgrd);
+    mod_cauchygreen.multiply_tn(mod_defgrd, mod_defgrd);
 
     // Modified Green-Lagrange strains matrix mod_E = 0.5 * (modCauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -417,7 +417,7 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
     // Bestimmen der N_xyz
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_xyz(true);
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> Inv_defgrd(true);
-    Inv_defgrd.Invert(defgrd);
+    Inv_defgrd.invert(defgrd);
 
     for (int i = 0; i < NUMNOD_SOH8; ++i)
     {
@@ -503,7 +503,7 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
                           mod_defgrd(Index1[i], 2) * stress(4, 0) * mod_defgrd(Index2[i], 1) +
                           mod_defgrd(Index1[i], 2) * stress(2, 0) * mod_defgrd(Index2[i], 2);
       }
-      sigma_bar.Scale(1.0 / t_(0, 0));
+      sigma_bar.scale(1.0 / t_(0, 0));
     }
 
     // secondary pressure
@@ -541,9 +541,9 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
     if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * Theta * detJ * w(gp)
-      force->MultiplyTN(detJ_w_t, bopn, sigma_hook, 1.0);
+      force->multiply_tn(detJ_w_t, bopn, sigma_hook, 1.0);
     }
-    if (split_res) force_str->MultiplyTN(detJ_w_t, bopn, sigma_hook, 1.0);
+    if (split_res) force_str->multiply_tn(detJ_w_t, bopn, sigma_hook, 1.0);
 
     // update of stiffness matrix
     if (stiffmatrix != nullptr)
@@ -554,37 +554,37 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
       Core::LinAlg::Matrix<1, 1> D_22(false);
       {
         Core::LinAlg::Matrix<1, 6> temp(false);
-        temp.MultiplyTN(1.0 / 9.0, m_, D_T_bar);
-        D_22.MultiplyNN(temp, m_);
+        temp.multiply_tn(1.0 / 9.0, m_, D_T_bar);
+        D_22.multiply_nn(temp, m_);
         D_22(0, 0) -= 1.0 / 3.0 * p_bar;
       }
 
       Core::LinAlg::Matrix<6, 6> D_11(false);
       {
         Core::LinAlg::Matrix<6, 6> temp2(false);
-        temp2.Multiply(i_d_, D_T_bar);
-        D_11.Multiply(temp2, i_d_);
-        D_11.MultiplyNT(-2.0 / 3.0, m_, sigma_bar_dev, 1.0);
-        D_11.MultiplyNT(-2.0 / 3.0, sigma_bar_dev, m_, 1.0);
+        temp2.multiply(i_d_, D_T_bar);
+        D_11.multiply(temp2, i_d_);
+        D_11.multiply_nt(-2.0 / 3.0, m_, sigma_bar_dev, 1.0);
+        D_11.multiply_nt(-2.0 / 3.0, sigma_bar_dev, m_, 1.0);
         double scalar = 2.0 / 3.0 * p_bar - p_hook;
-        D_11.MultiplyNT(-scalar, m_, m_, 1.0);
+        D_11.multiply_nt(-scalar, m_, m_, 1.0);
         scalar = 2.0 * (p_bar - p_hook);
-        D_11.Update(scalar, i_0_, 1.0);
+        D_11.update(scalar, i_0_, 1.0);
       }
 
       Core::LinAlg::Matrix<6, 1> D_12(sigma_bar_dev);
       {
         Core::LinAlg::Matrix<6, 6> temp2(false);
-        D_12.Scale(2.0 / 3.0);
-        temp2.MultiplyNN(1.0 / 3.0, i_d_, D_T_bar);
-        D_12.MultiplyNN(1.0, temp2, m_, 1.0);
+        D_12.scale(2.0 / 3.0);
+        temp2.multiply_nn(1.0 / 3.0, i_d_, D_T_bar);
+        D_12.multiply_nn(1.0, temp2, m_, 1.0);
       }
 
       // K_uu = (B^T . D_11 . B) *Theta *detJ * w(gp) + K_geo
       {
         Core::LinAlg::Matrix<NUMDOF_SOH8, Mat::NUM_STRESS_3D> auxmat;
-        auxmat.MultiplyTN(bopn, D_11);
-        stiffmatrix->MultiplyNN(detJ_w_t, auxmat, bopn, 1.0);
+        auxmat.multiply_tn(bopn, D_11);
+        stiffmatrix->multiply_nn(detJ_w_t, auxmat, bopn, 1.0);
       }
 
       // integrate 'geometric' stiffness matrix and add to first part of K_uu
@@ -606,7 +606,7 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
                         N_xyz(2, a) * sigma_hook(5, 0) * N_xyz(0, b);
         }
       }
-      G_bar.Scale(detJ_w_t);
+      G_bar.scale(detJ_w_t);
 
       // add onto stiffness matrix
       for (int inod = 0; inod < NUMNOD_SOH8; ++inod)
@@ -620,10 +620,10 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
       }
 
       // K_tu = (D_12^T . B) * N_t  * detJ * w(gp) , wobei N_t=1
-      k_tu_.MultiplyTN(detJ_w, D_12, bopn, 1.0);
+      k_tu_.multiply_tn(detJ_w, D_12, bopn, 1.0);
 
       // K_pu = ( m^T . B) * N_p * J * detJ * w(gp) , wobei N_p=1
-      k_pu_.MultiplyTN(detJ_w_J, m_, bopn, 1.0);
+      k_pu_.multiply_tn(detJ_w_J, m_, bopn, 1.0);
 
       // K_tt = N_t * D_22 * N_t * Theta * detJ * w(gp), wobei N_t=1
       k_tt_ += D_22(0, 0) * detJ_w / t_(0, 0);
@@ -656,10 +656,10 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
   // ************   do static condensation -> reduced stiffmatrix  **************
   //=============================================================================
 
-  // K_uu_.PutScalar(0.0);
-  k_uu_.Update(1.0, *stiffmatrix);
-  // F_u_.PutScalar(0.0);
-  f_u_.Update(1.0, *force);
+  // K_uu_.put_scalar(0.0);
+  k_uu_.update(1.0, *stiffmatrix);
+  // F_u_.put_scalar(0.0);
+  f_u_.update(1.0, *force);
 
   if (split_res)
     if (params.get<int>("MyPID") == Owner())
@@ -669,13 +669,13 @@ void Discret::ELEMENTS::SoHex8P1J1::force_stiff_mass(const std::vector<int>& lm,
   // K_pu
   const double scalar = 1.0 / k_pt_ * k_tt_ * 1.0 / k_pt_;
 
-  stiffmatrix->MultiplyTN(-1.0 / k_pt_, k_tu_, k_pu_, 1.0);
-  stiffmatrix->MultiplyTN(-1.0 / k_pt_, k_pu_, k_tu_, 1.0);
-  stiffmatrix->MultiplyTN(scalar, k_pu_, k_pu_, 1.0);
+  stiffmatrix->multiply_tn(-1.0 / k_pt_, k_tu_, k_pu_, 1.0);
+  stiffmatrix->multiply_tn(-1.0 / k_pt_, k_pu_, k_tu_, 1.0);
+  stiffmatrix->multiply_tn(scalar, k_pu_, k_pu_, 1.0);
 
-  force->MultiplyTN(scalar, k_pu_, r_p_, 1.0);
-  force->MultiplyTN(-1.0 / k_pt_, k_pu_, r_t_, 1.0);
-  force->MultiplyTN(-1.0 / k_pt_, k_tu_, r_p_, 1.0);
+  force->multiply_tn(scalar, k_pu_, r_p_, 1.0);
+  force->multiply_tn(-1.0 / k_pt_, k_pu_, r_t_, 1.0);
+  force->multiply_tn(-1.0 / k_pt_, k_tu_, r_p_, 1.0);
 
   return;
 }  // Discret::ELEMENTS::So_sh8::force_stiff_mass
@@ -698,9 +698,9 @@ void Discret::ELEMENTS::SoHex8P1J1::ConvertMat(
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> FxF(false);
   PushPullOperator(FxF, F, false, 1.0);
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> CxFxF(false);
-  CxFxF.MultiplyNT(cmat, FxF);
-  D_T_bar.MultiplyNN(FxF, CxFxF);
-  D_T_bar.Scale(1.0 / t);
+  CxFxF.multiply_nt(cmat, FxF);
+  D_T_bar.multiply_nn(FxF, CxFxF);
+  D_T_bar.scale(1.0 / t);
 
   return;
 }
@@ -721,7 +721,7 @@ void Discret::ELEMENTS::SoHex8P1J1::Stress(
 
       // inverse deformation gradient
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd(defgrd);
-      invdefgrd.Invert();
+      invdefgrd.invert();
 
       // pull back operator
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> invdefgradinvdefgradT;
@@ -729,7 +729,7 @@ void Discret::ELEMENTS::SoHex8P1J1::Stress(
 
       // (deviatoric) Cauchy stress vector
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> pk2;
-      pk2.MultiplyNN(detdefgrd, invdefgradinvdefgradT, stress);
+      pk2.multiply_nn(detdefgrd, invdefgradinvdefgradT, stress);
 
       // store stress
       for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = pk2(i);
@@ -780,7 +780,7 @@ void Discret::ELEMENTS::SoHex8P1J1::Strain(
 
       // inverse deformation gradient
       Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invdefgrd(defgrd);
-      invdefgrd.Invert();
+      invdefgrd.invert();
 
       // create push forward 6x6 matrix
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> invdefgradTinvdefgrad;
@@ -788,7 +788,7 @@ void Discret::ELEMENTS::SoHex8P1J1::Strain(
 
       // push forward
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> eastrain;
-      eastrain.MultiplyNN(invdefgradTinvdefgrad, glstrain);
+      eastrain.multiply_nn(invdefgradTinvdefgrad, glstrain);
       // store
       for (int i = 0; i < NUMDIM_SOH8; ++i) (*elestrain)(gp, i) = eastrain(i);
       for (int i = NUMDIM_SOH8; i < Mat::NUM_STRESS_3D; ++i)
@@ -934,7 +934,7 @@ void Discret::ELEMENTS::SoHex8P1J1::PushPullOperator(
   }
 
   // apply scaling
-  if (fac != 1.0) g.Scale(fac);
+  if (fac != 1.0) g.scale(fac);
 
   // done
   return;
@@ -965,14 +965,14 @@ void Discret::ELEMENTS::SoHex8P1J1::soh8_p1_j1_recover(const std::vector<double>
   for (int i = 0; i < NUMDOF_SOH8; ++i) disi(i) = residual[i];
 
   // dt= K_tp_^-1*(-R_p_-K_pu_*du)
-  dt_.MultiplyNN(-1.0 / k_pt_, k_pu_, disi);
-  dt_.Update(-1.0 / k_pt_, r_p_, 1.0);
+  dt_.multiply_nn(-1.0 / k_pt_, k_pu_, disi);
+  dt_.update(-1.0 / k_pt_, r_p_, 1.0);
 
   // dp= K_tp_^-1 * (-R_t_ - K_tu_*du - K_tt*dt)
-  dp_.MultiplyNN(1.0, k_tu_, disi);
-  dp_.Update(k_tt_, dt_, 1.0);
-  dp_.Update(1.0, r_t_, 1.0);
-  dp_.Scale(-1.0 / k_pt_);
+  dp_.multiply_nn(1.0, k_tu_, disi);
+  dp_.update(k_tt_, dt_, 1.0);
+  dp_.update(1.0, r_t_, 1.0);
+  dp_.scale(-1.0 / k_pt_);
 
   t_ += dt_;
   p_ += dp_;

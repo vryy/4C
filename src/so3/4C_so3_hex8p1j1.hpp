@@ -147,7 +147,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       /*!
       \brief Calculate current from reference configuration moduli

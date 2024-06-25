@@ -106,9 +106,9 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate(Discret::ELEMENTS::Flu
 
   shapes_->evaluate(*ele);
 
-  ebofoaf_.PutScalar(0);
-  eprescpgaf_.PutScalar(0);
-  escabofoaf_.PutScalar(0);
+  ebofoaf_.put_scalar(0);
+  eprescpgaf_.put_scalar(0);
+  escabofoaf_.put_scalar(0);
   FluidEleCalc<distype>::BodyForce(ele, local_solver_->fldparatimint_->Time(),
       local_solver_->fldpara_->PhysicalType(), ebofoaf_, eprescpgaf_, escabofoaf_);
 
@@ -504,7 +504,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(Discret::ELEMENTS:
     // Instead of computing the integral of the product here we are multiplying
     // the previously compute part of the integral to give the same result
     // In this way we avoid a cycle through the shape functions
-    Core::LinAlg::multiplyNT(
+    Core::LinAlg::multiply_nt(
         local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
 
     // Creating and solving a system of the form Ax = b where
@@ -607,7 +607,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(Discret::ELEMENTS:
           if (funct_num > 0)
             u(d) = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                       .evaluate(xyz.A(), *time, d);
+                       .evaluate(xyz.data(), *time, d);
         }
       }
 
@@ -911,7 +911,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(
     Core::FE::shape_function<distype>(shapes_->xsi, myfunct);
 
     Core::LinAlg::Matrix<nsd_, 1> mypoint(true);
-    mypoint.MultiplyNN(xyze, myfunct);
+    mypoint.multiply_nn(xyze, myfunct);
 
     for (unsigned int d = 0; d < nsd_; ++d) elevec1(6 * i + d + 3) = mypoint(d);
   }
@@ -1020,7 +1020,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hi
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
-    Core::LinAlg::multiplyNT(
+    Core::LinAlg::multiply_nt(
         local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
@@ -1132,7 +1132,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
-    Core::LinAlg::multiplyNT(
+    Core::LinAlg::multiply_nt(
         local_solver_->massMat, local_solver_->massPart, local_solver_->massPartW);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
@@ -1289,13 +1289,13 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
     {
       FLD::ChannelWeaklyCompressibleFunction* channelfunc =
           new FLD::ChannelWeaklyCompressibleFunction;
-      u(0) = channelfunc->evaluate(xyz.A(), 0, 0);
-      u(1) = channelfunc->evaluate(xyz.A(), 0, 1);
-      p = channelfunc->evaluate(xyz.A(), 0, 2);
-      grad(0, 0) = channelfunc->evaluate(xyz.A(), 0, 3);
-      grad(0, 1) = channelfunc->evaluate(xyz.A(), 0, 4);
-      grad(1, 0) = channelfunc->evaluate(xyz.A(), 0, 5);
-      grad(1, 1) = channelfunc->evaluate(xyz.A(), 0, 6);
+      u(0) = channelfunc->evaluate(xyz.data(), 0, 0);
+      u(1) = channelfunc->evaluate(xyz.data(), 0, 1);
+      p = channelfunc->evaluate(xyz.data(), 0, 2);
+      grad(0, 0) = channelfunc->evaluate(xyz.data(), 0, 3);
+      grad(0, 1) = channelfunc->evaluate(xyz.data(), 0, 4);
+      grad(1, 0) = channelfunc->evaluate(xyz.data(), 0, 5);
+      grad(1, 1) = channelfunc->evaluate(xyz.data(), 0, 6);
     }
     break;
 
@@ -1305,10 +1305,10 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::evaluate_all(const int startfu
       for (unsigned int index = 0; index < nsd_; ++index)
         u(index) = Global::Problem::Instance()
                        ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfunc - 1)
-                       .evaluate(xyz.A(), 0, index);
+                       .evaluate(xyz.data(), 0, index);
       p = Global::Problem::Instance()
               ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(startfunc - 1)
-              .evaluate(xyz.A(), 0, nsd_);
+              .evaluate(xyz.data(), 0, nsd_);
     }
     break;
 
@@ -1849,10 +1849,10 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_
   if (!evaluateOnlyNonlinear)
   {
     // multiplication of the shapes functions times the shapes functions weighted
-    Core::LinAlg::multiplyNT(massMat, massPart, massPartW);
+    Core::LinAlg::multiply_nt(massMat, massPart, massPartW);
     // multiplication of the shapes functions derivatices
     // times the shapes functions weighted
-    Core::LinAlg::multiplyNT(guMat, gradPart, massPartW);
+    Core::LinAlg::multiply_nt(guMat, gradPart, massPartW);
     ugMat = guMat;
     // scalar multiplication of the matrix times the viscosity
     ugMat.scale(viscosity);
@@ -1860,7 +1860,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_
   if (!stokes)
   {
     // this matrix is the nonlinear part of the problem
-    Core::LinAlg::multiplyNT(uuconv, gradPart, uPart);
+    Core::LinAlg::multiply_nt(uuconv, gradPart, uPart);
 
     // compute convection: Need to add diagonal part and transpose off-diagonal blocks
     // (same trick as done when eliminating the velocity gradient)
@@ -2264,7 +2264,7 @@ void Discret::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::eliminate_velocit
   // diagonal blocks.
 
   // compute (UG * M^{-1}) * GU
-  Core::LinAlg::multiplyNT(tmpMat, tmpMatGrad, guMat);
+  Core::LinAlg::multiply_nt(tmpMat, tmpMatGrad, guMat);
   for (unsigned int i = 0; i < ndofs_; ++i)
     for (unsigned int j = 0; j < ndofs_; ++j)
     {

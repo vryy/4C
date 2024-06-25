@@ -1457,14 +1457,14 @@ void test_position2d()
   for (int i = 0; i < 3; ++i)
   {
     Core::LinAlg::Matrix<3, 1> x1(&side_xyze(0, i), true);
-    x1.Update(1, shift, 1);
+    x1.update(1, shift, 1);
   }
-  xyz.Update(1, shift, 1);
+  xyz.update(1, shift, 1);
 
   double scale = 1.6094757082487299;
 
-  side_xyze.Scale(scale);
-  xyz.Scale(scale);
+  side_xyze.scale(scale);
+  xyz.scale(scale);
 
   Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(
       Inpar::Cut::floattype_cln);  // use cln

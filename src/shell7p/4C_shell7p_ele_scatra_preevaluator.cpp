@@ -111,7 +111,7 @@ void Discret::ELEMENTS::Shell::PreEvaluateScatra(Core::Elements::Element& ele,
         for (int k = 0; k < numscal; ++k)
         {
           // identical shapefunctions for displacements and scalar fields
-          scalar_curr_gp.at(k) = shapefunctions.Dot(elescalar.at(k));
+          scalar_curr_gp.at(k) = shapefunctions.dot(elescalar.at(k));
         }
 
         gpscalar->at(gp) = scalar_curr_gp;

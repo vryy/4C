@@ -1642,7 +1642,7 @@ void test_ls_hex8_magnus7()
 //
 //    const Geo::Cut::plain_integrationcell_set & integrationcells = vc->IntegrationCells();
 //    std::cout << "Has #IC=" << integrationcells.size() << std::endl;
-//    //vc->Print(std::cout);
+//    //vc->print(std::cout);
 //    const Geo::Cut::plain_facet_set & facete = vc->Facets();
 //    // check whether all facets of this vc are oriented in a plane
 //    // if not then some sides are warped
@@ -1652,7 +1652,7 @@ void test_ls_hex8_magnus7()
 //      Geo::Cut::Facet *fe = *i;
 //      std::vector<Geo::Cut::Point*> corn = fe->CornerPoints();
 //
-//      fe->Print();
+//      fe->print();
 //
 //      bool isPlanar = fe->is_planar( mesh, corn );
 //      if ( isPlanar == false )

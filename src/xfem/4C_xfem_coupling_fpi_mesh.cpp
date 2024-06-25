@@ -421,7 +421,7 @@ void XFEM::MeshCouplingFPI::update_configuration_map_gp_contact(
   static const double scaling = 1. / (MAX_h - MIN_h);
   static const double refsliplength = 0.1;  // numerical reference sliplength
 
-  Core::LinAlg::Matrix<2, 1> xsi(rst_slave.A(), true);  // 3-->2
+  Core::LinAlg::Matrix<2, 1> xsi(rst_slave.data(), true);  // 3-->2
   double gap =
       MAX_h * h_scaling_;  // initialize with large value as this should be the default value ...
   bool pure_fsi = true;
@@ -1044,10 +1044,10 @@ double XFEM::MeshCouplingFPI::compute_jacobianand_pressure(
         }
       }
 
-      xjm.MultiplyNT(pderiv_loc, xcurr);
-      Jmat.MultiplyNT(pderiv_loc, xrefe);
-      double det = xjm.Determinant();
-      double detJ = Jmat.Determinant();
+      xjm.multiply_nt(pderiv_loc, xcurr);
+      Jmat.multiply_nt(pderiv_loc, xrefe);
+      double det = xjm.determinant();
+      double detJ = Jmat.determinant();
       double J = det / detJ;
       return J;
     }

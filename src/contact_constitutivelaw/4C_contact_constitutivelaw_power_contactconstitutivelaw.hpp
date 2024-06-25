@@ -44,7 +44,7 @@ namespace CONTACT
       /// @name get-functions for the Constitutive Law parameters of a power law function
       //@{
       /// Get the scaling factor
-      double GetA() const { return a_; };
+      double Getdata() const { return a_; };
       /// Get the power coefficient
       double GetB() const { return b_; };
       //@}
@@ -79,7 +79,7 @@ namespace CONTACT
       }
 
       /// Get scaling factor of power law
-      double GetA() { return params_->GetA(); }
+      double Getdata() { return params_->Getdata(); }
       /// Get power coefficient of power law
       double GetB() { return params_->GetB(); }
 

@@ -1336,7 +1336,7 @@ bool Core::COUPLING::OctreeElement::IsLeaf()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::COUPLING::OctreeElement::Print(std::ostream& os) const
+void Core::COUPLING::OctreeElement::print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Leaf in Layer " << layer_ << " Nodes ";
@@ -1346,6 +1346,6 @@ void Core::COUPLING::OctreeElement::Print(std::ostream& os) const
     os << nodeid << " ";
   }
   os << '\n';
-}  // OctreeElement::Print(ostream& os)
+}  // OctreeElement::print(ostream& os)
 
 FOUR_C_NAMESPACE_CLOSE

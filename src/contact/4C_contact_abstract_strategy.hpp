@@ -1482,7 +1482,7 @@ namespace CONTACT
     void InterfaceForces(bool output = false) override;
 
     //! Print interfaces
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     //! Print summary of active set status to screen
     void PrintActiveSet() const override;

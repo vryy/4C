@@ -39,17 +39,17 @@ unsigned Core::Geo::Cut::Kernel::FindNextCornerPoint(const std::vector<Point*>& 
     return j;
   }
 
-  points[i]->Coordinates(x1.A());
-  points[j]->Coordinates(x2.A());
+  points[i]->Coordinates(x1.data());
+  points[j]->Coordinates(x2.data());
 
-  b1.Update(1, x2, -1, x1, 0);
+  b1.update(1, x2, -1, x1, 0);
 
-  double norm = b1.Norm2();
+  double norm = b1.norm2();
   if (norm < std::numeric_limits<double>::min()) FOUR_C_THROW("same point in facet not supported");
 
-  b1.Scale(1. / norm);
+  b1.scale(1. / norm);
 
-  if (b1.Norm2() < std::numeric_limits<double>::min())
+  if (b1.norm2() < std::numeric_limits<double>::min())
     FOUR_C_THROW("same point in facet not supported");
 
   i = j;
@@ -57,22 +57,22 @@ unsigned Core::Geo::Cut::Kernel::FindNextCornerPoint(const std::vector<Point*>& 
   {
     i = (i + 1) % pointsize;
     Point* p = points[i];
-    p->Coordinates(x3.A());
+    p->Coordinates(x3.data());
 
-    b2.Update(1, x3, -1, x1, 0);
+    b2.update(1, x3, -1, x1, 0);
 
-    norm = b2.Norm2();
+    norm = b2.norm2();
     if (norm < std::numeric_limits<double>::min())
       FOUR_C_THROW("same point in facet not supported");
 
-    b2.Scale(1. / norm);
+    b2.scale(1. / norm);
 
     // cross product to get the normal at the point
     b3(0) = b1(1) * b2(2) - b1(2) * b2(1);
     b3(1) = b1(2) * b2(0) - b1(0) * b2(2);
     b3(2) = b1(0) * b2(1) - b1(1) * b2(0);
 
-    if (b3.Norm2() > PLANARTOL)
+    if (b3.norm2() > PLANARTOL)
     {
       // Found. Return last node on this line.
       return (i + pointsize - 1) % pointsize;
@@ -136,12 +136,12 @@ bool Core::Geo::Cut::Kernel::IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, boo
 {
   Core::LinAlg::Matrix<3, 1> x1, x2, x3;
   Core::LinAlg::Matrix<3, 1> pt1pt2, pt1pt3, cross;
-  pt1->Coordinates(x1.A());
-  pt2->Coordinates(x2.A());
-  pt3->Coordinates(x3.A());
+  pt1->Coordinates(x1.data());
+  pt2->Coordinates(x2.data());
+  pt3->Coordinates(x3.data());
 
-  pt1pt2.Update(1, x2, -1, x1, 0);
-  pt1pt3.Update(1, x3, -1, x1, 0);
+  pt1pt2.update(1, x2, -1, x1, 0);
+  pt1pt3.update(1, x3, -1, x1, 0);
 
   cross(0, 0) = pt1pt2(1, 0) * pt1pt3(2, 0) - pt1pt2(2, 0) * pt1pt3(1, 0);
   cross(1, 0) = pt1pt2(0, 0) * pt1pt3(2, 0) - pt1pt2(2, 0) * pt1pt3(0, 0);
@@ -151,11 +151,11 @@ bool Core::Geo::Cut::Kernel::IsOnLine(Point*& pt1, Point*& pt2, Point*& pt3, boo
   {
     // if the cross product is zero - on the same line
     // increasing this from 1e-10 to 1e-6 shown error in volume prediction
-    if (cross.NormInf() < TOL_POINTS_ON_LINE_FOR_DELETING) return true;
+    if (cross.norm_inf() < TOL_POINTS_ON_LINE_FOR_DELETING) return true;
   }
   else
   {
-    if (cross.NormInf() < TOL_POINTS_ON_LINE) return true;
+    if (cross.norm_inf() < TOL_POINTS_ON_LINE) return true;
   }
   return false;
 }
@@ -238,11 +238,11 @@ std::vector<int> Core::Geo::Cut::Kernel::CheckConvexity(const std::vector<Point*
     if (i == 0) ind = ptlist.size() - 1;
     Point* pt1 = ptlist[ind];
 
-    pt1->Coordinates(x1.A());
-    pt2->Coordinates(x2.A());
-    pt3->Coordinates(x3.A());
+    pt1->Coordinates(x1.data());
+    pt2->Coordinates(x2.data());
+    pt3->Coordinates(x3.data());
 
-    xtemp.Update(1.0, x2, -1.0, x1);
+    xtemp.update(1.0, x2, -1.0, x1);
 
     double res = x3(ind1, 0) * xtemp(ind2, 0) - x3(ind2, 0) * xtemp(ind1, 0) +
                  xtemp(ind1, 0) * x1(ind2, 0) - xtemp(ind2, 0) * x1(ind1, 0);
@@ -478,21 +478,21 @@ bool Core::Geo::Cut::Kernel::PtInsideTriangle(
   if (tri.size() != 3) FOUR_C_THROW("expecting a triangle");
 
   Core::LinAlg::Matrix<3, 1> t1, t2, t3, pt, v0(0.0), v1(0.0), v2(0.0);
-  tri[0]->Coordinates(t1.A());
-  tri[1]->Coordinates(t2.A());
-  tri[2]->Coordinates(t3.A());
-  check->Coordinates(pt.A());
+  tri[0]->Coordinates(t1.data());
+  tri[1]->Coordinates(t2.data());
+  tri[2]->Coordinates(t3.data());
+  check->Coordinates(pt.data());
 
-  v0.Update(1.0, t3, -1.0, t1);
-  v1.Update(1.0, t2, -1.0, t1);
-  v2.Update(1.0, pt, -1.0, t1);
+  v0.update(1.0, t3, -1.0, t1);
+  v1.update(1.0, t2, -1.0, t1);
+  v2.update(1.0, pt, -1.0, t1);
 
   double dot00, dot01, dot02, dot11, dot12;
-  dot00 = v0.Dot(v0);
-  dot01 = v0.Dot(v1);
-  dot02 = v0.Dot(v2);
-  dot11 = v1.Dot(v1);
-  dot12 = v1.Dot(v2);
+  dot00 = v0.dot(v0);
+  dot01 = v0.dot(v1);
+  dot02 = v0.dot(v2);
+  dot11 = v1.dot(v1);
+  dot12 = v1.dot(v2);
 
   double Det = dot00 * dot11 - dot01 * dot01;
 
@@ -776,37 +776,37 @@ double Core::Geo::Cut::Kernel::getAreaTri(const double* p0_ptr, const double* p1
   Core::LinAlg::Matrix<3, 1> v01;
   Core::LinAlg::Matrix<3, 1> v02;
 
-  v01.Update(1, p1, -1, p0, 0);
-  v02.Update(1, p2, -1, p0, 0);
+  v01.update(1, p1, -1, p0, 0);
+  v02.update(1, p2, -1, p0, 0);
 
   double doubleareacrossprod;
   // Cross product way:
   if (normalvec == nullptr)
   {
     Core::LinAlg::Matrix<3, 1> crossprod;
-    crossprod.CrossProduct(v01, v02);  // Cross prod between two vectors of the triangle
-    doubleareacrossprod = crossprod.Norm2();
+    crossprod.cross_product(v01, v02);  // Cross prod between two vectors of the triangle
+    doubleareacrossprod = crossprod.norm2();
   }
   else
   {
-    normalvec->CrossProduct(v01, v02);  // Cross prod between two vectors of the triangle
-    doubleareacrossprod = normalvec->Norm2();
-    normalvec->Scale(1.0 / doubleareacrossprod);  // Scale to unit normal
+    normalvec->cross_product(v01, v02);  // Cross prod between two vectors of the triangle
+    doubleareacrossprod = normalvec->norm2();
+    normalvec->scale(1.0 / doubleareacrossprod);  // Scale to unit normal
   }
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   Core::LinAlg::Matrix<3, 1> v12;
-  v12.Update(1, p1, -1, p2, 0);
+  v12.update(1, p1, -1, p2, 0);
 
   double areacrossprod = 0.5 * doubleareacrossprod;
   // Cross referencing!
   Core::LinAlg::Matrix<3, 1> crossprod2;
-  crossprod2.CrossProduct(v01, v12);
-  double areacrossprod2 = 0.5 * crossprod2.Norm2();
+  crossprod2.cross_product(v01, v12);
+  double areacrossprod2 = 0.5 * crossprod2.norm2();
 
   Core::LinAlg::Matrix<3, 1> crossprod3;
-  crossprod3.CrossProduct(v02, v12);
-  double areacrossprod3 = 0.5 * crossprod3.Norm2();
+  crossprod3.cross_product(v02, v12);
+  double areacrossprod3 = 0.5 * crossprod3.norm2();
 
   if (areacrossprod > REF_AREA_BCELL)
   {

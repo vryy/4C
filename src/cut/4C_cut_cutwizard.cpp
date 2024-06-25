@@ -419,10 +419,10 @@ void Core::Geo::CutWizard::add_mesh_cutting_side(Teuchos::RCP<Core::FE::Discreti
         Core::LinAlg::Matrix<3, 1> disp(mydisp.data(), true);
 
         // update x-position of cutter node for current time step (update with displacement)
-        x.Update(1, disp, 1);
+        x.update(1, disp, 1);
       }
 
-      std::copy(x.A(), x.A() + 3, &xyze(0, i));
+      std::copy(x.data(), x.data() + 3, &xyze(0, i));
     }
 
     // add the side of the cutter-discretization
@@ -532,9 +532,9 @@ void Core::Geo::CutWizard::get_physical_nodal_coordinates(
       Core::LinAlg::Matrix<3, 1> disp(mydisp.data(), true);
 
       // update x-position of cutter node for current time step (update with displacement)
-      x.Update(1, disp, 1);
+      x.update(1, disp, 1);
     }
-    std::copy(x.A(), x.A() + 3, &xyze(0, i));
+    std::copy(x.data(), x.data() + 3, &xyze(0, i));
   }
 }
 
@@ -906,9 +906,9 @@ void Core::Geo::CutWizard::update_boundary_cell_coords(
         Core::LinAlg::Matrix<3, 1> disp(mydisp.data(), true);
 
         // update x-position of cutter node for current time step (update with displacement)
-        x.Update(1, disp, 1);
+        x.update(1, disp, 1);
       }
-      std::copy(x.A(), x.A() + 3, &xyze(0, i));
+      std::copy(x.data(), x.data() + 3, &xyze(0, i));
     }
 
     Core::Geo::Cut::SideHandle* sh = GetCutSide(element->Id() + start_ele_gid);
@@ -943,7 +943,7 @@ void Core::Geo::CutWizard::update_boundary_cell_coords(
             Core::FE::shape_function_2D(funct, xsi(0, 0), xsi(1, 0), sh->Shape());
 
             Core::LinAlg::Matrix<3, 1> newpos(true);
-            newpos.Multiply(XYZE, funct);
+            newpos.multiply(XYZE, funct);
             bc->ResetPos(bcpoint, newpos);
           }
         }

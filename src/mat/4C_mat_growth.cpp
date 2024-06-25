@@ -476,11 +476,11 @@ void Mat::GrowthVolumetric::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
         // directional stuff......
         // push-forward of refdir
         Core::LinAlg::Matrix<3, 3> defgrdinv(true);
-        defgrdinv.Invert(*defgrd);
+        defgrdinv.invert(*defgrd);
         Core::LinAlg::Matrix<3, 1> curdir_for_update(true);
-        curdir_for_update.MultiplyTN(defgrd->Determinant(), defgrdinv, refdir_);
+        curdir_for_update.multiply_tn(defgrd->determinant(), defgrdinv, refdir_);
         // scale n to length of one
-        curdir_for_update.Scale(1.0 / curdir_for_update.Norm2());
+        curdir_for_update.scale(1.0 / curdir_for_update.norm2());
         // save for time update
         curdir_for_update_.at(gp) = curdir_for_update;
         //  curdir_.at(gp)=curdir_for_update;
@@ -516,7 +516,7 @@ void Mat::GrowthVolumetric::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
     // calculate F_g^(-1)
     Core::LinAlg::Matrix<3, 3> F_ginv(true);
-    F_ginv.Invert(F_g);
+    F_ginv.invert(F_g);
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
@@ -531,7 +531,7 @@ void Mat::GrowthVolumetric::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
     // right Cauchy-Green Tensor  C = 2 * E + I
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> C(*glstrain);
-    C.Scale(2.0);
+    C.scale(2.0);
     C += Id;
 
     // NOTE: we do this by a FD approximation, which is really cheap here due to the fact
@@ -569,11 +569,11 @@ void Mat::GrowthVolumetric::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
                           cmatelast(i, 3) * C(3) + cmatelast(i, 4) * C(4) + cmatelast(i, 5) * C(5);
       }
 
-      stress->Update(1.0, cmatelasC, 2.0);
+      stress->update(1.0, cmatelasC, 2.0);
       double dthetadp;
       Parameter()->growthlaw_->EvaluatePDeriv(
           &dthetadp, ThetaOldAtGp(gp), Matelastic(), defgrd, glstrain, params, eleGID);
-      stress->Scale(-dthetadp / theta);
+      stress->scale(-dthetadp / theta);
 
     }  // END stuff needed for const growth law in combination with parameter estimation
 
@@ -602,7 +602,7 @@ void Mat::GrowthVolumetric::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
     // calculate F_g^(-1)
     Core::LinAlg::Matrix<3, 3> F_ginv(true);
-    F_ginv.Invert(F_g);
+    F_ginv.invert(F_g);
 
     // constitutive matrix including growth cmat = F_g^-1 F_g^-1 cmatdach F_g^-T F_g^-T
     Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelast(true);
@@ -618,7 +618,7 @@ void Mat::GrowthVolumetric::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     for (int i = 0; i < 3; i++) Id(i) = 1.0;
     // right Cauchy-Green Tensor  C = 2 * E + I
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Cvec(*glstrain);
-    Cvec.Scale(2.0);
+    Cvec.scale(2.0);
     Cvec += Id;
     Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Svec(true);
     Svec = *stress;
@@ -631,7 +631,7 @@ void Mat::GrowthVolumetric::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Voigt::Strains::vector_to_matrix(Cvec, C);
 
     Core::LinAlg::Matrix<3, 1> CDir(true);
-    CDir.MultiplyNN(1.0, C, refdir_);
+    CDir.multiply_nn(1.0, C, refdir_);
     lambda_fib_e_->at(gp) =
         sqrt(CDir(0) * refdir_(0) + CDir(1) * refdir_(1) + CDir(2) * refdir_(2));
   }
@@ -674,7 +674,7 @@ void Mat::GrowthVolumetric::EvaluateNonLinMass(const Core::LinAlg::Matrix<3, 3>*
         refdir_, curdir_, f_g_hist_, growthtrig_const_, params, gp, eleGID);
 
     const double density_deriv_scale = Parameter()->growthlaw_->DensityDerivScale(theta);
-    linmass_disp->Scale(density_deriv_scale * Matelastic()->Density());
+    linmass_disp->scale(density_deriv_scale * Matelastic()->Density());
 
     linmass_vel->clear();
   }
@@ -704,15 +704,15 @@ void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
 
   // calculate F_g^(-1)
   Core::LinAlg::Matrix<3, 3> F_ginv(true);
-  F_ginv.Invert(F_g);
+  F_ginv.invert(F_g);
 
   // elastic deformation gradient F_e = F * F_g^(-1)
   Core::LinAlg::Matrix<3, 3> defgrddach(true);  //*defgrd);
-  defgrddach.MultiplyNN(*defgrd, F_ginv);       // Scale(1.0 / theta);
+  defgrddach.multiply_nn(*defgrd, F_ginv);      // scale(1.0 / theta);
 
   // elastic right Cauchy-Green Tensor Cdach = F_e^T * F_e (= F_g^-T C F_g^-1)
   Core::LinAlg::Matrix<3, 3> Cdach(true);
-  Cdach.MultiplyTN(defgrddach, defgrddach);
+  Cdach.multiply_tn(defgrddach, defgrddach);
 
   // transform Cdach into a vector
   Core::LinAlg::Matrix<6, 1> Cdachvec(true);
@@ -727,7 +727,7 @@ void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
 
   Core::LinAlg::Matrix<6, 1> glstraindachvec(Cdachvec);
   glstraindachvec -= Id;
-  glstraindachvec.Scale(0.5);
+  glstraindachvec.scale(0.5);
 
   Core::LinAlg::Matrix<6, 1> Sdachvec(true);
   // elastic 2 PK stress and constitutive matrix
@@ -739,9 +739,9 @@ void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
   Core::LinAlg::Voigt::Stresses::vector_to_matrix(Sdachvec, Sdach);
 
   Core::LinAlg::Matrix<3, 3> tmp(true);
-  tmp.MultiplyNT(Sdach, F_ginv);
+  tmp.multiply_nt(Sdach, F_ginv);
   Core::LinAlg::Matrix<3, 3> S(true);
-  S.MultiplyNN(F_ginv, tmp);
+  S.multiply_nn(F_ginv, tmp);
 
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(S, *stress);
 
@@ -752,7 +752,7 @@ void Mat::GrowthVolumetric::GetSAndCmatdach(const double theta,
 
   // elastic fiber stretch lambda = \sqrt(f_0 \cdot Cdach f_0)
   Core::LinAlg::Matrix<3, 1> CdachDir(true);
-  CdachDir.MultiplyNN(1.0, Cdach, refdir_);
+  CdachDir.multiply_nn(1.0, Cdach, refdir_);
   lambda_fib_e_->at(gp) =
       sqrt(CdachDir(0) * refdir_(0) + CdachDir(1) * refdir_(1) + CdachDir(2) * refdir_(2));
 }

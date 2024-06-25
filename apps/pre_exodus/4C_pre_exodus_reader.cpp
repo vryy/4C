@@ -368,7 +368,7 @@ void EXODUS::Mesh::CloseExo() const
 /*----------------------------------------------------------------------*
  |  Print method (public)                                      maf 12/07|
  *----------------------------------------------------------------------*/
-void EXODUS::Mesh::Print(std::ostream& os, bool verbose) const
+void EXODUS::Mesh::print(std::ostream& os, bool verbose) const
 {
   os << "Mesh consists of ";
   os << GetNumNodes() << " Nodes, ";
@@ -385,7 +385,7 @@ void EXODUS::Mesh::Print(std::ostream& os, bool verbose) const
     for (it = eleBlocks.begin(); it != eleBlocks.end(); it++)
     {
       os << it->first << ": ";
-      it->second->Print(os);
+      it->second->print(os);
     }
     os << std::endl << "NodeSets" << std::endl;
     std::map<int, NodeSet>::const_iterator it2;
@@ -393,7 +393,7 @@ void EXODUS::Mesh::Print(std::ostream& os, bool verbose) const
     for (it2 = nodeSets.begin(); it2 != nodeSets.end(); it2++)
     {
       os << "NodeSet " << it2->first << ": ";
-      it2->second.Print(os);
+      it2->second.print(os);
     }
     os << std::endl << "SideSets" << std::endl;
     os << "Warning: SideSets are not yet fully supported by PreExodus!" << std::endl;
@@ -402,7 +402,7 @@ void EXODUS::Mesh::Print(std::ostream& os, bool verbose) const
     for (it3 = sideSets.begin(); it3 != sideSets.end(); it3++)
     {
       os << "SideSet " << it3->first << ": ";
-      it3->second.Print(os);
+      it3->second.print(os);
     }
   }
 }
@@ -1497,7 +1497,7 @@ void EXODUS::ElementBlock::FillEconnArray(int* connarray) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ElementBlock::Print(std::ostream& os, bool verbose) const
+void EXODUS::ElementBlock::print(std::ostream& os, bool verbose) const
 {
   os << "Element Block, named: " << name_ << std::endl
      << "of Shape: " << ShapeToString(distype_) << std::endl
@@ -1530,7 +1530,7 @@ EXODUS::NodeSet::NodeSet(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::NodeSet::Print(std::ostream& os, bool verbose) const
+void EXODUS::NodeSet::print(std::ostream& os, bool verbose) const
 {
   os << "Node Set, named: " << name_ << std::endl
      << "Property Name: " << propname_ << std::endl
@@ -1598,7 +1598,7 @@ void EXODUS::SideSet::FillSideLists(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::SideSet::Print(std::ostream& os, bool verbose) const
+void EXODUS::SideSet::print(std::ostream& os, bool verbose) const
 {
   os << "SideSet, named: " << name_ << std::endl
      << "has " << GetNumSides() << " Sides" << std::endl;

@@ -172,7 +172,7 @@ namespace CONTACT
      *
      *  \author grill
      *  \date 05/16 */
-    virtual void Print() const = 0;
+    virtual void print() const = 0;
 
 
     //! @name Public evaluation methods

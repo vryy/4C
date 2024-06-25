@@ -96,7 +96,7 @@ namespace BEAMINTERACTION
      *
      *  \author grill
      *  \date 05/16 */
-    void Print(std::ostream& out) const override;
+    void print(std::ostream& out) const override;
 
 
     /** \brief print this beam contact element pair to screen

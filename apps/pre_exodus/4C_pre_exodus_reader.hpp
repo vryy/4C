@@ -54,7 +54,7 @@ namespace EXODUS
     virtual ~Mesh() = default;
 
     //! Print mesh info
-    void Print(std::ostream& os, bool verbose = false) const;
+    void print(std::ostream& os, bool verbose = false) const;
 
     //! Print Nodes and Coords
     void PrintNodes(std::ostream& os, bool storeid = false) const;
@@ -256,7 +256,7 @@ namespace EXODUS
 
     void FillEconnArray(int* connarray) const;
 
-    void Print(std::ostream& os, bool verbose = false) const;
+    void print(std::ostream& os, bool verbose = false) const;
 
    private:
     Shape distype_;
@@ -284,7 +284,7 @@ namespace EXODUS
 
     inline int GetNumNodes() const { return nodeids_.size(); }
 
-    void Print(std::ostream& os, bool verbose = false) const;
+    void print(std::ostream& os, bool verbose = false) const;
 
    private:
     std::set<int> nodeids_;  // nodids in NodeSet
@@ -317,7 +317,7 @@ namespace EXODUS
     void FillSideLists(
         int* elemlist, int* sidelist, const std::map<int, std::vector<int>>& sides) const;
 
-    void Print(std::ostream& os, bool verbose = false) const;
+    void print(std::ostream& os, bool verbose = false) const;
 
    private:
     std::map<int, std::vector<int>> sides_;

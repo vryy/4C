@@ -80,11 +80,11 @@ namespace Discret::ELEMENTS
   {
     // inverse deformation gradient at centroid
     Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> invdefgrd_centroid;
-    invdefgrd_centroid.Invert(spatial_material_mapping_centroid.deformation_gradient_);
+    invdefgrd_centroid.invert(spatial_material_mapping_centroid.deformation_gradient_);
 
     // inverse deformation gradient at gp
     Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> invdefgrd;
-    invdefgrd.Invert(spatial_material_mapping.deformation_gradient_);
+    invdefgrd.invert(spatial_material_mapping.deformation_gradient_);
 
     Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>, 1> Hop(true);
     for (int idof = 0; idof < Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>; idof++)
@@ -133,14 +133,14 @@ namespace Discret::ELEMENTS
     Core::LinAlg::Voigt::Strains::matrix_to_vector(cauchyGreen, rcg_bar_voigt);
 
     Core::LinAlg::Matrix<Core::FE::dim<celltype>*(Core::FE::dim<celltype> + 1) / 2, 1> ccg;
-    ccg.MultiplyNN(stress_bar.cmat_, rcg_bar_voigt);
+    ccg.multiply_nn(stress_bar.cmat_, rcg_bar_voigt);
 
     // auxiliary integrated stress_bar
     Core::LinAlg::Matrix<num_dof_per_ele, 1> bopccg(false);
-    bopccg.MultiplyTN(integration_fac * f_bar_factor / 3.0, Bop, ccg);
+    bopccg.multiply_tn(integration_fac * f_bar_factor / 3.0, Bop, ccg);
 
     Core::LinAlg::Matrix<num_dof_per_ele, 1> bops(false);
-    bops.MultiplyTN(-integration_fac / f_bar_factor / 3.0, Bop, stress_bar.pk2_);
+    bops.multiply_tn(-integration_fac / f_bar_factor / 3.0, Bop, stress_bar.pk2_);
 
     for (int idof = 0; idof < num_dof_per_ele; idof++)
     {

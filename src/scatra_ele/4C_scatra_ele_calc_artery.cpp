@@ -179,8 +179,8 @@ void Discret::ELEMENTS::ScaTraEleCalcArtery<distype, probdim>::extract_element_a
     for (unsigned int d = 0; d < probdim; ++d) arteryrefpos1(d) = my::xyze_(d, 1);
 
     static Core::LinAlg::Matrix<probdim, 1> dist0;
-    dist0.Update(-1.0, arteryrefpos0, 1.0, arteryrefpos1, 0.0);
-    const double arteryreflength = dist0.Norm2();
+    dist0.update(-1.0, arteryrefpos0, 1.0, arteryrefpos1, 0.0);
+    const double arteryreflength = dist0.norm2();
 
     // this is a hack
     // will not work for anything else but line2 elements

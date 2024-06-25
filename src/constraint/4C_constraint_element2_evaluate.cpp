@@ -132,7 +132,7 @@ double Discret::ELEMENTS::ConstraintElement2::compute_normal_dist(
     const Core::LinAlg::Matrix<3, 2>& xc, const Core::LinAlg::Matrix<2, 1>& normal)
 {
   return (normal(0, 0) * (-xc(0, 0) + xc(2, 0)) - normal(1, 0) * (xc(0, 1) - xc(2, 1))) /
-         normal.Norm2();
+         normal.norm2();
 }
 
 /*----------------------------------------------------------------------*
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::ConstraintElement2::compute_first_deriv_dist(
     const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseVector& elevector,
     const Core::LinAlg::Matrix<2, 1>& normal)
 {
-  double normcube = pow(normal.Norm2(), 3);
+  double normcube = pow(normal.norm2(), 3);
 
   elevector[0] = (normal(0, 0) * (-pow(xc(1, 0), 2) + xc(0, 0) * (xc(1, 0) - xc(2, 0)) +
                                      xc(1, 0) * xc(2, 0) + normal(0, 0) * (xc(1, 1) - xc(2, 1)))) /
@@ -173,9 +173,9 @@ void Discret::ELEMENTS::ConstraintElement2::compute_first_deriv_dist(
                                        xc(0, 1) * (xc(1, 1) + xc(2, 1)))) /
                    normcube);
 
-  elevector[4] = normal(0, 0) / normal.Norm2();
+  elevector[4] = normal(0, 0) / normal.norm2();
 
-  elevector[5] = normal(1, 0) / normal.Norm2();
+  elevector[5] = normal(1, 0) / normal.norm2();
   elevector.scale(-1.0);
   return;
 }
@@ -258,10 +258,10 @@ void Discret::ELEMENTS::ConstraintElement2::compute_second_deriv_dist(
     const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseMatrix& elematrix,
     const Core::LinAlg::Matrix<2, 1>& normal)
 {
-  double normsquare = pow(normal.Norm2(), 2);
-  double normcube = pow(normal.Norm2(), 3);
-  double normpowfour = pow(normal.Norm2(), 4);
-  double normpowfive = pow(normal.Norm2(), 5);
+  double normsquare = pow(normal.norm2(), 2);
+  double normcube = pow(normal.norm2(), 3);
+  double normpowfour = pow(normal.norm2(), 4);
+  double normpowfive = pow(normal.norm2(), 5);
 
   elematrix(0, 0) =
       (normal(0, 0) *

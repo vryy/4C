@@ -687,7 +687,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
   computed_sigma_ = growth_scalar_and_sigma(1);
 
   // compute linearizations w.r.t. lambda_f_sq
-  K.Invert();
+  K.invert();
 
   const Number dRcauchy_stress_d_lambda_f_sq = evaluate_d_residuum_cauchy_stress_d_lambda_f_sq();
   const Number dRgrowth_scalar_d_lambda_f_sq = evaluate_d_residuum_growth_scalar_d_lambda_f_sq();

@@ -176,10 +176,10 @@ void Discret::ELEMENTS::SoPyramid5fbar::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              seitz 03/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoPyramid5fbar::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoPyramid5fbar::print(std::ostream& os) const
 {
   os << "So_pyramid5fbar ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

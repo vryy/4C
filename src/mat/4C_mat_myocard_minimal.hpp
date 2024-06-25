@@ -89,7 +89,7 @@ class MyocardMinimal : public MyocardGeneral
   double GetIonicCurrents(const int k, int gp) const override;
 
   /// time update for this material
-  void Update(const double phi, const double dt) override;
+  void update(const double phi, const double dt) override;
 
   /// resize internal state variables if number of Gauss point changes
   void resize_internal_state_variables(int gp) override;

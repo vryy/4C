@@ -200,7 +200,7 @@ namespace Mat
     /*!
      * @brief Indicator, whether the extended update call is used
      *
-     * Return true, if the material needs the Update(defgrd, gp, params, eleGID) call
+     * Return true, if the material needs the update(defgrd, gp, params, eleGID) call
      */
     virtual bool UsesExtendedUpdate() { return false; }
 
@@ -218,7 +218,7 @@ namespace Mat
      * @param[in] params Container for additional information
      * @param[in] eleGID Global element ID
      */
-    virtual void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
+    virtual void update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
         Teuchos::ParameterList& params, int const eleGID)
     {
     }

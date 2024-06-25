@@ -95,11 +95,11 @@ void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::unpack(const std::vecto
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::print(std::ostream& os) const
 {
   os << "So3_Poro_Scatra ";
   os << Core::FE::CellTypeToString(distype).c_str() << " ";
-  Core::Elements::Element::Print(os);
+  Core::Elements::Element::print(os);
   return;
 }
 

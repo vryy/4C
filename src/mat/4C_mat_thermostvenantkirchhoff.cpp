@@ -163,7 +163,7 @@ void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 3>* de
 
   setup_cmat(*cmat);
   // purely mechanical part
-  stress->MultiplyNN(*cmat, *current_glstrain_);
+  stress->multiply_nn(*cmat, *current_glstrain_);
 
   // additive thermal part
   double Tref = params_->thetainit_;
@@ -185,8 +185,8 @@ void Mat::ThermoStVenantKirchhoff::StrainEnergy(
   Core::LinAlg::Matrix<6, 6> cmat;
   setup_cmat(cmat);
   Core::LinAlg::Matrix<6, 1> s;
-  s.Multiply(cmat, glstrain);
-  psi += .5 * s.Dot(glstrain);
+  s.multiply(cmat, glstrain);
+  psi += .5 * s.dot(glstrain);
 }
 
 void Mat::ThermoStVenantKirchhoff::evaluate(const Core::LinAlg::Matrix<3, 1>& gradtemp,
@@ -255,7 +255,7 @@ void Mat::ThermoStVenantKirchhoff::GetdSdT(Core::LinAlg::Matrix<6, 1>* dS_dT)
 
   // evaluate meachnical stress part
   // \f \sigma = {\mathbf C}_{,T} \,\varepsilon_{\rm GL} \f
-  dS_dT->MultiplyNN(cmat_T, *current_glstrain_);
+  dS_dT->multiply_nn(cmat_T, *current_glstrain_);
 
   // calculate the temperature difference
   // Delta T = T - T_0
@@ -267,10 +267,10 @@ void Mat::ThermoStVenantKirchhoff::GetdSdT(Core::LinAlg::Matrix<6, 1>* dS_dT)
 
   // temperature dependent stress part
   // sigma = C_T . Delta T = m . I . Delta T
-  dS_dT->Update(deltaT, ctemp_T, 1.0);
+  dS_dT->update(deltaT, ctemp_T, 1.0);
 
   setup_cthermo(ctemp_T);
-  dS_dT->Update(1.0, ctemp_T, 1.0);
+  dS_dT->update(1.0, ctemp_T, 1.0);
 }
 
 void Mat::ThermoStVenantKirchhoff::stress_temperature_modulus_and_deriv(

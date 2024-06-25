@@ -50,7 +50,7 @@ void BEAMINTERACTION::CrosslinkingParams::init(STR::TimeInt::BaseDataGlobalState
   // time step for stochastic events concering crosslinking
   deltatime_ = crosslinking_params_list.get<double>("TIMESTEP");
 
-  init_box_.PutScalar(1.0e12);
+  init_box_.put_scalar(1.0e12);
   std::istringstream init_box_stream(
       Teuchos::getNumericStringParameter(crosslinking_params_list, "INIT_LINKER_BOUNDINGBOX"));
   for (int col = 0; col < 2; ++col)

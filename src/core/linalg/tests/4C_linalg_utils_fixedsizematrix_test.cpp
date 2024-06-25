@@ -73,9 +73,9 @@ namespace
     result_type x;
 
     x = u;
-    x.Scale(-1.0);
+    x.scale(-1.0);
     x -= X;
-    x.Scale(-1.0);
+    x.scale(-1.0);
 
     CheckTestResults(x, x_ref);
   }
@@ -86,7 +86,7 @@ namespace
     using result_type = typename std::decay<decltype(x_ref)>::type;
     result_type x;
 
-    x.Update(X);
+    x.update(X);
     x += u;
 
     CheckTestResults(x, x_ref);
@@ -109,7 +109,7 @@ namespace
     nodal_dof(3) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(4, 3, 3.4);
 
     Core::LinAlg::Matrix<2, 1, fad_type> u;
-    u.Multiply(shape_function_matrix, nodal_dof);
+    u.multiply(shape_function_matrix, nodal_dof);
 
     Core::LinAlg::Matrix<2, 1, fad_type> u_ref;
     u_ref(0) = Core::FADUtils::HigherOrderFadValue<fad_type>::apply(4, 0, 0.9);

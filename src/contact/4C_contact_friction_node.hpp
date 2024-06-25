@@ -447,7 +447,7 @@ namespace CONTACT
     /*!
      \brief Print this cnode
      */
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     /*!
      \brief Return of data container of this node

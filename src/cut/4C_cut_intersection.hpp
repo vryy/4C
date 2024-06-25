@@ -402,8 +402,8 @@ namespace Core::Geo
       /// constructor
       Intersection()
           : IntersectionBase(),
-            xsi_side_(xsi_.A(), true),
-            xsi_edge_(xsi_.A() + dimside, true),
+            xsi_side_(xsi_.data(), true),
+            xsi_edge_(xsi_.data() + dimside, true),
             multiple_xsi_side_(0),
             multiple_xsi_edge_(0),
             num_cut_points_(0),
@@ -430,7 +430,7 @@ namespace Core::Geo
       const IntersectionStatus& get_intersection_status() const override { return istatus_; }
 
       /// get the local cut coordinates
-      double* local_coordinates() override { return xsi_.A(); }
+      double* local_coordinates() override { return xsi_.data(); }
 
       /** \brief access the local coordinates of the cut point corresponding to the
        *  cut point ID \c cp_id on the side element
@@ -440,9 +440,9 @@ namespace Core::Geo
        *  \author hiermeier \date 01/17 */
       double* local_side_coordinates(unsigned cp_id) override
       {
-        if (num_cut_points() < 2) return xsi_side_.A();
+        if (num_cut_points() < 2) return xsi_side_.data();
 
-        return multiple_xsi_side_[cp_id].A();
+        return multiple_xsi_side_[cp_id].data();
       }
 
       /** \brief access the local coordinates of the cut point corresponding to the
@@ -475,8 +475,8 @@ namespace Core::Geo
             x_edge_1(isd) += xyze_lineElement_(isd, inode) * edge_funct_1(inode);
 
         // first un-do the shifting
-        x_edge_1.Update(1.0, shift_, 1.0);
-        x_edge_1.Scale(scale_);
+        x_edge_1.update(1.0, shift_, 1.0);
+        x_edge_1.scale(scale_);
 
         Core::LinAlg::Matrix<probdim, 1> x_edge_2;
         x_edge_2 = 0;
@@ -486,8 +486,8 @@ namespace Core::Geo
           for (unsigned isd = 0; isd < probdim; ++isd)
             x_edge_2(isd) += xyze_surfaceElement_(isd, inode) * edge_funct_2(inode);
 
-        x_edge_2.Update(1.0, shift_, 1.0);
-        x_edge_2.Scale(scale_);
+        x_edge_2.update(1.0, shift_, 1.0);
+        x_edge_2.scale(scale_);
 
         bool will_be_merged[2];
         will_be_merged[0] =
@@ -524,7 +524,7 @@ namespace Core::Geo
           else
             x_ = x_edge_2;
         }
-        return x_.A();
+        return x_.data();
       }
 
       /// get the final cut point global coordinates
@@ -542,9 +542,9 @@ namespace Core::Geo
             x(isd) += xyze_lineElement_(isd, inode) * lineFunct(inode);
 
         // first un-do the shifting
-        x.Update(1.0, shift_, 1.0);
+        x.update(1.0, shift_, 1.0);
         // second un-do the scaling
-        x.Scale(scale_);
+        x.scale(scale_);
       }
       double* FinalPoint() override
       {
@@ -555,12 +555,12 @@ namespace Core::Geo
               IntersectionStatus2String(istatus_).c_str());
 
         FinalPoint(xsi_edge_, x_);
-        return x_.A();
+        return x_.data();
       }
       double* FinalPoint(unsigned cp_id) override
       {
         FinalPoint(local_edge_coordinates(cp_id), x_);
-        return x_.A();
+        return x_.data();
       }
 
       // Remove all the edges from list of touching edges that are further away than 1e-14 (
@@ -577,7 +577,7 @@ namespace Core::Geo
 
         for (std::vector<int>::iterator it = touching_edges.begin(); it != touching_edges.end();)
         {
-          side_edges[*it]->Coordinates(xyze_edge.A());
+          side_edges[*it]->Coordinates(xyze_edge.data());
 
           Kernel::ComputeDistance<dim, edgetype, floattype> cd(xsi);
           bool conv = cd(xyze_edge, p_coord, distance, signeddistance);
@@ -594,7 +594,7 @@ namespace Core::Geo
                 Edge* e = side_edges[*it];
                 Core::Geo::Cut::Output::GmshEdgeDump(file, e, std::string("FarEdge"));
                 Core::Geo::Cut::Output::GmshNewSection(file, "Point", false);
-                Core::LinAlg::Matrix<3, 1> p(p_coord.A());
+                Core::LinAlg::Matrix<3, 1> p(p_coord.data());
                 Core::Geo::Cut::Output::GmshCoordDump(file, p, 0);
                 Core::Geo::Cut::Output::GmshEndSection(file);
                 file.close();
@@ -829,8 +829,8 @@ namespace Core::Geo
       /// set the edge and side coordinates
       void set_coordinates(double* xyze_surfaceElement, double* xyze_lineElement) override
       {
-        xyze_lineElement_.SetCopy(xyze_lineElement);
-        xyze_surfaceElement_.SetCopy(xyze_surfaceElement);
+        xyze_lineElement_.set_copy(xyze_lineElement);
+        xyze_surfaceElement_.set_copy(xyze_surfaceElement);
       }
 
       /** \brief scale and shift the nodal positions of the given line and surface element
@@ -852,8 +852,8 @@ namespace Core::Geo
         {
           GetElementScale<probdim>(xyze_surfaceElement_, scale_);
 
-          xyze_lineElement_.Scale(1. / scale_);
-          xyze_surfaceElement_.Scale(1. / scale_);
+          xyze_lineElement_.scale(1. / scale_);
+          xyze_surfaceElement_.scale(1. / scale_);
         }
         // ---------------------------------------------------------------------
         // shift the input elements if desired
@@ -867,12 +867,12 @@ namespace Core::Geo
           for (unsigned i = 0; i < numNodesSide; ++i)
           {
             Core::LinAlg::Matrix<probdim, 1> x1(&xyze_surfaceElement_(0, i), true);
-            x1.Update(-1, shift_, 1);
+            x1.update(-1, shift_, 1);
           }
           for (unsigned i = 0; i < numNodesEdge; ++i)
           {
             Core::LinAlg::Matrix<probdim, 1> x1(&xyze_lineElement_(0, i), true);
-            x1.Update(-1, shift_, 1);
+            x1.update(-1, shift_, 1);
           }
         }
       }
@@ -971,10 +971,10 @@ namespace Core::Geo
 
         TEUCHOS_FUNC_TIME_MONITOR("compute_edge_tri3_intersection");
         Core::LinAlg::Matrix<3, 1> xsi;
-        if (xsi_.M() != 3)
+        if (xsi_.m() != 3)
           FOUR_C_THROW("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
         else
-          xsi.SetView(xsi_.A());
+          xsi.set_view(xsi_.data());
 
         Kernel::ComputeIntersection<3, edgetype, Core::FE::CellType::tri3, floattype> ci(xsi);
         // Kernel::DebugComputeIntersection<probdim,edgetype,Core::FE::CellType::tri3,floattype>
@@ -983,7 +983,7 @@ namespace Core::Geo
 
         Core::LinAlg::Matrix<3, 3> xyze_triElement;
         get_triangle(xyze_triElement, triangleid);
-        Core::LinAlg::Matrix<3, numNodesEdge> xyze_lineElement(xyze_lineElement_.A(), true);
+        Core::LinAlg::Matrix<3, numNodesEdge> xyze_lineElement(xyze_lineElement_.data(), true);
 
         bool conv = ci(xyze_triElement, xyze_lineElement);
         location = ci.GetSideLocation();
@@ -1020,10 +1020,10 @@ namespace Core::Geo
 
         TEUCHOS_FUNC_TIME_MONITOR("compute_edge_tri3_intersection");
         Core::LinAlg::Matrix<3, 1> xsi;
-        if (xsi_.M() != 3)
+        if (xsi_.m() != 3)
           FOUR_C_THROW("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
         else
-          xsi.SetView(xsi_.A());
+          xsi.set_view(xsi_.data());
 
         Kernel::ComputeIntersection<3, edgetype, Core::FE::CellType::tri3, floattype> ci(xsi);
         // Kernel::DebugComputeIntersection<probdim,edgetype,Core::FE::CellType::tri3,floattype>
@@ -1032,7 +1032,7 @@ namespace Core::Geo
 
         Core::LinAlg::Matrix<3, 3> xyze_triElement;
         get_triangle(xyze_triElement, triangleid);
-        Core::LinAlg::Matrix<3, numNodesEdge> xyze_lineElement(xyze_lineElement_.A(), true);
+        Core::LinAlg::Matrix<3, numNodesEdge> xyze_lineElement(xyze_lineElement_.data(), true);
 
         bool conv = ci(xyze_triElement, xyze_lineElement);
 
@@ -1105,7 +1105,7 @@ namespace Core::Geo
           FOUR_C_THROW(
               "This compute_distance variant won't work! Think about using "
               "a Core::Geo::Cut::Position object instead!");
-        Core::LinAlg::Matrix<probdim, 1> xsi(xsi_.A(), true);
+        Core::LinAlg::Matrix<probdim, 1> xsi(xsi_.data(), true);
 
         Kernel::ComputeDistance<probdim, sidetype, floattype> cd(xsi);
 
@@ -1167,7 +1167,7 @@ namespace Core::Geo
       {
         for (unsigned int node_id = 0; node_id < numNodes; ++node_id)
         {
-          const Core::LinAlg::Matrix<probDim, 1> edge_point(surf.A() + node_id * probDim, true);
+          const Core::LinAlg::Matrix<probDim, 1> edge_point(surf.data() + node_id * probDim, true);
           if (Core::Geo::Cut::DistanceBetweenPoints(edge_point, p) <= tol) return true;
         }
         return false;
@@ -1219,9 +1219,9 @@ namespace Core::Geo
         TEUCHOS_FUNC_TIME_MONITOR("compute_distance");
 
         // dimension of xsi: element dimension of 2 + 1 entry for the distance
-        if (xsi_.M() != 3)
+        if (xsi_.m() != 3)
           FOUR_C_THROW("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
-        Core::LinAlg::Matrix<3, 1> xsi(xsi_.A(), true);
+        Core::LinAlg::Matrix<3, 1> xsi(xsi_.data(), true);
 
         // Kernel::DebugComputeDistance<probdim,Core::FE::CellType::tri3, floattype>
         // cd( xsi );

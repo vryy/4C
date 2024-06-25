@@ -26,15 +26,15 @@ Core::Conditions::Condition::Condition(const int id, const Core::Conditions::Con
 
 std::ostream& operator<<(std::ostream& os, const Core::Conditions::Condition& cond)
 {
-  cond.Print(os);
+  cond.print(os);
   return os;
 }
 
 
-void Core::Conditions::Condition::Print(std::ostream& os) const
+void Core::Conditions::Condition::print(std::ostream& os) const
 {
   os << "Condition " << id_ << " " << to_string(type_) << ": ";
-  container_.Print(os);
+  container_.print(os);
   os << std::endl;
   if (nodes_.size() != 0)
   {

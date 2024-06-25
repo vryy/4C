@@ -70,7 +70,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
 
   // right Cauchy-Green Tensor  C = 2 * E + I
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> Cvec(*glstrain);
-  Cvec.Scale(2.0);
+  Cvec.scale(2.0);
   Cvec += Id;
 
   // calculate growth part F_g of the deformation gradient F
@@ -78,13 +78,13 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
   CalcFg(theta, thetaold, gp, defgrd, refdir, curdir, histdefgrd, F_g);
   // calculate F_g^(-1)
   Core::LinAlg::Matrix<3, 3> F_ginv(true);
-  F_ginv.Invert(F_g);
+  F_ginv.invert(F_g);
   // elastic deformation gradient F_e = F * F_g^(-1)
   Core::LinAlg::Matrix<3, 3> defgrddach(true);  //*defgrd);
-  defgrddach.MultiplyNN(*defgrd, F_ginv);       // Scale(1.0 / theta);
+  defgrddach.multiply_nn(*defgrd, F_ginv);      // scale(1.0 / theta);
   // elastic right Cauchy-Green Tensor Cdach = F_e^T * F_e (= F_g^-T C F_g^-1)
   Core::LinAlg::Matrix<3, 3> Cdach(true);
-  Cdach.MultiplyTN(defgrddach, defgrddach);
+  Cdach.multiply_tn(defgrddach, defgrddach);
 
   // transform Cdach into a vector
   Core::LinAlg::Matrix<6, 1> Cdachvec(true);
@@ -93,7 +93,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
   // elastic Green Lagrange strain
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> glstraindachvec(Cdachvec);
   glstraindachvec -= Id;
-  glstraindachvec.Scale(0.5);
+  glstraindachvec.scale(0.5);
   // elastic 2 PK stress and constitutive matrix
   matgrowth.EvaluateElastic(
       &defgrddach, &glstraindachvec, &Sdachvec, &cmatdach, params, gp, eleGID);
@@ -135,27 +135,27 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
       thetatemp = theta + omega * residual / thetaquer;
 
       // calculate growth part F_g of the deformation gradient F
-      F_g.putScalar(0.0);
+      F_g.put_scalar(0.0);
       CalcFg(thetatemp, thetaold, gp, defgrd, refdir, curdir, histdefgrd, F_g);
       // calculate F_g^(-1)
-      F_ginv.putScalar(0.0);
-      F_ginv.Invert(F_g);
+      F_ginv.put_scalar(0.0);
+      F_ginv.invert(F_g);
       // elastic deformation gradient F_e = F * F_g^(-1)
-      defgrddach.putScalar(0.0);
-      defgrddach.MultiplyNN(*defgrd, F_ginv);
+      defgrddach.put_scalar(0.0);
+      defgrddach.multiply_nn(*defgrd, F_ginv);
       // elastic right Cauchy-Green tensor Cdach = F_e^T * F_e (= F_g^-T C F_g^-1)
-      Cdach.putScalar(0.0);
-      Cdach.MultiplyTN(defgrddach, defgrddach);
+      Cdach.put_scalar(0.0);
+      Cdach.multiply_tn(defgrddach, defgrddach);
 
       // transform Cdach into a vector
-      Cdachvec.putScalar(0.0);
+      Cdachvec.put_scalar(0.0);
       Core::LinAlg::Voigt::Strains::matrix_to_vector(Cdach, Cdachvec);
 
       glstraindachvec = Cdachvec;
       glstraindachvec -= Id;
-      glstraindachvec.Scale(0.5);
-      cmatdach.putScalar(0.0);
-      Sdachvec.putScalar(0.0);
+      glstraindachvec.scale(0.5);
+      cmatdach.put_scalar(0.0);
+      Sdachvec.put_scalar(0.0);
       matgrowth.EvaluateElastic(
           &defgrddach, &glstraindachvec, &Sdachvec, &cmatdach, params, gp, eleGID);
 
@@ -204,9 +204,9 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
   Core::LinAlg::Voigt::Stresses::vector_to_matrix(Sdachvec, Sdach);
 
   Core::LinAlg::Matrix<3, 3> tmp(true);
-  tmp.MultiplyNT(Sdach, F_ginv);
+  tmp.multiply_nt(Sdach, F_ginv);
   Core::LinAlg::Matrix<3, 3> S(true);
-  S.MultiplyNN(F_ginv, tmp);
+  S.multiply_nn(F_ginv, tmp);
 
   Core::LinAlg::Matrix<6, 1> Svec(true);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(S, Svec);
@@ -216,7 +216,7 @@ void Mat::GrowthLawDyn::evaluate(double* thetainit, const double& thetaold,
       dgrowthfuncdCvec, growthtrigger, theta, Cvec, Svec, cmatelastic, refdir);
 
   // d theta/ d C
-  dthetadC->Update(dt / thetaquer, dgrowthfuncdCvec);
+  dthetadC->update(dt / thetaquer, dgrowthfuncdCvec);
 
   *thetainit = theta;
 }
@@ -342,7 +342,7 @@ void Mat::GrowthLawAnisoStrain::evaluate_growth_trigger(double& growthtrig,
   Core::LinAlg::Voigt::Strains::vector_to_matrix(Cdachvec, Cdach);
 
   Core::LinAlg::Matrix<3, 1> CdachDir(true);
-  CdachDir.MultiplyNN(1.0, Cdach, direction);
+  CdachDir.multiply_nn(1.0, Cdach, direction);
 
   // elastic fiber stretch
   growthtrig =
@@ -413,9 +413,9 @@ void Mat::GrowthLawAnisoStrain::evaluate_growth_function_deriv_c(
 
 
   Core::LinAlg::Matrix<3, 3> dgrowthfuncdC(true);
-  dgrowthfuncdC.MultiplyNT(direction, direction);
+  dgrowthfuncdC.multiply_nt(direction, direction);
 
-  dgrowthfuncdC.Scale(ktheta / (theta * theta * 2. * growthtrig));
+  dgrowthfuncdC.scale(ktheta / (theta * theta * 2. * growthtrig));
 
   // transform dgrowthfuncdC into a vector in Voigt notation
   dgrowthfuncdCvec(0) = dgrowthfuncdC(0, 0);
@@ -435,10 +435,10 @@ void Mat::GrowthLawAnisoStrain::CalcFg(const double& theta, const double& thetao
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g)
 {
   Core::LinAlg::Matrix<3, 3> fdf(true);
-  fdf.MultiplyNT(refdir, refdir);
+  fdf.multiply_nt(refdir, refdir);
 
   for (int i = 0; i < 3; i++) F_g(i, i) = 1.0;
-  F_g.Update(theta - 1.0, fdf, 1.0);
+  F_g.update(theta - 1.0, fdf, 1.0);
 }
 
 
@@ -560,16 +560,16 @@ void Mat::GrowthLawAnisoStress::evaluate_growth_function_deriv_theta(double& dgr
 
   // calculate F_g^(-1)
   Core::LinAlg::Matrix<3, 3> F_ginv(true);
-  F_ginv.Invert(F_g);
+  F_ginv.invert(F_g);
 
   // calculate d(F_g)/d(theta) = 1 - f_0 \otimes f_0
   Core::LinAlg::Matrix<3, 3> fdf(true);
-  fdf.MultiplyNT(direction, direction);
+  fdf.multiply_nt(direction, direction);
 
   Core::LinAlg::Matrix<3, 3> dFgdtheta(true);
   for (int i = 0; i < 3; i++) dFgdtheta(i, i) = 1.0;
 
-  dFgdtheta.Update(-1.0, fdf, 1.0);
+  dFgdtheta.update(-1.0, fdf, 1.0);
 
 
   // transform Cdachvec into a matrix
@@ -577,16 +577,16 @@ void Mat::GrowthLawAnisoStress::evaluate_growth_function_deriv_theta(double& dgr
   Core::LinAlg::Voigt::Strains::vector_to_matrix(Cdachvec, Cdach);
 
   Core::LinAlg::Matrix<3, 3> dFgT_Cdach(true);
-  dFgT_Cdach.MultiplyTN(dFgdtheta, Cdach);
+  dFgT_Cdach.multiply_tn(dFgdtheta, Cdach);
   Core::LinAlg::Matrix<3, 3> dCdachdtheta(true);
-  dCdachdtheta.MultiplyTN(F_ginv, dFgT_Cdach);
+  dCdachdtheta.multiply_tn(F_ginv, dFgT_Cdach);
 
   Core::LinAlg::Matrix<3, 3> dFg_Fginv(true);
-  dFg_Fginv.MultiplyNN(dFgdtheta, F_ginv);
+  dFg_Fginv.multiply_nn(dFgdtheta, F_ginv);
   Core::LinAlg::Matrix<3, 3> Cdach_dFg_Fginv(true);
-  Cdach_dFg_Fginv.MultiplyNN(Cdach, dFg_Fginv);
+  Cdach_dFg_Fginv.multiply_nn(Cdach, dFg_Fginv);
 
-  dCdachdtheta.Update(-1.0, Cdach_dFg_Fginv, -1.0);
+  dCdachdtheta.update(-1.0, Cdach_dFg_Fginv, -1.0);
 
   // transform dCdachdtheta into a vector
   Core::LinAlg::Matrix<6, 1> dCdachdthetavec(true);
@@ -661,10 +661,10 @@ void Mat::GrowthLawAnisoStress::CalcFg(const double& theta, const double& thetao
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g)
 {
   Core::LinAlg::Matrix<3, 3> fdf(true);
-  fdf.MultiplyNT(refdir, refdir);
+  fdf.multiply_nt(refdir, refdir);
 
   for (int i = 0; i < 3; i++) F_g(i, i) = theta;
-  F_g.Update(1.0 - theta, fdf, 1.0);
+  F_g.update(1.0 - theta, fdf, 1.0);
 }
 
 
@@ -1103,7 +1103,7 @@ void Mat::GrowthLawAC::evaluate(double* theta, const double& thetaold,
 
   const double deltagrowth =
       (alpha * concentrations->at(gp).at(Sc1 - 1) + beta * concentrations->at(gp).at(Sc2 - 1)) *
-      defgrd->Determinant();
+      defgrd->determinant();
 
   *theta = pow(1.0 + deltagrowth, 0.33333333333333333);
 
@@ -1111,13 +1111,13 @@ void Mat::GrowthLawAC::evaluate(double* theta, const double& thetaold,
   const double tmp = deltagrowth / 6.0 * pow(1.0 + deltagrowth, -0.66666666666666666);
 
   Core::LinAlg::Matrix<3, 3> C(true);
-  C.MultiplyTN(*defgrd, *defgrd);
+  C.multiply_tn(*defgrd, *defgrd);
   Core::LinAlg::Matrix<3, 3> Cinv(true);
-  Cinv.Invert(C);
+  Cinv.invert(C);
 
   // linearization of growth law
   Core::LinAlg::Matrix<3, 3> dThetadC(Cinv);
-  dThetadC.Scale(tmp);
+  dThetadC.scale(tmp);
 
   // transform dThetadC into a vector in Voigt notation
   (*dthetadC)(0) = dThetadC(0, 0);
@@ -1130,7 +1130,7 @@ void Mat::GrowthLawAC::evaluate(double* theta, const double& thetaold,
   // set ratio for potential linear interpolation between two elastic materials
   double lambda = 1.0 / (1.0 + deltagrowth);
   // linearization of ratio for potential linear interpolation of between two elastic materials
-  Cinv.Scale(-0.5 * deltagrowth * pow(1.0 + deltagrowth, -2.0));
+  Cinv.scale(-0.5 * deltagrowth * pow(1.0 + deltagrowth, -2.0));
 
   // transform into a vector in Voigt notation
   Teuchos::RCP<Core::LinAlg::Matrix<6, 1>> dlambda_dC =
@@ -1216,7 +1216,7 @@ void Mat::GrowthLawACRadial::evaluate(double* theta, const double& thetaold,
 
   const double deltagrowth =
       (alpha * concentrations->at(gp).at(Sc1 - 1) + beta * concentrations->at(gp).at(Sc2 - 1)) *
-      defgrd->Determinant();
+      defgrd->determinant();
 
   *theta = 1.0 + deltagrowth;
 
@@ -1224,13 +1224,13 @@ void Mat::GrowthLawACRadial::evaluate(double* theta, const double& thetaold,
   const double tmp = 0.5 * deltagrowth;
 
   Core::LinAlg::Matrix<3, 3> C(true);
-  C.MultiplyTN(*defgrd, *defgrd);
+  C.multiply_tn(*defgrd, *defgrd);
   Core::LinAlg::Matrix<3, 3> Cinv(true);
-  Cinv.Invert(C);
+  Cinv.invert(C);
 
   // linearization of growth law
   Core::LinAlg::Matrix<3, 3> dThetadC(Cinv);
-  dThetadC.Scale(tmp);
+  dThetadC.scale(tmp);
 
   // transform dThetadC into a vector in Voigt notation
   (*dthetadC)(0) = dThetadC(0, 0);
@@ -1243,7 +1243,7 @@ void Mat::GrowthLawACRadial::evaluate(double* theta, const double& thetaold,
   // set ratio for potential linear interpolation between two elastic materials
   const double lambda = 1.0 / *theta;
   // linearization of ratio for potential linear interpolation of between two elastic materials
-  Cinv.Scale(-0.5 * deltagrowth * pow(1.0 + deltagrowth, -2.0));
+  Cinv.scale(-0.5 * deltagrowth * pow(1.0 + deltagrowth, -2.0));
 
   // transform into a vector in Voigt notation
   Teuchos::RCP<Core::LinAlg::Matrix<6, 1>> dlambda_dC =
@@ -1273,13 +1273,13 @@ void Mat::GrowthLawACRadial::CalcFg(const double& theta, const double& thetaold,
 )
 {
   Core::LinAlg::Matrix<3, 3> ndn(true);
-  ndn.MultiplyNT(curdir.at(gp), curdir.at(gp));
+  ndn.multiply_nt(curdir.at(gp), curdir.at(gp));
 
   Core::LinAlg::Matrix<3, 3> F_g_incr(true);
   for (int i = 0; i < 3; i++) F_g_incr(i, i) = 1.0;
-  F_g_incr.Update((theta - thetaold) / thetaold, ndn, 1.0);
+  F_g_incr.update((theta - thetaold) / thetaold, ndn, 1.0);
 
-  F_g.MultiplyNN(F_g_incr, histdefgrd.at(gp));
+  F_g.multiply_nn(F_g_incr, histdefgrd.at(gp));
 }
 
 
@@ -1346,7 +1346,7 @@ void Mat::GrowthLawACRadialRefConc::evaluate(double* theta, const double& thetao
 
   *theta = 1.0 + deltagrowth;
 
-  dthetadC->PutScalar(0.0);
+  dthetadC->put_scalar(0.0);
 
   // set ratio for potential linear interpolation between two elastic materials
   const double lambda = 1.0 / *theta;
@@ -1368,13 +1368,13 @@ void Mat::GrowthLawACRadialRefConc::CalcFg(const double& theta, const double& th
     const std::vector<Core::LinAlg::Matrix<3, 3>>& histdefgrd, Core::LinAlg::Matrix<3, 3>& F_g)
 {
   Core::LinAlg::Matrix<3, 3> ndn(true);
-  ndn.MultiplyNT(curdir.at(gp), curdir.at(gp));
+  ndn.multiply_nt(curdir.at(gp), curdir.at(gp));
 
   Core::LinAlg::Matrix<3, 3> F_g_incr(true);
   for (int i = 0; i < 3; i++) F_g_incr(i, i) = 1.0;
-  F_g_incr.Update((theta - thetaold) / thetaold, ndn, 1.0);
+  F_g_incr.update((theta - thetaold) / thetaold, ndn, 1.0);
 
-  F_g.MultiplyNN(F_g_incr, histdefgrd.at(gp));
+  F_g.multiply_nn(F_g_incr, histdefgrd.at(gp));
 }
 
 
@@ -1434,7 +1434,7 @@ void Mat::GrowthLawConst::evaluate(double* theta, const double& thetaold,
   *theta = thetaold + Parameter()->GetParameter(Parameter()->thetarate, eleGID) * dt;
   //*theta = Parameter()->GetParameter(Parameter()->thetarate,eleID);
 
-  dthetadC->putScalar(0.0);
+  dthetadC->put_scalar(0.0);
 }
 
 /*----------------------------------------------------------------------------*/

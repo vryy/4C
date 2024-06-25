@@ -181,10 +181,10 @@ void Discret::ELEMENTS::SoTet4av::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------***
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4av::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoTet4av::print(std::ostream& os) const
 {
   os << "So_tet4av ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

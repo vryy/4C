@@ -432,17 +432,17 @@ namespace Discret
 
         // velocity due to the external force
         Core::LinAlg::Matrix<NSD, 1> force_velocity;
-        force_velocity.Multiply(eforcevelocity, funct);
+        force_velocity.multiply(eforcevelocity, funct);
 
         //------------------------get determinant of Jacobian dX / ds
         // transposed jacobian "dX/ds"
         Core::LinAlg::Matrix<NSD, NSD> xjm0;
-        xjm0.MultiplyNT(deriv, xyze0);
+        xjm0.multiply_nt(deriv, xyze0);
 
         // inverse of transposed jacobian "ds/dX"
-        const double det0 = xjm0.Determinant();
+        const double det0 = xjm0.determinant();
 
-        const double det = xjm.Determinant();
+        const double det = xjm.determinant();
 
         // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
         // )^-1
@@ -499,7 +499,7 @@ namespace Discret
 
           // compute the pressure gradient from the phi gradients
           for (int idof = 0; idof < numfluidphases; ++idof)
-            pressuregrad_[i_phase].Update(
+            pressuregrad_[i_phase].update(
                 phasemanager_->PressureDeriv(i_phase, idof), fluidgradphi[idof], 1.0);
 
           // compute the absolute value of the pressure gradient from the phi gradients
@@ -511,18 +511,18 @@ namespace Discret
           // diffusion tensor
           difftensorsfluid_[i_phase].clear();
           phasemanager_->PermeabilityTensor(i_phase, difftensorsfluid_[i_phase]);
-          difftensorsfluid_[i_phase].Scale(phasemanager_->RelPermeability(i_phase) /
+          difftensorsfluid_[i_phase].scale(phasemanager_->RelPermeability(i_phase) /
                                            phasemanager_->DynViscosity(i_phase,
                                                abspressuregrad_[i_phase], ndsscatra_porofluid_));
 
           // Insert Darcy's law: porosity*S^\pi*(v^\pi - v_s) = - phase/\mu * grad p
-          phase_fluid_velocity[i_phase].Multiply(
+          phase_fluid_velocity[i_phase].multiply(
               -1.0, difftensorsfluid_[i_phase], pressuregrad_[i_phase]);
-          temperatureconvelint.Update(
+          temperatureconvelint.update(
               heatcapacity_[i_phase] * density_[i_phase], phase_fluid_velocity[i_phase], 1.0);
           // in convective form: u_x*N,x + u_y*N,y
-          phase_fluid_velocity_conv[i_phase].MultiplyTN(derxy, phase_fluid_velocity[i_phase]);
-          temperatureconv.Update(
+          phase_fluid_velocity_conv[i_phase].multiply_tn(derxy, phase_fluid_velocity[i_phase]);
+          temperatureconv.update(
               heatcapacity_[i_phase] * density_[i_phase], phase_fluid_velocity_conv[i_phase], 1.0);
 
           // phase pressure
@@ -534,7 +534,7 @@ namespace Discret
         for (int i_volfrac = numfluidphases; i_volfrac < numfluidphases + numvolfrac; ++i_volfrac)
         {
           // current pressure gradient
-          pressuregrad_[i_volfrac].Update(1.0, fluidgradphi[i_volfrac + numvolfrac], 0.0);
+          pressuregrad_[i_volfrac].update(1.0, fluidgradphi[i_volfrac + numvolfrac], 0.0);
 
           // vol frac density
           density_[i_volfrac] = phasemanager_->VolFracDensity(i_volfrac - numfluidphases);
@@ -543,18 +543,18 @@ namespace Discret
           difftensorsfluid_[i_volfrac].clear();
           phasemanager_->permeability_tensor_vol_frac_pressure(
               i_volfrac - numfluidphases, difftensorsfluid_[i_volfrac]);
-          difftensorsfluid_[i_volfrac].Scale(
+          difftensorsfluid_[i_volfrac].scale(
               1.0 / phasemanager_->dyn_viscosity_vol_frac_pressure(i_volfrac - numfluidphases, -1.0,
                         ndsscatra_porofluid_));  // -1.0 --> don't need abspressgrad
 
           // Insert Darcy's law: porosity*(v^\pi - v_s) = - k/\mu * grad p
-          phase_fluid_velocity[i_volfrac].Multiply(
+          phase_fluid_velocity[i_volfrac].multiply(
               -1.0, difftensorsfluid_[i_volfrac], pressuregrad_[i_volfrac]);
-          temperatureconvelint.Update(
+          temperatureconvelint.update(
               heatcapacity_[i_volfrac] * density_[i_volfrac], phase_fluid_velocity[i_volfrac], 1.0);
           // in convective form: u_x*N,x + u_y*N,y
-          phase_fluid_velocity_conv[i_volfrac].MultiplyTN(derxy, phase_fluid_velocity[i_volfrac]);
-          temperatureconv.Update(heatcapacity_[i_volfrac] * density_[i_volfrac],
+          phase_fluid_velocity_conv[i_volfrac].multiply_tn(derxy, phase_fluid_velocity[i_volfrac]);
+          temperatureconv.update(heatcapacity_[i_volfrac] * density_[i_volfrac],
               phase_fluid_velocity_conv[i_volfrac], 1.0);
         }
 
@@ -576,10 +576,10 @@ namespace Discret
               {
                 const auto prefactor = evaluate_relative_mobility(k) * phasemanager_->Porosity() *
                                        phasemanager_->Saturation(scalartophasemap_[k].phaseID);
-                my::convelint_[k].Update(prefactor, force_velocity, 1.0);
+                my::convelint_[k].update(prefactor, force_velocity, 1.0);
               }
-              my::conv_[k].MultiplyTN(derxy, my::convelint_[k]);
-              my::conv_phi_[k] = my::convelint_[k].Dot(my::gradphi_[k]);
+              my::conv_[k].multiply_tn(derxy, my::convelint_[k]);
+              my::conv_phi_[k] = my::convelint_[k].dot(my::gradphi_[k]);
               break;
 
             case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
@@ -591,7 +591,7 @@ namespace Discret
             case Mat::ScaTraMatMultiPoro::SpeciesType::species_temperature:
               my::convelint_[k] = temperatureconvelint;
               my::conv_[k] = temperatureconv;
-              my::conv_phi_[k] = temperatureconvelint.Dot(my::gradphi_[k]);
+              my::conv_phi_[k] = temperatureconvelint.dot(my::gradphi_[k]);
               break;
 
             default:
@@ -624,8 +624,8 @@ namespace Discret
 
         for (int i_phase = 0; i_phase < numfluidphases; ++i_phase)
         {
-          flux[i_phase].Multiply(1.0, efluxnp[i_phase], funct);
-          flux_conv[i_phase].MultiplyTN(derxy, flux[i_phase]);
+          flux[i_phase].multiply(1.0, efluxnp[i_phase], funct);
+          flux_conv[i_phase].multiply_tn(derxy, flux[i_phase]);
         }
 
         for (auto& k : scalartophasemap_)
@@ -641,7 +641,7 @@ namespace Discret
           {
             case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid:
             case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac:
-              my::conv_phi_[k] = flux[scalartophasemap_[k].phaseID].Dot(my::gradphi_[k]);
+              my::conv_phi_[k] = flux[scalartophasemap_[k].phaseID].dot(my::gradphi_[k]);
               break;
 
             case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
@@ -1056,11 +1056,11 @@ namespace Discret
 
             static Core::LinAlg::Matrix<NSD, NSD> difftensor(true);
             phasemanager_->PermeabilityTensor(phase, difftensor);
-            difftensor.Scale(phasemanager_->rel_permeability_deriv(phase) /
+            difftensor.scale(phasemanager_->rel_permeability_deriv(phase) /
                              phasemanager_->DynViscosity(phase, abspressgrad, 2));
 
             static Core::LinAlg::Matrix<1, NSD> gradphiTdifftensor(true);
-            gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
+            gradphiTdifftensor.multiply_tn(gradphi, difftensor);
 
             double laplawf(0.0);
             for (unsigned j = 0; j < NSD; j++) laplawf += gradpres(j) * gradphiTdifftensor(0, j);
@@ -1313,17 +1313,17 @@ namespace Discret
           std::vector<Core::LinAlg::Matrix<NSD, 1>> reffluidgradphi(
               numfluidphases, Core::LinAlg::Matrix<NSD, 1>(true));
           for (int idof = 0; idof < numfluidphases; ++idof)
-            reffluidgradphi[idof].Multiply(xjm, fluidgradphi[idof]);
+            reffluidgradphi[idof].multiply(xjm, fluidgradphi[idof]);
 
           // compute the pressure gradient from the phi gradients
           for (int idof = 0; idof < numfluidphases; ++idof)
-            refgradpres.Update(
+            refgradpres.update(
                 phasemanager_->PressureDeriv(phase, idof), reffluidgradphi[idof], 1.0);
         }
         // volfrac
         else if (phase < numfluidphases + numvolfrac)
         {
-          refgradpres.Multiply(xjm, pressuregrad_[phase]);
+          refgradpres.multiply(xjm, pressuregrad_[phase]);
         }
         else
           FOUR_C_THROW("GetRefGradPres has been called with phase %i", phase);

@@ -166,12 +166,12 @@ namespace Core::Geo
       template <class T>
       void local_coordinates(T& rst)
       {
-        if (rst.M() < Dim())
+        if (rst.m() < Dim())
           FOUR_C_THROW(
-              "rst has the wrong row number! ( DIM = %d ( rst.M() = %d < DIM ) )", Dim(), rst.M());
-        local_coordinates(rst.A());
+              "rst has the wrong row number! ( DIM = %d ( rst.m() = %d < DIM ) )", Dim(), rst.m());
+        local_coordinates(rst.data());
 
-        std::fill(rst.A() + Dim(), rst.A() + rst.M(), 0.0);
+        std::fill(rst.data() + Dim(), rst.data() + rst.m(), 0.0);
       }
 
       /*! \brief Return the scalar signed perpendicular distance between
@@ -197,13 +197,13 @@ namespace Core::Geo
       template <class T>
       void Distance(T& d) const
       {
-        if (d.M() < (ProbDim() - Dim()))
+        if (d.m() < (ProbDim() - Dim()))
           FOUR_C_THROW(
               "The distance vector has the wrong row number! "
-              "( DIM = %d ( rst.M() = %d < DIM ) )",
-              Dim(), d.M());
+              "( DIM = %d ( rst.m() = %d < DIM ) )",
+              Dim(), d.m());
 
-        distance(d.A());
+        distance(d.data());
       }
 
       bool within_limits() const { return WithinLimitsTol(POSITIONTOL); }
@@ -309,7 +309,7 @@ namespace Core::Geo
           FOUR_C_THROW(msg.str());
         }
 
-        std::copy(xsi_.A(), xsi_.A() + xsi_.M(), rst);
+        std::copy(xsi_.data(), xsi_.data() + xsi_.m(), rst);
       }
 
       void distance(double* distance) const override = 0;
@@ -341,17 +341,17 @@ namespace Core::Geo
       {
         GetElementScale<probdim>(xyze_, scale_);
 
-        px_.Scale(1.0 / scale_);
-        xyze_.Scale(1.0 / scale_);
+        px_.scale(1.0 / scale_);
+        xyze_.scale(1.0 / scale_);
 
         GetElementShift<probdim>(xyze_, shift_);
 
         for (unsigned i = 0; i < numNodesElement; ++i)
         {
           Core::LinAlg::Matrix<probdim, 1> x1(&xyze_(0, i), true);
-          x1.Update(-1, shift_, 1);
+          x1.update(-1, shift_, 1);
         }
-        px_.Update(-1, shift_, 1);
+        px_.update(-1, shift_, 1);
       }
 
       /** \brief Construct bounding box over the given element
@@ -456,7 +456,7 @@ namespace Core::Geo
           const Core::LinAlg::Matrix<probdim, 1>& xyz)
           : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz)
       {
-        this->xsi_.SetView(xsi_aug_.A());
+        this->xsi_.set_view(xsi_aug_.data());
       };
 
       /* Don't call any of these methods directly! Use the base class public
@@ -506,14 +506,14 @@ namespace Core::Geo
           FOUR_C_THROW(msg.str());
         }
 
-        std::copy(xsi_aug_.A() + dim, xsi_aug_.A() + probdim, distance);
+        std::copy(xsi_aug_.data() + dim, xsi_aug_.data() + probdim, distance);
       }
 
       bool WithinLimitsTol(const double& Tol, const bool& allow_dist) const override
       {
         double tol2 = Tol;
-        double tol_xyze = this->xyze_.NormInf();
-        double tol_px = this->px_.NormInf();
+        double tol_xyze = this->xyze_.norm_inf();
+        double tol_px = this->px_.norm_inf();
         // choose the weaker tolerance
         if (tol_xyze > tol_px)
           tol2 *= tol_xyze;
@@ -771,7 +771,7 @@ namespace Core::Geo
         Core::LinAlg::Matrix<probdim, numNodesElement> xyze;
         element.Coordinates(xyze);
         Core::LinAlg::Matrix<probdim, 1> px;
-        point.Coordinates(px.A());
+        point.Coordinates(px.data());
 
         if (probdim > dim)
         {

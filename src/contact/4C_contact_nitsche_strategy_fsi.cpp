@@ -85,7 +85,7 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
       FOUR_C_THROW("Cannot find element with gid %d", cele->MoData().SearchElements()[m]);
 
     Mortar::Projector::Impl(*cele, *test_ele)
-        ->ProjectGaussPoint3D(*cele, xsi.A(), *test_ele, mxi, projalpha);
+        ->ProjectGaussPoint3D(*cele, xsi.data(), *test_ele, mxi, projalpha);
     bool is_inside = false;
     switch (test_ele->Shape())
     {
@@ -103,11 +103,11 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
     {
       double center[2] = {0., 0.};
       Core::LinAlg::Matrix<3, 1> sc, mc;
-      cele->LocalToGlobal(center, sc.A(), 0);
-      other_cele->LocalToGlobal(center, mc.A(), 0);
+      cele->LocalToGlobal(center, sc.data(), 0);
+      other_cele->LocalToGlobal(center, mc.data(), 0);
       near = 2. * std::max(cele->MaxEdgeSize(), other_cele->MaxEdgeSize());
-      sc.Update(-1., mc, 1.);
-      if (sc.Norm2() > std::max(near, max_relevant_gap)) other_cele = nullptr;
+      sc.update(-1., mc, 1.);
+      if (sc.norm2() > std::max(near, max_relevant_gap)) other_cele = nullptr;
     }
   }
   // orientation check
@@ -115,9 +115,9 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
   {
     double center[2] = {0., 0.};
     Core::LinAlg::Matrix<3, 1> sn, mn;
-    cele->compute_unit_normal_at_xi(center, sn.A());
-    other_cele->compute_unit_normal_at_xi(center, mn.A());
-    if (sn.Dot(mn) > 0.) other_cele = nullptr;
+    cele->compute_unit_normal_at_xi(center, sn.data());
+    other_cele->compute_unit_normal_at_xi(center, mn.data());
+    if (sn.dot(mn) > 0.) other_cele = nullptr;
   }
   // no master element hit
   if (other_cele == nullptr)
@@ -129,19 +129,19 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
   Core::LinAlg::Matrix<2, 1> mxi_m(mxi, true);
   double mx_glob[3];
   double sx_glob[3];
-  cele->LocalToGlobal(xsi.A(), sx_glob, 0);
+  cele->LocalToGlobal(xsi.data(), sx_glob, 0);
   other_cele->LocalToGlobal(mxi, mx_glob, 0);
   Core::LinAlg::Matrix<3, 1> mx(mx_glob, true);
   Core::LinAlg::Matrix<3, 1> sx(sx_glob, true);
 
   Core::LinAlg::Matrix<3, 1> n(mx);
-  n.Update(-1., sx, 1.);
+  n.update(-1., sx, 1.);
   Core::LinAlg::Matrix<3, 1> diff(n);
-  n.Scale(1. / n.Norm2());
-  gap = diff.Dot(n);
+  n.scale(1. / n.norm2());
+  gap = diff.dot(n);
   Core::LinAlg::Matrix<3, 1> myN;
-  cele->compute_unit_normal_at_xi(xsi.A(), myN.A());
-  double dir = n.Dot(myN);
+  cele->compute_unit_normal_at_xi(xsi.data(), myN.data());
+  double dir = n.dot(myN);
   if (dir > 0)
     gap *= 1.;
   else
@@ -163,7 +163,7 @@ bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinte
       *cele, *other_cele, weighting, 1., ws, wm, my_pen, my_pen_t);
 
   Core::LinAlg::Matrix<3, 1> ele_n;
-  cele->compute_unit_normal_at_xi(xsi.A(), ele_n.A());
+  cele->compute_unit_normal_at_xi(xsi.data(), ele_n.data());
 
   double stress_plus_penalty =
       ws * CONTACT::UTILS::SolidCauchyAtXi(cele, xsi, ele_n, ele_n) +

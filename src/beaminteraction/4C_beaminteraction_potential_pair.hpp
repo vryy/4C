@@ -147,7 +147,7 @@ namespace BEAMINTERACTION
     /** \brief print this beam potential-based element pair to screen
      *
      *  \author grill */
-    virtual void Print(std::ostream& out) const = 0;
+    virtual void print(std::ostream& out) const = 0;
 
     /** \brief print this beam potential element pair to screen
      *

@@ -294,7 +294,7 @@ Core::Elements::Element* Discret::ELEMENTS::Beam3k::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                              meier 05/12
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3k::Print(std::ostream& os) const { return; }
+void Discret::ELEMENTS::Beam3k::print(std::ostream& os) const { return; }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
@@ -461,7 +461,7 @@ void Discret::ELEMENTS::Beam3k::set_up_initial_rotations(const std::vector<doubl
     for (int j = 0; j < 3; j++) (theta0_[i])(j) = nodal_thetas[3 * i + j];
 
     // Shift angles by 2PI in case these angles are not in the interval [-PI,PI].
-    if (theta0_[i].Norm2() > M_PI)
+    if (theta0_[i].norm2() > M_PI)
     {
       Core::LinAlg::Matrix<4, 1> Q(true);
       Core::LargeRotations::angletoquaternion(theta0_[i], Q);
@@ -613,7 +613,7 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_wk(
                    Tref_[1](i) * N_i_xi(3);
       }
 
-      jacobi_cp_[ind] = r_xi.Norm2();
+      jacobi_cp_[ind] = r_xi.norm2();
 
       // rotate (initial reference triad) = (initial material triad) at the interior CPs on
       // tangential line resulting from the Hermite interpolation. This is necessary for initially
@@ -673,7 +673,7 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_wk(
       }
 
       // calculate jacobi jacobi_=|r'_0|
-      jacobi_[numgp] = r_xi.Norm2();
+      jacobi_[numgp] = r_xi.norm2();
 
       // calculate interpolated angle
       for (int i = 0; i < BEAM3K_COLLOCATION_POINTS; i++)
@@ -688,7 +688,7 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_wk(
 
       Core::LinAlg::Matrix<3, 3> temp_triad(true);
       Core::LargeRotations::angletotriad(theta, temp_triad);
-      triad_mat.Multiply(Gref[REFERENCE_NODE], temp_triad);
+      triad_mat.multiply(Gref[REFERENCE_NODE], temp_triad);
       set_initial_dynamic_class_variables(numgp, triad_mat, r);
     }
 
@@ -837,8 +837,8 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
       }
 
       // calculate jacobi_=||r'_0|| and jacobi2_=r'_0^T r''_0
-      jacobi_cp_[ind] = r_xi.Norm2();
-      jacobi2_cp_[ind] = r_xi.Dot(r_xixi);
+      jacobi_cp_[ind] = r_xi.norm2();
+      jacobi2_cp_[ind] = r_xi.dot(r_xixi);
 
       // rotate (initial reference triad) = (initial material triad) at the interior CPs on
       // tangential line resulting from the Hermite interpolation. This is necessary for initially
@@ -920,8 +920,8 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
       }
 
       // calculate jacobi_=||r'_0|| and jacobi2_=r'_0^T r''_0
-      jacobi_[numgp] = r_xi.Norm2();
-      jacobi2_[ind] = r_xi.Dot(r_xixi);
+      jacobi_[numgp] = r_xi.norm2();
+      jacobi2_[ind] = r_xi.dot(r_xixi);
 
       // calculate interpolated angle
       for (int i = 0; i < BEAM3K_COLLOCATION_POINTS; i++)
@@ -932,7 +932,7 @@ void Discret::ELEMENTS::Beam3k::set_up_reference_geometry_sk(
 
       // calculate derivatives in s
       r_s = r_xi;
-      r_s.Scale(1 / jacobi_[numgp]);
+      r_s.scale(1 / jacobi_[numgp]);
       for (int i = 0; i < 3; i++)
       {
         r_ss(i) = r_xixi(i) / pow(jacobi_[numgp], 2.0) -
@@ -972,7 +972,7 @@ double Discret::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
                  Tref_[0](dim) * N_i_xi(1) + Tref_[1](dim) * N_i_xi(3);
   }
 
-  return r_xi.Norm2();
+  return r_xi.norm2();
 }
 
 /*------------------------------------------------------------------------------------------------*
@@ -1211,7 +1211,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
 
     // Calculation of r' at xi
     r_s.clear();
-    r_s.Multiply(N_s, disp_totlag_centerline);
+    r_s.multiply(N_s, disp_totlag_centerline);
 
     abs_r_s = Core::FADUtils::Norm(r_s);
 
@@ -1231,8 +1231,8 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_variations_
   v_theta_bar.clear();
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
-    v_theta_bar.Update(L_i(icp), v_thetaperp_cp[icp], 1.0);
-    v_theta_bar.Update(L_i(icp), v_thetapar_cp[icp], 1.0);
+    v_theta_bar.update(L_i(icp), v_thetaperp_cp[icp], 1.0);
+    v_theta_bar.update(L_i(icp), v_thetapar_cp[icp], 1.0);
   }
 
   // finally assemble the generalized interpolation matrix for the variations Ivar
@@ -1358,12 +1358,12 @@ void Discret::ELEMENTS::Beam3k::get_stiffmat_resulting_from_generalized_interpol
 
     // Calculation of first base vector at xi
     r_s.clear();
-    r_s.Multiply(N_s, disp_totlag_centerline);
+    r_s.multiply(N_s, disp_totlag_centerline);
 
     abs_r_s = Core::FADUtils::Norm(r_s);
 
     g_1_cp.clear();
-    g_1_cp.Update(std::pow(abs_r_s, -1.0), r_s);
+    g_1_cp.update(std::pow(abs_r_s, -1.0), r_s);
 
 
     calc_lin_v_thetaperp_moment<nnodecl>(
@@ -1381,8 +1381,8 @@ void Discret::ELEMENTS::Beam3k::get_stiffmat_resulting_from_generalized_interpol
 
   for (unsigned int icp = 0; icp < BEAM3K_COLLOCATION_POINTS; ++icp)
   {
-    stiffmat_fixedsize.Update(L_i(icp), lin_v_thetaperp_moment_cp[ind], 1.0);
-    stiffmat_fixedsize.Update(L_i(icp), lin_v_thetapar_moment_cp[ind], 1.0);
+    stiffmat_fixedsize.update(L_i(icp), lin_v_thetaperp_moment_cp[ind], 1.0);
+    stiffmat_fixedsize.update(L_i(icp), lin_v_thetapar_moment_cp[ind], 1.0);
   }
 }
 
@@ -1512,7 +1512,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
 
     // Calculation of r' at xi
     r_s.clear();
-    r_s.Multiply(N_s, disp_totlag_centerline);
+    r_s.multiply(N_s, disp_totlag_centerline);
 
     abs_r_s = Core::FADUtils::Norm(r_s);
 
@@ -1523,7 +1523,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
 
     // v_lin_thetapar
     g_1_cp.clear();
-    g_1_cp.Update(std::pow(abs_r_s, -1.0), r_s);
+    g_1_cp.update(std::pow(abs_r_s, -1.0), r_s);
 
     Core::LinAlg::Matrix<3, 3, double> triad_ref_conv_cp(true);
     Core::LargeRotations::quaterniontotriad(qrefconv_[ind], triad_ref_conv_cp);
@@ -1535,7 +1535,7 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
 
     // lin_theta
     lin_theta_cp[ind].clear();
-    lin_theta_cp[ind].Update(1.0, lin_theta_par_cp, 1.0, lin_theta_perp_cp);
+    lin_theta_cp[ind].update(1.0, lin_theta_par_cp, 1.0, lin_theta_perp_cp);
   }
 
 
@@ -1566,9 +1566,9 @@ void Discret::ELEMENTS::Beam3k::get_generalized_interpolation_matrix_increments_
   {
     auxmatrix.clear();
 
-    auxmatrix.Multiply(Itilde[inode], lin_theta_cp[inode]);
+    auxmatrix.multiply(Itilde[inode], lin_theta_cp[inode]);
 
-    lin_theta_bar.Update(1.0, auxmatrix, 1.0);
+    lin_theta_bar.update(1.0, auxmatrix, 1.0);
   }
 
 
@@ -1734,7 +1734,7 @@ void Discret::ELEMENTS::Beam3k::add_ref_values_disp(
 
       // renormalize quaternion to keep its absolute value one even in case of long simulations
       // and intricate calculations
-      Qnew.Scale(1.0 / Qnew.Norm2());
+      Qnew.scale(1.0 / Qnew.norm2());
 
       // Calculate the new nodal angle thetanew \in ]-PI,PI] -> Here, thetanew \in ]-PI,PI] by
       // quaterniontoangle()
@@ -1913,7 +1913,7 @@ void Discret::ELEMENTS::Beam3k::set_triads_and_reference_triads_at_remaining_col
 
     tangent.clear();
     // Calculation of r' at xi
-    tangent.Multiply(N_s, disp_totlag_centerline);
+    tangent.multiply(N_s, disp_totlag_centerline);
 
     alpha = disp_totlag(7 * 2 + ind - 2);
 
@@ -2017,13 +2017,13 @@ void Discret::ELEMENTS::Beam3k::calc_velocity(
   }
 
   // safety check
-  if (diff.NormInf() > 1e-11)
+  if (diff.norm_inf() > 1e-11)
   {
     std::cout << "\nrnewmass = " << position;
     std::cout << "\nrconvmass_ = " << rconvmass_[gausspoint_index];
     std::cout << "\nvel = " << velocity;
     std::cout << "\nvel_test = " << velocity_test;
-    std::cout << "\nabs(diff) = " << diff.Norm2();
+    std::cout << "\nabs(diff) = " << diff.norm2();
     std::cout << "\n*** SERIOUS WARNING: ***";
     std::cout << "\nvelocity vector at GP computed locally in beam3k differs from OneStepTheta "
                  "velocity vector (see values above)!\n\n";
@@ -2043,8 +2043,8 @@ void Discret::ELEMENTS::Beam3k::calc_v_thetaperp(
   Core::LinAlg::Matrix<3, 3, T> S_of_r_s(true);
   Core::LargeRotations::computespin<T>(S_of_r_s, r_s);
 
-  v_thetaperp.MultiplyTN(N_s, S_of_r_s);
-  v_thetaperp.Scale(-1.0 * std::pow(abs_r_s, -2.0));
+  v_thetaperp.multiply_tn(N_s, S_of_r_s);
+  v_thetaperp.scale(-1.0 * std::pow(abs_r_s, -2.0));
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2078,8 +2078,8 @@ void Discret::ELEMENTS::Beam3k::calc_lin_thetaperp(
   Core::LinAlg::Matrix<3, 3, double> S_of_r_s(true);
   Core::LargeRotations::computespin<double>(S_of_r_s, r_s);
 
-  lin_thetaperp.Multiply(S_of_r_s, N_s);
-  lin_thetaperp.Scale(std::pow(abs_r_s, -2.0));
+  lin_thetaperp.multiply(S_of_r_s, N_s);
+  lin_thetaperp.scale(std::pow(abs_r_s, -2.0));
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2110,14 +2110,14 @@ void Discret::ELEMENTS::Beam3k::calc_lin_thetapar(
       g_1_dyadicproduct_g_1_bar_T(irow, icol) = g_1(irow) * g_1_bar(icol);
 
   Core::LinAlg::Matrix<3, 3, double> g_1_dyadicproduct_g_1_bar_T_S_of_g_1(true);
-  g_1_dyadicproduct_g_1_bar_T_S_of_g_1.Multiply(g_1_dyadicproduct_g_1_bar_T, S_of_g_1);
+  g_1_dyadicproduct_g_1_bar_T_S_of_g_1.multiply(g_1_dyadicproduct_g_1_bar_T, S_of_g_1);
 
-  lin_thetapar.Multiply(g_1_dyadicproduct_g_1_bar_T_S_of_g_1, N_s);
+  lin_thetapar.multiply(g_1_dyadicproduct_g_1_bar_T_S_of_g_1, N_s);
 
   // *********** alternative 2 ************
 
   //  Core::LinAlg::Matrix<1,3,double> g_1_bar_T_S_of_g_1(true);
-  //  g_1_bar_T_S_of_g_1.MultiplyTN(g_1_bar, S_of_g_1);
+  //  g_1_bar_T_S_of_g_1.multiply_tn(g_1_bar, S_of_g_1);
   //
   //
   //  Core::LinAlg::Matrix<1,numdof,double> g_1_bar_T_S_of_g_1_N_s(true);
@@ -2131,8 +2131,8 @@ void Discret::ELEMENTS::Beam3k::calc_lin_thetapar(
 
   // *************************************
 
-  lin_thetapar.Scale(-1.0 / (1.0 + g_1.Dot(g_1_bar)));
-  lin_thetapar.Scale(1.0 / abs_r_s);
+  lin_thetapar.scale(-1.0 / (1.0 + g_1.dot(g_1_bar)));
+  lin_thetapar.scale(1.0 / abs_r_s);
 
 
   for (unsigned int idim = 0; idim < 3; ++idim)
@@ -2156,9 +2156,9 @@ void Discret::ELEMENTS::Beam3k::calc_lin_tangent_tilde(
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
       auxmatrix(idim, jdim) = 1.0 * (idim == jdim) - 2.0 * g_1(idim) * g_1(jdim);
 
-  auxmatrix.Scale(std::pow(abs_r_s, -2.0));
+  auxmatrix.scale(std::pow(abs_r_s, -2.0));
 
-  lin_tangent_tilde.Multiply(auxmatrix, N_s);
+  lin_tangent_tilde.multiply(auxmatrix, N_s);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2182,9 +2182,9 @@ void Discret::ELEMENTS::Beam3k::calc_lin_tangent_tilde_s(
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
       auxmatrix(idim, jdim) = 1.0 * (idim == jdim) - 2.0 * g_1(idim) * g_1(jdim);
 
-  auxmatrix.Scale(2.0 * r_s.Dot(r_ss) * std::pow(abs_r_s, -4.0));
+  auxmatrix.scale(2.0 * r_s.dot(r_ss) * std::pow(abs_r_s, -4.0));
 
-  lin_tangent_tilde_s.Multiply(auxmatrix, N_s);
+  lin_tangent_tilde_s.multiply(auxmatrix, N_s);
 
   // second summand
   auxmatrix.clear();
@@ -2193,11 +2193,11 @@ void Discret::ELEMENTS::Beam3k::calc_lin_tangent_tilde_s(
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
       auxmatrix(idim, jdim) = g_1_s(idim) * g_1(jdim) + g_1(idim) * g_1_s(jdim);
 
-  auxmatrix.Scale(-2.0 * std::pow(abs_r_s, -2.0));
+  auxmatrix.scale(-2.0 * std::pow(abs_r_s, -2.0));
 
-  summand.Multiply(auxmatrix, N_s);
+  summand.multiply(auxmatrix, N_s);
 
-  lin_tangent_tilde_s.Update(1.0, summand, 1.0);
+  lin_tangent_tilde_s.update(1.0, summand, 1.0);
 
   // third summand
   auxmatrix.clear();
@@ -2206,13 +2206,13 @@ void Discret::ELEMENTS::Beam3k::calc_lin_tangent_tilde_s(
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
       auxmatrix(idim, jdim) = 1.0 * (idim == jdim) - 2.0 * g_1(idim) * g_1(jdim);
 
-  auxmatrix.Scale(std::pow(abs_r_s, -2.0));
+  auxmatrix.scale(std::pow(abs_r_s, -2.0));
 
   summand.clear();
 
-  summand.Multiply(auxmatrix, N_ss);
+  summand.multiply(auxmatrix, N_ss);
 
-  lin_tangent_tilde_s.Update(1.0, summand, 1.0);
+  lin_tangent_tilde_s.update(1.0, summand, 1.0);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2231,9 +2231,9 @@ void Discret::ELEMENTS::Beam3k::calc_lin_g_1(
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
       auxmatrix(idim, jdim) = 1.0 * (idim == jdim) - g_1(idim) * g_1(jdim);
 
-  auxmatrix.Scale(std::pow(abs_r_s, -1.0));
+  auxmatrix.scale(std::pow(abs_r_s, -1.0));
 
-  lin_g_1.Multiply(auxmatrix, N_s);
+  lin_g_1.multiply(auxmatrix, N_s);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2257,9 +2257,9 @@ void Discret::ELEMENTS::Beam3k::calc_lin_g_1_s(
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
       auxmatrix(idim, jdim) = 1.0 * (idim == jdim) - g_1(idim) * g_1(jdim);
 
-  auxmatrix.Scale(-1.0 * r_s.Dot(r_ss) * std::pow(abs_r_s, -3.0));
+  auxmatrix.scale(-1.0 * r_s.dot(r_ss) * std::pow(abs_r_s, -3.0));
 
-  lin_g_1_s.Multiply(auxmatrix, N_s);
+  lin_g_1_s.multiply(auxmatrix, N_s);
 
   // second summand
   auxmatrix.clear();
@@ -2268,11 +2268,11 @@ void Discret::ELEMENTS::Beam3k::calc_lin_g_1_s(
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
       auxmatrix(idim, jdim) = g_1_s(idim) * g_1(jdim) + g_1(idim) * g_1_s(jdim);
 
-  auxmatrix.Scale(-1.0 * std::pow(abs_r_s, -1.0));
+  auxmatrix.scale(-1.0 * std::pow(abs_r_s, -1.0));
 
-  summand.Multiply(auxmatrix, N_s);
+  summand.multiply(auxmatrix, N_s);
 
-  lin_g_1_s.Update(1.0, summand, 1.0);
+  lin_g_1_s.update(1.0, summand, 1.0);
 
   // third summand
   auxmatrix.clear();
@@ -2281,13 +2281,13 @@ void Discret::ELEMENTS::Beam3k::calc_lin_g_1_s(
     for (unsigned int jdim = 0; jdim < 3; ++jdim)
       auxmatrix(idim, jdim) = 1.0 * (idim == jdim) - g_1(idim) * g_1(jdim);
 
-  auxmatrix.Scale(std::pow(abs_r_s, -1.0));
+  auxmatrix.scale(std::pow(abs_r_s, -1.0));
 
   summand.clear();
 
-  summand.Multiply(auxmatrix, N_ss);
+  summand.multiply(auxmatrix, N_ss);
 
-  lin_g_1_s.Update(1.0, summand, 1.0);
+  lin_g_1_s.update(1.0, summand, 1.0);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2305,7 +2305,7 @@ void Discret::ELEMENTS::Beam3k::calc_lin_v_epsilon(
 
   calc_lin_g_1<nnodecl>(lin_g_1, N_s, g_1, abs_r_s);
 
-  lin_v_epsilon.MultiplyTN(N_s, lin_g_1);
+  lin_v_epsilon.multiply_tn(N_s, lin_g_1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2321,15 +2321,15 @@ void Discret::ELEMENTS::Beam3k::calc_lin_moment_resultant(
   lin_moment_resultant.clear();
 
   // first summand
-  lin_moment_resultant.Multiply(spinmatrix_of_moment, lin_theta);
-  lin_moment_resultant.Scale(-1.0);
+  lin_moment_resultant.multiply(spinmatrix_of_moment, lin_theta);
+  lin_moment_resultant.scale(-1.0);
 
   // second summand
   Core::LinAlg::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> auxmatrix(true);
 
-  auxmatrix.Multiply(cm, lin_theta_s);
+  auxmatrix.multiply(cm, lin_theta_s);
 
-  lin_moment_resultant.Update(1.0, auxmatrix, 1.0);
+  lin_moment_resultant.update(1.0, auxmatrix, 1.0);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2349,7 +2349,7 @@ void Discret::ELEMENTS::Beam3k::calc_lin_moment_inertia(
   lin_moment_inertia.clear();
 
   // first summand
-  lin_moment_inertia.Multiply(spinmatrix_of_moment, lin_theta);
+  lin_moment_inertia.multiply(spinmatrix_of_moment, lin_theta);
 
   // second summand
   Core::LinAlg::Matrix<3, 3, double> auxmatrix(true);
@@ -2357,36 +2357,36 @@ void Discret::ELEMENTS::Beam3k::calc_lin_moment_inertia(
   Core::LinAlg::Matrix<3, 3, double> spinmatrix(true);
   Core::LargeRotations::computespin(spinmatrix, angular_velocity_material);
 
-  auxmatrix.Multiply(spinmatrix, C_rho);
+  auxmatrix.multiply(spinmatrix, C_rho);
 
   Core::LinAlg::Matrix<3, 1, double> C_rho_W(true);
-  C_rho_W.Multiply(C_rho, angular_velocity_material);
+  C_rho_W.multiply(C_rho, angular_velocity_material);
 
   spinmatrix.clear();
   Core::LargeRotations::computespin(spinmatrix, C_rho_W);
-  auxmatrix.Update(-1.0, spinmatrix, 1.0);
-  auxmatrix.Scale(lin_prefactor_vel);
+  auxmatrix.update(-1.0, spinmatrix, 1.0);
+  auxmatrix.scale(lin_prefactor_vel);
 
-  auxmatrix.Update(lin_prefactor_acc, C_rho, 1.0);
+  auxmatrix.update(lin_prefactor_acc, C_rho, 1.0);
 
 
   Core::LinAlg::Matrix<3, 3, double> Tmat_of_deltatheta = Core::LargeRotations::Tmatrix(deltatheta);
   Core::LinAlg::Matrix<3, 3, double> Lambda_conv_Tmat_of_deltatheta(true);
-  Lambda_conv_Tmat_of_deltatheta.MultiplyTN(triad_mat_conv, Tmat_of_deltatheta);
+  Lambda_conv_Tmat_of_deltatheta.multiply_tn(triad_mat_conv, Tmat_of_deltatheta);
 
   Core::LinAlg::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_THETA_tilde(true);
-  lin_THETA_tilde.Multiply(Lambda_conv_Tmat_of_deltatheta, lin_theta);
+  lin_THETA_tilde.multiply(Lambda_conv_Tmat_of_deltatheta, lin_theta);
 
   Core::LinAlg::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> auxmatrix2(true);
-  auxmatrix2.Multiply(auxmatrix, lin_THETA_tilde);
+  auxmatrix2.multiply(auxmatrix, lin_THETA_tilde);
 
 
   Core::LinAlg::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> auxmatrix3(true);
-  auxmatrix3.Multiply(triad_mat, auxmatrix2);
+  auxmatrix3.multiply(triad_mat, auxmatrix2);
 
-  lin_moment_inertia.Update(1.0, auxmatrix3, 1.0);
+  lin_moment_inertia.update(1.0, auxmatrix3, 1.0);
 
-  lin_moment_inertia.Scale(-1.0);
+  lin_moment_inertia.scale(-1.0);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2404,8 +2404,8 @@ void Discret::ELEMENTS::Beam3k::calc_lin_moment_viscous(
   lin_moment_viscous.clear();
 
   // first summand
-  lin_moment_viscous.Multiply(spinmatrix_of_moment, lin_theta);
-  lin_moment_viscous.Scale(-1.0);
+  lin_moment_viscous.multiply(spinmatrix_of_moment, lin_theta);
+  lin_moment_viscous.scale(-1.0);
 
   // second summand
   Core::LinAlg::Matrix<3, 3, double> auxmatrix(true);
@@ -2417,12 +2417,12 @@ void Discret::ELEMENTS::Beam3k::calc_lin_moment_viscous(
 
   Core::LinAlg::Matrix<3, 3, double> Tmat_of_deltatheta = Core::LargeRotations::Tmatrix(deltatheta);
 
-  auxmatrix.Multiply(gamma_g1_g1_conv, Tmat_of_deltatheta);
+  auxmatrix.multiply(gamma_g1_g1_conv, Tmat_of_deltatheta);
 
   Core::LinAlg::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> second_summand(true);
-  second_summand.Multiply(auxmatrix, lin_theta);
+  second_summand.multiply(auxmatrix, lin_theta);
 
-  lin_moment_viscous.Update(1.0, second_summand, 1.0);
+  lin_moment_viscous.update(1.0, second_summand, 1.0);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2445,9 +2445,9 @@ void Discret::ELEMENTS::Beam3k::calc_lin_v_thetaperp_moment(
   Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, double> auxmatrix(true);
 
   // Todo @grill: check: is the order of matrix products relevant?
-  auxmatrix.MultiplyTN(N_s, spinmatrix_of_moment);
+  auxmatrix.multiply_tn(N_s, spinmatrix_of_moment);
 
-  lin_v_thetaperp_moment.Multiply(auxmatrix, lin_tangent_tilde);
+  lin_v_thetaperp_moment.multiply(auxmatrix, lin_tangent_tilde);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2471,9 +2471,9 @@ void Discret::ELEMENTS::Beam3k::calc_lin_v_thetaperp_s_moment(
 
   Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS, 3, double> auxmatrix(true);
 
-  auxmatrix.MultiplyTN(N_ss, spinmatrix_of_moment);
+  auxmatrix.multiply_tn(N_ss, spinmatrix_of_moment);
 
-  lin_v_thetaperp_s_moment.Multiply(auxmatrix, lin_tangent_tilde);
+  lin_v_thetaperp_s_moment.multiply(auxmatrix, lin_tangent_tilde);
 
   // second summand
   Core::LinAlg::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_tangent_tilde_s(
@@ -2482,15 +2482,15 @@ void Discret::ELEMENTS::Beam3k::calc_lin_v_thetaperp_s_moment(
   calc_lin_tangent_tilde_s<nnodecl>(lin_tangent_tilde_s, N_s, N_ss, g_1, g_1_s, r_s, r_ss, abs_r_s);
 
   auxmatrix.clear();
-  auxmatrix.MultiplyTN(N_s, spinmatrix_of_moment);
+  auxmatrix.multiply_tn(N_s, spinmatrix_of_moment);
 
   Core::LinAlg::Matrix<6 * nnodecl + BEAM3K_COLLOCATION_POINTS,
       6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>
       second_summand(true);
 
-  second_summand.Multiply(auxmatrix, lin_tangent_tilde_s);
+  second_summand.multiply(auxmatrix, lin_tangent_tilde_s);
 
-  lin_v_thetaperp_s_moment.Update(1.0, second_summand, 1.0);
+  lin_v_thetaperp_s_moment.update(1.0, second_summand, 1.0);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2516,7 +2516,7 @@ void Discret::ELEMENTS::Beam3k::calc_lin_v_thetapar_moment(
   for (unsigned int idof = 0; idof < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; ++idof)
     for (unsigned int jdim = 0; jdim < 3; ++jdim) auxmatrix(idof, jdim) = L(idof) * moment(jdim);
 
-  lin_v_thetapar_moment.Multiply(auxmatrix, lin_g_1);
+  lin_v_thetapar_moment.multiply(auxmatrix, lin_g_1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -2545,7 +2545,7 @@ void Discret::ELEMENTS::Beam3k::calc_lin_v_thetapar_s_moment(
   for (unsigned int idof = 0; idof < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; ++idof)
     for (unsigned int jdim = 0; jdim < 3; ++jdim) auxmatrix(idof, jdim) = L_s(idof) * moment(jdim);
 
-  lin_v_thetapar_s_moment.Multiply(auxmatrix, lin_g_1);
+  lin_v_thetapar_s_moment.multiply(auxmatrix, lin_g_1);
 
   // second summand
   Core::LinAlg::Matrix<3, 6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double> lin_g_1_s(true);
@@ -2561,9 +2561,9 @@ void Discret::ELEMENTS::Beam3k::calc_lin_v_thetapar_s_moment(
       6 * nnodecl + BEAM3K_COLLOCATION_POINTS, double>
       second_summand(true);
 
-  second_summand.Multiply(auxmatrix, lin_g_1_s);
+  second_summand.multiply(auxmatrix, lin_g_1_s);
 
-  lin_v_thetapar_s_moment.Update(1.0, second_summand, 1.0);
+  lin_v_thetapar_s_moment.update(1.0, second_summand, 1.0);
 }
 
 // explicit template instantiations

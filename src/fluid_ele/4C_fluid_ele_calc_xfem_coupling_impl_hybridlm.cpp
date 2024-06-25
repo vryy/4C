@@ -46,14 +46,14 @@ namespace Discret
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
         // height for coupled problems
-        velint_s.Update(1.0, ivelint_jump, 1.0);
+        velint_s.update(1.0, ivelint_jump, 1.0);
 
         // get nodal shape function vector
         Core::LinAlg::Matrix<slave_nen_, 1> slave_funct(true);
         this->GetSlaveFunct(slave_funct);
 
-        bK_ms.MultiplyNT(funct, slave_funct);
-        bK_sm.UpdateT(bK_ms);
+        bK_ms.multiply_nt(funct, slave_funct);
+        bK_sm.update_t(bK_ms);
 
         for (unsigned ivel = 0; ivel < nsd_; ++ivel)
         {
@@ -63,18 +63,18 @@ namespace Discret
 
             const unsigned sigma = stress_index(ivel, jvel);
             // G_sus
-            BG_sus_(sigma, ivel)->Update(tmp, bK_ms, 1.0);
-            rhs_s(sigma, 0)->Update(-tmp * velint_s(ivel), funct, 1.0);
+            BG_sus_(sigma, ivel)->update(tmp, bK_ms, 1.0);
+            rhs_s(sigma, 0)->update(-tmp * velint_s(ivel), funct, 1.0);
 
             // G_uss
-            BG_uss_(ivel, sigma)->Update(tmp, bK_sm, 1.0);
+            BG_uss_(ivel, sigma)->update(tmp, bK_sm, 1.0);
           }
         }
 
         const double km = 1.0;  // only master-sided weighting
         Core::LinAlg::Matrix<slave_nen_, 1>
             funct_s_timefacfac_km;  ///< funct_s * timefacfac *kappa_m
-        funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
+        funct_s_timefacfac_km.update(km, slave_funct, 0.0);
 
         // Traction Standard Consistency term
         mh_traction_consistency_term(funct_s_timefacfac_km, itraction_jump);
@@ -105,7 +105,7 @@ namespace Discret
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
         // height for coupled problems
-        velint_s.Update(1.0, ivelint_jump, 1.0);
+        velint_s.update(1.0, ivelint_jump, 1.0);
 
         // block submatrices for interface coupling; s: slave side, m: master side (always
         // background here)
@@ -115,8 +115,8 @@ namespace Discret
         Core::LinAlg::Matrix<slave_nen_, 1> slave_funct;
         this->GetSlaveFunct(slave_funct);
 
-        bG_ms.MultiplyNT(funct, slave_funct);
-        bG_sm.MultiplyNT(slave_funct, funct);
+        bG_ms.multiply_nt(funct, slave_funct);
+        bG_sm.multiply_nt(slave_funct, funct);
 
         for (unsigned ivel = 0; ivel < nsd_; ++ivel)
         {
@@ -130,9 +130,9 @@ namespace Discret
              *  | \tau^m n, u^s  |
              *   \              /
              */
-            BG_sus_(stress_index(ivel, jvel), ivel)->Update(fac * normal(jvel), bG_ms, 1.0);
+            BG_sus_(stress_index(ivel, jvel), ivel)->update(fac * normal(jvel), bG_ms, 1.0);
             rhs_s(stress_index(ivel, jvel), 0)
-                ->Update(-fac * normal(jvel) * velint_s(ivel), funct, 1.0);
+                ->update(-fac * normal(jvel) * velint_s(ivel), funct, 1.0);
 
             /*
              *  G_uss
@@ -143,7 +143,7 @@ namespace Discret
              *   \                 /
              *
              */
-            BG_uss_(ivel, stress_index(ivel, jvel))->Update(fac * normal(jvel), bG_sm, 1.0);
+            BG_uss_(ivel, stress_index(ivel, jvel))->update(fac * normal(jvel), bG_sm, 1.0);
           }
 
           // Build cross-interface pressure-velocity coupling matrices G_uip, G_pui!
@@ -156,7 +156,7 @@ namespace Discret
            *
            */
 
-          BG_pmus_(0, ivel)->Update(fac * normal(ivel), bG_ms, 1.0);
+          BG_pmus_(0, ivel)->update(fac * normal(ivel), bG_ms, 1.0);
 
 
           // G_uspm - from pressure consistency term
@@ -167,11 +167,11 @@ namespace Discret
            *
            */
 
-          BG_uspm_(ivel, 0)->Update(-fac * normal(ivel), bG_sm, 1.0);
+          BG_uspm_(ivel, 0)->update(-fac * normal(ivel), bG_sm, 1.0);
         }
 
         // add normal interface velocity to rhs vector (pressure row)
-        const double svelnormal = velint_s.Dot(normal);
+        const double svelnormal = velint_s.dot(normal);
 
         // (Viscous) stress/Velocities
 
@@ -182,7 +182,7 @@ namespace Discret
          *  \            /
          *
          */
-        rhs_pmus.Update(-fac * svelnormal, funct, 1.0);
+        rhs_pmus.update(-fac * svelnormal, funct, 1.0);
 
         // rhs_us_pm, residual from:
         /*
@@ -205,7 +205,7 @@ namespace Discret
         const double km = 1.0;  // only master-sided weighting
         Core::LinAlg::Matrix<slave_nen_, 1>
             funct_s_timefacfac_km;  ///< funct_s * timefacfac *kappa_m
-        funct_s_timefacfac_km.Update(km, slave_funct, 0.0);
+        funct_s_timefacfac_km.update(km, slave_funct, 0.0);
 
         // Traction Standard Consistency term
         mh_traction_consistency_term(funct_s_timefacfac_km, itraction_jump);
@@ -288,17 +288,17 @@ namespace Discret
 
         // (K_ums + G_ums) * K_ss^-1 G_sus (MHVS) or
         // G_ums * K_ss^-1 G_sus (MHCS)
-        BCumus.Multiply(BKumsInvKss, BG_sus_);
+        BCumus.multiply(BKumsInvKss, BG_sus_);
 
         // G_uss * K_ss^-1
-        BGussInvKss.Multiply(BG_uss_, BinvK_ss);
+        BGussInvKss.multiply(BG_uss_, BinvK_ss);
 
         // G_uss * K_ss^-1 * (K_sum + G_sum) (MHVS) or
         // G_uss * K_ss^-1 * (K_sum + G_sum + K_spm) (MHCS)
-        BCusum.Multiply(BGussInvKss, BK_sum);
+        BCusum.multiply(BGussInvKss, BK_sum);
 
         // G_uss K_ss^-1 rhs_s
-        BGussinvKssrhs_s.Multiply(BGussInvKss, rhs_s);
+        BGussinvKssrhs_s.multiply(BGussInvKss, rhs_s);
 
         // transfer the entries from Cumus,Cusum, rhCus (in case of MHCS, coupling term us-p is
         // included in Cusum!)

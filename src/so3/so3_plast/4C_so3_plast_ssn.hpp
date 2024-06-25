@@ -145,7 +145,7 @@ namespace Discret
       //! @name Access methods
 
       //! Print this element
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       //! return elementtype
       Core::Elements::ElementType& ElementType() const override;
@@ -1076,23 +1076,23 @@ namespace Discret
         Core::FE::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, Core::FE::CellType::hex8);
 
         // inverse jacobian matrix at centroid
-        set_jac_0().Multiply(N_rst_0, xrefe());
+        set_jac_0().multiply(N_rst_0, xrefe());
         static Core::LinAlg::Matrix<nsd_, nsd_> invJ_0;
-        set_det_jac_0() = invJ_0.Invert(jac_0());
+        set_det_jac_0() = invJ_0.invert(jac_0());
         // material derivatives at centroid
-        set_deriv_shape_function_xyz_0().Multiply(invJ_0, N_rst_0);
+        set_deriv_shape_function_xyz_0().multiply(invJ_0, N_rst_0);
 
         // deformation gradient and its determinant at centroid
         static Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-        defgrd_0.MultiplyTT(xcurr(), deriv_shape_function_xyz_0());
-        set_det_f_0() = set_inv_defgrd_0().Invert(defgrd_0);
+        defgrd_0.multiply_tt(xcurr(), deriv_shape_function_xyz_0());
+        set_det_f_0() = set_inv_defgrd_0().invert(defgrd_0);
       }
 
       void setup_fbar_gp()
       {
         if (det_f() < 0. || det_f_0() < 0.) FOUR_C_THROW("element distortion too large");
         set_fbar_fac() = pow(det_f_0() / det_f(), 1. / 3.);
-        set_defgrd_mod().Update(set_fbar_fac(), defgrd());
+        set_defgrd_mod().update(set_fbar_fac(), defgrd());
         set_htensor().clear();
 
         for (int n = 0; n < numdofperelement_; n++)

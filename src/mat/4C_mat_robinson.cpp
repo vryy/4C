@@ -351,7 +351,7 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     const int eleGID)
 {
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> straininc(*strain);
-  straininc.Update(-1., strain_last_[gp], 1.);
+  straininc.update(-1., strain_last_[gp], 1.);
   strain_last_[gp] = *strain;
   // if no temperature has been set use the initial value
   const double scalartemp = params.get<double>("scalartemp", InitTemp());
@@ -405,10 +405,10 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // use the newest plastic strains here, i.e., from latest Newton iteration
   // (strainplcurr_), not necessarily equal to newest temporal strains (last_)
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> strain_pn(false);
-  strain_pn.Update(strainplcurr_->at(gp));
+  strain_pn.update(strainplcurr_->at(gp));
   // get history vector of old visco-plastic strain at t_n
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> strain_p(false);
-  strain_p.Update(strainpllast_->at(gp));
+  strain_p.update(strainpllast_->at(gp));
 
   // ------------------------------------------------- elastic strain
   // elastic strain at t_{n+1}
@@ -416,8 +416,8 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> strain_e(false);
 
   // strain^e_{n+1} = strain_n+1 - strain^p_n - strain^t
-  strain_e.Update(*strain);
-  strain_e.Update((-1.0), strain_pn, (-1.0), strain_t, 1.0);
+  strain_e.update(*strain);
+  strain_e.update((-1.0), strain_pn, (-1.0), strain_t, 1.0);
 
   // ---------------------------------------------- elasticity tensor
   // cmat = kee = pd(sig)/pd(eps)
@@ -434,13 +434,13 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // (i): scale (-1.0)
   // (i): input matrix cmat
   // (o): output matrix kev
-  kev.Update((-1.0), *cmat);
+  kev.update((-1.0), *cmat);
 
   // kea = pd(sigma)/pd(backstress)
   // tangent term resulting from linearisation \frac{\pd sig}{\pd al}
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> kea(true);
   // initialise with 1 on the diagonals
-  kea.Update(id4);
+  kea.update(id4);
 
   // ------------------------------------------------- elastic stress
   // stress sig_{n+1}^i at t_{n+1} */
@@ -448,7 +448,7 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // (i): input vector strain_e
   // (o): output vector stress
   // stress_{n+1} = cmat . strain^e_{n+1}
-  stress->MultiplyNN(*cmat, strain_e);
+  stress->multiply_nn(*cmat, strain_e);
 
   // ------------------------------------------------------ devstress
   // deviatoric stress s_{n+1}^i at t_{n+1}
@@ -466,10 +466,10 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // ---------------------------------------------------- back stress
   // new back stress at t_{n+1} backstress_{n+1}^i
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> backstress_n(false);
-  backstress_n.Update(backstresscurr_->at(gp));
+  backstress_n.update(backstresscurr_->at(gp));
   // old back stress at t_{n} backstress_{n}
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> backstress(false);
-  backstress.Update(backstresslast_->at(gp));
+  backstress.update(backstresslast_->at(gp));
 
   // ------------------------------------------ over/relativestress
   // overstress Sig_{n+1}^i = s_{n+1}^i - al_{n+1}^i
@@ -523,7 +523,7 @@ void Mat::Robinson::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // pass the current plastic strains to the element (for visualisation)
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plstrain(false);
-  plstrain.Update(strainplcurr_->at(gp));
+  plstrain.update(strainplcurr_->at(gp));
   // set in parameter list
   params.set<Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>>("plglstrain", plstrain);
 
@@ -584,7 +584,7 @@ void Mat::Robinson::Stress(const double p,                         //!< volumetr
 {
   // total stress = deviatoric + hydrostatic pressure . I
   // sigma = s + p . I
-  stress.Update(devstress);
+  stress.update(devstress);
   for (int i = 0; i < 3; ++i) stress(i) += p;
 
 }  // Stress()
@@ -601,7 +601,7 @@ void Mat::Robinson::RelDevStress(
 {
   // relative stress = deviatoric - back stress
   // eta = s - backstress
-  eta.Update(1.0, devstress, (-1.0), backstress_n);
+  eta.update(1.0, devstress, (-1.0), backstress_n);
 
 }  // RelDevStress()
 
@@ -715,7 +715,7 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
     {
       strainrate_p(i) = 2.0 * eta(i);
     }
-    strainrate_p.Scale(fct);
+    strainrate_p.scale(fct);
   }  // inelastic
   //-------------------------------------------------------------------
   // ELSE IF elastic step (F <= 0.0, se <= 0.0)
@@ -724,7 +724,7 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
   {
     // elastic step, no inelastic strains: strain_n^v' == 0
     // --> dvstcstn == strainrate_p
-    strainrate_p.putScalar(0.0);
+    strainrate_p.put_scalar(0.0);
   }  // elastic
 
   //-------------------------------------------------------------------
@@ -762,7 +762,7 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
     // faco = -n . a . F^(n-1) / (kappa . sqrt(J2)) + a . F^n / (2. J2^{1.5})
     double faco = -nn * aa * std::pow(ff, (nn - 1.0)) / (kksq * sqrt(J2)) +
                   aa * std::pow(ff, nn) / (2.0 * std::pow(J2, 1.5));
-    kvs.MultiplyNT(faco, eta, eta, 1.0);
+    kvs.multiply_nt(faco, eta, eta, 1.0);
     // multiply last 3 rows by 2 to conform with definition of strain vectors
     // consider the difference between physical strains and Voigt notation
     for (int i = 3; i < Mat::NUM_STRESS_3D; i++)
@@ -780,7 +780,7 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
   {
     // so3_mv6_m_zero(kvs);
     // in case of an elastic step, no contribution to kvs
-    kvs.putScalar(0.0);
+    kvs.put_scalar(0.0);
   }
 
   //-------------------------------------------------------------------
@@ -799,15 +799,15 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
     setup_cmat(tempnp, kse);
     // Matrix vector product: cid2 = kse(i,j)*id2(j)
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> cid2(false);
-    cid2.Multiply(kse, id2);
+    cid2.multiply(kse, id2);
     // update matrix with scaled dyadic vector product
     // contribution: kse = kse + (-1/3) . (id2 \otimes cid2^T)
-    kse.MultiplyNT((-1.0 / 3.0), id2, cid2, 1.0);
+    kse.multiply_nt((-1.0 / 3.0), id2, cid2, 1.0);
 
     // assign kve by matrix-matrix product kvs . kse (inner product)
     // kve = kvs . kse
     // kve(i,j) = kvs(i,k).kse(k,j)
-    kve.MultiplyNN(kvs, kse);
+    kve.multiply_nn(kvs, kse);
   }  // inelastic
   //-------------------------------------------------------------------
   // ELSE IF elastic step (F <= 0.0, (devstress . eta) <= 0.0)
@@ -815,7 +815,7 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
   else
   {
     // in case of an elastic step, no contribution to kvs
-    kve.putScalar(0.0);
+    kve.put_scalar(0.0);
   }  // elastic
 
   //-------------------------------------------------------------------
@@ -833,10 +833,10 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
 
     // Matrix vector product: cid2 = kse(i,j)*id2(j)
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> cid2(false);
-    cid2.Multiply(ksv, id2);
+    cid2.multiply(ksv, id2);
     // update matrix with scaled dyadic vector product
     // contribution: ksv = ksv + (-1/3) . (id2 \otimes cid2^T)
-    ksv.MultiplyNT((-1.0 / 3.0), id2, cid2, 1.0);
+    ksv.multiply_nt((-1.0 / 3.0), id2, cid2, 1.0);
 
     // kvv = d(res^v)/d(esp^v) + pd(res^v)/pd(Sig) . pd(Sig)/pd(eps^v)
     // kvv = 1/dt * Id  +  kvs . ksv
@@ -844,7 +844,7 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
     for (int i = 0; i < Mat::NUM_STRESS_3D; i++) kvv(i, i) = 1.0 / dt;
     // assign matrix kvv by scaled matrix-matrix product kvs, ksv (inner product)
     // kvv = kvv + (-1.0) . kvs . ksv;
-    kvv.MultiplyNN((-1.0), kvs, ksv, 1.0);
+    kvv.multiply_nn((-1.0), kvs, ksv, 1.0);
   }  // inelastic
   //-------------------------------------------------------------------
   // ELSE IF elastic step (F <= 0.0, (1/2 * devstress : eta) <= 0.0)
@@ -867,7 +867,7 @@ void Mat::Robinson::calc_be_viscous_strain_rate(const double dt,  // (i) time st
     // assign vector by another vector and scale it
     // kva = kvs . ksa = kva . (-Id)
     // with ksa = (pd eta) / (pd backstress) = - Id; eta = s - backstress
-    kva.Update(-1.0, kvs);
+    kva.update(-1.0, kvs);
   }  // inelastic
   //-------------------------------------------------------------------
   // ELSE IF elastic step (F <= 0.0, (1/2 * devstress : eta) <= 0.0)
@@ -1022,7 +1022,7 @@ void Mat::Robinson::calc_be_back_stress_flow(const double dt, const double tempn
   //  \incr \eps^v = \eps_{n+1}^v - \eps_{n}^v
   //  with halved entries to conform with stress vectors */
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> strain_pd05(false);
-  strain_pd05.Update(1.0, strain_pn, (-1.0), strain_p);
+  strain_pd05.update(1.0, strain_pn, (-1.0), strain_p);
   // Due to the fact that strain vector component have a doubled shear
   // components, i.e.
   //   strain = [ a11 a22 a33 | 2*a12 2*a23 2*a31 ]
@@ -1086,7 +1086,7 @@ void Mat::Robinson::calc_be_back_stress_flow(const double dt, const double tempn
 
   // ----------------------- derivative with respect to total strains
   // kae = pd(res^al)/pd(eps) == 0
-  kae.putScalar(0.0);
+  kae.put_scalar(0.0);
 
   // --------------------- derivative with respect to viscous strains
   // kav = pd(res_{n+1}^al)/pd(eps_{n+1}^v)
@@ -1096,7 +1096,7 @@ void Mat::Robinson::calc_be_back_stress_flow(const double dt, const double tempn
   if ((gg > gg0) and (sa > 0.0))
   {
     double fctv = -hh / (pow(gg, beta) * dt);
-    kav.Update(fctv, id4sharp);
+    kav.update(fctv, id4sharp);
   }  // inelastic
   //-------------------------------------------------------------------
   // ELSE IF elastic step (G <= G_0, 1/2 (devstress . backstress) <= 0.0)
@@ -1104,7 +1104,7 @@ void Mat::Robinson::calc_be_back_stress_flow(const double dt, const double tempn
   else
   {
     double fctv = -hh / (pow(gg0, beta) * dt);
-    kav.Update(fctv, id4sharp);
+    kav.update(fctv, id4sharp);
   }  // elastic
 
   // ------------------------- derivative with respect to back stress
@@ -1125,9 +1125,9 @@ void Mat::Robinson::calc_be_back_stress_flow(const double dt, const double tempn
     double fctv = beta * hh / (std::pow(gg, (beta + 1.0)) * dt * kk0sq);
     double fcta = rr * (mm - beta) * std::pow(gg, (mm - beta - 1.0)) / (sqrt(i2) * kk0sq) -
                   rr * std::pow(gg, (mm - beta)) / (2.0 * std::pow(i2, 1.5));
-    kaa.Update(fctu, id4);
-    kaa.MultiplyNT(fctv, strain_pd05, backstress_n, 1.0);
-    kaa.MultiplyNT(fcta, backstress_n, backstress_n, 1.0);
+    kaa.update(fctu, id4);
+    kaa.multiply_nt(fctv, strain_pd05, backstress_n, 1.0);
+    kaa.multiply_nt(fcta, backstress_n, backstress_n, 1.0);
   }  // inelastic
   //-------------------------------------------------------------------
   // ELSE IF elastic step (G <= G_0, 1/2 (devstress . backstress) <= 0.0)
@@ -1145,8 +1145,8 @@ void Mat::Robinson::calc_be_back_stress_flow(const double dt, const double tempn
     }
     double fctu = 1.0 / dt + rr * std::pow(gg0, (mm - beta)) / sqrt(ii2);
     double fcta = -rr * std::pow(gg0, (mm - beta)) / (2.0 * std::pow(ii2, 1.5));
-    kaa.Update(fctu, id4);
-    kaa.MultiplyNT(fcta, backstress_n, backstress_n, 1.0);
+    kaa.update(fctu, id4);
+    kaa.multiply_nt(fcta, backstress_n, backstress_n, 1.0);
   }  // elastic
 
 }  // calc_be_back_stress_flow()
@@ -1351,11 +1351,11 @@ void Mat::Robinson::calculate_condensed_system(
 
   // --------------------------------- reduce stress vector sigma_red
   // stress (6x6) = kevea (6x12) . kvarva (12x1)
-  stress.Multiply((-1.0), kevea, kvarva, 1.0);
+  stress.multiply((-1.0), kevea, kvarva, 1.0);
 
   // ---------------------------------------- reduce tangent k_ee_red
   // cmat (6x6) = kevea (6x12) . kvakvae (12x6)
-  cmat.MultiplyNN((-1.0), kevea, kvakvae, 1.0);
+  cmat.multiply_nn((-1.0), kevea, kvakvae, 1.0);
 
 }  // calculate_condensed_system()
 
@@ -1387,10 +1387,10 @@ void Mat::Robinson::iterative_update_of_internal_variables(const int gp,
   // strainp_np = strainp_n + Delta strain_np
   // viscous strain \f$\varepsilon_{n+1}\f$ at t_{n+1}^i
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> strain_pn(false);
-  strain_pn.Update(strainplcurr_->at(gp));
+  strain_pn.update(strainplcurr_->at(gp));
   // back stress \f$alpha_{n+1}\f$ at t_{n+1}^i
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> backstress_n(false);
-  backstress_n.Update(backstresscurr_->at(gp));
+  backstress_n.update(backstresscurr_->at(gp));
 
   // ---------------------------------  update current viscous strain
   // [ iinc eps^v ] = [ kvv  kva ]^{-1} (   [ res^v  ] - [ kve ] [ iinc eps ] )

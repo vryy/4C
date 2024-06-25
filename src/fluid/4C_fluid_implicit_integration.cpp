@@ -2878,17 +2878,17 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
           // Calculate pseudo inverse of A (always possible due to linear independent rows [n and
           // t])
           Core::LinAlg::Matrix<2, 2> matTimesMatTransposed(true);
-          matTimesMatTransposed.MultiplyNT(A, A);
+          matTimesMatTransposed.multiply_nt(A, A);
 
           Core::LinAlg::Matrix<2, 2> inverseOfMatTimesmatTransposed(true);
-          inverseOfMatTimesmatTransposed.Invert(matTimesMatTransposed);
+          inverseOfMatTimesmatTransposed.invert(matTimesMatTransposed);
 
           Core::LinAlg::Matrix<3, 2> pInvA(true);
-          pInvA.MultiplyTN(A, inverseOfMatTimesmatTransposed);
+          pInvA.multiply_tn(A, inverseOfMatTimesmatTransposed);
 
           // Solve for grid velocities
           Core::LinAlg::Matrix<3, 1> sol(true);
-          sol.Multiply(pInvA, b);
+          sol.multiply(pInvA, b);
 
           // Calculate ale velocities
           for (int i = 0; i < numdim_; i++)
@@ -2968,11 +2968,11 @@ void FLD::FluidImplicitTimeInt::ale_update(std::string condName)
 
           // Calculate inverse of A (always possible due to linear independent rows)
           Core::LinAlg::Matrix<3, 3> invA(true);
-          invA.Invert(A);
+          invA.invert(A);
 
           // Solve for grid velocities
           Core::LinAlg::Matrix<3, 1> sol(true);
-          sol.Multiply(invA, b);
+          sol.multiply(invA, b);
 
           // Calculate ale velocities
           for (int i = 0; i < numdim_; i++)

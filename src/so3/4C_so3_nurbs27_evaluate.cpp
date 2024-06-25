@@ -117,7 +117,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
       Core::LinAlg::Matrix<81, 81>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       sonurbs27_nlnstiffmass(lm, discretization, mydisp, myres, matptr, nullptr, &elevec1, params);
     }
@@ -357,12 +357,12 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
 
   Core::LinAlg::Matrix<3, 1> deltaX;
 
-  deltaX.Update(1.0, x2, -1.0, x0);
-  const double length_r = deltaX.Norm2();
-  deltaX.Update(1.0, x6, -1.0, x0);
-  const double length_s = deltaX.Norm2();
-  deltaX.Update(1.0, x18, -1.0, x0);
-  const double length_t = deltaX.Norm2();
+  deltaX.update(1.0, x2, -1.0, x0);
+  const double length_r = deltaX.norm2();
+  deltaX.update(1.0, x6, -1.0, x0);
+  const double length_s = deltaX.norm2();
+  deltaX.update(1.0, x18, -1.0, x0);
+  const double length_t = deltaX.norm2();
 
   double ratio = 1.0;
 
@@ -628,10 +628,10 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
 
     // compute the Jacobian matrix
     Core::LinAlg::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27> jac;
-    jac.Multiply(deriv, xrefe);
+    jac.multiply(deriv, xrefe);
 
     // compute determinant of Jacobian
-    const double detJ = jac.Determinant();
+    const double detJ = jac.determinant();
     if (detJ == 0.0)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
@@ -660,7 +660,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate_neumann(Teuchos::ParameterList
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SONURBS27; ++nodid)
@@ -727,8 +727,8 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::init_jacobian_mapping(Core::FE::Discre
   detJ_.resize(numgp);
   for (int gp = 0; gp < numgp; ++gp)
   {
-    invJ_[gp].Multiply(derivs[gp], xrefe);
-    detJ_[gp] = invJ_[gp].Invert();
+    invJ_[gp].multiply(derivs[gp], xrefe);
+    detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] == 0.0)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ_[gp] < 0.0)
@@ -832,8 +832,8 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
     */
     Core::LinAlg::Matrix<3, 3> invJac(true);
 
-    invJac.Multiply(deriv, xrefe);
-    double detJ = invJac.Invert();
+    invJac.multiply(deriv, xrefe);
+    double detJ = invJac.invert();
 
     if (detJ == 0.0)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
@@ -843,14 +843,14 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
 
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJac, deriv);
+    N_XYZ.multiply(invJac, deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr, N_XYZ);
+    defgrd.multiply_tt(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<3, 3> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -919,7 +919,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
     if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w, bop, stress, 1.0);
+      force->multiply_tn(detJ_w, bop, stress, 1.0);
     }
 
     // update stiffness matrix
@@ -928,12 +928,12 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::sonurbs27_nlnstiffmass(
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<6, 81> cb;
-      cb.Multiply(cmat, bop);
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
+      cb.multiply(cmat, bop);
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       Core::LinAlg::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
-      sfac.Scale(detJ_w);                       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      sfac.scale(detJ_w);                       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       std::vector<double> SmB_L(3);             // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod = 0; inod < 27; ++inod)
@@ -1154,8 +1154,8 @@ double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
     */
     Core::LinAlg::Matrix<3, 3> invJac(true);
 
-    invJac.Multiply(deriv, xrefe);
-    double detJ = invJac.Invert();
+    invJac.multiply(deriv, xrefe);
+    double detJ = invJac.invert();
 
     if (detJ == 0.0)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
@@ -1165,14 +1165,14 @@ double Discret::ELEMENTS::Nurbs::SoNurbs27::calc_int_energy(
 
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJac, deriv);
+    N_XYZ.multiply(invJac, deriv);
 
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr, N_XYZ);
+    defgrd.multiply_tt(xcurr, N_XYZ);
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<3, 3> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}

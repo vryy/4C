@@ -70,8 +70,8 @@ namespace Core::Geo
       /** Print the integration cells
        *
        *  \author hiermeier \date 02/17 */
-      void Print(std::ostream& stream) const;
-      inline void Print() const { Print(std::cout); };
+      void print(std::ostream& stream) const;
+      inline void print() const { print(std::cout); };
 
      protected:
       Point::PointPosition position_;

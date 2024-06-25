@@ -901,7 +901,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::print_all_beam_potential
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>>::const_iterator iter;
   for (iter = beam_potential_element_pairs_.begin(); iter != beam_potential_element_pairs_.end();
        ++iter)
-    (*iter)->Print(out);
+    (*iter)->print(out);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1133,10 +1133,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::write_output_runtime_bea
       // ignore point pairs with zero forces
       /* (e.g. if no valid point-to-curve projection in master-slave approach or
        * contribution is neglected on element pair level due to cutoff value) */
-      if (potential_forces_ele1_this_pair[ipoint].Norm2() < 1e-16 and
-          potential_forces_ele2_this_pair[ipoint].Norm2() < 1e-16 and
-          potential_moments_ele1_this_pair[ipoint].Norm2() < 1e-16 and
-          potential_moments_ele2_this_pair[ipoint].Norm2() < 1e-16)
+      if (potential_forces_ele1_this_pair[ipoint].norm2() < 1e-16 and
+          potential_forces_ele2_this_pair[ipoint].norm2() < 1e-16 and
+          potential_moments_ele1_this_pair[ipoint].norm2() < 1e-16 and
+          potential_moments_ele2_this_pair[ipoint].norm2() < 1e-16)
       {
         continue;
       }

@@ -824,7 +824,7 @@ namespace Discret
       int num_dof_per_element() const override { return 0; }
 
       /// Print this element
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       Core::Elements::ElementType& ElementType() const override
       {

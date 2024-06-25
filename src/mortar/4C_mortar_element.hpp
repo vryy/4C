@@ -486,7 +486,7 @@ namespace Mortar
     \brief Print this element
 
     */
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     /*!
     \brief Return slave (true) or master status
@@ -721,7 +721,7 @@ namespace Mortar
     template <unsigned elenumnode>
     inline void GetNodalCoords(Core::LinAlg::Matrix<3, elenumnode>& coord)
     {
-      Core::LinAlg::SerialDenseMatrix sdm_coord(Teuchos::View, coord.A(), 3, 3, elenumnode);
+      Core::LinAlg::SerialDenseMatrix sdm_coord(Teuchos::View, coord.data(), 3, 3, elenumnode);
       GetNodalCoords(sdm_coord);
     }
 
@@ -816,9 +816,9 @@ namespace Mortar
         Core::LinAlg::Matrix<elenumnode, eledim>& deriv, unsigned valdim = elenumnode,
         bool dualquad3d = false)
     {
-      Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
+      Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.data(), elenumnode);
       Core::LinAlg::SerialDenseMatrix sdm_deriv(
-          Teuchos::View, deriv.A(), elenumnode, elenumnode, eledim);
+          Teuchos::View, deriv.data(), elenumnode, elenumnode, eledim);
       return evaluate_shape(xi, sdv_val, sdm_deriv, valdim, dualquad3d);
     }
 
@@ -837,9 +837,9 @@ namespace Mortar
         Core::LinAlg::Matrix<elenumnode, 1>& val, Core::LinAlg::Matrix<elenumnode, eledim>& deriv,
         unsigned valdim, bool boundtrafo)
     {
-      Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
+      Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.data(), elenumnode);
       Core::LinAlg::SerialDenseMatrix sdm_deriv(
-          Teuchos::View, deriv.A(), elenumnode, elenumnode, eledim);
+          Teuchos::View, deriv.data(), elenumnode, elenumnode, eledim);
       return evaluate_shape_lag_mult(lmtype, xi, sdv_val, sdm_deriv, valdim, boundtrafo);
     }
 
@@ -868,9 +868,9 @@ namespace Mortar
         Core::LinAlg::Matrix<elenumnode, 1>& val, Core::LinAlg::Matrix<elenumnode, eledim>& deriv,
         int valdim)
     {
-      Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.A(), elenumnode);
+      Core::LinAlg::SerialDenseVector sdv_val(Teuchos::View, val.data(), elenumnode);
       Core::LinAlg::SerialDenseMatrix sdm_deriv(
-          Teuchos::View, deriv.A(), elenumnode, elenumnode, eledim);
+          Teuchos::View, deriv.data(), elenumnode, elenumnode, eledim);
       return evaluate_shape_lag_mult_lin(lmtype, xi, sdv_val, sdm_deriv, valdim);
     }
 
@@ -885,7 +885,7 @@ namespace Mortar
         const double* xi, Core::LinAlg::Matrix<elenumnode, 3>& secderiv, const int& valdim)
     {
       Core::LinAlg::SerialDenseMatrix sdm_secderiv(
-          Teuchos::View, secderiv.A(), elenumnode, elenumnode, 3);
+          Teuchos::View, secderiv.data(), elenumnode, elenumnode, 3);
       return evaluate2nd_deriv_shape(xi, sdm_secderiv, valdim);
     }
 

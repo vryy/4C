@@ -96,8 +96,8 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_mat_chemo(
       const Core::LinAlg::Matrix<nsd_, 1> gradattractant =
           varmanager->GradPhi(partner);  // Gradient of attracting parnter
 
-      bigterm.MultiplyTN(my::derxy_, gradattractant);
-      gradgradmatrix.MultiplyTN(
+      bigterm.multiply_tn(my::derxy_, gradattractant);
+      gradgradmatrix.multiply_tn(
           my::derxy_, my::derxy_);  // N1,x*N1,x+N1,y*N1,y+... ; N1,x*N2,x+N1,y*N2,y+...
 
       for (unsigned vi = 0; vi < nen_; vi++)
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_rhs_chemo(
       Core::LinAlg::Matrix<nen_, 1> gradfunctattr(true);
       Core::LinAlg::Matrix<nsd_, 1> attractant = varmanager->GradPhi(partner);
 
-      gradfunctattr.MultiplyTN(my::derxy_, attractant);
+      gradfunctattr.multiply_tn(my::derxy_, attractant);
 
       const double decoyed = varmanager->Phinp(k);
 
@@ -343,11 +343,11 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_strong_residu
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         Core::LinAlg::Matrix<nen_, 1> laplace(true);
         my::get_laplacian_strong_form(laplace);
-        laplattractant = laplace.Dot(my::ephinp_[partner]);
+        laplattractant = laplace.dot(my::ephinp_[partner]);
       }
 
       Core::LinAlg::Matrix<1, 1> chemoderivattr(true);
-      chemoderivattr.MultiplyTN(varmanager->GradPhi(partner), varmanager->GradPhi(k));
+      chemoderivattr.multiply_tn(varmanager->GradPhi(partner), varmanager->GradPhi(k));
 
       chemo_phi += chemocoeff * (chemoderivattr(0, 0) + laplattractant * varmanager->Phinp(k));
     }

@@ -332,7 +332,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
               elemat1_epetra.values(), true);
 
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>* matptr = nullptr;
-          if (elemat1.IsInitialized()) matptr = &elemat1;
+          if (elemat1.is_initialized()) matptr = &elemat1;
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
@@ -593,7 +593,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
 
       // total stress is the sum of the mechanical stress and the thermal stress
       // stress = stress_d + stress_T
-      //        stress.Update(1.0,couplstress,1.0);
+      //        stress.update(1.0,couplstress,1.0);
       // --> so far the addition of s_d and s_T was realised here
       // ==> from now on: we fill 2 different vectors (stressdata,couplstressdata)
       //     which are used in the post processing.
@@ -685,7 +685,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
 
           // product of shapefunctions and element temperatures
           Core::LinAlg::Matrix<1, 1> NT(false);
-          NT.MultiplyTN(shapefunct, etemp);
+          NT.multiply_tn(shapefunct, etemp);
 
           thermoSolid->Reinit(nullptr, nullptr, NT(0), map_my_gp_to_so_hex8(gp));
           thermoSolid->CommitCurrentState();
@@ -841,7 +841,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
+    N_XYZ.multiply(invJ_[gp], deriv);  // (6.21)
     double detJ = detJ_[gp];           // (6.22)
 
     // geometrically linear, i.e. reference == current state, i.e. F == I
@@ -857,7 +857,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
     // product of shapefunctions and element temperatures for couplstress
     // N_T . T
     Core::LinAlg::Matrix<1, 1> NT(false);
-    NT.MultiplyTN(shapefunct, etemp);
+    NT.multiply_tn(shapefunct, etemp);
     // scalar-valued current element temperature T_{n+1}
     // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
     double scalartemp = NT(0, 0);
@@ -923,7 +923,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
     {
       // old implementation hex8_thermo double detJ_w = detJ*gpweights[gp];
       double detJ_w = detJ * intpoints_.Weight(gp);  // gpweights[gp];
-      force->MultiplyTN(detJ_w, boplin, couplstress, 1.0);
+      force->multiply_tn(detJ_w, boplin, couplstress, 1.0);
     }  // if (force != nullptr)
 
     /* =========================================================================*/
@@ -1006,7 +1006,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kd_t_tsi(
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
+    N_XYZ.multiply(invJ_[gp], deriv);  // (6.21)
     double detJ = detJ_[gp];           // (6.22)
 
     // calculate the linear B-operator B_L = N_XYZ
@@ -1021,10 +1021,10 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kd_t_tsi(
     {
       // calculate the nodal strains: strain = B . d
       Core::LinAlg::Matrix<numstr_, 1> strain(false);
-      strain.Multiply(boplin, edisp);
+      strain.multiply(boplin, edisp);
 
       Core::LinAlg::Matrix<1, 1> NT(false);
-      NT.MultiplyTN(shapefunct, etemp);  // (1x1)
+      NT.multiply_tn(shapefunct, etemp);  // (1x1)
       thermoSolidMaterial->Reinit(nullptr, &strain, NT(0), map_my_gp_to_so_hex8(gp));
       // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
       // with shape functions)
@@ -1043,20 +1043,20 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_kd_t_tsi(
     {
       // C_T . N_T
       Core::LinAlg::Matrix<numstr_, nen_> cn(false);
-      cn.MultiplyNT(ctemp, shapefunct);  // (6x8)=(6x1)(1x8)
+      cn.multiply_nt(ctemp, shapefunct);  // (6x8)=(6x1)(1x8)
       // integrate stiffness term
       // k_dT = k_dT + (B^T . C_T . N_T) * detJ * w(gp)
-      stiffmatrix_kdT->MultiplyTN(detJ_w, boplin, cn, 1.0);
+      stiffmatrix_kdT->multiply_tn(detJ_w, boplin, cn, 1.0);
 
       // in case of temperature-dependent Young's modulus, additional term for
       // coupling stiffness matrix k_dT
       {
         // k_dT += B_d^T . dC/dT  . B_d . d . N_T
-        stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
+        stiffmatrix_kdT->multiply_nt(detJ_w, Bstress_T, shapefunct, 1.0);
 
         // k_dT += B_d^T . dC_T/dT  . N_T . T . N_T
         // (24x8)                          (24x1)        (8x1)
-        stiffmatrix_kdT->MultiplyNT(detJ_w, Bcouplstress_T, shapefunct, 1.0);
+        stiffmatrix_kdT->multiply_nt(detJ_w, Bcouplstress_T, shapefunct, 1.0);
       }
 
       // Be careful: scaling with time factor is done in tsi_monolithic!!
@@ -1161,20 +1161,20 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
+    N_XYZ.multiply(invJ_[gp], deriv);  // (6.21)
     double detJ = detJ_[gp];           // (6.22)
 
     // (material) deformation gradient
     // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr, N_XYZ);
+    defgrd.multiply_tt(xcurr, N_XYZ);
 
     // right Cauchy-Green tensor = F^T . F
     Core::LinAlg::Matrix<nsd_, nsd_> cauchygreen(false);
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // inverse of right Cauchy-Green tensor = F^{-1} . F^{-T}
     Core::LinAlg::Matrix<nsd_, nsd_> Cinv(false);
-    Cinv.Invert(cauchygreen);
+    Cinv.invert(cauchygreen);
     Core::LinAlg::Matrix<numstr_, 1> Cinv_vct(false);
     Cinv_vct(0) = Cinv(0, 0);
     Cinv_vct(1) = Cinv(1, 1);
@@ -1194,7 +1194,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     // temperature
     // described as a matrix (for stress calculation): NT = N_T . T
     Core::LinAlg::Matrix<1, 1> NT(false);
-    NT.MultiplyTN(shapefunct, etemp);
+    NT.multiply_tn(shapefunct, etemp);
     // scalar-valued current element temperature T_{n+1}
     // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
     // insert T_{n+1} into parameter list
@@ -1265,7 +1265,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) . detJ . w(gp)
-      force->MultiplyTN(detJ_w, bop, couplstress, 1.0);
+      force->multiply_tn(detJ_w, bop, couplstress, 1.0);
     }
 
     // update stiffness matrix k_dd
@@ -1278,8 +1278,8 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
       // St.Venant Kirchhoff: dC_T/dd == 0
       // with ( Cinv boeppel Cinv )_{abcd} = 1/2 . ( Cinv_{ac} Cinv_{bd} + Cinv_{ad} Cinv_{bc} )
       Core::LinAlg::Matrix<numstr_, numdofperelement_> cb(false);  // cb(6x24) // cmattemp (6x6)
-      cb.Multiply(cmat_T, bop);
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
+      cb.multiply(cmat_T, bop);
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
 
@@ -1290,7 +1290,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
 
       Core::LinAlg::Matrix<numstr_, 1> sfac(couplstress);  // auxiliary integrated stress
       // detJ . w(gp) . [S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      sfac.Scale(detJ_w);
+      sfac.scale(detJ_w);
       // intermediate sigma_temp . B_L (6x1).(6x24)
       std::vector<double> StempB_L(3);
       for (int inod = 0; inod < nen_; ++inod)
@@ -1427,16 +1427,16 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(
     */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 . N_rst
-    N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
+    N_XYZ.multiply(invJ_[gp], deriv);  // (6.21)
     double detJ = detJ_[gp];           // (6.22)
 
     // (material) deformation gradient
     // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
-    defgrd.MultiplyTT(xcurr, N_XYZ);
+    defgrd.multiply_tt(xcurr, N_XYZ);
 
     // right Cauchy-Green tensor = F^T . F
     Core::LinAlg::Matrix<3, 3> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
     // initialise inverse of right Cauchy-Green tensor = F^{-1} . F^{-T}
     Core::LinAlg::Matrix<numstr_, 1> Cinv_vct(true);
 
@@ -1459,7 +1459,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(
       glstrain(5) = cauchygreen(2, 0);
 
       Core::LinAlg::Matrix<1, 1> NT(false);
-      NT.MultiplyTN(shapefunct, etemp);  // (1x1)
+      NT.multiply_tn(shapefunct, etemp);  // (1x1)
       thermoSolidMaterial->Reinit(nullptr, &glstrain, NT(0), map_my_gp_to_so_hex8(gp));
       // full thermal derivative of stress wrt to scalar temperature (needs to be post-multiplied
       // with shape functions)
@@ -1469,7 +1469,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(
     {
       // inverse of Right Cauchy-Green tensor = F^{-1} . F^{-T}
       Core::LinAlg::Matrix<nsd_, nsd_> Cinv(false);
-      Cinv.Invert(cauchygreen);
+      Cinv.invert(cauchygreen);
       Cinv_vct(0) = Cinv(0, 0);
       Cinv_vct(1) = Cinv(1, 1);
       Cinv_vct(2) = Cinv(2, 2);
@@ -1498,21 +1498,21 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi(
     {
       // C_temp . N_temp
       Core::LinAlg::Matrix<numstr_, nen_> cn(false);
-      cn.MultiplyNT(ctemp, shapefunct);  // (6x8)=(6x1)(1x8)
+      cn.multiply_nt(ctemp, shapefunct);  // (6x8)=(6x1)(1x8)
       // integrate stiffness term
       // k_dT = k_dT + (B^T . C_T . N_temp) . detJ . w(gp)
-      stiffmatrix_kdT->MultiplyTN(detJ_w, bop, cn, 1.0);
+      stiffmatrix_kdT->multiply_tn(detJ_w, bop, cn, 1.0);
 
       // in case of temperature-dependent Young's modulus, additional term for
       // coupling stiffness matrix k_dT
       if ((material()->MaterialType() == Core::Materials::m_thermostvenant))
       {
         // k_dT += B_d^T . stress_T . N_T
-        stiffmatrix_kdT->MultiplyNT(detJ_w, Bstress_T, shapefunct, 1.0);
+        stiffmatrix_kdT->multiply_nt(detJ_w, Bstress_T, shapefunct, 1.0);
 
         // k_dT += B_d^T . couplstress_T . N_T
         // (24x8)                          (24x1)        (8x1)
-        stiffmatrix_kdT->MultiplyNT(detJ_w, Bcouplstress_T, shapefunct, 1.0);
+        stiffmatrix_kdT->multiply_nt(detJ_w, Bcouplstress_T, shapefunct, 1.0);
 
         // Be careful: scaling with time factor is done in tsi_monolithic!!
       }  // m_thermostvenant
@@ -1591,16 +1591,16 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
 
     // inverse jacobian matrix at centroid
     Core::LinAlg::Matrix<nsd_, nsd_> invJ_0(false);
-    invJ_0.Multiply(N_rst_0, xrefe);
-    invJ_0.Invert();
+    invJ_0.multiply(N_rst_0, xrefe);
+    invJ_0.invert();
     // material derivatives at centroid
-    N_XYZ_0.Multiply(invJ_0, N_rst_0);
+    N_XYZ_0.multiply(invJ_0, N_rst_0);
 
     // deformation gradient and its determinant at centroid
     Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-    defgrd_0.MultiplyTT(xcurr, N_XYZ_0);
-    invdefgrd_0.Invert(defgrd_0);
-    detF_0 = defgrd_0.Determinant();
+    defgrd_0.multiply_tt(xcurr, N_XYZ_0);
+    invdefgrd_0.invert(defgrd_0);
+    detF_0 = defgrd_0.determinant();
 
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */
@@ -1618,24 +1618,24 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       */
       // compute derivatives N_XYZ at gp w.r.t. material coordinates
       // by N_XYZ = J^-1 * N_rst
-      N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
+      N_XYZ.multiply(invJ_[gp], deriv);  // (6.21)
       double detJ = detJ_[gp];           // (6.22)
 
       // (material) deformation gradient
       // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-      defgrd.MultiplyTT(xcurr, N_XYZ);
-      double detF = defgrd.Determinant();
+      defgrd.multiply_tt(xcurr, N_XYZ);
+      double detF = defgrd.determinant();
       Core::LinAlg::Matrix<nsd_, nsd_> invdefgrd(false);
-      invdefgrd.Invert(defgrd);
+      invdefgrd.invert(defgrd);
 
       // Right Cauchy-Green tensor = F^T . F
       Core::LinAlg::Matrix<nsd_, nsd_> cauchygreen(false);
-      cauchygreen.MultiplyTN(defgrd, defgrd);
+      cauchygreen.multiply_tn(defgrd, defgrd);
 
       // build the inverse of the right Cauchy-Green deformation gradient C^{-1}
       // C^{-1} = F^{-1} . F^{-T}
       Core::LinAlg::Matrix<nsd_, nsd_> invC(false);
-      invC.MultiplyNT(invdefgrd, invdefgrd);
+      invC.multiply_nt(invdefgrd, invdefgrd);
       // invCvct: C^{-1} in Voight-/vector notation
       // C^{-1} = { C11^{-1}, C22^{-1}, C33^{-1}, C12^{-1}, C23^{-1}, C31^{-1} }
       Core::LinAlg::Matrix<6, 1> invCvct(false);
@@ -1651,15 +1651,15 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       Core::LinAlg::Matrix<nsd_, nsd_> defgrd_bar(defgrd);
       // f_bar_factor := (detF_0/detF)^{1/3}
       double f_bar_factor = std::pow(detF_0 / detF, 1.0 / 3.0);
-      defgrd_bar.Scale(f_bar_factor);
+      defgrd_bar.scale(f_bar_factor);
 
       // Right Cauchy-Green tensor(Fbar) = F_bar^T . F_bar
       Core::LinAlg::Matrix<nsd_, nsd_> cauchygreen_bar(false);
-      cauchygreen_bar.MultiplyTN(defgrd_bar, defgrd_bar);
+      cauchygreen_bar.multiply_tn(defgrd_bar, defgrd_bar);
 
       // inverse of Right Cauchy-Green tensor(Fbar) = F_bar^{-1} . F_bar^{-T}
       Core::LinAlg::Matrix<nsd_, nsd_> Cinv_bar(false);
-      Cinv_bar.Invert(cauchygreen_bar);
+      Cinv_bar.invert(cauchygreen_bar);
       Core::LinAlg::Matrix<numstr_, 1> Cinv_barvct(false);
       Cinv_barvct(0) = Cinv_bar(0, 0);
       Cinv_barvct(1) = Cinv_bar(1, 1);
@@ -1690,7 +1690,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       // ----------------------------------------- initialise temperature
       // described as a matrix (for stress calculation): Ntemp = N_T . T
       Core::LinAlg::Matrix<1, 1> NT(false);
-      NT.MultiplyTN(shapefunct, etemp);
+      NT.multiply_tn(shapefunct, etemp);
       // scalar-valued current element temperature T_{n+1}
       // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
       // insert T_{n+1} into parameter list
@@ -1762,7 +1762,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       if (force != nullptr)
       {
         // integrate internal force vector f = f + (B^T . sigma) . detJ_bar . w(gp)
-        force->MultiplyTN(detJ_w / f_bar_factor, bop, couplstress_bar, 1.0);
+        force->multiply_tn(detJ_w / f_bar_factor, bop, couplstress_bar, 1.0);
       }  // (force != nullptr)
 
       // update stiffness matrix k_dd
@@ -1779,8 +1779,8 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
         // with dCinv/dC = ( Cinv boeppel Cinv )_{abcd} = 1/2 * ( Cinv_{ac} Cinv_{bd} + Cinv_{ad}
         // Cinv_{bc} )
         Core::LinAlg::Matrix<numstr_, numdofperelement_> cb(false);
-        cb.Multiply(cmat_T_bar, bop);
-        stiffmatrix->MultiplyTN((detJ_w * f_bar_factor), bop, cb, 1.0);
+        cb.multiply(cmat_T_bar, bop);
+        stiffmatrix->multiply_tn((detJ_w * f_bar_factor), bop, cb, 1.0);
 
         // --------------------------------------------------------------
         // integrate `geometric' stiffness matrix and add to keu
@@ -1793,7 +1793,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
 
         Core::LinAlg::Matrix<numstr_, 1> sfac(couplstress_bar);  // auxiliary integrated stress
         // detJ_bar . w(gp) . [S11,S22,S33,S12=S21,S23=S32,S13=S31]
-        sfac.Scale(detJ_w / f_bar_factor);
+        sfac.scale(detJ_w / f_bar_factor);
         // intermediate sigma_temp . B_L (6x1).(6x24)
         std::vector<double> StempB_L(3);
         for (int inod = 0; inod < nen_; ++inod)
@@ -1837,11 +1837,11 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
         cauchygreenvct(5) = 2 * cauchygreen(2, 0);
 
         Core::LinAlg::Matrix<numstr_, 1> ccg(false);
-        ccg.Multiply(cmat_T_bar, cauchygreenvct);  // (6x1) = (6x6)(6x1)
+        ccg.multiply(cmat_T_bar, cauchygreenvct);  // (6x1) = (6x6)(6x1)
 
         Core::LinAlg::Matrix<numdofperelement_, 1> bopccg(
             true);  // auxiliary integrated stress (24x1)
-        bopccg.MultiplyTN((detJ_w * f_bar_factor / 3.0), bop, ccg);  // (24x1) = (24x6)(6x1)
+        bopccg.multiply_tn((detJ_w * f_bar_factor / 3.0), bop, ccg);  // (24x1) = (24x6)(6x1)
 
         // calculate the auxiliary tensor H (24x1)
         // with H_i = tr(F_0^{-1} . dF_0/dd_i) - tr (F^{-1} . dF/dd_i)
@@ -1856,7 +1856,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
           }
         }
         Core::LinAlg::Matrix<numdofperelement_, 1> bops(false);  // auxiliary integrated stress
-        bops.MultiplyTN((-detJ_w / f_bar_factor / 3.0), bop, couplstress_bar);
+        bops.multiply_tn((-detJ_w / f_bar_factor / 3.0), bop, couplstress_bar);
         for (int i = 0; i < numdofperelement_; i++)
         {
           for (int j = 0; j < numdofperelement_; j++)
@@ -1939,15 +1939,15 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi_fbar(
 
     // inverse jacobian matrix at centroid
     Core::LinAlg::Matrix<nsd_, nsd_> invJ_0(false);
-    invJ_0.Multiply(N_rst_0, xrefe);
-    invJ_0.Invert();
+    invJ_0.multiply(N_rst_0, xrefe);
+    invJ_0.invert();
     // material derivatives at centroid
-    N_XYZ_0.Multiply(invJ_0, N_rst_0);
+    N_XYZ_0.multiply(invJ_0, N_rst_0);
 
     // deformation gradient and its determinant at centroid
     Core::LinAlg::Matrix<3, 3> defgrd_0(false);
-    defgrd_0.MultiplyTT(xcurr, N_XYZ_0);
-    detF_0 = defgrd_0.Determinant();
+    defgrd_0.multiply_tt(xcurr, N_XYZ_0);
+    detF_0 = defgrd_0.determinant();
 
     /* =========================================================================*/
     /* ================================================= Loop over Gauss Points */
@@ -1961,7 +1961,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi_fbar(
       // copy structural shape functions needed for the thermo field
       // identical shapefunctions for the displacements and the temperatures
       Core::LinAlg::Matrix<1, 1> NT(false);
-      NT.MultiplyTN(shapefunct, etemp);  // (1x1)
+      NT.multiply_tn(shapefunct, etemp);  // (1x1)
       // scalar-valued current element temperature T_{n+1}
       // temperature-dependent material parameters, i.e. E(T), pass T_{n+1}
       // insert T_{n+1} into parameter list
@@ -1974,28 +1974,28 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi_fbar(
       */
       // compute derivatives N_XYZ at gp w.r.t. material coordinates
       // by N_XYZ = J^-1 . N_rst
-      N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
+      N_XYZ.multiply(invJ_[gp], deriv);  // (6.21)
       double detJ = detJ_[gp];           // (6.22)
 
       // (material) deformation gradient
       // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
-      defgrd.MultiplyTT(xcurr, N_XYZ);
-      double detF = defgrd.Determinant();
+      defgrd.multiply_tt(xcurr, N_XYZ);
+      double detF = defgrd.determinant();
 
       // -------------------------------------------- F_bar modifications
       // F_bar deformation gradient: F_bar := (detF_0 / detF)^1/3 . F
       Core::LinAlg::Matrix<nsd_, nsd_> defgrd_bar(defgrd);
       // f_bar_factor := (detF_0/detF)^{1/3}
       double f_bar_factor = std::pow(detF_0 / detF, 1.0 / 3.0);
-      defgrd_bar.Scale(f_bar_factor);
+      defgrd_bar.scale(f_bar_factor);
 
       // Right Cauchy-Green tensor(Fbar) = F_bar^T . F_bar
       Core::LinAlg::Matrix<nsd_, nsd_> cauchygreen_bar(false);
-      cauchygreen_bar.MultiplyTN(defgrd_bar, defgrd_bar);
+      cauchygreen_bar.multiply_tn(defgrd_bar, defgrd_bar);
 
       // inverse of Right Cauchy-Green tensor(Fbar) = F_bar^{-1} . F_bar^{-T}
       Core::LinAlg::Matrix<nsd_, nsd_> Cinv_bar(false);
-      Cinv_bar.Invert(cauchygreen_bar);
+      Cinv_bar.invert(cauchygreen_bar);
       Core::LinAlg::Matrix<numstr_, 1> Cinv_barvct(false);
       Core::LinAlg::Voigt::Strains::matrix_to_vector(Cinv_bar, Cinv_barvct);
 
@@ -2022,7 +2022,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi_fbar(
         //          = - 2 . mubar . 1/Dt . dDgamma/dT . N_bar
         // with dDgamma/dT= - sqrt(2/3) . dsigma_y(astrain_p^{n+1},T_{n+1})/dT
         //                  . 1/(2 . mubar . beta0)
-        Cmat_kdT.Update(thermoplhyperelast->CMat_kdT(gp));
+        Cmat_kdT.update(thermoplhyperelast->CMat_kdT(gp));
       }
       Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolidMaterial =
           Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(material(), false);
@@ -2054,18 +2054,18 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_kd_t_tsi_fbar(
       {
         // C_temp . N_temp
         Core::LinAlg::Matrix<numstr_, nen_> cn(false);
-        cn.MultiplyNT(ctemp, shapefunct);  // (6x8)=(6x1)(1x8)
+        cn.multiply_nt(ctemp, shapefunct);  // (6x8)=(6x1)(1x8)
         // integrate stiffness term
         // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . C_T . N_T) . detJ . w(gp)
-        stiffmatrix_kdT->MultiplyTN((detJ_w / f_bar_factor), bop, cn, 1.0);
+        stiffmatrix_kdT->multiply_tn((detJ_w / f_bar_factor), bop, cn, 1.0);
 
         if (material()->MaterialType() == Core::Materials::m_thermoplhyperelast)
         {
           // k_dT = k_dT + (detF_0/detF)^{-1/3} (B^T . dCmat/dT . N_temp) . detJ . w(gp)
           // (24x8)                            (24x6)         (6x1)    (1x8)
           Core::LinAlg::Matrix<numstr_, nen_> cmatn(false);
-          cmatn.MultiplyNT(Cmat_kdT, shapefunct);  // (6x8)=(6x1)(1x8)
-          stiffmatrix_kdT->MultiplyTN((detJ_w / f_bar_factor), bop, cmatn, 1.0);
+          cmatn.multiply_nt(Cmat_kdT, shapefunct);  // (6x8)=(6x1)(1x8)
+          stiffmatrix_kdT->multiply_tn((detJ_w / f_bar_factor), bop, cmatn, 1.0);
 
           // Be careful: scaling with time factor is done in tsi_monolithic!!
         }
@@ -2307,7 +2307,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::calculate_bop_vec(
     N_X(7, 3 * i + 1) = N_XYZ(2, i);
     N_X(8, 3 * i + 2) = N_XYZ(2, i);
   }
-  bopvec.MultiplyTN(1.0, defgrd_vec, N_X);
+  bopvec.multiply_tn(1.0, defgrd_vec, N_X);
 
 }  // Calculate (1x24) B-Operator
 
@@ -2367,7 +2367,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::p_k2to_cauchy(
     Core::LinAlg::Matrix<nsd_, nsd_>* cauchystress)
 {
   // calculate the Jacobi-deterinant
-  const double detF = (*defgrd).Determinant();
+  const double detF = (*defgrd).determinant();
 
   // sigma = 1/J . F . S . F^T
   Core::LinAlg::Matrix<nsd_, nsd_> pkstress(false);
@@ -2382,8 +2382,8 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::p_k2to_cauchy(
   pkstress(2, 2) = (*stress)(2);
 
   Core::LinAlg::Matrix<nsd_, nsd_> temp(false);
-  temp.Multiply((1.0 / detF), (*defgrd), pkstress);
-  (*cauchystress).MultiplyNT(temp, (*defgrd));
+  temp.multiply((1.0 / detF), (*defgrd), pkstress);
+  (*cauchystress).multiply_nt(temp, (*defgrd));
 
 }  // PK2toCauchy()
 
@@ -2412,14 +2412,14 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::g_lto_ea(
 
   // inverse of deformation gradient
   Core::LinAlg::Matrix<nsd_, nsd_> invdefgrd;
-  invdefgrd.Invert(*defgrd);
+  invdefgrd.invert(*defgrd);
 
   // (3x3) = (3x3) (3x3) (3x3)
   Core::LinAlg::Matrix<nsd_, nsd_> temp(false);
-  temp.Multiply(gl, invdefgrd);
-  (*euler_almansi).MultiplyTN(invdefgrd, temp);
+  temp.multiply(gl, invdefgrd);
+  (*euler_almansi).multiply_tn(invdefgrd, temp);
 
-}  // GLtoEA()
+}  // GLtoEdata()
 
 
 /*----------------------------------------------------------------------*
@@ -2503,9 +2503,9 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::init_jacobian_mapping_speci
       +-            -+        +-            -+
      */
     // derivatives of coordinates w.r.t. material coordinates xjm_ = dx/ds
-    invJ_[gp].Multiply(deriv, xrefe);
+    invJ_[gp].multiply(deriv, xrefe);
     // xij_ = ds/dx
-    detJ_[gp] = invJ_[gp].Invert();
+    detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] < 1.0E-16) FOUR_C_THROW("ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", detJ_[gp]);
   }  // end gp loop
 

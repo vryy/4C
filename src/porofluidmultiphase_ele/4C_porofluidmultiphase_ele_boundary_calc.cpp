@@ -213,7 +213,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
     // determine global coordinates of current Gauss point
     const int nsd_vol_ele = nsd_ + 1;
     Core::LinAlg::Matrix<nsd_vol_ele, 1> coordgp;  // coordinate has always to be given in 3D!
-    coordgp.MultiplyNN(xyze_, funct_);
+    coordgp.multiply_nn(xyze_, funct_);
 
     int functnum = -1;
     const double* coordgpref = &coordgp(0);  // needed for function evaluation

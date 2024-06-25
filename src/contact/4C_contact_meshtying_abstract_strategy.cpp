@@ -68,7 +68,7 @@ CONTACT::MtAbstractStrategy::MtAbstractStrategy(const Epetra_Map* dof_row_map,
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const CONTACT::MtAbstractStrategy& strategy)
 {
-  strategy.Print(os);
+  strategy.print(os);
   return os;
 }
 
@@ -1050,7 +1050,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
 /*----------------------------------------------------------------------*
  |  print interfaces (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::Print(std::ostream& os) const
+void CONTACT::MtAbstractStrategy::print(std::ostream& os) const
 {
   if (Comm().MyPID() == 0)
   {

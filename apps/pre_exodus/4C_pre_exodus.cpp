@@ -62,7 +62,7 @@ namespace
 
     // write mesh verbosely
     defaultbc << "----------- Mesh contents -----------" << std::endl << std::endl;
-    mymesh.Print(defaultbc, false);
+    mymesh.print(defaultbc, false);
 
     // give examples for element and boundary condition syntax
     defaultbc << "---------- Syntax examples ----------" << std::endl
@@ -106,7 +106,7 @@ namespace
     std::map<int, Teuchos::RCP<EXODUS::ElementBlock>>::const_iterator it;
     for (it = myblocks.begin(); it != myblocks.end(); ++it)
     {
-      it->second->Print(defaultbc);
+      it->second->print(defaultbc);
       defaultbc
           << "*eb" << it->first << "=\"ELEMENT\"" << std::endl
           << "sectionname=\"\"" << std::endl
@@ -123,7 +123,7 @@ namespace
     std::map<int, EXODUS::NodeSet>::const_iterator ins;
     for (ins = mynodesets.begin(); ins != mynodesets.end(); ++ins)
     {
-      ins->second.Print(defaultbc);
+      ins->second.print(defaultbc);
       defaultbc << "*ns" << ins->first << "=\"CONDITION\"" << std::endl
                 << "sectionname=\"\"" << std::endl
                 << "description=\"\"" << std::endl
@@ -135,7 +135,7 @@ namespace
     std::map<int, EXODUS::SideSet>::const_iterator iss;
     for (iss = mysidesets.begin(); iss != mysidesets.end(); ++iss)
     {
-      iss->second.Print(defaultbc);
+      iss->second.print(defaultbc);
       defaultbc << "*ss" << iss->first << "=\"CONDITION\"" << std::endl
                 << "sectionname=\"\"" << std::endl
                 << "description=\"\"" << std::endl
@@ -264,7 +264,7 @@ int main(int argc, char** argv)
     // create mesh object based on given exodus II file
     EXODUS::Mesh mymesh(exofile);
     // print infos to std::cout
-    mymesh.Print(std::cout);
+    mymesh.print(std::cout);
 
     /**************************************************************************
      * Edit a existing Mesh, e.g. extrusion of surface

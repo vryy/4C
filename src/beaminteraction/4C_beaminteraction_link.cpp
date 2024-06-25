@@ -172,7 +172,7 @@ void BEAMINTERACTION::BeamLink::ResetState(std::vector<Core::LinAlg::Matrix<3, 1
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLink::Print(std::ostream& out) const
+void BEAMINTERACTION::BeamLink::print(std::ostream& out) const
 {
   check_init();
 
@@ -183,9 +183,9 @@ void BEAMINTERACTION::BeamLink::Print(std::ostream& out) const
   out << "EleGID " << GetEleGid(1) << " locbspotnum " << GetLocBSpotNum(1);
   out << "\n";
   out << "\nbspotpos1_ = ";
-  GetBindSpotPos1().Print(out);
+  GetBindSpotPos1().print(out);
   out << "\nbspotpos2_ = ";
-  GetBindSpotPos2().Print(out);
+  GetBindSpotPos2().print(out);
 
   out << "\n";
 }
