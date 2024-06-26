@@ -72,7 +72,18 @@ namespace
       Discret::ELEMENTS::PrestressTechnology::none>
   {
     using type = Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
-        STR::ELEMENTS::EasType::eastype_h8_9>;
+        STR::ELEMENTS::EasType::eastype_h8_9, Inpar::STR::KinemType::nonlinearTotLag>;
+  };
+
+  /*!
+   * @brief Small displacements formulation with mild EAS for hex8
+   */
+  template <>
+  struct SolidCalculationFormulation<Core::FE::CellType::hex8, Inpar::STR::KinemType::linear,
+      Discret::ELEMENTS::ElementTechnology::eas_mild, Discret::ELEMENTS::PrestressTechnology::none>
+  {
+    using type = Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
+        STR::ELEMENTS::EasType::eastype_h8_9, Inpar::STR::KinemType::linear>;
   };
 
   /*!
@@ -84,7 +95,18 @@ namespace
       Discret::ELEMENTS::PrestressTechnology::none>
   {
     using type = Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
-        STR::ELEMENTS::EasType::eastype_h8_21>;
+        STR::ELEMENTS::EasType::eastype_h8_21, Inpar::STR::KinemType::nonlinearTotLag>;
+  };
+
+  /*!
+   * @brief Small displacements formulation with full EAS for hex8
+   */
+  template <>
+  struct SolidCalculationFormulation<Core::FE::CellType::hex8, Inpar::STR::KinemType::linear,
+      Discret::ELEMENTS::ElementTechnology::eas_full, Discret::ELEMENTS::PrestressTechnology::none>
+  {
+    using type = Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
+        STR::ELEMENTS::EasType::eastype_h8_21, Inpar::STR::KinemType::linear>;
   };
 
   /*!
