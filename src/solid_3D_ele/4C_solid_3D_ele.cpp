@@ -268,4 +268,13 @@ bool Discret::ELEMENTS::Solid::VisData(const std::string& name, std::vector<doub
   return SolidMaterial()->VisData(name, data, Id());
 }
 
+void Discret::ELEMENTS::Solid::for_each_gauss_point(Core::FE::Discretization& discretization,
+    std::vector<int>& lm,
+    const std::function<void(Mat::So3Material&, double, int)>& integrator) const
+{
+  std::visit([&](auto& interface)
+      { interface->for_each_gauss_point(*this, *SolidMaterial(), discretization, lm, integrator); },
+      solid_calc_variant_);
+}
+
 FOUR_C_NAMESPACE_CLOSE

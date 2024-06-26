@@ -151,6 +151,12 @@ namespace Discret
       void reset_to_last_converged(
           const Core::Elements::Element& ele, Mat::So3Material& solid_material);
 
+      void for_each_gauss_point(const Core::Elements::Element& ele,
+          Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
+          const std::vector<int>& lm,
+          const std::function<void(Mat::So3Material&, double integration_factor, int gp)>&
+              integrator) const;
+
      private:
       /// EAS matrices and vectors to be stored between iterations
       Discret::ELEMENTS::EasIterationData<celltype, eastype> eas_iteration_data_ = {};

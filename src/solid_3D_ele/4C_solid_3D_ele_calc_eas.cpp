@@ -1012,6 +1012,22 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::reset_to_last_conver
   solid_material.reset_step();
 }
 
+template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype>::for_each_gauss_point(
+    const Core::Elements::Element& ele, Mat::So3Material& solid_material,
+    const Core::FE::Discretization& discretization, const std::vector<int>& lm,
+    const std::function<void(Mat::So3Material&, double, int)>& integrator) const
+{
+  const ElementNodes<celltype> nodal_coordinates =
+      evaluate_element_nodes<celltype>(ele, discretization, lm);
+
+  ForEachGaussPoint(nodal_coordinates, stiffness_matrix_integration_,
+      [&](const Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1>& xi,
+          const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
+          const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
+      { integrator(solid_material, integration_factor, gp); });
+}
+
 // template classes
 template class Discret::ELEMENTS::SolidEleCalcEas<Core::FE::CellType::hex8,
     STR::ELEMENTS::EasType::eastype_h8_9>;

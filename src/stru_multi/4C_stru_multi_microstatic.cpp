@@ -28,8 +28,9 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_shw6.hpp"
+#include "4C_solid_3D_ele.hpp"
 #include "4C_structure_aux.hpp"
-#include "4C_structure_timint_impl.hpp"
+#include "4C_utils_exceptions.hpp"
 
 #include <Epetra_LinearProblem.h>
 
@@ -228,51 +229,49 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   invtoggle_->PutScalar(1.0);
   invtoggle_->Update(-1.0, *dirichtoggle_, 1.0);
 
-  if (V0 > 0.0)
-    V0_ = V0;
-  else
-  {
-    // -------------------------- Calculate initial volume of microstructure
-    Teuchos::ParameterList p;
-    // action for elements
-    p.set("action", "calc_init_vol");
-    p.set("V0", 0.0);
-    discret_->evaluate_condition(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
-        Teuchos::null, "MicroBoundary");
-    V0_ = p.get<double>("V0", -1.0);
-    if (V0_ == -1.0) FOUR_C_THROW("Calculation of initial volume failed");
-  }
-  // sum initial volume over all procs (including supporting procs)
-  double sum = 0.0;
-  discret_->Comm().SumAll(&V0_, &sum, 1);
-  V0_ = sum;
-
-  // ------------------------- Calculate initial density of microstructure
+  // ------------------------- Calculate initial volume and density of microstructure
   // the macroscopic density has to be averaged over the entire
   // microstructural reference volume
 
+  double my_micro_discretization_volume = 0.0;
+  double my_micro_discretization_density_integration = 0.0;
+
   // create the parameters for the discretization
-  Teuchos::ParameterList par;
-  // action for elements
-  par.set("action", "multi_calc_dens");
-  // set density to zero
-  par.set("homogdens", 0.0);
+  discret_->set_state("displacement", dis_);
+  Core::Elements::Element::LocationArray la(discret_->NumDofSets());
+  for (const auto* ele : discret_->MyRowElementRange())
+  {
+    ele->LocationVector(*discret_, la, false);
 
-  // set vector values needed by elements
+    const auto* solid_ele = dynamic_cast<const Discret::ELEMENTS::Solid*>(ele);
+    FOUR_C_THROW_UNLESS(solid_ele,
+        "Multiscale simulations are currently only possible with the new solid elements");
+
+    solid_ele->for_each_gauss_point(*discret_, la[0].lm_,
+        [&](Mat::So3Material& solid_material, double integration_factor, int gp)
+        {
+          // integrate volume
+          my_micro_discretization_volume += integration_factor;
+
+          // integrate density
+          my_micro_discretization_density_integration +=
+              solid_material.Density(gp) * integration_factor;
+        });
+  }
   discret_->ClearState();
-  discret_->evaluate(
-      par, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-  discret_->ClearState();
 
-  // sum initial density over all procs (including supporting procs)
-  double my = 1 / V0_ * par.get<double>("homogdens", 0.0);
-  sum = 0.0;
-  discret_->Comm().SumAll(&my, &sum, 1);
-  density_ = sum;
-  if (density_ == 0.0)
-    FOUR_C_THROW("Density determined from homogenization procedure equals zero!");
+  // compute volume of all elements
+  discret_->Comm().SumAll(&my_micro_discretization_volume, &V0_, 1);
 
-  return;
+  // compute density of all elements
+  double micro_discretization_density_integration = 0.0;
+  discret_->Comm().SumAll(
+      &my_micro_discretization_density_integration, &micro_discretization_density_integration, 1);
+
+  density_ = micro_discretization_density_integration / V0_;
+
+  FOUR_C_THROW_UNLESS(
+      density_ > 0, "Density determined from homogenization procedure must be larger than zero!");
 }  // MultiScale::MicroStatic::MicroStatic
 
 
