@@ -54,7 +54,7 @@ namespace Discret
      private:
       static SoPyramid5fbarType instance_;
 
-      std::string get_element_type_string() const { return "SOLIDP5FBAR"; }
+      std::string get_element_type_string() const { return "SOLIDP5FBAR_DEPRECATED"; }
     };
 
 
@@ -231,7 +231,7 @@ namespace Discret
       void init_jacobian_mapping() override;
 
      private:
-      std::string get_element_type_string() const { return "SOLIDP5FBAR"; }
+      std::string get_element_type_string() const { return "SOLIDP5FBAR_DEPRECATED"; }
     };  // class So_pyramid5fbar
 
     //=======================================================================

@@ -92,7 +92,7 @@ namespace Discret
      private:
       static SoHex8Type instance_;
 
-      std::string get_element_type_string() const { return "SOLIDH8"; }
+      std::string get_element_type_string() const { return "SOLIDH8_DEPRECATED"; }
     };
 
     /*!

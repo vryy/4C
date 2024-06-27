@@ -68,7 +68,7 @@ namespace Discret
      private:
       static SoHex27Type instance_;
 
-      std::string get_element_type_string() const { return "SOLIDH27"; }
+      std::string get_element_type_string() const { return "SOLIDH27_DEPRECATED"; }
     };
 
     /*!
@@ -450,7 +450,7 @@ namespace Discret
       };
 
      private:
-      std::string get_element_type_string() const { return "SOLIDH27"; }
+      std::string get_element_type_string() const { return "SOLIDH27_DEPRECATED"; }
     };  // class So_hex27
 
 

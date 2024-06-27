@@ -87,7 +87,7 @@ void Discret::ELEMENTS::SoHex8ThermoType::setup_element_definition(
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex8;
   SoHex8Type::setup_element_definition(definitions_hex8);
 
-  std::map<std::string, Input::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
+  std::map<std::string, Input::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8_DEPRECATED"];
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
@@ -197,7 +197,8 @@ void Discret::ELEMENTS::SoHex8fbarThermoType::setup_element_definition(
   // call setup of so3_ele
   SoHex8fbarType::setup_element_definition(definitions_hex8fbar);
 
-  std::map<std::string, Input::LineDefinition>& defs_hex8fbar = definitions_hex8fbar["SOLIDH8FBAR"];
+  std::map<std::string, Input::LineDefinition>& defs_hex8fbar =
+      definitions_hex8fbar["SOLIDH8FBAR_DEPRECATED"];
 
   // templated definition
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
@@ -305,7 +306,7 @@ void Discret::ELEMENTS::SoTet4ThermoType::setup_element_definition(
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_tet4;
   SoTet4Type::setup_element_definition(definitions_tet4);
 
-  std::map<std::string, Input::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
+  std::map<std::string, Input::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4_DEPRECATED"];
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
@@ -411,7 +412,8 @@ void Discret::ELEMENTS::SoTet10ThermoType::setup_element_definition(
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_tet10;
   SoTet10Type::setup_element_definition(definitions_tet10);
 
-  std::map<std::string, Input::LineDefinition>& defs_tet10 = definitions_tet10["SOLIDT10"];
+  std::map<std::string, Input::LineDefinition>& defs_tet10 =
+      definitions_tet10["SOLIDT10_DEPRECATED"];
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
@@ -517,7 +519,8 @@ void Discret::ELEMENTS::SoHex27ThermoType::setup_element_definition(
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex27;
   SoHex27Type::setup_element_definition(definitions_hex27);
 
-  std::map<std::string, Input::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
+  std::map<std::string, Input::LineDefinition>& defs_hex27 =
+      definitions_hex27["SOLIDH27_DEPRECATED"];
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
@@ -623,7 +626,8 @@ void Discret::ELEMENTS::SoHex20ThermoType::setup_element_definition(
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex20;
   SoHex20Type::setup_element_definition(definitions_hex20);
 
-  std::map<std::string, Input::LineDefinition>& defs_hex20 = definitions_hex20["SOLIDH20"];
+  std::map<std::string, Input::LineDefinition>& defs_hex20 =
+      definitions_hex20["SOLIDH20_DEPRECATED"];
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
@@ -730,7 +734,8 @@ void Discret::ELEMENTS::SoNurbs27ThermoType::setup_element_definition(
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_nurbs27;
   Nurbs::SoNurbs27Type::setup_element_definition(definitions_nurbs27);
 
-  std::map<std::string, Input::LineDefinition>& defs_nurbs27 = definitions_nurbs27["SONURBS27"];
+  std::map<std::string, Input::LineDefinition>& defs_nurbs27 =
+      definitions_nurbs27["SONURBS27_DEPRECATED"];
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 

@@ -67,7 +67,7 @@ namespace Discret
      private:
       static SoHex18Type instance_;
 
-      std::string get_element_type_string() const { return "SOLIDH18"; }
+      std::string get_element_type_string() const { return "SOLIDH18_DEPRECATED"; }
     };  // class So_hex18Type
 
     class SoHex18 : public virtual SoBase
@@ -405,7 +405,7 @@ namespace Discret
       virtual void recover(const std::vector<double>& residual) { return; }
 
      private:
-      std::string get_element_type_string() const { return "SOLIDH18"; }
+      std::string get_element_type_string() const { return "SOLIDH18_DEPRECATED"; }
     };  // class So_hex18
 
   }  // namespace ELEMENTS

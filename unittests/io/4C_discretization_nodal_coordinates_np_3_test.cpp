@@ -54,9 +54,9 @@ namespace
       inputData_.interval_ = std::array<int, 3>{2, 2, 4};
       inputData_.node_gid_of_first_new_node_ = 0;
 
-      inputData_.elementtype_ = "SOLIDH8";
+      inputData_.elementtype_ = "SOLID";
       inputData_.distype_ = "HEX8";
-      inputData_.elearguments_ = "MAT 1 KINEM nonlinear EAS none";
+      inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
 
       Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(
           *test_discretization_, inputData_, true);

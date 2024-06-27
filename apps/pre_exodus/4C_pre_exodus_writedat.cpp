@@ -596,7 +596,7 @@ void EXODUS::DatEles(Teuchos::RCP<const EXODUS::ElementBlock> eb, const EXODUS::
     const std::vector<int> nodes = ele.second;
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
-    dat << " " << acte.ename;  // e.g. "SOLIDH8"
+    dat << " " << acte.ename;  // e.g. "SOLID"
     dat << " " << Core::FE::CellTypeToString(PreShapeToDrt(eb->GetShape()));
     dat << "  ";
     for (auto node : nodes) dat << node << " ";

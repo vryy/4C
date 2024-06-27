@@ -68,7 +68,7 @@ namespace Discret
      private:
       static SoPyramid5Type instance_;
 
-      std::string get_element_type_string() const { return "SOLIDP5"; }
+      std::string get_element_type_string() const { return "SOLIDP5_DEPRECATED"; }
     };
 
 
@@ -463,7 +463,7 @@ namespace Discret
       };
 
      private:
-      std::string get_element_type_string() const { return "SOLIDP5"; }
+      std::string get_element_type_string() const { return "SOLIDP5_DEPRECATED"; }
     };  // class So_pyramid5
 
 

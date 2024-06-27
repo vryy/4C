@@ -107,10 +107,10 @@ corresponding element blocks and nodesets is correct.
 Next, the Section of the `.dat` file under which this information will be listed is given.
 The structure element properties are listed under `STRUCTURE`, whereas the boundary/contact conditions will be listed
 under their corresponding section names.
-The parameters for assigning a material model to an element block with `SOLIDH8` elements of shape `HEX8` are:
+The parameters for assigning a material model to an element block with `SOLID` elements of shape `HEX8` are:
 
 ```bash
-description="MAT 1 KINEM nonlinear EAS none"
+description="MAT 1 KINEM nonlinear"
 ```
 
 where we choose material model 1, set the kinematics to nonlinear and assume no enhanced assumed strain.
