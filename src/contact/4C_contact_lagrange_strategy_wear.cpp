@@ -360,7 +360,7 @@ void Wear::LagrangeStrategyWear::InitMortar()
   mmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100));
 
   // global gap
-  g_ = Core::LinAlg::CreateVector(*gsnoderowmap_, true);
+  wgap_ = Core::LinAlg::CreateVector(*gsnoderowmap_, true);
 
   /**********************************************************************/
   /* (re)setup global wear Epetra_Vector (for all wear problems)        */
@@ -421,7 +421,7 @@ void Wear::LagrangeStrategyWear::AssembleMortar()
   if (!wearimpl_ and !wearprimvar_ and
       Params().get<int>("PROBTYPE") != Inpar::CONTACT::structalewear)
   {
-    g_->Update(1.0, *wearvector_, 1.0);
+    wgap_->Update(1.0, *wearvector_, 1.0);
   }
   else
   {
@@ -434,7 +434,7 @@ void Wear::LagrangeStrategyWear::AssembleMortar()
       // after a time step!
       store_nodal_quantities(Mortar::StrategyBase::weightedwear);
       interface_[0]->AssembleWear(*wearvector_);
-      g_->Update(1.0, *wearvector_, 1.0);
+      wgap_->Update(1.0, *wearvector_, 1.0);
 
       // update alle gap function entries for slave nodes!
       for (int i = 0; i < (int)interface_.size(); ++i)
@@ -2643,7 +2643,7 @@ void Wear::LagrangeStrategyWear::EvaluateFriction(
   Teuchos::RCP<Epetra_Vector> gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
   if (gact->GlobalLength())
   {
-    Core::LinAlg::Export(*g_, *gact);
+    Core::LinAlg::Export(*wgap_, *gact);
     gact->ReplaceMap(*gactiven_);
   }
 
@@ -3285,7 +3285,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<Epetra_Vector> gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
     Teuchos::RCP<Epetra_Vector> gactexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -3468,7 +3468,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<Epetra_Vector> gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
     Teuchos::RCP<Epetra_Vector> gactexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -3694,7 +3694,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<Epetra_Vector> gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
     Teuchos::RCP<Epetra_Vector> gactexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));

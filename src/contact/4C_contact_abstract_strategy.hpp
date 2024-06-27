@@ -157,7 +157,7 @@ namespace CONTACT
     Teuchos::RCP<const Epetra_Map> g_in_active_dof_row_map_ptr() const { return ginactivedofs_; };
     Epetra_Map& GInActiveDofRowMap()
     {
-      if (ginactivedofs_.is_null()) FOUR_C_THROW("The gAugActiveSlaveDofsPtr_ is not initialized!");
+      if (ginactivedofs_.is_null()) FOUR_C_THROW("The ginactivedofs_ is not initialized!");
       return *ginactivedofs_;
     }
 
@@ -256,12 +256,12 @@ namespace CONTACT
     }
 
     //! return global weighted gap vector g
-    Teuchos::RCP<Epetra_Vector>& WGapPtr() { return g_; };
-    Teuchos::RCP<const Epetra_Vector> WGapPtr() const { return g_; };
+    Teuchos::RCP<Epetra_Vector>& WGapPtr() { return wgap_; };
+    Teuchos::RCP<const Epetra_Vector> WGapPtr() const { return wgap_; };
     Epetra_Vector& WGap()
     {
-      if (g_.is_null()) FOUR_C_THROW("The wGapRhsPtr_ is not initialized!");
-      return *g_;
+      if (wgap_.is_null()) FOUR_C_THROW("The wgap_ is not initialized!");
+      return *wgap_;
     }
 
     //! return global tangential rhs vector
@@ -567,7 +567,7 @@ namespace CONTACT
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix_;
 
     //! global weighted gap vector \f$g\f$
-    Teuchos::RCP<Epetra_Vector> g_;
+    Teuchos::RCP<Epetra_Vector> wgap_;
 
     //! global tangential right-hand side vector (formulation with incremental #z_)
     Teuchos::RCP<Epetra_Vector> tangrhs_;
@@ -2159,7 +2159,7 @@ namespace CONTACT
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& mmatrix_;
 
     //! Global weighted gap vector \f$g\f$
-    Teuchos::RCP<Epetra_Vector>& g_;
+    Teuchos::RCP<Epetra_Vector>& wgap_;
 
     //! Global tangential right-hand side vector (formulation with incremental #z_)
     Teuchos::RCP<Epetra_Vector>& tangrhs_;

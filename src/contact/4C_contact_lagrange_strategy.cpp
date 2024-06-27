@@ -188,14 +188,14 @@ void CONTACT::LagrangeStrategy::EvaluateFriction(
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
-    if (gact->GlobalLength()) Core::LinAlg::Export(*g_, *gact);
+    if (gact->GlobalLength()) Core::LinAlg::Export(*wgap_, *gact);
   }
   else
   {
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
@@ -1912,7 +1912,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
     }
   }
   else
@@ -1920,7 +1920,7 @@ void CONTACT::LagrangeStrategy::EvaluateContact(
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
@@ -3274,7 +3274,7 @@ void CONTACT::LagrangeStrategy::EvalConstrRHS()
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
     }
   }
   else
@@ -3282,7 +3282,7 @@ void CONTACT::LagrangeStrategy::EvalConstrRHS()
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
@@ -4605,7 +4605,7 @@ void CONTACT::LagrangeStrategy::UpdateActiveSet()
       Node* cnode = dynamic_cast<Node*>(node);
 
       // compute weighted gap
-      double wgap = (*g_)[g_->Map().LID(gid)];
+      double wgap = (*wgap_)[wgap_->Map().LID(gid)];
 
       // compute normal part of Lagrange multiplier
       double nz = 0.0;
@@ -5499,14 +5499,14 @@ void CONTACT::LagrangeStrategy::CondenseFriction(
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
   {
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
-    if (gact->GlobalLength()) Core::LinAlg::Export(*g_, *gact);
+    if (gact->GlobalLength()) Core::LinAlg::Export(*wgap_, *gact);
   }
   else
   {
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }
@@ -6329,7 +6329,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
     }
   }
   else
@@ -6337,7 +6337,7 @@ void CONTACT::LagrangeStrategy::condense_frictionless(
     gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gact->GlobalLength())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
   }

@@ -599,12 +599,12 @@ void CONTACT::PenaltyStrategy::update_constraint_norm(int uzawaiter)
     if (constr_direction_ == Inpar::CONTACT::constr_xyz)
     {
       gact = Core::LinAlg::CreateVector(*gactivedofs_, true);
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
     }
     else
     {
       gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
-      if (gact->GlobalLength()) Core::LinAlg::Export(*g_, *gact);
+      if (gact->GlobalLength()) Core::LinAlg::Export(*wgap_, *gact);
     }
 
     // compute constraint norm

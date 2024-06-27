@@ -71,7 +71,7 @@ CONTACT::AbstractStratDataContainer::AbstractStratDataContainer()
       initial_elecolmap_(Teuchos::null),
       dmatrix_(Teuchos::null),
       mmatrix_(Teuchos::null),
-      g_(Teuchos::null),
+      wgap_(Teuchos::null),
       tangrhs_(Teuchos::null),
       inactiverhs_(Teuchos::null),
       str_contact_rhs_ptr_(Teuchos::null),
@@ -150,7 +150,7 @@ CONTACT::AbstractStrategy::AbstractStrategy(
       initial_elecolmap_(data_ptr->initial_sl_ma_ele_col_map()),
       dmatrix_(data_ptr->DMatrixPtr()),
       mmatrix_(data_ptr->MMatrixPtr()),
-      g_(data_ptr->WGapPtr()),
+      wgap_(data_ptr->WGapPtr()),
       tangrhs_(data_ptr->TangRhsPtr()),
       inactiverhs_(data_ptr->InactiveRhsPtr()),
       strcontactrhs_(data_ptr->StrContactRhsPtr()),
@@ -1409,9 +1409,9 @@ void CONTACT::AbstractStrategy::InitMortar()
   mmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(SlDoFRowMap(true), 100));
 
   if (constr_direction_ == Inpar::CONTACT::constr_xyz)
-    g_ = Core::LinAlg::CreateVector(SlDoFRowMap(true), true);
+    wgap_ = Core::LinAlg::CreateVector(SlDoFRowMap(true), true);
   else if (constr_direction_ == Inpar::CONTACT::constr_ntt)
-    g_ = Core::LinAlg::CreateVector(SlRowNodes(), true);
+    wgap_ = Core::LinAlg::CreateVector(SlRowNodes(), true);
   else
     FOUR_C_THROW("unknown contact constraint direction");
 
@@ -1442,7 +1442,7 @@ void CONTACT::AbstractStrategy::AssembleMortar()
   {
     // assemble D-, M-matrix and g-vector, store them globally
     interfaces()[i]->AssembleDM(*dmatrix_, *mmatrix_);
-    interfaces()[i]->AssembleG(*g_);
+    interfaces()[i]->AssembleG(*wgap_);
 
 #ifdef CONTACTFDNORMAL
     // FD check of normal derivatives
@@ -2570,7 +2570,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
         Node* cnode = dynamic_cast<Node*>(node);
 
         // compute weighted gap
-        double wgap = (*g_)[g_->Map().LID(gid)];
+        double wgap = (*wgap_)[wgap_->Map().LID(gid)];
 
         double Xpos = cnode->X()[0];
         double Ypos = cnode->X()[1];
@@ -2614,7 +2614,7 @@ void CONTACT::AbstractStrategy::PrintActiveSet() const
         FriNode* frinode = dynamic_cast<FriNode*>(cnode);
 
         // compute weighted gap
-        double wgap = (*g_)[g_->Map().LID(gid)];
+        double wgap = (*wgap_)[wgap_->Map().LID(gid)];
 
         // compute normal part of Lagrange multiplier
         double nz = 0.0;
