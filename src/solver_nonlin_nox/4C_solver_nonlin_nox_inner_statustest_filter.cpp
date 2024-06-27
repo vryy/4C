@@ -177,7 +177,7 @@ void NOX::Nln::Inner::StatusTest::Filter::Point::reinitFilter(
   std::copy(global_scaled_max_thetas_.values(), global_scaled_max_thetas_.values() + num_thetas,
       point.coords_.values() + num_obj_coords_);
 
-  point.max_theta_id_ = infeasibility_func.findMaxThetaId(point.A() + Point::num_obj_coords_);
+  point.max_theta_id_ = infeasibility_func.findMaxThetaId(point.data() + Point::num_obj_coords_);
 
   Teuchos::RCP<Point> fpoint = makeFilterPoint(point, false);
   filter.push_back(fpoint);
@@ -193,9 +193,9 @@ NOX::Nln::Inner::StatusTest::Filter::Point::create(const ::NOX::MeritFunction::G
   Point& point = *point_ptr;
 
   point(0) = merit_func.computef(grp);
-  infeasibility_func.computef(point.A() + Point::num_obj_coords_, grp);
+  infeasibility_func.computef(point.data() + Point::num_obj_coords_, grp);
 
-  point.max_theta_id_ = infeasibility_func.findMaxThetaId(point.A() + Point::num_obj_coords_);
+  point.max_theta_id_ = infeasibility_func.findMaxThetaId(point.data() + Point::num_obj_coords_);
 
   return point_ptr;
 }
@@ -1241,7 +1241,7 @@ void NOX::Nln::Inner::StatusTest::Filter::compute_minimal_step_length_estimates(
   /* compute minimal step length estimate based on the 2nd constraint violation
    * filter acceptability check */
   amin_theta_ =
-      theta_.minimal_step_length_estimate(curr_points_.first->A() + Point::num_obj_coords_,
+      theta_.minimal_step_length_estimate(curr_points_.first->data() + Point::num_obj_coords_,
           model_lin_terms_.values() + Point::num_obj_coords_);
 
   /* compute minimal step length estimate based on the f-type switching condition */
@@ -1527,7 +1527,7 @@ enum NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::Nln::Inner::StatusTest::Filter::Print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::Inner::StatusTest::Filter::print(std::ostream& stream, int indent) const
 {
   std::string indent_str;
   indent_str.assign(indent, ' ');
@@ -1571,7 +1571,7 @@ std::ostream& NOX::Nln::Inner::StatusTest::Filter::Print(std::ostream& stream, i
 
   stream << indent_str << "F-Type condition is " << (is_ftype_step_ ? "" : "not ")
          << "fulfilled.\n";
-  if (is_ftype_step_) armijo_test_->Print(stream, par_indent.size());
+  if (is_ftype_step_) armijo_test_->print(stream, par_indent.size());
 
   if (not utils_.isPrintType(::NOX::Utils::Details)) return stream;
 

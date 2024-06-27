@@ -55,7 +55,7 @@ namespace NOX
           NOX::Nln::Inner::StatusTest::StatusType GetStatus() const override;
 
           ///! Output formatted description of stopping test to output stream.
-          std::ostream& Print(std::ostream& stream, int indent = 0) const override;
+          std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
          protected:
           double get_search_direction_length(const NOX::Nln::LineSearch::Generic& linesearch,

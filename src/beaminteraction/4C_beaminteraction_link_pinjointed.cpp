@@ -128,11 +128,11 @@ Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void BEAMINTERACTION::BeamLinkPinJointed::Print(std::ostream& out) const
+void BEAMINTERACTION::BeamLinkPinJointed::print(std::ostream& out) const
 {
   check_init();
 
-  BeamLink::Print(out);
+  BeamLink::print(out);
 
   out << "\n";
 }

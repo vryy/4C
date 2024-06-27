@@ -509,10 +509,10 @@ int Discret::ELEMENTS::ScaTraHDG::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  print this element (public)                           hoermann 09/15|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDG::Print(std::ostream& os) const
+void Discret::ELEMENTS::ScaTraHDG::print(std::ostream& os) const
 {
   os << "ScaTraHDG ";
-  Element::Print(os);
+  Element::print(os);
 }
 
 
@@ -627,10 +627,10 @@ void Discret::ELEMENTS::ScaTraHDGBoundary::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                          hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::ScaTraHDGBoundary::print(std::ostream& os) const
 {
   os << "ScaTraHDGBoundary ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 
@@ -1016,10 +1016,10 @@ void Discret::ELEMENTS::ScaTraHDGIntFace::PatchLocationVector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                          hoermann 09/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraHDGIntFace::Print(std::ostream& os) const
+void Discret::ELEMENTS::ScaTraHDGIntFace::print(std::ostream& os) const
 {
   os << "ScaTraHDGIntFace ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

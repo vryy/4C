@@ -27,8 +27,8 @@ namespace Core::LinAlg::Tensor
       const Core::LinAlg::Matrix<n, n>& Tin, Core::LinAlg::Matrix<n, n>& Tout)
   {
     Core::LinAlg::Matrix<n, n> temp(false);
-    temp.MultiplyNN(1.0, Q, Tin);
-    Tout.MultiplyNT(1.0, temp, Q);
+    temp.multiply_nn(1.0, Q, Tin);
+    Tout.multiply_nt(1.0, temp, Q);
   }
 
   /*!
@@ -44,8 +44,8 @@ namespace Core::LinAlg::Tensor
       const Core::LinAlg::Matrix<n, n>& Tin, Core::LinAlg::Matrix<n, n>& Tout)
   {
     Core::LinAlg::Matrix<n, n> temp(false);
-    temp.MultiplyTN(1.0, Q, Tin);
-    Tout.MultiplyNN(1.0, temp, Q);
+    temp.multiply_tn(1.0, Q, Tin);
+    Tout.multiply_nn(1.0, temp, Q);
   }
 
   /*!
@@ -116,8 +116,8 @@ namespace Core::LinAlg::Tensor
     FourthTensorRotationMatrix(Q, Qfourth);
 
     Core::LinAlg::Matrix<6, 6> temp(false);
-    temp.MultiplyTN(1.0, Qfourth, Tin);
-    Tout.MultiplyNN(1.0, temp, Qfourth);
+    temp.multiply_tn(1.0, Qfourth, Tin);
+    Tout.multiply_nn(1.0, temp, Qfourth);
   }
 
 }  // namespace Core::LinAlg::Tensor

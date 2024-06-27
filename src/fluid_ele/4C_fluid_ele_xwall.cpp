@@ -136,10 +136,10 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidXWall
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidXWall::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidXWall::print(std::ostream& os) const
 {
   os << "FluidXWall ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

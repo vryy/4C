@@ -41,7 +41,7 @@ namespace CONTACT
       Teuchos::RCP<ConstitutiveLaw> create_constitutive_law() override;
 
       /// @name get-functions for the parameters of a cubic polynomial
-      double GetA() { return a_; }
+      double Getdata() { return a_; }
       double GetB() { return b_; }
       double GetC() { return c_; }
       double GetD() { return d_; }
@@ -76,7 +76,7 @@ namespace CONTACT
         return Inpar::CONTACT::ConstitutiveLawType::colaw_cubic;
       }
 
-      double GetA() { return params_->GetA(); }
+      double Getdata() { return params_->Getdata(); }
       double GetB() { return params_->GetB(); }
       double GetC() { return params_->GetC(); }
       double GetD() { return params_->GetD(); }

@@ -708,7 +708,7 @@ namespace Discret
 
         if (diffcondparams_->CurSolVar())
           for (unsigned idim = 0; idim < NSD; ++idim)
-            curint_(idim, 0) = ephinp[vm::numscal_ + 1 + idim].Dot(funct);
+            curint_(idim, 0) = ephinp[vm::numscal_ + 1 + idim].dot(funct);
       };
 
       /*========================================================================*/

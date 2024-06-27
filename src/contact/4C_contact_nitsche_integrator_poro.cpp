@@ -114,8 +114,8 @@ void CONTACT::IntegratorNitschePoro::gpts_forces(Mortar::Element& sele, Mortar::
   Core::LinAlg::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<Core::Gen::Pairedvector<int, double>> deriv_slave_normal(0, 0);
   std::vector<Core::Gen::Pairedvector<int, double>> deriv_master_normal(0, 0);
-  sele.compute_unit_normal_at_xi(sxi, slave_normal.A());
-  mele.compute_unit_normal_at_xi(mxi, master_normal.A());
+  sele.compute_unit_normal_at_xi(sxi, slave_normal.data());
+  mele.compute_unit_normal_at_xi(mxi, master_normal.data());
   sele.DerivUnitNormalAtXi(sxi, deriv_slave_normal);
   mele.DerivUnitNormalAtXi(mxi, deriv_master_normal);
 

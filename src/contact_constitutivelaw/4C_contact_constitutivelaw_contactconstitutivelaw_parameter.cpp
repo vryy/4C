@@ -30,11 +30,11 @@ CONTACT::CONSTITUTIVELAW::Container::Container(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::Container::Print(std::ostream& os) const
+void CONTACT::CONSTITUTIVELAW::Container::print(std::ostream& os) const
 {
   os << "ContactConstitutiveLaw " << Id() << " " << Name() << " :: ";
 
-  Core::IO::InputParameterContainer::Print(os);
+  Core::IO::InputParameterContainer::print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

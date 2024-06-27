@@ -140,7 +140,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::Get
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::Nln::Inner::StatusTest::Armijo::Print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::Inner::StatusTest::Armijo::print(std::ostream& stream, int indent) const
 {
   std::string indent_string;
   indent_string.assign(indent, ' ');

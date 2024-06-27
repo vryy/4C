@@ -175,10 +175,10 @@ void Discret::ELEMENTS::Vele3::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3::Print(std::ostream& os) const
+void Discret::ELEMENTS::Vele3::print(std::ostream& os) const
 {
   os << "Vele3 " << Core::FE::CellTypeToString(Shape());
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

@@ -227,12 +227,12 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       extract_values_from_global_vector(discretization, 0, lm, &mydisp, nullptr, "displacement");
 
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       enum Inpar::STR::DampKind damping =
           params.get<enum Inpar::STR::DampKind>("damping", Inpar::STR::damp_none);
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr2 = nullptr;
-      if (elemat2.IsInitialized() and (damping == Inpar::STR::damp_material)) matptr2 = &elemat2;
+      if (elemat2.is_initialized() and (damping == Inpar::STR::damp_material)) matptr2 = &elemat2;
 
       if (la.Size() > 1)
       {
@@ -295,7 +295,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           discretization, 0, la[0].lm_, &mydisp, nullptr, "displacement");
 
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       // we skip this evaluation if the coupling is not setup yet, i.e.
       // if the secondary dofset or the secondary material was not set
@@ -359,7 +359,7 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       std::vector<int> lm = la[0].lm_;
 
       Core::LinAlg::Matrix<numdof_, (numdim_ + 1)* numnod_>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       // need current fluid state,
       // call the fluid discretization: fluid equates 2nd dofset
@@ -565,7 +565,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::nonlinear_stiffness_poroelast(
     /* additional "reactive darcy-term"
      detJ * w(gp) * ( J * reacoeff * phi^2  ) * D(v_s)
      */
-    reamatrix->Update(1.0, erea_v, 1.0);
+    reamatrix->update(1.0, erea_v, 1.0);
   }
 }
 
@@ -652,7 +652,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop(Teuchos::ParameterL
 
     // inverse deformation gradient F^-1
     Core::LinAlg::Matrix<numdim_, numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
@@ -674,19 +674,19 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop(Teuchos::ParameterL
 
     //----------------------------------------------------
     // pressure at integration point
-    double press = shapefct.Dot(epreaf);
+    double press = shapefct.dot(epreaf);
 
     // pressure gradient at integration point
     Core::LinAlg::Matrix<numdim_, 1> Gradp;
-    Gradp.Multiply(N_XYZ, epreaf);
+    Gradp.multiply(N_XYZ, epreaf);
 
     // fluid velocity at integration point
     Core::LinAlg::Matrix<numdim_, 1> fvelint;
-    fvelint.Multiply(evelnp, shapefct);
+    fvelint.multiply(evelnp, shapefct);
 
     // material fluid velocity gradient at integration point
     Core::LinAlg::Matrix<numdim_, numdim_> fvelder;
-    fvelder.MultiplyNT(evelnp, N_XYZ);
+    fvelder.multiply_nt(evelnp, N_XYZ);
 
     // structure displacement and velocity at integration point
     Core::LinAlg::Matrix<numdim_, 1> velint(true);
@@ -696,11 +696,11 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop(Teuchos::ParameterL
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<numdim_, numdim_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // inverse Right Cauchy-Green tensor
     Core::LinAlg::Matrix<numdim_, numdim_> C_inv(false);
-    C_inv.Invert(cauchygreen);
+    C_inv.invert(cauchygreen);
 
     // compute some auxiliary matrixes for computation of linearization
     // dF^-T/dus
@@ -788,7 +788,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_pressure_based(
 
     // inverse deformation gradient F^-1
     Core::LinAlg::Matrix<numdim_, numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     // jacobian determinant of transformation between spatial and material space "|dx/dX|"
     double J = 0.0;
@@ -833,11 +833,11 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_pressure_based(
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<numdim_, numdim_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // inverse Right Cauchy-Green tensor
     Core::LinAlg::Matrix<numdim_, numdim_> C_inv(false);
-    C_inv.Invert(cauchygreen);
+    C_inv.invert(cauchygreen);
 
     // compute some auxiliary matrixes for computation of linearization
     // dC^-1/dus
@@ -899,10 +899,10 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors(const int& g
     fluid_mat_->compute_reaction_tensor(matreatensor, J, porosity,
         anisotropic_permeability_directions_, anisotropic_permeability_coeffs);
     fluid_mat_->compute_lin_mat_reaction_tensor(linreac_dphi, linreac_dJ, J, porosity);
-    temp.Multiply(1.0, matreatensor, defgrd_inv);
-    reatensor.MultiplyTN(defgrd_inv, temp);
-    reavel.Multiply(reatensor, velint);
-    reafvel.Multiply(reatensor, fvelint);
+    temp.multiply(1.0, matreatensor, defgrd_inv);
+    reatensor.multiply_tn(defgrd_inv, temp);
+    reavel.multiply(reatensor, velint);
+    reafvel.multiply(reatensor, fvelint);
   }
 
   const double detJ_w = detJ_[gp] * intpoints_.Weight(gp) * thickness_;
@@ -1008,7 +1008,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors(const int& g
 
   // B^T . C^-1
   static Core::LinAlg::Matrix<numdof_, 1> cinvb(true);
-  cinvb.MultiplyTN(bop, C_inv_vec);
+  cinvb.multiply_tn(bop, C_inv_vec);
 
   const double fac1 = -detJ_w * press;
   const double fac2 = fac1 * J;
@@ -1017,7 +1017,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors(const int& g
   if (force != nullptr)
   {
     // additional fluid stress- stiffness term RHS -(B^T .  C^-1  * J * p^f * detJ * w(gp))
-    force->Update(fac2, cinvb, 1.0);
+    force->update(fac2, cinvb, 1.0);
   }
 
   // update stiffness matrix
@@ -1026,18 +1026,18 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors(const int& g
     static Core::LinAlg::Matrix<numdof_, numdof_> tmp;
 
     // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
-    tmp.Multiply(fac1, cinvb, dJ_dus);
-    stiffmatrix->Update(1.0, tmp, 1.0);
+    tmp.multiply(fac1, cinvb, dJ_dus);
+    stiffmatrix->update(1.0, tmp, 1.0);
 
     // additional fluid stress- stiffness term -(B^T .  dC^-1/d(us) * J * p^f * detJ * w(gp))
-    tmp.MultiplyTN(fac2, bop, dCinv_dus);
-    stiffmatrix->Update(1.0, tmp, 1.0);
+    tmp.multiply_tn(fac2, bop, dCinv_dus);
+    stiffmatrix->update(1.0, tmp, 1.0);
 
     // integrate `geometric' stiffness matrix and add to keu *****************
     Core::LinAlg::Matrix<numstr_, 1> sfac(C_inv_vec);  // auxiliary integrated stress
 
     // scale and add viscous stress
-    sfac.Update(detJ_w, fstress, fac2);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+    sfac.update(detJ_w, fstress, fac2);  // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
 
     std::vector<double> SmB_L(2);  // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -1077,7 +1077,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_pressure_bas
 
   // B^T . C^-1
   static Core::LinAlg::Matrix<numdof_, 1> cinvb(true);
-  cinvb.MultiplyTN(bop, C_inv_vec);
+  cinvb.multiply_tn(bop, C_inv_vec);
 
   const double fac1 = -detJ_w * press;
   const double fac2 = fac1 * J;
@@ -1086,7 +1086,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_pressure_bas
   if (force != nullptr)
   {
     // additional fluid stress- stiffness term RHS -(B^T .  C^-1  * J * p^f * detJ * w(gp))
-    force->Update(fac2, cinvb, 1.0);
+    force->update(fac2, cinvb, 1.0);
   }
 
   // update stiffness matrix
@@ -1095,20 +1095,20 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_pressure_bas
     static Core::LinAlg::Matrix<numdof_, numdof_> tmp;
 
     // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
-    tmp.Multiply(fac1, cinvb, dJ_dus);
-    stiffmatrix->Update(1.0, tmp, 1.0);
+    tmp.multiply(fac1, cinvb, dJ_dus);
+    stiffmatrix->update(1.0, tmp, 1.0);
 
     // additional fluid stress- stiffness term -(B^T .  dC^-1/d(us) * J * p^f * detJ * w(gp))
-    tmp.MultiplyTN(fac2, bop, dCinv_dus);
-    stiffmatrix->Update(1.0, tmp, 1.0);
+    tmp.multiply_tn(fac2, bop, dCinv_dus);
+    stiffmatrix->update(1.0, tmp, 1.0);
 
     // additional fluid stress- stiffness term -(B^T .  dC^-1 * J * dp^s/d(us) * detJ * w(gp))
-    tmp.Multiply(-detJ_w * J, cinvb, dps_dus);
-    stiffmatrix->Update(1.0, tmp, 1.0);
+    tmp.multiply(-detJ_w * J, cinvb, dps_dus);
+    stiffmatrix->update(1.0, tmp, 1.0);
 
     // integrate `geometric' stiffness matrix and add to keu *****************
     Core::LinAlg::Matrix<numstr_, 1> sfac(C_inv_vec);  // auxiliary integrated stress
-    sfac.Scale(fac2);
+    sfac.scale(fac2);
 
     std::vector<double> SmB_L(2);  // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
@@ -1145,28 +1145,28 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_brinkman(con
   const double visc = fluid_mat_->Viscosity();
   Core::LinAlg::Matrix<numdim_, numdim_> CinvFvel;
   Core::LinAlg::Matrix<numdim_, numdim_> tmp;
-  CinvFvel.Multiply(C_inv, fvelder);
-  tmp.MultiplyNT(CinvFvel, defgrd_inv);
+  CinvFvel.multiply(C_inv, fvelder);
+  tmp.multiply_nt(CinvFvel, defgrd_inv);
   Core::LinAlg::Matrix<numdim_, numdim_> tmp2(tmp);
-  tmp.UpdateT(1.0, tmp2, 1.0);
+  tmp.update_t(1.0, tmp2, 1.0);
 
   fstress(0) = tmp(0, 0);
   fstress(1) = tmp(1, 1);
   fstress(2) = tmp(0, 1);
 
-  fstress.Scale(detJ_w * visc * J * porosity);
+  fstress.scale(detJ_w * visc * J * porosity);
 
   // B^T . C^-1
   Core::LinAlg::Matrix<numdof_, 1> fstressb(true);
-  fstressb.MultiplyTN(bop, fstress);
+  fstressb.multiply_tn(bop, fstress);
 
-  if (force != nullptr) force->Update(1.0, fstressb, 1.0);
+  if (force != nullptr) force->update(1.0, fstressb, 1.0);
 
   // evaluate viscous terms (for darcy-brinkman flow only)
   if (stiffmatrix != nullptr)
   {
     Core::LinAlg::Matrix<numdim_, numdim_> tmp4;
-    tmp4.MultiplyNT(fvelder, defgrd_inv);
+    tmp4.multiply_nt(fvelder, defgrd_inv);
 
     double fac = detJ_w * visc;
 
@@ -1200,16 +1200,16 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_brinkman(con
 
     // additional viscous fluid stress- stiffness term (B^T . fstress . dJ/d(us) * porosity * detJ *
     // w(gp))
-    tmp.Multiply(fac * porosity, fstressb, dJ_dus);
-    stiffmatrix->Update(1.0, tmp, 1.0);
+    tmp.multiply(fac * porosity, fstressb, dJ_dus);
+    stiffmatrix->update(1.0, tmp, 1.0);
 
     // additional fluid stress- stiffness term (B^T .  d\phi/d(us) . fstress  * J * w(gp))
-    tmp.Multiply(fac * J, fstressb, dphi_dus);
-    stiffmatrix->Update(1.0, tmp, 1.0);
+    tmp.multiply(fac * J, fstressb, dphi_dus);
+    stiffmatrix->update(1.0, tmp, 1.0);
 
     // additional fluid stress- stiffness term (B^T .  phi . dfstress/d(us)  * J * w(gp))
-    tmp.MultiplyTN(detJ_w * visc * J * porosity, bop, fstress_dus);
-    stiffmatrix->Update(1.0, tmp, 1.0);
+    tmp.multiply_tn(detJ_w * visc * J * porosity, bop, fstress_dus);
+    stiffmatrix->update(1.0, tmp, 1.0);
   }
 }
 
@@ -1343,30 +1343,30 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od(Teuchos::Paramet
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<numdim_, numdim_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // inverse Right Cauchy-Green tensor
     Core::LinAlg::Matrix<numdim_, numdim_> C_inv(false);
-    C_inv.Invert(cauchygreen);
+    C_inv.invert(cauchygreen);
 
     // inverse deformation gradient F^-1
     Core::LinAlg::Matrix<numdim_, numdim_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     //---------------- get pressure at integration point
-    double press = shapefct.Dot(epreaf);
+    double press = shapefct.dot(epreaf);
 
     //------------------ get material pressure gradient at integration point
     Core::LinAlg::Matrix<numdim_, 1> Gradp;
-    Gradp.Multiply(N_XYZ, epreaf);
+    Gradp.multiply(N_XYZ, epreaf);
 
     //--------------------- get fluid velocity at integration point
     Core::LinAlg::Matrix<numdim_, 1> fvelint;
-    fvelint.Multiply(evelnp, shapefct);
+    fvelint.multiply(evelnp, shapefct);
 
     // material fluid velocity gradient at integration point
     Core::LinAlg::Matrix<numdim_, numdim_> fvelder;
-    fvelder.MultiplyNT(evelnp, N_XYZ);
+    fvelder.multiply_nt(evelnp, N_XYZ);
 
     //----------------structure displacement and velocity at integration point
     Core::LinAlg::Matrix<numdim_, 1> velint(true);
@@ -1453,11 +1453,11 @@ void Discret::ELEMENTS::Wall1Poro<distype>::gauss_point_loop_od_pressure_based(
 
     // Right Cauchy-Green tensor = F^T * F
     Core::LinAlg::Matrix<numdim_, numdim_> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // inverse Right Cauchy-Green tensor
     Core::LinAlg::Matrix<numdim_, numdim_> C_inv(false);
-    C_inv.Invert(cauchygreen);
+    C_inv.invert(cauchygreen);
 
     // compute derivative of solid pressure w.r.t primary variable phi at node
     compute_primary_variable_at_gp(ephi, totalnumdofpernode, shapefct, phiAtGP);
@@ -1508,10 +1508,10 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_od(const int
     fluid_mat_->compute_reaction_tensor(matreatensor, J, porosity,
         anisotropic_permeability_directions_, anisotropic_permeability_coeffs);
     fluid_mat_->compute_lin_mat_reaction_tensor(linreac_dphi, linreac_dJ, J, porosity);
-    temp.Multiply(1.0, matreatensor, defgrd_inv);
-    reatensor.MultiplyTN(defgrd_inv, temp);
-    reavel.Multiply(reatensor, velint);
-    reafvel.Multiply(reatensor, fvelint);
+    temp.multiply(1.0, matreatensor, defgrd_inv);
+    reatensor.multiply_tn(defgrd_inv, temp);
+    reavel.multiply(reatensor, velint);
+    reafvel.multiply(reatensor, fvelint);
   }
 
   const double detJ_w = detJ_[gp] * intpoints_.Weight(gp) * thickness_;
@@ -1524,15 +1524,15 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_od(const int
 
   // B^T . C^-1
   Core::LinAlg::Matrix<numdof_, 1> cinvb(true);
-  cinvb.MultiplyTN(bop, C_inv_vec);
+  cinvb.multiply_tn(bop, C_inv_vec);
 
   // F^-T * Grad p
   Core::LinAlg::Matrix<numdim_, 1> Finvgradp;
-  Finvgradp.MultiplyTN(defgrd_inv, Gradp);
+  Finvgradp.multiply_tn(defgrd_inv, Gradp);
 
   // F^-T * N_XYZ
   Core::LinAlg::Matrix<numdim_, numnod_> FinvNXYZ;
-  FinvNXYZ.MultiplyTN(defgrd_inv, N_XYZ);
+  FinvNXYZ.multiply_tn(defgrd_inv, N_XYZ);
 
   {
     for (int i = 0; i < numnod_; i++)
@@ -1613,7 +1613,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_od_pressure_
 
   // B^T . C^-1
   Core::LinAlg::Matrix<numdof_, 1> cinvb(true);
-  cinvb.MultiplyTN(bop, C_inv_vec);
+  cinvb.multiply_tn(bop, C_inv_vec);
 
   const int totalnumdofpernode = fluidmulti_mat_->NumMat();
 
@@ -1659,10 +1659,10 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_brinkman_od(
 
   Core::LinAlg::Matrix<numdim_, numdim_> CinvFvel;
   Core::LinAlg::Matrix<numdim_, numdim_> tmp;
-  CinvFvel.Multiply(C_inv, fvelder);
-  tmp.MultiplyNT(CinvFvel, defgrd_inv);
+  CinvFvel.multiply(C_inv, fvelder);
+  tmp.multiply_nt(CinvFvel, defgrd_inv);
   Core::LinAlg::Matrix<numdim_, numdim_> tmp2(tmp);
-  tmp.UpdateT(1.0, tmp2, 1.0);
+  tmp.update_t(1.0, tmp2, 1.0);
 
   fstress(0) = tmp(0, 0);
   fstress(1) = tmp(1, 1);
@@ -1670,9 +1670,9 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_brinkman_od(
 
   // B^T . \sigma
   Core::LinAlg::Matrix<numdof_, 1> fstressb;
-  fstressb.MultiplyTN(bop, fstress);
+  fstressb.multiply_tn(bop, fstress);
   Core::LinAlg::Matrix<numdim_, numnod_> N_XYZ_Finv;
-  N_XYZ_Finv.Multiply(defgrd_inv, N_XYZ);
+  N_XYZ_Finv.multiply(defgrd_inv, N_XYZ);
 
   // dfstress/dv^f
   Core::LinAlg::Matrix<numstr_, numdof_> dfstressb_dv;
@@ -1691,7 +1691,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::fill_matrix_and_vectors_brinkman_od(
 
   // B^T . dfstress/dv^f
   Core::LinAlg::Matrix<numdof_, numdof_> dfstressb_dv_bop(true);
-  dfstressb_dv_bop.MultiplyTN(bop, dfstressb_dv);
+  dfstressb_dv_bop.multiply_tn(bop, dfstressb_dv);
 
   for (int i = 0; i < numnod_; i++)
   {
@@ -1767,7 +1767,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
 
     //----------------------------------------------------
     // pressure at integration point
-    double press = shapefct.Dot(epreaf);
+    double press = shapefct.dot(epreaf);
 
     Core::LinAlg::Matrix<Wall1::numstr_, 1> couplstress(true);
 
@@ -1836,8 +1836,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::InitElement()
     {
       Core::FE::shape_function_deriv1<distype>(xsi_[gp], deriv);
 
-      invJ_[gp].Multiply(deriv, xrefe);
-      detJ_[gp] = invJ_[gp].Invert();
+      invJ_[gp].multiply(deriv, xrefe);
+      detJ_[gp] = invJ_[gp].invert();
       if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
     }
   }
@@ -1861,7 +1861,7 @@ void Discret::ELEMENTS::Wall1Poro<
     const Core::LinAlg::Matrix<numdim_, numnod_>& nodaldisp)
 {
   // compute J
-  J = defgrd.Determinant();
+  J = defgrd.determinant();
   // compute linearization of J
   compute_linearization_of_jacobian(dJ_dus, J, N_XYZ, defgrd_inv);
 
@@ -1879,7 +1879,7 @@ void Discret::ELEMENTS::Wall1Poro<
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
     dispgrad.clear();
     // gradient of displacements
-    dispgrad.MultiplyNT(nodaldisp, N_XYZ);
+    dispgrad.multiply_nt(nodaldisp, N_XYZ);
 
     volchange = 1.0;
     // volchange = 1 + trace of the linearized strains (= trace of displacement gradient)
@@ -1899,7 +1899,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_jacobian_determinant_volume_
     const Core::LinAlg::Matrix<numdim_, numnod_>& nodaldisp)
 {
   // compute J
-  J = defgrd.Determinant();
+  J = defgrd.determinant();
 
   if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
@@ -1914,7 +1914,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_jacobian_determinant_volume_
     static Core::LinAlg::Matrix<numdim_, numdim_> dispgrad;
     dispgrad.clear();
     // gradient of displacements
-    dispgrad.MultiplyNT(nodaldisp, N_XYZ);
+    dispgrad.multiply_nt(nodaldisp, N_XYZ);
 
     volchange = 1.0;
     // volchange = 1 + trace of the linearized strains (= trace of displacement gradient)
@@ -1930,7 +1930,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::p_k2to_cauchy(
     Core::LinAlg::Matrix<numdim_, numdim_>& cauchystress)
 {
   // calculate the Jacobi-deterinant
-  const double detF = (defgrd).Determinant();
+  const double detF = (defgrd).determinant();
 
   // sigma = 1/J . F . S . F^T
   Core::LinAlg::Matrix<numdim_, numdim_> pkstress;
@@ -1940,8 +1940,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::p_k2to_cauchy(
   pkstress(1, 1) = (stress)(1);
 
   Core::LinAlg::Matrix<numdim_, numdim_> temp;
-  temp.Multiply((1.0 / detF), (defgrd), pkstress);
-  (cauchystress).MultiplyNT(temp, (defgrd));
+  temp.multiply((1.0 / detF), (defgrd), pkstress);
+  (cauchystress).multiply_nt(temp, (defgrd));
 }
 
 template <Core::FE::CellType distype>
@@ -1953,7 +1953,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_def_gradient(
   if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
   {
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr, N_XYZ);  //  (6.17)
+    defgrd.multiply_nt(xcurr, N_XYZ);  //  (6.17)
   }
   else if (kintype_ == Inpar::STR::KinemType::linear)
   {
@@ -2027,8 +2027,8 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_shape_functions_and_derivati
       xrefe(i, 0) = Nodes()[i]->X()[0];
       xrefe(i, 1) = Nodes()[i]->X()[1];
     }
-    invJ_[gp].Multiply(deriv, xrefe);
-    detJ_[gp] = invJ_[gp].Invert();
+    invJ_[gp].multiply(deriv, xrefe);
+    detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", detJ_[gp]);
   }
 
@@ -2040,7 +2040,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_shape_functions_and_derivati
 
   // compute derivatives N_XYZ at gp w.r.t. material coordinates
   // by N_XYZ = J^-1 * N_rst
-  N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
+  N_XYZ.multiply(invJ_[gp], deriv);  // (6.21)
 }
 
 template <Core::FE::CellType distype>
@@ -2053,8 +2053,8 @@ double Discret::ELEMENTS::Wall1Poro<distype>::compute_jacobian_determinant(const
   Core::LinAlg::Matrix<numdim_, numdim_> xjm;
   // inverse of transposed jacobian "ds/dx"
   Core::LinAlg::Matrix<numdim_, numdim_> xji;
-  xjm.MultiplyNT(deriv, xcurr);
-  const double det = xji.Invert(xjm);
+  xjm.multiply_nt(deriv, xcurr);
+  const double det = xji.invert(xjm);
 
   // determinant of deformationgradient: det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds) )^-1
   const double J = det / detJ_[gp];
@@ -2088,7 +2088,7 @@ inline void Discret::ELEMENTS::Wall1Poro<distype>::compute_linearization_of_jaco
 
   //------linearization of jacobi determinant detF=J w.r.t. strucuture displacement   dJ/d(us) =
   // dJ/dF : dF/dus = J * F^-T * N,X
-  dJ_dus.MultiplyTN(J, defgrd_inv_vec, N_X);
+  dJ_dus.multiply_tn(J, defgrd_inv_vec, N_X);
 }
 
 template <Core::FE::CellType distype>
@@ -2103,7 +2103,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_auxiliary_values(
     Core::LinAlg::Matrix<numstr_, numdof_>& dCinv_dus)
 {
   // F^-T * Grad p
-  Finvgradp.MultiplyTN(defgrd_inv, Gradp);
+  Finvgradp.multiply_tn(defgrd_inv, Gradp);
 
   if (kintype_ != Inpar::STR::KinemType::linear)
   {
@@ -2169,7 +2169,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_porosity_and_linearization(
   );
 
   // linearization of porosity w.r.t structure displacement d\phi/d(us) = d\phi/dJ*dJ/d(us)
-  dphi_dus.Update(dphi_dJ, dJ_dus);
+  dphi_dus.update(dphi_dJ, dJ_dus);
 }
 
 template <Core::FE::CellType distype>
@@ -2269,7 +2269,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_linearization_of_sol_press_w
     dps_dphi -= volfracphi[ivolfrac] * volfracpressure[ivolfrac] / (porosity * porosity);
 
   // d (p_s) / d u_s = d (p_s) / d porosity * d porosity / d u_s
-  dps_dus.Update(dps_dphi, dphi_dus);
+  dps_dus.update(dps_dphi, dphi_dus);
 }
 
 /*----------------------------------------------------------------------*

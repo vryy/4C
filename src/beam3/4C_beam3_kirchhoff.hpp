@@ -421,7 +421,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       //@}
 
@@ -1124,7 +1124,7 @@ namespace Discret
         Core::LinAlg::Matrix<3, 3, T> Tinv = Core::LargeRotations::Tinvmatrix(theta);
 
         K.clear();
-        K.MultiplyTN(Tinv, theta_deriv);
+        K.multiply_tn(Tinv, theta_deriv);
       }
 
       //! calculate material stress resultants M,N from material strain resultants K, epsilon
@@ -1250,7 +1250,7 @@ namespace Discret
 
         // cross-product r'xr''
         Core::LinAlg::Matrix<3, 1, T> Srsrss(true);
-        Srsrss.Multiply(Srs, r_ss);
+        Srsrss.multiply(Srs, r_ss);
         T rsTrs = 0.0;
 
         for (int i = 0; i < 3; i++) rsTrs += r_s(i) * r_s(i);
@@ -1283,19 +1283,19 @@ namespace Discret
           gref1(i) = triadref(i, 0);
         }
 
-        scalar_aux.MultiplyTN(kappacl, gref1);
+        scalar_aux.multiply_tn(kappacl, gref1);
         KR1 = -scalar_aux(0, 0);
         scalar_aux.clear();
-        scalar_aux.MultiplyTN(g1, gref1);
+        scalar_aux.multiply_tn(g1, gref1);
         KR1 = KR1 / (1.0 + scalar_aux(0, 0));
         K(0) = KR1 + phi_s;
 
         scalar_aux.clear();
-        scalar_aux.MultiplyTN(kappacl, g2);
+        scalar_aux.multiply_tn(kappacl, g2);
         K(1) = scalar_aux(0, 0);
 
         scalar_aux.clear();
-        scalar_aux.MultiplyTN(kappacl, g3);
+        scalar_aux.multiply_tn(kappacl, g3);
         K(2) = scalar_aux(0, 0);
 
         return;
@@ -1371,8 +1371,8 @@ namespace Discret
         Core::LinAlg::Matrix<3, 3, FAD> auxmatrix1(true);
         Core::LinAlg::Matrix<3, 1, FAD> auxvec1(true);
         Core::LargeRotations::computespin(auxmatrix1, vec1);
-        auxvec1.Multiply(auxmatrix1, vec2);
-        vec_out.MultiplyTN(mat1, auxvec1);
+        auxvec1.multiply(auxmatrix1, vec2);
+        vec_out.multiply_tn(mat1, auxvec1);
 
         return;
       }

@@ -152,7 +152,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       Core::Elements::ElementType& ElementType() const override;
 
@@ -593,18 +593,18 @@ namespace Discret
           Core::LinAlg::Matrix<numnod_, 1>& shapefct, Core::LinAlg::Matrix<numdim_, numnod_>& deriv,
           Core::LinAlg::Matrix<numdim_, numnod_>& N_XYZ);
 
-      //! Compute Jacobian Determinant and the volume change
+      //! Compute Jacobian determinant and the volume change
       void compute_jacobian_determinant_volume_change(double& J, double& volchange,
           const Core::LinAlg::Matrix<numdim_, numdim_>& defgrd,
           const Core::LinAlg::Matrix<numdim_, numnod_>& N_XYZ,
           const Core::LinAlg::Matrix<numdim_, numnod_>& nodaldisp);
 
-      //! Compute Jacobian Determinant and the volume change and its linearizations
+      //! Compute Jacobian determinant and the volume change and its linearizations
       virtual void compute_jacobian_determinant_volume_change_and_linearizations(
-          double& J,          //!< (o) Jacobian Determinant
+          double& J,          //!< (o) Jacobian determinant
           double& volchange,  //!< (o) Change of Volume
           Core::LinAlg::Matrix<1, numdof_>&
-              dJ_dus,  //!< (o) Linearization of Jacobian Determinant  w.r.t displacements
+              dJ_dus,  //!< (o) Linearization of Jacobian determinant  w.r.t displacements
           Core::LinAlg::Matrix<1, numdof_>&
               dvolchange_dus,  //!<  (o) Linearization of Change of Volume  w.r.t displacements
           const Core::LinAlg::Matrix<numdim_, numdim_>& defgrd,  //!< (i) deformation gradient

@@ -3158,7 +3158,7 @@ void CONTACT::LineToLineCouplingPoint3d::LineIntersection(double* sxi, double* m
     //**********************************************
     //   solve deta = - inv(dF) * F               //
     //**********************************************
-    double jacdet = df.Invert();
+    double jacdet = df.invert();
     if (abs(jacdet) < 1.0e-12)
     {
       sxi[0] = 1e12;

@@ -422,9 +422,9 @@ namespace Discret
       )
       {
         // calculate pressure at t_(n+1) or t_(n+alpha_F)
-        prenp_ = funct.Dot(eprenp);
+        prenp_ = funct.dot(eprenp);
         // spatial gradient of current pressure value
-        gradpre_.Multiply(derxy, eprenp);
+        gradpre_.multiply(derxy, eprenp);
 
         return;
       };

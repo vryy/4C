@@ -92,37 +92,37 @@ void Discret::ELEMENTS::SoHex8P1J1Type::setup_element_definition(
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoHex8P1J1::SoHex8P1J1(int id, int owner) : Discret::ELEMENTS::SoHex8(id, owner)
 {
-  k_pu_.PutScalar(0.0);
-  k_tu_.PutScalar(0.0);
+  k_pu_.put_scalar(0.0);
+  k_tu_.put_scalar(0.0);
 
-  r_t_.PutScalar(0.0);
-  r_p_.PutScalar(0.0);
+  r_t_.put_scalar(0.0);
+  r_p_.put_scalar(0.0);
 
   k_tt_ = 0.0;
   k_pt_ = 0.0;
 
-  p_.PutScalar(0.0);
-  p_o_.PutScalar(0.0);
+  p_.put_scalar(0.0);
+  p_o_.put_scalar(0.0);
 
-  t_.PutScalar(1.0);
-  t_o_.PutScalar(1.0);
+  t_.put_scalar(1.0);
+  t_o_.put_scalar(1.0);
 
-  m_.PutScalar(0.0);
+  m_.put_scalar(0.0);
   for (int i = 0; i < 3; ++i)
   {
     m_(i, 0) = 1.0;
   }
 
-  identity6_.PutScalar(0.0);
+  identity6_.put_scalar(0.0);
   for (int i = 0; i < 6; ++i)
   {
     identity6_(i, i) = 1.0;
   }
 
   i_d_ = identity6_;
-  i_d_.MultiplyNT(-1.0 / 3.0, m_, m_, 1.0);
+  i_d_.multiply_nt(-1.0 / 3.0, m_, m_, 1.0);
 
-  i_0_.PutScalar(0.0);
+  i_0_.put_scalar(0.0);
 
   for (int i = 0; i < 3; ++i)
   {
@@ -206,10 +206,10 @@ void Discret::ELEMENTS::SoHex8P1J1::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                 lw 12/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8P1J1::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoHex8P1J1::print(std::ostream& os) const
 {
   os << "So_Hex8P1J1 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

@@ -692,7 +692,7 @@ namespace Core::FE
 
     \note This is a collective call
     */
-    virtual void Print(std::ostream& os) const;
+    virtual void print(std::ostream& os) const;
 
 
     /*!

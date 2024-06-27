@@ -162,15 +162,15 @@ namespace Core::Geo
       {
         Core::FE::shape_function_deriv1<distype>(rst, deriv1);
         // compute transposed Jacobian matrix
-        xjm.MultiplyNT(deriv1, xyze);
+        xjm.multiply_nt(deriv1, xyze);
         // compute the inverse Jacobian and the determinant
         if (xij)
         {
-          det = xij->Invert(xjm);
+          det = xij->invert(xjm);
         }
         else
         {
-          det = xjm.Determinant();
+          det = xjm.determinant();
         }
       }
       // ---------------------------------------------------------------
@@ -195,7 +195,7 @@ namespace Core::Geo
         /* transform the derivatives and Jacobians to the higher dimensional
          * coordinates (problem dimension) */
         Core::LinAlg::Matrix<dim, probdim, valtype> xjm_red;
-        xjm_red.MultiplyNT(deriv1_red, xyze);
+        xjm_red.multiply_nt(deriv1_red, xyze);
 
         for (unsigned i = 0; i < probdim; ++i)
         {
@@ -228,11 +228,11 @@ namespace Core::Geo
           if (unit_normal)
           {
             // normalize
-            const valtype norm2 = normalvec2->Norm2();
+            const valtype norm2 = normalvec2->norm2();
             if (norm2 < 1.0e-16)
               FOUR_C_THROW("The l2-norm of the normal vector is smaller than 1.0e-16!");
             //   " ( norm2 = %e )", norm2 ); // commented out in order for cln to work
-            normalvec2->Scale(1.0 / norm2);
+            normalvec2->scale(1.0 / norm2);
           }
 
           // extend the jacobian a 2nd time
@@ -242,7 +242,7 @@ namespace Core::Geo
 
           for (unsigned i = 0; i < numNodesElement; i++) deriv1(2, i) = 0.0;
         }
-        if (xij) xij->Invert(xjm);
+        if (xij) xij->invert(xjm);
       }
 
       return det;
@@ -294,15 +294,15 @@ namespace Core::Geo
     void GetElementScale(const T& xyze, double& scale)
     {
       scale = 0;
-      const int numNodes = xyze.N();
+      const int numNodes = xyze.n();
       Core::LinAlg::Matrix<probdim, 1> d;
 
       for (int i = 0; i < numNodes; ++i)
       {
         const Core::LinAlg::Matrix<probdim, 1> x1(&xyze(0, i), true);
         const Core::LinAlg::Matrix<probdim, 1> x2(&xyze(0, (i + 1) % numNodes), true);
-        d.Update(1, x2, -1, x1, 0);
-        scale += d.Norm2();
+        d.update(1, x2, -1, x1, 0);
+        scale += d.norm2();
       }
       scale /= numNodes;
     }
@@ -330,13 +330,13 @@ namespace Core::Geo
     void GetElementShift(const T& xyze, Core::LinAlg::Matrix<probdim, 1>& shift)
     {
       shift = 0.0;
-      const unsigned numNodes = static_cast<unsigned>(xyze.N());
+      const unsigned numNodes = static_cast<unsigned>(xyze.n());
       for (unsigned i = 0; i < numNodes; ++i)
       {
         const Core::LinAlg::Matrix<probdim, 1> x1(&xyze(0, i), true);
-        shift.Update(1, x1, 1);
+        shift.update(1, x1, 1);
       }
-      shift.Scale(1. / numNodes);
+      shift.scale(1. / numNodes);
     }
 
     /*--------------------------------------------------------------------------*/
@@ -395,34 +395,34 @@ namespace Core::Geo
 
       Core::LinAlg::Matrix<probdim, numNodesElement> xyze_linalg;
       if (xyze.numRows() == probdim and xyze.numCols() == numNodesElement)
-        xyze_linalg.SetView(xyze.values());
+        xyze_linalg.set_view(xyze.values());
       else
         FixMatrixShape(xyze, xyze_linalg);
 
-      if (static_cast<unsigned>(rst.M()) < dim)
+      if (static_cast<unsigned>(rst.m()) < dim)
         FOUR_C_THROW("The local coordinates have the wrong dimension!");
-      Core::LinAlg::Matrix<dim, 1> rst_linalg(rst.A(), true);
+      Core::LinAlg::Matrix<dim, 1> rst_linalg(rst.data(), true);
 
-      if (static_cast<unsigned>(normalvec1.M()) < probdim or
-          (normalvec2 and static_cast<unsigned>(normalvec2->M()) < probdim))
+      if (static_cast<unsigned>(normalvec1.m()) < probdim or
+          (normalvec2 and static_cast<unsigned>(normalvec2->m()) < probdim))
         FOUR_C_THROW("The normal vectors have the wrong dimenison!");
 
-      Core::LinAlg::Matrix<probdim, 1> normalvec1_linalg(normalvec1.A(), true);
+      Core::LinAlg::Matrix<probdim, 1> normalvec1_linalg(normalvec1.data(), true);
 
       if (normalvec2)
       {
-        Core::LinAlg::Matrix<probdim, 1> normalvec2_linalg((*normalvec2).A(), true);
+        Core::LinAlg::Matrix<probdim, 1> normalvec2_linalg((*normalvec2).data(), true);
         EvalDerivsInParameterSpace<probdim, distype, double>(xyze_linalg, rst_linalg, deriv1, xjm,
             nullptr, &normalvec1_linalg, &normalvec2_linalg, unit_normal);
 
-        std::fill(normalvec2->A() + probdim, normalvec2->A() + normalvec2->M(), 0.0);
+        std::fill(normalvec2->data() + probdim, normalvec2->data() + normalvec2->m(), 0.0);
       }
       else
       {
         EvalDerivsInParameterSpace<probdim, distype, double>(xyze_linalg, rst_linalg, deriv1, xjm,
             nullptr, &normalvec1_linalg, nullptr, unit_normal);
       }
-      std::fill(normalvec1.A() + probdim, normalvec1.A() + normalvec1.M(), 0.0);
+      std::fill(normalvec1.data() + probdim, normalvec1.data() + normalvec1.m(), 0.0);
     }
 
     /*--------------------------------------------------------------------------*/

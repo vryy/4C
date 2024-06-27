@@ -1377,7 +1377,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
     }
 
     // current element length (linear)
-    double curr_lin_ele_length = dirvec.Norm2();
+    double curr_lin_ele_length = dirvec.norm2();
 
     // loop over all base vectors for orientation index x,y and z
     Core::LinAlg::Matrix<3, 1> unit_base_vec(true);
@@ -1388,7 +1388,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_orientation_paramater
       unit_base_vec.clear();
       unit_base_vec(ibase) = 1.0;
 
-      double cos_squared = dirvec.Dot(unit_base_vec) / curr_lin_ele_length;
+      double cos_squared = dirvec.dot(unit_base_vec) / curr_lin_ele_length;
       cos_squared *= cos_squared;
 
       curr_ele_orientation_parameter[ibase] = cos_squared;

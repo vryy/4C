@@ -103,8 +103,8 @@ void CONTACT::IntegratorNitscheTsi::gpts_forces(Mortar::Element& sele, Mortar::E
   Core::LinAlg::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<Core::Gen::Pairedvector<int, double>> deriv_slave_normal(0, 0);
   std::vector<Core::Gen::Pairedvector<int, double>> deriv_master_normal(0, 0);
-  sele.compute_unit_normal_at_xi(sxi, slave_normal.A());
-  mele.compute_unit_normal_at_xi(mxi, master_normal.A());
+  sele.compute_unit_normal_at_xi(sxi, slave_normal.data());
+  mele.compute_unit_normal_at_xi(mxi, master_normal.data());
   sele.DerivUnitNormalAtXi(sxi, deriv_slave_normal);
   mele.DerivUnitNormalAtXi(mxi, deriv_master_normal);
 
@@ -225,7 +225,7 @@ void CONTACT::IntegratorNitscheTsi::gpts_forces(Mortar::Element& sele, Mortar::E
   if (frtype_)
   {
     CONTACT::UTILS::BuildTangentVectors<dim>(
-        contact_normal.A(), deriv_contact_normal, t1.A(), dt1, t2.A(), dt2);
+        contact_normal.data(), deriv_contact_normal, t1.data(), dt1, t2.data(), dt2);
     CONTACT::UTILS::RelVelInvariant<dim>(sele, sxi, dsxi, sval, sderiv, mele, mxi, dmxi, mval,
         mderiv, gap, dgapgp, relVel, relVel_deriv);
     CONTACT::UTILS::VectorScalarProduct<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
@@ -1195,7 +1195,7 @@ void CONTACT::IntegratorNitscheTsi::build_adjoint_test_thermo(Mortar::Element& m
   }
 
   Core::LinAlg::SerialDenseMatrix tmp(moEle.parent_element()->num_node(), dim, false);
-  Core::LinAlg::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
+  Core::LinAlg::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.data(),
       derivtravo_slave.numRows(), derivtravo_slave.numRows(), derivtravo_slave.numCols());
   if (Core::LinAlg::multiply(tmp, d2q_dT_dpxi, deriv_trafo)) FOUR_C_THROW("multiply failed");
   for (int d = 0; d < dim - 1; ++d)

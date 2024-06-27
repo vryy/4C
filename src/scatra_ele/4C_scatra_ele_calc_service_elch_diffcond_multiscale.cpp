@@ -227,8 +227,8 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
         // initialize vector with macro-scale state variables
         std::vector<double> phinp(3, 0.);
         phinp[0] = my::scatravarmanager_->Phinp(0);
-        phinp[1] = my::funct_.Dot(my::ephinp_[1]);
-        phinp[2] = my::funct_.Dot(my::ephinp_[2]);
+        phinp[1] = my::funct_.dot(my::ephinp_[1]);
+        phinp[2] = my::funct_.dot(my::ephinp_[2]);
 
         if (action == ScaTra::Action::micro_scale_prepare_time_step)
         {
@@ -255,7 +255,7 @@ int Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::ev
       // loop over all Gauss points
       for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
         // update multi-scale scalar transport material
-        newmanmultiscale->Update(iquad);
+        newmanmultiscale->update(iquad);
 
       break;
     }

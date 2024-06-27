@@ -206,7 +206,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       Core::Elements::ElementType& ElementType() const override { return SoTet4Type::Instance(); }
 

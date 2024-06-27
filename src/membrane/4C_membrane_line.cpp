@@ -131,12 +131,12 @@ void Discret::ELEMENTS::MembraneLine<distype>::unpack(const std::vector<char>& d
  |  print this element (public)                             fbraeu 06/16|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneLine<distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::MembraneLine<distype>::print(std::ostream& os) const
 {
   os << "MembraneLine ";
   os << " discretization type: "
      << Core::FE::CellTypeToString(Core::FE::DisTypeToFaceShapeType<distype>::shape).c_str();
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

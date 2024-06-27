@@ -1602,9 +1602,9 @@ void NTS::Interpolator::DerivXiGP3D(Mortar::Element& sele, Mortar::Element& mele
     }
 
   // get inverse of the 3x3 matrix L (in place)
-  if (abs(lmatrix.Determinant()) < 1e-12) FOUR_C_THROW("Singular lmatrix for derivgp3d");
+  if (abs(lmatrix.determinant()) < 1e-12) FOUR_C_THROW("Singular lmatrix for derivgp3d");
 
-  lmatrix.Invert();
+  lmatrix.invert();
 
   // build directional derivative of slave GP normal
   typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;

@@ -201,10 +201,10 @@ void Discret::ELEMENTS::RedInterAcinarDep::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Print this element (public)                             ismail 01/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedInterAcinarDep::Print(std::ostream& os) const
+void Discret::ELEMENTS::RedInterAcinarDep::print(std::ostream& os) const
 {
   os << "RedInterAcinarDep ";
-  Element::Print(os);
+  Element::print(os);
 
   return;
 }

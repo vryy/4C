@@ -280,13 +280,13 @@ Core::Nodes::Node* Core::FE::Discretization::gNode(int gid) const
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const Core::FE::Discretization& dis)
 {
-  dis.Print(os);
+  dis.print(os);
   return os;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Discretization::Print(std::ostream& os) const
+void Core::FE::Discretization::print(std::ostream& os) const
 {
   int numglobalelements = 0;
   int numglobalnodes = 0;

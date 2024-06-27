@@ -218,7 +218,7 @@ void test_generated_26182()
               << std::endl;
   }
   std::cout << "==| The cutside: |==" << std::endl;
-  cutside->Print();
+  cutside->print();
 
   std::cout << "==| The maincylcepoints: |==" << std::endl;
   for (uint ii = 0; ii < maincylcepoints.size(); ++ii)

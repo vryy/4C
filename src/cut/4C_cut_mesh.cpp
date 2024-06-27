@@ -1674,7 +1674,7 @@ void Core::Geo::Cut::Mesh::TestElementVolume(
       nodes[i]->Coordinates(&xyze(0, i));
       Core::LinAlg::Matrix<3, 1> vec;
       nodes[i]->Coordinates(&vec(0, 0));
-      if (vec.Norm2() > max_norm) max_norm = vec.Norm2();
+      if (vec.norm2() > max_norm) max_norm = vec.norm2();
     }
 
     double ev = Core::Geo::ElementVolume(e.Shape(), xyze);
@@ -1900,14 +1900,14 @@ void Core::Geo::Cut::Mesh::PrintFacets()
   //         ++i )
   //   {
   //     Point & p = **i;
-  //     p.Print();
+  //     p.print();
   //     std::cout << "\n";
   //   }
 
   for (std::list<Teuchos::RCP<Facet>>::iterator i = facets_.begin(); i != facets_.end(); ++i)
   {
     Facet& f = **i;
-    f.Print();
+    f.print();
   }
 }
 
@@ -2319,10 +2319,10 @@ void Core::Geo::Cut::Mesh::dump_gmsh_volume_cells(std::string name)
             for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
             {
               Point* p1 = *i;
-              p1->Coordinates(cur.A());
-              facet_triang_midpoint_coord.Update(1.0, cur, 1.0);
+              p1->Coordinates(cur.data());
+              facet_triang_midpoint_coord.update(1.0, cur, 1.0);
             }
-            facet_triang_midpoint_coord.Scale(1.0 / pts.size());
+            facet_triang_midpoint_coord.scale(1.0 / pts.size());
           }
 
           file << "VT(";

@@ -69,7 +69,7 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
       new Core::IO::DiscretizationWriter(visbindis_, output_control, spatial_approximation_type)));
 
   // try to read valid input
-  domain_bounding_box_corner_positions_.PutScalar(1.0e12);
+  domain_bounding_box_corner_positions_.put_scalar(1.0e12);
   // get bounding box specified in the input file
   std::istringstream domain_bounding_box_stream(
       Teuchos::getNumericStringParameter(binning_params, "DOMAINBOUNDINGBOX"));

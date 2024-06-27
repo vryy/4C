@@ -69,7 +69,7 @@ void Mat::FiberAnisotropyExtension<numfib>::set_fibers(
   // Store fibers
   for (std::vector<Core::LinAlg::Matrix<3, 1>>::size_type i = 0; i < fibers.size(); ++i)
   {
-    fibers_[gp].at(i).Update(fibers.at(i));
+    fibers_[gp].at(i).update(fibers.at(i));
   }
 
   // Compute needed structural tensors

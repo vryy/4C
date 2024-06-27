@@ -1266,7 +1266,7 @@ void STR::TimInt::update_step_contact_meshtying()
 /* Update beam contact */
 void STR::TimInt::update_step_beam_contact()
 {
-  if (HaveBeamContact()) beamcman_->Update(*disn_, stepn_, 99);
+  if (HaveBeamContact()) beamcman_->update(*disn_, stepn_, 99);
 }
 
 /*----------------------------------------------------------------------*/

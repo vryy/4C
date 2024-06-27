@@ -1180,7 +1180,7 @@ namespace Discret
         // j : direction of derivative x/y/z
         //
         Core::LinAlg::Matrix<nsd_, nsd_> velderxy;
-        velderxy.MultiplyNT(evel, derxy_);
+        velderxy.multiply_nt(evel, derxy_);
 
         // compute (resolved) rate of strain
         //

@@ -197,7 +197,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
     // note: incremental form since rhs-coupling with poromultielastscatra-framework might be
     //       nonlinear
     Core::LinAlg::Matrix<1, 1> pressgrad;
-    pressgrad.Multiply(my::deriv_, mypress);
+    pressgrad.multiply(my::deriv_, mypress);
     for (int inode = 0; inode < numnode; inode++)
       rhs(inode) -= my::deriv_(0, inode) * fac * pressgrad(0, 0);
   }

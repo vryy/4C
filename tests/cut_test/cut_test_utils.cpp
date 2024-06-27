@@ -416,7 +416,7 @@ void SimpleWrapper::CreateQuad4Mesh(int rows, int cols)
       for (int l = 0; l < 4; ++l)
       {
         Core::LinAlg::Matrix<3, 1>& x = side_points_[nids[l]];
-        std::copy(x.A(), x.A() + 3, &xyze(0, l));
+        std::copy(x.data(), x.data() + 3, &xyze(0, l));
       }
       CreateQuad4(xyze);
     }
@@ -571,8 +571,8 @@ int SimpleWrapper::get_id(
   for (unsigned i = 0; i < size; ++i)
   {
     Core::LinAlg::Matrix<3, 1> p = points[i];
-    p.Update(-1, x, 1);
-    if (p.Norm2() < 1e-13)
+    p.update(-1, x, 1);
+    if (p.norm2() < 1e-13)
     {
       return i;
     }

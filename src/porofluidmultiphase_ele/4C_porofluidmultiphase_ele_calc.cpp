@@ -566,7 +566,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_deri
         "GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->Id(), det_);
 
   // compute global spatial derivatives
-  derxy_.Multiply(xij_, deriv_);
+  derxy_.multiply(xij_, deriv_);
 
   // compute second global derivatives (if needed)
   if (use2ndderiv_)
@@ -580,10 +580,10 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_deri
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"
   Core::LinAlg::Matrix<nsd_, nsd_> xjm0;
-  xjm0.MultiplyNT(deriv_, xyze0_);
+  xjm0.multiply_nt(deriv_, xyze0_);
 
   // inverse of transposed jacobian "ds/dX"
-  const double det0 = xjm0.Determinant();
+  const double det0 = xjm0.determinant();
 
   // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
   // )^-1
@@ -633,8 +633,8 @@ double Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<
     +-            -+        +-            -+
   */
 
-  xjm_.MultiplyNT(deriv_, xyze_);
-  det = xij_.Invert(xjm_);
+  xjm_.multiply_nt(deriv_, xyze_);
+  det = xij_.invert(xjm_);
 
   return det;
 }
@@ -657,15 +657,15 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::compute_jacobian_at
         "GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", ele_->Id(), det_);
 
   // compute global spatial derivatives
-  derxy_.Multiply(xij_, deriv_);
+  derxy_.multiply(xij_, deriv_);
 
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"
   Core::LinAlg::Matrix<nsd_, nsd_> xjm0;
-  xjm0.MultiplyNT(deriv_, xyze0_);
+  xjm0.multiply_nt(deriv_, xyze0_);
 
   // inverse of transposed jacobian "ds/dX"
-  const double det0 = xjm0.Determinant();
+  const double det0 = xjm0.determinant();
 
   // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
   // )^-1

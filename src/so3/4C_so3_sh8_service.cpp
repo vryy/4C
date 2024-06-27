@@ -44,16 +44,16 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_fin
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
-  jac0.MultiplyNN(df0, xrefe);
+  jac0.multiply_nn(df0, xrefe);
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> iJ0(jac0);
-  iJ0.Invert();
+  iJ0.invert();
 
   // separate "stretch"-part of J-mapping between parameter and global space
   // (G0^ji) = (Jinv0^j_B) (krondelta^BA) (Jinv0_A^i)
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0stretch;
-  jac0stretch.MultiplyTN(iJ0, iJ0);
+  jac0stretch.multiply_tn(iJ0, iJ0);
   const double r_stretch = sqrt(jac0stretch(0, 0));
   const double s_stretch = sqrt(jac0stretch(1, 1));
   const double t_stretch = sqrt(jac0stretch(2, 2));
@@ -115,7 +115,7 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_fin
   // thickness-vector in global coord is J times local thickness-vector
   // (X^A) = (J0_i^A)^T . (xi_i)
   Core::LinAlg::Matrix<NUMDIM_SOH8, 1> glo_thickvec;
-  glo_thickvec.MultiplyTN(jac0, loc_thickvec);
+  glo_thickvec.multiply_tn(jac0, loc_thickvec);
   // return doubles of thickness-vector
   thickvec_.resize(3);
   thickvec_[0] = glo_thickvec(0);
@@ -149,16 +149,16 @@ double Discret::ELEMENTS::SoSh8::sosh8_calcaspectratio()
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
-  jac0.MultiplyNN(df0, xrefe);
+  jac0.multiply_nn(df0, xrefe);
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> iJ0(jac0);
-  iJ0.Invert();
+  iJ0.invert();
 
   // separate "stretch"-part of J-mapping between parameter and global space
   // (G0^ji) = (Jinv0^j_B) (krondelta^BA) (Jinv0_A^i)
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0stretch;
-  jac0stretch.MultiplyTN(iJ0, iJ0);
+  jac0stretch.multiply_tn(iJ0, iJ0);
   const double r_stretch = sqrt(jac0stretch(0, 0));
   const double s_stretch = sqrt(jac0stretch(1, 1));
   const double t_stretch = sqrt(jac0stretch(2, 2));
@@ -208,21 +208,21 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_enf
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0(false);
-  jac0.MultiplyNN(df0, xrefe);
+  jac0.multiply_nn(df0, xrefe);
 
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> iJ0(jac0);
-  iJ0.Invert();
+  iJ0.invert();
 
   // make enforced global thickness direction a unit vector
-  const double thickdirglolength = thickdirglo.Norm2();
-  thickdirglo.Scale(1.0 / thickdirglolength);
+  const double thickdirglolength = thickdirglo.norm2();
+  thickdirglo.scale(1.0 / thickdirglolength);
 
   // pull thickness direction from global to contra-variant local
   // (dxi^i) = (Jinv0_A^i)^T . (dX^A)
   Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirlocsharp(false);
-  thickdirlocsharp.MultiplyTN(iJ0, thickdirglo);
+  thickdirlocsharp.multiply_tn(iJ0, thickdirglo);
 
   // identify parametric co-ordinate closest to enforced thickness direction
   int thick_index = -1;
@@ -237,7 +237,7 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_enf
   }
   const double tol = 0.9;  // should be larger than 1/sqrt(2)=0.707
   // check if parametric co-ordinate is clear
-  if (thickdirlocmax < tol * thickdirlocsharp.Norm2())
+  if (thickdirlocmax < tol * thickdirlocsharp.norm2())
     FOUR_C_THROW(
         "could not clearly identify a parametric direction pointing along enforced thickness "
         "direction");
@@ -266,7 +266,7 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_enf
   // thickness-vector in global coord is J times local thickness-vector
   // (X^A) = (J0_i^A)^T . (xi_i)
   Core::LinAlg::Matrix<NUMDIM_SOH8, 1> glo_thickvec;
-  glo_thickvec.MultiplyTN(jac0, loc_thickvec);
+  glo_thickvec.multiply_tn(jac0, loc_thickvec);
   // return doubles of thickness-vector
   thickvec_.resize(3);
   thickvec_[0] = glo_thickvec(0);

@@ -214,15 +214,15 @@ void CONTACT::TSIInterface::AssembleLinSlip(Core::LinAlg::SparseMatrix& linslipL
 
     const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
     const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
-    const double lm_n = n.Dot(lm);
+    const double lm_n = n.dot(lm);
     const double wgap = cnode->Data().Getg();
     Core::LinAlg::Matrix<3, 1> txi(cnode->Data().txi(), true);
     Core::LinAlg::Matrix<3, 1> teta(cnode->Data().teta(), true);
     Core::LinAlg::Matrix<3, 1> jump(cnode->FriData().jump(), true);
-    const double jump_txi = jump.Dot(txi);
-    const double jump_teta = jump.Dot(teta);
-    const double lm_txi = lm.Dot(txi);
-    const double lm_teta = lm.Dot(teta);
+    const double jump_txi = jump.dot(txi);
+    const double jump_teta = jump.dot(teta);
+    const double lm_txi = lm.dot(txi);
+    const double lm_teta = lm.dot(teta);
 
     // row number of entries
     std::vector<int> row(Dim() - 1);
@@ -433,7 +433,7 @@ void CONTACT::TSIInterface::AssembleLinDM_X(Core::LinAlg::SparseMatrix* linD_X,
           const Core::LinAlg::Matrix<3, 1> lmc(cnode->MoData().lm(), true);
           const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
           const Core::LinAlg::Matrix<3, 1> jump(frnode->FriData().jump(), true);
-          double diss = (-lmc.Dot(jump) + lmc.Dot(n) * jump.Dot(n)) / (dt * dval);
+          double diss = (-lmc.dot(jump) + lmc.dot(n) * jump.dot(n)) / (dt * dval);
           lm = diss;
         }
         break;
@@ -442,7 +442,7 @@ void CONTACT::TSIInterface::AssembleLinDM_X(Core::LinAlg::SparseMatrix* linD_X,
       {
         const Core::LinAlg::Matrix<3, 1> contact_LM(cnode->MoData().lm(), true);
         const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
-        lm = contact_LM.Dot(n);
+        lm = contact_LM.dot(n);
         break;
       }
       default:
@@ -583,7 +583,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(Core::LinAlg::SparseMatrix* d_Lin
     // projection into tangential plane = 1 - n \otimes n
     Core::LinAlg::Matrix<3, 3> tang_proj(true);
     for (int i = 0; i < 3; ++i) tang_proj(i, i) = 1.;
-    tang_proj.MultiplyNT(-1., n, n, 1.);
+    tang_proj.multiply_nt(-1., n, n, 1.);
 
     // get D entry of this node
     // remember: D is diagonal
@@ -595,11 +595,11 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(Core::LinAlg::SparseMatrix* d_Lin
     Core::LinAlg::Matrix<3, 1> jump(fnode->FriData().jump());
     const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm());
     Core::LinAlg::Matrix<3, 1> lm_t;
-    lm_t.Multiply(tang_proj, lm);
-    const double lm_n = lm.Dot(n);
-    const double jump_n = jump.Dot(n);
+    lm_t.multiply(tang_proj, lm);
+    const double lm_n = lm.dot(n);
+    const double jump_n = jump.dot(n);
     Core::LinAlg::Matrix<3, 1> jump_tan;
-    jump_tan.Multiply(tang_proj, jump);
+    jump_tan.multiply(tang_proj, jump);
 
 
     // linearization w.r.t. displacements
@@ -619,7 +619,7 @@ void CONTACT::TSIInterface::AssembleDM_linDiss(Core::LinAlg::SparseMatrix* d_Lin
           derivDiss[p->first] += ((lm_n * jump(i) + jump_n * lm(i)) * p->second) / (dt * dval);
         for (_cim p = derivD.begin(); p != derivD.end(); ++p)
           derivDiss[p->first] +=
-              (-lm.Dot(jump) + lm.Dot(n) * jump.Dot(n)) / (dt * dval * dval) * (-p->second);
+              (-lm.dot(jump) + lm.dot(n) * jump.dot(n)) / (dt * dval * dval) * (-p->second);
       }
 
       // put everything together*******************************************
@@ -699,7 +699,7 @@ void CONTACT::TSIInterface::assemble_lin_l_mn_dm_temp(
 
     const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
     const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
-    const double lm_n = lm.Dot(n);
+    const double lm_n = lm.dot(n);
 
     for (_cimm k = cnode->Data().GetDerivD().begin(); k != cnode->Data().GetDerivD().end(); ++k)
     {
@@ -776,7 +776,7 @@ void CONTACT::TSIInterface::AssembleDM_LMn(const double fac, Core::LinAlg::Spars
 
     const Core::LinAlg::Matrix<3, 1> n(cnode->MoData().n(), true);
     const Core::LinAlg::Matrix<3, 1> lm(cnode->MoData().lm(), true);
-    const double lm_n = lm.Dot(n);
+    const double lm_n = lm.dot(n);
 
     for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
       if (abs(k->second) > 1.e-12)

@@ -171,7 +171,7 @@ namespace
 
     // solve least square algorithm
     Core::LinAlg::SerialDenseMatrix matTmat(shapefcns_at_gps.numCols(), shapefcns_at_gps.numCols());
-    Core::LinAlg::multiplyTN(matTmat, shapefcns_at_gps, shapefcns_at_gps);
+    Core::LinAlg::multiply_tn(matTmat, shapefcns_at_gps, shapefcns_at_gps);
 
     {
       using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
@@ -196,7 +196,7 @@ namespace
 
     Core::LinAlg::SerialDenseMatrix matrix_gp_to_base(
         shapefcns_at_gps.numCols(), shapefcns_at_gps.numRows());
-    Core::LinAlg::multiplyNT(matrix_gp_to_base, matTmat, shapefunctions_at_gps_copy);
+    Core::LinAlg::multiply_nt(matrix_gp_to_base, matTmat, shapefunctions_at_gps_copy);
 
     return matrix_gp_to_base;
   }

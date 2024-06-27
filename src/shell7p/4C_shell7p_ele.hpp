@@ -218,7 +218,7 @@ namespace Discret
 
       [[nodiscard]] Teuchos::RCP<Mat::So3Material> SolidMaterial(int nummat = 0) const;
 
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       void VisNames(std::map<std::string, int>& names) override;
 

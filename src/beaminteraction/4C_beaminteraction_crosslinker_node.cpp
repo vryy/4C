@@ -115,18 +115,18 @@ CrossLinking::CrosslinkerNode* CrossLinking::CrosslinkerNode::Clone() const
  *----------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const CrossLinking::CrosslinkerNode& crosslinker_node)
 {
-  crosslinker_node.Print(os);
+  crosslinker_node.print(os);
   return os;
 }
 
 /*----------------------------------------------------------------------------*
  |  print this CrossslinkerNode (public)                       eichinger 10/16|
  *----------------------------------------------------------------------------*/
-void CrossLinking::CrosslinkerNode::Print(std::ostream& os) const
+void CrossLinking::CrosslinkerNode::print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Crosslinker ";
-  Core::Nodes::Node::Print(os);
+  Core::Nodes::Node::print(os);
 
 
   return;

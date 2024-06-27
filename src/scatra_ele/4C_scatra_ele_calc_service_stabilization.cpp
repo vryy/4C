@@ -237,7 +237,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_valenti
 
   // get Euclidean norm of (weighted) velocity at element center
   double vel_norm;
-  vel_norm = convelint.Norm2();
+  vel_norm = convelint.norm2();
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
@@ -313,7 +313,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_shakib_
   const double mk = ScaTra::MK<distype>();
 
   // get Euclidean norm of velocity
-  const double vel_norm = convelint.Norm2();
+  const double vel_norm = convelint.norm2();
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
@@ -376,7 +376,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_codina(
   const double mk = ScaTra::MK<distype>();
 
   // get Euclidean norm of velocity
-  const double vel_norm = convelint.Norm2();
+  const double vel_norm = convelint.norm2();
 
   // total reaction coefficient sigma_tot: sum of "artificial" reaction
   // due to time factor and reaction coefficient (reaction coefficient
@@ -482,7 +482,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau1_d_exact(
 
   // get Euclidean norm of (weighted) velocity at element center
   double vel_norm(0.0);
-  vel_norm = convelint.Norm2();
+  vel_norm = convelint.norm2();
 
   if (diffus < 1e-14) FOUR_C_THROW("Invalid diffusion coefficent");
   double epe = 0.5 * densnp * vel_norm * h / diffus;
@@ -529,7 +529,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
     {
       Core::LinAlg::Matrix<nsd_, 1> velino(true);
       if (vel_norm >= 1e-6)
-        velino.Update(1.0 / vel_norm, convelint);
+        velino.update(1.0 / vel_norm, convelint);
       else
       {
         velino.clear();
@@ -538,8 +538,8 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
 
       // get streamlength using the normed velocity at element centre
       Core::LinAlg::Matrix<nen_, 1> tmp;
-      tmp.MultiplyTN(derxy_, velino);
-      const double val = tmp.Norm1();
+      tmp.multiply_tn(derxy_, velino);
+      const double val = tmp.norm1();
       h = 2.0 / val;  // h=streamlength
     }
     break;
@@ -590,7 +590,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
   // get characteristic element length as cubic root of element volume
   // (2D: square root of element area, 1D: element length)
   const double h = std::pow(vol, (1.0 / dim));
-  //  const double h = calc_char_ele_length(vol,convelint.Norm2(),convelint);
+  //  const double h = calc_char_ele_length(vol,convelint.norm2(),convelint);
   //  //std::pow(vol,(1.0/dim));
 
   // artificial diffusivity
@@ -603,7 +603,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
     const double mk = ScaTra::MK<distype>();
 
     // velocity norm
-    const double vel_norm = convelint.Norm2();
+    const double vel_norm = convelint.norm2();
 
     // parameter relating convective and diffusive forces + respective switch
     double epe = 0.0;
@@ -624,10 +624,10 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
   else if (scatrapara_->ASSGDType() == Inpar::ScaTra::assgd_codina)
   {
     double alpha =
-        std::max(0.0, (0.7 - 2.0 * diffmanager_->GetIsotropicDiff(k) / convelint.Norm2() / h));
+        std::max(0.0, (0.7 - 2.0 * diffmanager_->GetIsotropicDiff(k) / convelint.norm2() / h));
 
     // gradient norm
-    const double grad_norm = gradphi.Norm2();
+    const double grad_norm = gradphi.norm2();
     if (grad_norm > 1e-8) artdiff = 0.5 * alpha * h * std::abs(scatrares) / grad_norm;
   }
   else if (scatrapara_->ASSGDType() == Inpar::ScaTra::assgd_yzbeta)
@@ -636,14 +636,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
     const double phiref = 0.01;
 
     // gradient norm
-    const double grad_norm = gradphi.Norm2();
+    const double grad_norm = gradphi.norm2();
 
     if (phiref > 1e-12 and grad_norm > 1e-12)
     {
       // normalized gradient of phi
       Core::LinAlg::Matrix<nsd_, 1> normalized_gradphi(true);
-      normalized_gradphi.Update(1.0, gradphi, 0.0);
-      normalized_gradphi.Scale(1.0 / grad_norm);
+      normalized_gradphi.update(1.0, gradphi, 0.0);
+      normalized_gradphi.scale(1.0 / grad_norm);
 
       // compute reference length
       double h_sum(0.0);
@@ -685,7 +685,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
   else
   {
     // gradient norm
-    const double grad_norm = gradphi.Norm2();
+    const double grad_norm = gradphi.norm2();
 
     if (grad_norm > 1e-10)
     {
@@ -757,7 +757,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
         case Inpar::ScaTra::assgd_tezduyar_wo_phizero:
         {
           // velocity norm
-          const double vel_norm = convelint.Norm2();
+          const double vel_norm = convelint.norm2();
 
           // calculate stream length
           // according to John and Knobloch stream length in direction of b_h^par should be used
@@ -791,7 +791,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
         case Inpar::ScaTra::assgd_almeida:
         {
           // velocity norm
-          const double vel_norm = convelint.Norm2();
+          const double vel_norm = convelint.norm2();
 
           // get norm of velocity vector z_h
           const double vel_norm_zh = abs(scatrares / grad_norm);
@@ -872,8 +872,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_strong_residual(
   {
     // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
     get_laplacian_strong_form(diff);
-    diff.Scale(diffmanager_->GetIsotropicDiff(k));
-    diff_phi = diff.Dot(ephinp_[k]);
+    diff.scale(diffmanager_->GetIsotropicDiff(k));
+    diff_phi = diff.dot(ephinp_[k]);
   }
 
   if (scatraparatimint_->IsGenAlpha())
@@ -923,16 +923,16 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
   Core::LinAlg::Matrix<nsd_, nen_> nodepressuregrad;
 
   // get acceleration or momentum history data
-  acc.Multiply(eaccnp_, funct_);
+  acc.multiply(eaccnp_, funct_);
 
   // get velocity derivatives
-  vderxy.MultiplyNT(evelnp_, derxy_);
+  vderxy.multiply_nt(evelnp_, derxy_);
 
   // compute convective fluid term
-  conv.Multiply(vderxy, convelint);
+  conv.multiply(vderxy, convelint);
 
   // get pressure gradient
-  gradp.Multiply(derxy_, eprenp_);
+  gradp.multiply(derxy_, eprenp_);
 
   //--------------------------------------------------------------------
   // get nodal values of fluid body force
@@ -1032,9 +1032,9 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
   }
 
   // get fluid body force
-  bodyforce.Multiply(nodebodyforce, funct_);
+  bodyforce.multiply(nodebodyforce, funct_);
   // or prescribed pressure gradient
-  pressuregrad.Multiply(nodepressuregrad, funct_);
+  pressuregrad.multiply(nodepressuregrad, funct_);
 
   // get viscous term
   if (use2ndderiv_) /*--- viscous term: div(epsilon(u)) --------------------------------*/

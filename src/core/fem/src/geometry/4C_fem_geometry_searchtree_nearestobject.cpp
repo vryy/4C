@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 Core::Geo::NearestObject::NearestObject()
     : object_type_(NOTYPE_OBJECT), node_id_(-1), line_id_(-1), surf_id_(-1), label_(-1)
 {
-  physcoord_.PutScalar(0.0);
+  physcoord_.put_scalar(0.0);
   return;
 }
 
@@ -51,7 +51,7 @@ void Core::Geo::NearestObject::clear()
   line_id_ = -1;
   surf_id_ = -1;
   label_ = -1;
-  physcoord_.PutScalar(0.0);
+  physcoord_.put_scalar(0.0);
   return;
 }
 

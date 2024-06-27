@@ -418,8 +418,8 @@ void STR::UTILS::Shell::Director::SetupDirectorForElement(
                        metrics_kovariant(0, 0) * metrics_kovariant(1, 2);
     a1a2crossprod(2) = metrics_kovariant(0, 0) * metrics_kovariant(1, 1) -
                        metrics_kovariant(0, 1) * metrics_kovariant(1, 0);
-    double a1a2crossnorm = a1a2crossprod.Norm2();
-    if (a1a2crossnorm > 1.0e-14) a1a2crossprod.Scale(1.0 / a1a2crossnorm);
+    double a1a2crossnorm = a1a2crossprod.norm2();
+    if (a1a2crossnorm > 1.0e-14) a1a2crossprod.scale(1.0 / a1a2crossnorm);
 
     // set nodal director matrix for each node row vice
     for (int j = 0; j < num_dim; j++) nodal_directors(i, j) = a1a2crossprod(j);
@@ -441,7 +441,7 @@ void STR::UTILS::Shell::Director::AverageDirector(const Core::LinAlg::Matrix<3, 
     normal(0) = averdir(1) * dir_list(2, i) - averdir(2) * dir_list(1, i);
     normal(1) = averdir(2) * dir_list(0, i) - averdir(0) * dir_list(2, i);
     normal(2) = averdir(0) * dir_list(1, i) - averdir(1) * dir_list(0, i);
-    const double length = normal.Dot(normal);
+    const double length = normal.dot(normal);
 
     // if the length is small, both directors point nearly in the same direction
     if (length <= 1.e-12)

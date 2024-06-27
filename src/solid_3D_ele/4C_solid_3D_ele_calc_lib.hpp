@@ -286,7 +286,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1>& shape_functions_point)
   {
     Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, 1> coordinates_reference(true);
-    coordinates_reference.MultiplyTN(nodal_coordinates_reference, shape_functions_point);
+    coordinates_reference.multiply_tn(nodal_coordinates_reference, shape_functions_point);
 
     return coordinates_reference;
   }
@@ -380,7 +380,7 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype>
   struct JacobianMapping
   {
-    /// Determinant of the jacobian
+    /// determinant of the jacobian
     double determinant_;
 
     /// Jacobian matrix at a specific point
@@ -412,10 +412,10 @@ namespace Discret::ELEMENTS
   {
     JacobianMapping<celltype> jacobian;
 
-    jacobian.jacobian_.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates_);
+    jacobian.jacobian_.multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates_);
     jacobian.inverse_jacobian_ = jacobian.jacobian_;
-    jacobian.determinant_ = jacobian.inverse_jacobian_.Invert();
-    jacobian.N_XYZ_.Multiply(jacobian.inverse_jacobian_, shapefcns.derivatives_);
+    jacobian.determinant_ = jacobian.inverse_jacobian_.invert();
+    jacobian.N_XYZ_.multiply(jacobian.inverse_jacobian_, shapefcns.derivatives_);
 
     return jacobian;
   }
@@ -434,9 +434,9 @@ namespace Discret::ELEMENTS
       const ElementNodes<celltype>& nodal_coordinates)
   {
     Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> jacobian;
-    jacobian.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates_);
+    jacobian.multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates_);
 
-    return jacobian.Determinant();
+    return jacobian.determinant();
   }
 
   /*!
@@ -463,7 +463,7 @@ namespace Discret::ELEMENTS
           EvaluateJacobianMapping(shape_functions, element_nodes);
 
       FOUR_C_THROW_UNLESS(jacobian_mapping.determinant_ > 0,
-          "Determinant of jacobian is %f <= 0 at one node of the element.",
+          "determinant of jacobian is %f <= 0 at one node of the element.",
           jacobian_mapping.determinant_);
     }
   }
@@ -529,14 +529,14 @@ namespace Discret::ELEMENTS
 
     if (kinematictype == Inpar::STR::KinemType::nonlinearTotLag)
     {
-      spatial_material_mapping.deformation_gradient_.MultiplyTT(
+      spatial_material_mapping.deformation_gradient_.multiply_tt(
           scale_defgrd, nodal_coordinates.displacements_, jacobian_mapping.N_XYZ_, scale_defgrd);
     }
 
-    spatial_material_mapping.inverse_deformation_gradient_.Invert(
+    spatial_material_mapping.inverse_deformation_gradient_.invert(
         spatial_material_mapping.deformation_gradient_);
     spatial_material_mapping.determinant_deformation_gradient_ =
-        spatial_material_mapping.deformation_gradient_.Determinant();
+        spatial_material_mapping.deformation_gradient_.determinant();
 
     return spatial_material_mapping;
   }
@@ -546,7 +546,7 @@ namespace Discret::ELEMENTS
    *
    * @tparam celltype : Cell type
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
-   * @return double : Determinant of the deformation gradient at the centroid
+   * @return double : determinant of the deformation gradient at the centroid
    */
   template <Core::FE::CellType celltype, std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
   double EvaluateDeformationGradientDeterminantCentroid(
@@ -603,7 +603,7 @@ namespace Discret::ELEMENTS
   {
     Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> cauchygreen(false);
 
-    cauchygreen.MultiplyTN(spatial_material_mapping.deformation_gradient_,
+    cauchygreen.multiply_tn(spatial_material_mapping.deformation_gradient_,
         spatial_material_mapping.deformation_gradient_);
 
     return cauchygreen;
@@ -626,7 +626,7 @@ namespace Discret::ELEMENTS
         nodal_displs(i * Core::FE::dim<celltype> + j, 0) = nodal_coordinates.displacements_(i, j);
 
     Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> gl_strain;
-    gl_strain.Multiply(linear_b_operator, nodal_displs);
+    gl_strain.multiply(linear_b_operator, nodal_displs);
 
     return gl_strain;
   }
@@ -790,7 +790,7 @@ namespace Discret::ELEMENTS
       Core::LinAlg::Matrix<DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>, 1>&
           force_vector)
   {
-    force_vector.MultiplyTN(integration_fac, Bop, stress.pk2_, 1.);
+    force_vector.multiply_tn(integration_fac, Bop, stress.pk2_, 1.);
   }
 
   /*!
@@ -814,8 +814,8 @@ namespace Discret::ELEMENTS
     Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
         DETAIL::num_nodes<celltype> * DETAIL::num_dim<celltype>>
         cb;
-    cb.Multiply(stress.cmat_, Bop);
-    stiffness_matrix.MultiplyTN(integration_fac, Bop, cb, 1.0);
+    cb.multiply(stress.cmat_, Bop);
+    stiffness_matrix.multiply_tn(integration_fac, Bop, cb, 1.0);
   }
 
   /*!

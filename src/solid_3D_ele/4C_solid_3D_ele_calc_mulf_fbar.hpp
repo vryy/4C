@@ -45,14 +45,14 @@ namespace Discret::ELEMENTS
 
       SpatialMaterialMapping<celltype> spatial_material_mapping_centeroid{};
 
-      spatial_material_mapping_centeroid.deformation_gradient_.Multiply(
+      spatial_material_mapping_centeroid.deformation_gradient_.multiply(
           delta_F, mulf_data_centeroid.deformation_gradient);
 
       spatial_material_mapping_centeroid.inverse_deformation_gradient_ =
           spatial_material_mapping_centeroid.deformation_gradient_;
 
       spatial_material_mapping_centeroid.determinant_deformation_gradient_ =
-          spatial_material_mapping_centeroid.inverse_deformation_gradient_.Invert();
+          spatial_material_mapping_centeroid.inverse_deformation_gradient_.invert();
 
       return spatial_material_mapping_centeroid;
     }
@@ -61,10 +61,10 @@ namespace Discret::ELEMENTS
     SpatialMaterialMapping<celltype> GetSpatialMaterialMappingBar(
         SpatialMaterialMapping<celltype> spatial_material_mapping, const double fbar_factor)
     {
-      spatial_material_mapping.deformation_gradient_.Scale(fbar_factor);
+      spatial_material_mapping.deformation_gradient_.scale(fbar_factor);
       spatial_material_mapping.determinant_deformation_gradient_ *=
           Core::FE::dim<celltype> * fbar_factor;
-      spatial_material_mapping.inverse_deformation_gradient_.Scale(1.0 / fbar_factor);
+      spatial_material_mapping.inverse_deformation_gradient_.scale(1.0 / fbar_factor);
 
       return spatial_material_mapping;
     }
@@ -82,13 +82,13 @@ namespace Discret::ELEMENTS
               shape_functions, element_nodes.displacements_, mulf_data);
 
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> inv_delta_defgrd(true);
-      inv_delta_defgrd.Invert(delta_defgrd);
+      inv_delta_defgrd.invert(delta_defgrd);
 
       Core::LinAlg::Matrix<3, 3> old_defgrd = mulf_data.deformation_gradient;
-      mulf_data.deformation_gradient.Multiply(delta_defgrd, old_defgrd);
+      mulf_data.deformation_gradient.multiply(delta_defgrd, old_defgrd);
 
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> invJ_new;
-      invJ_new.MultiplyTN(inv_delta_defgrd, mulf_data.inverse_jacobian);
+      invJ_new.multiply_tn(inv_delta_defgrd, mulf_data.inverse_jacobian);
       mulf_data.inverse_jacobian = std::move(invJ_new);
     }
   }  // namespace Details
@@ -137,7 +137,7 @@ namespace Discret::ELEMENTS
           evaluate_jacobian_mapping_centroid(nodal_coordinates);
 
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes<celltype>> N_XYZ_0;
-      N_XYZ_0.Multiply(jacobian_mapping.inverse_jacobian_, shape_functions_centeroid.derivatives_);
+      N_XYZ_0.multiply(jacobian_mapping.inverse_jacobian_, shape_functions_centeroid.derivatives_);
 
       return {N_XYZ_0, Details::evaluate_mulf_spatial_material_mapping_centroid(
                            shape_functions_centeroid, nodal_coordinates, global_history)};

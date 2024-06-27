@@ -264,14 +264,14 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
   Core::LinAlg::Matrix<3, 3, scalar_type> deformation_gradient;
   GEOMETRYPAIR::EvaluateDeformationGradient<solid>(xi, q_solid_ref, q_solid, deformation_gradient);
   Core::LinAlg::Matrix<3, 3, scalar_type> deformed_basis;
-  deformed_basis.Multiply(deformation_gradient, ref_triad);
+  deformed_basis.multiply(deformation_gradient, ref_triad);
 
   // Average of deformed basis vectors.
   Core::LinAlg::Matrix<3, 1, scalar_type> average_vector(true);
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     for (unsigned int j_vec = 0; j_vec < 3; j_vec++)
       average_vector(i_dim) += deformed_basis(i_dim, j_vec);
-  average_vector.Scale(1.0 / Core::FADUtils::Norm(average_vector));
+  average_vector.scale(1.0 / Core::FADUtils::Norm(average_vector));
 
   // Project the deformed basis vectors on the plane.
   Core::LinAlg::Matrix<3, 1, scalar_type> projected_basis[3];
@@ -284,17 +284,17 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
       projection += average_vector(i_dim) * deformed_basis(i_dim, i_basis);
 
     temp_vec = average_vector;
-    temp_vec.Scale(projection);
+    temp_vec.scale(projection);
 
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       projected_basis[i_basis](i_dim) = deformed_basis(i_dim, i_basis) - temp_vec(i_dim);
 
-    projected_basis[i_basis].Scale(1.0 / Core::FADUtils::Norm(projected_basis[i_basis]));
+    projected_basis[i_basis].scale(1.0 / Core::FADUtils::Norm(projected_basis[i_basis]));
   }
 
   // Calculate angles between the projected basis vectors.
-  scalar_type alpha_21 = std::acos(projected_basis[0].Dot(projected_basis[1]));
-  scalar_type alpha_31 = 2.0 * M_PI - acos(projected_basis[0].Dot(projected_basis[2]));
+  scalar_type alpha_21 = std::acos(projected_basis[0].dot(projected_basis[1]));
+  scalar_type alpha_31 = 2.0 * M_PI - acos(projected_basis[0].dot(projected_basis[2]));
 
   // Minimum relative angle.
   scalar_type alpha = 1.0 / 3.0 * (alpha_21 + alpha_31 - 2.0 * M_PI);
@@ -305,23 +305,23 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneral(
   Core::LinAlg::Matrix<3, 3, scalar_type> rot_mat;
   Core::LinAlg::Matrix<3, 1, scalar_type> start_vec;
 
-  rot_vec.CrossProduct(projected_basis[0], average_vector);
-  rot_vec.Scale(0.5 * (M_PI - 2.0 * acos(1.0 / sqrt(3.0))));  // No need to normalize before, should
+  rot_vec.cross_product(projected_basis[0], average_vector);
+  rot_vec.scale(0.5 * (M_PI - 2.0 * acos(1.0 / sqrt(3.0))));  // No need to normalize before, should
                                                               // already be length one.
   Core::LargeRotations::angletoquaternion(rot_vec, rot_quat);
   Core::LargeRotations::quaterniontotriad(rot_quat, rot_mat);
-  start_vec.Multiply(rot_mat, projected_basis[0]);
+  start_vec.multiply(rot_mat, projected_basis[0]);
 
   // Rotate to the new basis vectors.
   Core::LinAlg::Matrix<3, 3, scalar_type> new_basis;
   for (unsigned int i_basis = 0; i_basis < 3; i_basis++)
   {
     rot_vec = average_vector;
-    rot_vec.Scale(alpha + i_basis * M_PI * 2.0 / 3.0);
+    rot_vec.scale(alpha + i_basis * M_PI * 2.0 / 3.0);
     Core::LargeRotations::angletoquaternion(rot_vec, rot_quat);
     Core::LargeRotations::quaterniontotriad(rot_quat, rot_mat);
 
-    temp_vec.Multiply(rot_mat, start_vec);
+    temp_vec.multiply(rot_mat, start_vec);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++) new_basis(i_dim, i_basis) = temp_vec(i_dim);
   }
 
@@ -366,7 +366,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneralInCrossS
   std::array<Core::LinAlg::Matrix<3, 1, scalar_type>, 2> cross_section_basis_vector;
   for (unsigned int i_basis = 0; i_basis < 2; i_basis++)
   {
-    cross_section_basis_vector[i_basis].PutScalar(0.0);
+    cross_section_basis_vector[i_basis].put_scalar(0.0);
     for (unsigned int i_row = 0; i_row < 3; i_row++)
       for (unsigned int i_col = 0; i_col < 3; i_col++)
         cross_section_basis_vector[i_basis](i_row) +=
@@ -375,24 +375,24 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneralInCrossS
 
   // Get the normal on the cross section.
   Core::LinAlg::Matrix<3, 1, scalar_type> cross_section_normal_vector;
-  cross_section_normal_vector.CrossProduct(
+  cross_section_normal_vector.cross_product(
       cross_section_basis_vector[0], cross_section_basis_vector[1]);
-  cross_section_normal_vector.Scale(1.0 / Core::FADUtils::VectorNorm(cross_section_normal_vector));
+  cross_section_normal_vector.scale(1.0 / Core::FADUtils::VectorNorm(cross_section_normal_vector));
 
   // Average the current cross section basis vectors.
   Core::LinAlg::Matrix<3, 1, scalar_type> cross_section_average_vector(true);
   for (unsigned int i_basis = 0; i_basis < 2; i_basis++)
   {
-    cross_section_basis_vector[i_basis].Scale(
+    cross_section_basis_vector[i_basis].scale(
         1.0 / Core::FADUtils::VectorNorm(cross_section_basis_vector[i_basis]));
     cross_section_average_vector += cross_section_basis_vector[i_basis];
   }
-  cross_section_average_vector.Scale(
+  cross_section_average_vector.scale(
       1.0 / Core::FADUtils::VectorNorm(cross_section_average_vector));
 
   // Calculate the current solid triad.
   Core::LinAlg::Matrix<3, 1, scalar_type> cross_section_third_vector;
-  cross_section_third_vector.CrossProduct(
+  cross_section_third_vector.cross_product(
       cross_section_normal_vector, cross_section_average_vector);
   Core::LinAlg::Matrix<3, 3, scalar_type> solid_triad_ref;
   for (unsigned int i_row = 0; i_row < 3; i_row++)
@@ -418,7 +418,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DGeneralInCrossS
 
   // Get the rotation angle.
   Core::LinAlg::Matrix<3, 3, scalar_type> solid_triad;
-  solid_triad.Multiply(solid_triad_ref, solid_triad_rel);
+  solid_triad.multiply(solid_triad_ref, solid_triad_rel);
   Core::LargeRotations::triadtoquaternion(solid_triad, rot_quat);
   Core::LargeRotations::quaterniontoangle(rot_quat, psi_solid);
 }
@@ -442,13 +442,13 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DBase1(
   Core::LinAlg::Matrix<3, 3, scalar_type> deformation_gradient;
   GEOMETRYPAIR::EvaluateDeformationGradient<solid>(xi, q_solid_ref, q_solid, deformation_gradient);
   Core::LinAlg::Matrix<3, 3, scalar_type> deformed_basis;
-  deformed_basis.Multiply(deformation_gradient, ref_triad);
+  deformed_basis.multiply(deformation_gradient, ref_triad);
 
   // Average of deformed basis vectors.
   Core::LinAlg::Matrix<3, 1, scalar_type> normalized_base_1(true);
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     normalized_base_1(i_dim) = deformed_basis(i_dim, 0);
-  normalized_base_1.Scale(1.0 / Core::FADUtils::Norm(normalized_base_1));
+  normalized_base_1.scale(1.0 / Core::FADUtils::Norm(normalized_base_1));
 
   // Project the deformed basis vectors on the plane.
   Core::LinAlg::Matrix<3, 1, scalar_type> projected_basis[2];
@@ -461,16 +461,16 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DBase1(
       projection += normalized_base_1(i_dim) * deformed_basis(i_dim, i_basis);
 
     temp_vec = normalized_base_1;
-    temp_vec.Scale(projection);
+    temp_vec.scale(projection);
 
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       projected_basis[i_basis - 1](i_dim) = deformed_basis(i_dim, i_basis) - temp_vec(i_dim);
 
-    projected_basis[i_basis - 1].Scale(1.0 / Core::FADUtils::Norm(projected_basis[i_basis - 1]));
+    projected_basis[i_basis - 1].scale(1.0 / Core::FADUtils::Norm(projected_basis[i_basis - 1]));
   }
 
   // Calculate angles between the projected basis vectors.
-  scalar_type alpha_32 = acos(projected_basis[0].Dot(projected_basis[1]));
+  scalar_type alpha_32 = acos(projected_basis[0].dot(projected_basis[1]));
 
   // Rotation angle for base 2.
   scalar_type alpha = 0.5 * (alpha_32 - 0.5 * M_PI);
@@ -486,11 +486,11 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3DBase1(
   for (unsigned int i_basis = 0; i_basis < 2; i_basis++)
   {
     rot_vec = normalized_base_1;
-    rot_vec.Scale(alpha + i_basis * M_PI * 0.5);
+    rot_vec.scale(alpha + i_basis * M_PI * 0.5);
     Core::LargeRotations::angletoquaternion(rot_vec, rot_quat);
     Core::LargeRotations::quaterniontotriad(rot_quat, rot_mat);
 
-    temp_vec.Multiply(rot_mat, projected_basis[0]);
+    temp_vec.multiply(rot_mat, projected_basis[0]);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       new_basis(i_dim, i_basis + 1) = temp_vec(i_dim);
   }
@@ -520,7 +520,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3D(
   Core::LinAlg::Matrix<3, 3, scalar_type> deformation_gradient;
   GEOMETRYPAIR::EvaluateDeformationGradient<solid>(xi, q_solid_ref, q_solid, deformation_gradient);
   Core::LinAlg::Matrix<3, 3, scalar_type> deformed_basis;
-  deformed_basis.Multiply(deformation_gradient, ref_triad);
+  deformed_basis.multiply(deformation_gradient, ref_triad);
 
   // Get the order of the basis vector to be used for the construction.
   unsigned int local_basis_vector_construction_order[2];
@@ -564,16 +564,16 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient3D(
   // Construct the second basis vector.
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     construction_vector(i_dim) = deformed_basis(i_dim, local_basis_vector_construction_order[1]);
-  triad_basis_vectors[1].CrossProduct(construction_vector, triad_basis_vectors[0]);
+  triad_basis_vectors[1].cross_product(construction_vector, triad_basis_vectors[0]);
 
   // Construct the third basis vector.
-  triad_basis_vectors[2].CrossProduct(triad_basis_vectors[0], triad_basis_vectors[1]);
+  triad_basis_vectors[2].cross_product(triad_basis_vectors[0], triad_basis_vectors[1]);
 
   // Norm all vectors and add them to the solid triad.
   scalar_type norm;
   for (unsigned int i_basis = 0; i_basis < 3; i_basis++)
   {
-    triad_basis_vectors[i_basis].Scale(1.0 / Core::FADUtils::Norm(triad_basis_vectors[i_basis]));
+    triad_basis_vectors[i_basis].scale(1.0 / Core::FADUtils::Norm(triad_basis_vectors[i_basis]));
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       solid_triad(i_dim, constructed_basis_vector_to_triad_order[i_basis]) =
           triad_basis_vectors[i_basis](i_dim);
@@ -617,7 +617,7 @@ void BEAMINTERACTION::GetSolidRotationVectorPolarDecomposition2D(
         F(dim_y, dim_z) = deformation_gradient(dim_y + 1, dim_z + 1);
 
     // Compute U*U.
-    U_times_U.MultiplyTN(F, F);
+    U_times_U.multiply_tn(F, F);
 
     // We have to calculate the square root of the matrix U*U here.
     U.clear();
@@ -651,12 +651,12 @@ void BEAMINTERACTION::GetSolidRotationVectorPolarDecomposition2D(
 
     // Compute R.
     Inverse(U);
-    R.Multiply(F, U);
+    R.multiply(F, U);
     solid_angle = atan2(-R(0, 1), R(0, 0));
   }
 
   // Return the solid rotation vector.
-  psi_solid.PutScalar(0.0);
+  psi_solid.put_scalar(0.0);
   psi_solid(0) = solid_angle + reference_rotation_beam;
 }
 
@@ -703,7 +703,7 @@ void BEAMINTERACTION::GetSolidRotationVectorDeformationGradient2D(
       FOUR_C_THROW("Unexpected coupling type for GetSolidRotationVectorDeformationGradient2D");
       break;
   }
-  psi_solid.PutScalar(0.0);
+  psi_solid.put_scalar(0.0);
   psi_solid(0) = reference_rotation_beam + angle;
 }
 
@@ -788,15 +788,15 @@ void BEAMINTERACTION::AssembleLocalMortarContributions(const BEAMINTERACTION::Be
           -local_M(i_lambda, i_other), other_row[i_other], lambda_gid_pos[i_lambda]);
     }
   }
-  global_kappa.SumIntoGlobalValues(mortar::n_dof_, lambda_gid_pos.data(), local_kappa.A());
+  global_kappa.SumIntoGlobalValues(mortar::n_dof_, lambda_gid_pos.data(), local_kappa.data());
   global_constraint.SumIntoGlobalValues(
-      mortar::n_dof_, lambda_gid_pos.data(), local_constraint.A());
+      mortar::n_dof_, lambda_gid_pos.data(), local_constraint.data());
 
   // Set all entries in the local kappa vector to 1 and add them to the active vector.
   Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_kappa_active;
-  local_kappa_active.PutScalar(1.0);
+  local_kappa_active.put_scalar(1.0);
   global_lambda_active.SumIntoGlobalValues(
-      mortar::n_dof_, lambda_gid_pos.data(), local_kappa_active.A());
+      mortar::n_dof_, lambda_gid_pos.data(), local_kappa_active.data());
 }
 
 

@@ -57,7 +57,7 @@ namespace
     Core::LinAlg::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
     solve_for_inverse.SetMatrix(matrix);
 
-    solve_for_inverse.Invert();
+    solve_for_inverse.invert();
   }
 
   /*!
@@ -72,7 +72,7 @@ namespace
     Core::LinAlg::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
     solve_for_inverse.SetMatrix(matrix);
 
-    int err_inv = solve_for_inverse.Invert();
+    int err_inv = solve_for_inverse.invert();
     if (err_inv != 0) FOUR_C_THROW("Inversion of matrix failed with LAPACK error code %d", err_inv);
   }
 
@@ -228,10 +228,10 @@ namespace
         eas_iteration_data.s_);
 
     // addition of Kad_{i} delta_D_{i+1}
-    tmp.MultiplyTN(1.0, eas_iteration_data.Kda_, displ_inc, 1.0);
+    tmp.multiply_tn(1.0, eas_iteration_data.Kda_, displ_inc, 1.0);
 
     // multiplication with (- invKaa_{i})
-    eas_iteration_data.alpha_inc_.Multiply(-1.0, eas_iteration_data.invKaa_, tmp);
+    eas_iteration_data.alpha_inc_.multiply(-1.0, eas_iteration_data.invKaa_, tmp);
   }
 
   /*!
@@ -256,7 +256,7 @@ namespace
     update_alpha_increment<celltype, eastype>(displ_inc, eas_iteration_data);
 
     // update alpha_i with the increment delta_alpha such that alpha_{i+1} = alpha_{i} + delta_alpha
-    eas_iteration_data.alpha_.Update(step_length, eas_iteration_data.alpha_inc_, 1.0);
+    eas_iteration_data.alpha_.update(step_length, eas_iteration_data.alpha_inc_, 1.0);
   }
 
   /*!
@@ -272,7 +272,7 @@ namespace
   void correct_alpha(Discret::ELEMENTS::EasIterationData<celltype, eastype>& eas_iteration_data,
       const double new_step_length, const double old_step_length)
   {
-    eas_iteration_data.alpha_.Update(
+    eas_iteration_data.alpha_.update(
         new_step_length - old_step_length, eas_iteration_data.alpha_inc_, 1.0);
   }
 
@@ -410,7 +410,7 @@ namespace
         Mtilde;
 
     // Mtilde = detJ0/detJ T0^{-T} M
-    Mtilde.Multiply(centroid_transformation.detJ0_ / detJ, centroid_transformation.T0invT_, M);
+    Mtilde.multiply(centroid_transformation.detJ0_ / detJ, centroid_transformation.T0invT_, M);
 
     return Mtilde;
   }
@@ -463,7 +463,7 @@ namespace
       const Core::LinAlg::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& alpha)
   {
     Core::LinAlg::Matrix<num_str<celltype>, 1> enhanced_gl_strain(gl_strain);
-    enhanced_gl_strain.Multiply(1.0, Mtilde, alpha, 1.0);
+    enhanced_gl_strain.multiply(1.0, Mtilde, alpha, 1.0);
     return enhanced_gl_strain;
   }
 
@@ -525,25 +525,25 @@ namespace
 
     Core::LinAlg::SYEV(U_enh, EW, U_enh);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
-    tmp.Multiply(U_enh, EW);
-    tmp2.MultiplyNT(tmp, U_enh);
-    U_enh.Update(tmp2);
+    tmp.multiply(U_enh, EW);
+    tmp2.multiply_nt(tmp, U_enh);
+    U_enh.update(tmp2);
 
     // calculate displacement-based right stretch tensor
-    U_disp.MultiplyTN(defgrd_disp, defgrd_disp);
+    U_disp.multiply_tn(defgrd_disp, defgrd_disp);
 
     Core::LinAlg::SYEV(U_disp, EW, U_disp);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
-    tmp.Multiply(U_disp, EW);
-    tmp2.MultiplyNT(tmp, U_disp);
-    U_disp.Update(tmp2);
+    tmp.multiply(U_disp, EW);
+    tmp2.multiply_nt(tmp, U_disp);
+    U_disp.update(tmp2);
 
     // compose consistent deformation gradient
-    U_disp.Invert();
-    R.Multiply(defgrd_disp, U_disp);
+    U_disp.invert();
+    R.multiply(defgrd_disp, U_disp);
 
     Core::LinAlg::Matrix<dim, dim> defgrd_enh;
-    defgrd_enh.Multiply(R, U_enh);
+    defgrd_enh.multiply(R, U_enh);
     return defgrd_enh;
   }
 
@@ -571,14 +571,14 @@ namespace
     // invert the matrix. At this point, this is still Kaa and NOT invKaa.
     Core::LinAlg::Matrix<num_str<celltype>, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas> cmatM(
         true);
-    cmatM.Multiply(stress.cmat_, Mtilde);
-    eas_iteration_data.invKaa_.MultiplyTN(integration_factor, Mtilde, cmatM, 1.);
+    cmatM.multiply(stress.cmat_, Mtilde);
+    eas_iteration_data.invKaa_.multiply_tn(integration_factor, Mtilde, cmatM, 1.);
 
     // integrate Kda: Kda += (B^T . cmat . Mtilde) * detJ * w(gp)
-    eas_iteration_data.Kda_.MultiplyTN(integration_factor, Bop, cmatM, 1.);
+    eas_iteration_data.Kda_.multiply_tn(integration_factor, Bop, cmatM, 1.);
 
     // integrate s: s += (Mtilde^T . S) * detJ * w(gp)
-    eas_iteration_data.s_.MultiplyTN(integration_factor, Mtilde, stress.pk2_, 1.);
+    eas_iteration_data.s_.multiply_tn(integration_factor, Mtilde, stress.pk2_, 1.);
   }
 
   /*!
@@ -597,7 +597,7 @@ namespace
       const Core::LinAlg::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& s,
       Core::LinAlg::Matrix<num_dof_per_ele<celltype>, 1>& force_vector)
   {
-    force_vector.MultiplyNN(1.0, minusKdainvKaa, s, 1.0);
+    force_vector.multiply_nn(1.0, minusKdainvKaa, s, 1.0);
   }
 
   /*!
@@ -618,7 +618,7 @@ namespace
           STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Kda,
       Core::LinAlg::Matrix<num_dof_per_ele<celltype>, num_dof_per_ele<celltype>>& stiffness_matrix)
   {
-    stiffness_matrix.MultiplyNT(1.0, minusKdainvKaa, Kda, 1.0);
+    stiffness_matrix.multiply_nt(1.0, minusKdainvKaa, Kda, 1.0);
   }
 
   template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
@@ -824,7 +824,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype,
   // compute the product (- Kda Kaa^{-1}) which is later needed for force and stiffness update
   Core::LinAlg::Matrix<num_dof_per_ele_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
       minusKdainvKaa(true);
-  minusKdainvKaa.MultiplyNN(-1.0, eas_iteration_data_.Kda_, eas_iteration_data_.invKaa_);
+  minusKdainvKaa.multiply_nn(-1.0, eas_iteration_data_.Kda_, eas_iteration_data_.invKaa_);
 
   if (force.has_value())
   {
@@ -913,7 +913,7 @@ void Discret::ELEMENTS::SolidEleCalcEas<celltype, eastype, kinematic_type>::Upda
         evaluate_gp_coordinates_and_add_to_parameter_list<celltype>(
             nodal_coordinates, shape_functions, params);
 
-        solid_material.Update(
+        solid_material.update(
             kinematic_quantitites.enhanced_deformation_gradient, gp, params, ele.Id());
       });
 

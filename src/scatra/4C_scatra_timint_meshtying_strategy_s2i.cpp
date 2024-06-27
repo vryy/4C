@@ -4453,15 +4453,15 @@ double ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_f
 
   // evaluate transposed Jacobian matrix at integration point
   Core::LinAlg::Matrix<nsd_slave_, nsd_slave_ + 1> jacobian;
-  jacobian.MultiplyNT(deriv_slave, coordinates_nodes);
+  jacobian.multiply_nt(deriv_slave, coordinates_nodes);
 
   // evaluate metric tensor at integration point
   Core::LinAlg::Matrix<nsd_slave_, nsd_slave_> metrictensor;
-  metrictensor.MultiplyNT(jacobian, jacobian);
+  metrictensor.multiply_nt(jacobian, jacobian);
 
   // return domain integration factor, i.e., Jacobian determinant times integration weight, at
   // integration point
-  return sqrt(metrictensor.Determinant()) * intpoints.IP().qwgt[iquad];
+  return sqrt(metrictensor.determinant()) * intpoints.IP().qwgt[iquad];
 }
 
 /*----------------------------------------------------------------------*

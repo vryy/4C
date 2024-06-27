@@ -89,8 +89,8 @@ void CONTACT::IntegratorNitsche::gpts_forces(Mortar::Element& sele, Mortar::Elem
   Core::LinAlg::Matrix<dim, 1> slave_normal, master_normal;
   std::vector<Core::Gen::Pairedvector<int, double>> deriv_slave_normal(0, 0);
   std::vector<Core::Gen::Pairedvector<int, double>> deriv_master_normal(0, 0);
-  sele.compute_unit_normal_at_xi(sxi, slave_normal.A());
-  mele.compute_unit_normal_at_xi(mxi, master_normal.A());
+  sele.compute_unit_normal_at_xi(sxi, slave_normal.data());
+  mele.compute_unit_normal_at_xi(mxi, master_normal.data());
   sele.DerivUnitNormalAtXi(sxi, deriv_slave_normal);
   mele.DerivUnitNormalAtXi(mxi, deriv_master_normal);
 
@@ -181,7 +181,7 @@ void CONTACT::IntegratorNitsche::gpts_forces(Mortar::Element& sele, Mortar::Elem
     if (frtype_)
     {
       CONTACT::UTILS::BuildTangentVectors<dim>(
-          contact_normal.A(), deriv_contact_normal, t1.A(), dt1, t2.A(), dt2);
+          contact_normal.data(), deriv_contact_normal, t1.data(), dt1, t2.data(), dt2);
       CONTACT::UTILS::RelVelInvariant<dim>(sele, sxi, dsxi, sval, sderiv, mele, mxi, dmxi, mval,
           mderiv, gap, dgapgp, relVel, relVel_deriv);
       CONTACT::UTILS::VectorScalarProduct<dim>(t1, dt1, relVel, relVel_deriv, vt1, dvt1);
@@ -640,7 +640,7 @@ void CONTACT::IntegratorNitsche::build_adjoint_test(Mortar::Element& moEle, cons
   }
 
   Core::LinAlg::SerialDenseMatrix tmp(moEle.parent_element()->num_node() * dim, dim, false);
-  Core::LinAlg::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
+  Core::LinAlg::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.data(),
       derivtravo_slave.numRows(), derivtravo_slave.numRows(), derivtravo_slave.numCols());
   if (Core::LinAlg::multiply(tmp, d2sntDdDpxi, deriv_trafo)) FOUR_C_THROW("multiply failed");
   for (int d = 0; d < dim - 1; ++d)
@@ -814,7 +814,7 @@ void CONTACT::UTILS::VectorScalarProduct(const Core::LinAlg::Matrix<dim, 1>& v1,
     const std::vector<Core::Gen::Pairedvector<int, double>>& v2d, double& val,
     Core::Gen::Pairedvector<int, double>& val_deriv)
 {
-  val = v1.Dot(v2);
+  val = v1.dot(v2);
   val_deriv.clear();
   val_deriv.resize(v1d[0].size() + v2d[0].size());
   for (int d = 0; d < dim; ++d)
@@ -836,23 +836,23 @@ void CONTACT::UTILS::BuildTangentVectors3D(const double* np,
   bool z = true;
   Core::LinAlg::Matrix<3, 1> tmp;
   tmp(2) = 1.;
-  if (abs(tmp.Dot(n)) > 1. - 1.e-4)
+  if (abs(tmp.dot(n)) > 1. - 1.e-4)
   {
     tmp(0) = 1.;
     tmp(2) = 0.;
     z = false;
   }
 
-  t1.CrossProduct(tmp, n);
+  t1.cross_product(tmp, n);
   dt1.resize(3, std::max(dn[0].size(), std::max(dn[1].size(), dn[2].size())));
   dt2.resize(3, std::max(dn[0].size(), std::max(dn[1].size(), dn[2].size())));
 
-  const double lt1 = t1.Norm2();
-  t1.Scale(1. / lt1);
+  const double lt1 = t1.norm2();
+  t1.scale(1. / lt1);
   Core::LinAlg::Matrix<3, 3> p;
   for (int i = 0; i < 3; ++i) p(i, i) = 1.;
-  p.MultiplyNT(-1., t1, t1, 1.);
-  p.Scale(1. / lt1);
+  p.multiply_nt(-1., t1, t1, 1.);
+  p.scale(1. / lt1);
   if (z)
   {
     for (const auto& i : dn[1])
@@ -870,8 +870,8 @@ void CONTACT::UTILS::BuildTangentVectors3D(const double* np,
       for (int d = 0; d < 3; ++d) dt1[d][i.first] += p(d, 2) * i.second;
   }
 
-  t2.CrossProduct(n, t1);
-  if (abs(t2.Norm2() - 1.) > 1.e-10) FOUR_C_THROW("this should already form an orthonormal basis");
+  t2.cross_product(n, t1);
+  if (abs(t2.norm2() - 1.) > 1.e-10) FOUR_C_THROW("this should already form an orthonormal basis");
 
   for (const auto& i : dn[0])
   {

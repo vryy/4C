@@ -242,10 +242,10 @@ void Discret::ELEMENTS::Bele3::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3::Print(std::ostream& os) const
+void Discret::ELEMENTS::Bele3::print(std::ostream& os) const
 {
   os << "Bele3_" << numdofpernode_ << " " << Core::FE::CellTypeToString(Shape());
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

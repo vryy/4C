@@ -128,7 +128,7 @@ namespace Core::DOFSets
     //! @name Utility Methods
 
     /// Print this class
-    virtual void Print(std::ostream& os) const = 0;
+    virtual void print(std::ostream& os) const = 0;
 
     /// Print the dofsets in the static_dofsets_ list
     virtual void PrintAllDofsets(const Epetra_Comm& comm) const = 0;

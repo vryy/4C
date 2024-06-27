@@ -142,7 +142,7 @@ void CONTACT::Aug::PenaltyUpdate::PrintInfo(std::ostream& os) const
   os << "data_ptr_ = " << data_ptr_ << "\n";
   os << "dir_norm2_ = " << dir_norm2_ << "\n";
   os << "ratio_ = " << ratio_ << "\n";
-  state_.Print(os);
+  state_.print(os);
 }
 
 /*----------------------------------------------------------------------------*
@@ -189,7 +189,7 @@ const Epetra_Vector& CONTACT::Aug::PenaltyUpdate::State::GetDirection() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::PenaltyUpdate::State::Print(std::ostream& os) const
+void CONTACT::Aug::PenaltyUpdate::State::print(std::ostream& os) const
 {
   os << "--- CONTACT::Aug::PenaltyUpdate::State object\n";
   os << "    <RCP> fulldirection_:" << full_direction_ << ")\n";

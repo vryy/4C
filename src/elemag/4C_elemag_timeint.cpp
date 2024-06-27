@@ -1100,7 +1100,7 @@ void EleMag::ElemagTimeInt::read_restart(int step)
 void EleMag::ElemagTimeInt::SpySysmat(std::ostream &out)
 {
   Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_, true)->EpetraMatrix()->Print(out);
-  std::cout << "Routine has to be implemented. In the meanwhile the Print() method from the "
+  std::cout << "Routine has to be implemented. In the meanwhile the print() method from the "
                "Epetra_CsrMatrix is used."
             << std::endl;
   /*

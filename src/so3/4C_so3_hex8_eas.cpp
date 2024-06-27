@@ -121,9 +121,9 @@ void Discret::ELEMENTS::SoHex8::soh8_eassetup(
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> jac0;
-  jac0.Multiply(df0, xrefe);
+  jac0.multiply(df0, xrefe);
   // compute determinant of Jacobian at origin
-  detJ0 = jac0.Determinant();
+  detJ0 = jac0.determinant();
 
   // first, build T0^T transformation matrix which maps the M-matrix
   // between global (r,s,t)-coordinates and local (x,y,z)-coords
@@ -178,7 +178,7 @@ void Discret::ELEMENTS::SoHex8::soh8_eassetup(
       solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(T0invT);
   int err2 = solve_for_inverseT0.Factor();
-  int err = solve_for_inverseT0.Invert();
+  int err = solve_for_inverseT0.invert();
   if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of T0inv (Jacobian0) failed");
 
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8

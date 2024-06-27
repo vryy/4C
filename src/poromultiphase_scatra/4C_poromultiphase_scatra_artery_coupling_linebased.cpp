@@ -464,7 +464,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::
     if (arterymat == Teuchos::null) FOUR_C_THROW("cast to artery material failed");
 
     // TODO: this will not work for higher order artery eles
-    const double etaA = coupl_elepairs_[i]->EtaA();
+    const double etaA = coupl_elepairs_[i]->Etadata();
     const double etaB = coupl_elepairs_[i]->EtaB();
     const double length = POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(artele, arterydis_);
 
@@ -597,7 +597,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::fill_gid_to_se
 
     const Core::Elements::Element* contele = contdis_->gElement(contelegid);
 
-    const double etaA = coupl_elepairs[i]->EtaA();
+    const double etaA = coupl_elepairs[i]->Etadata();
     const double etaB = coupl_elepairs[i]->EtaB();
 
     if (contele->Owner() == myrank_)
@@ -970,7 +970,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::is_duplicate_s
   // we have to sort out duplicate segments, these might occur if the artery element
   // lies exactly between two different 2D/3D-elements
 
-  const double eta_a = possible_duplicate->EtaA();
+  const double eta_a = possible_duplicate->Etadata();
   const double eta_b = possible_duplicate->EtaB();
   const int ele1gid = possible_duplicate->Ele1GID();
   int elepairID = -1;
@@ -990,7 +990,7 @@ bool PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::is_identical_s
     // first check if ele1-Gid is identical
     if (ele1gid == coupl_elepairs[i]->Ele1GID())
       // check if integration segment is the same
-      if (fabs(etaA - coupl_elepairs[i]->EtaA()) < XIETATOL &&
+      if (fabs(etaA - coupl_elepairs[i]->Etadata()) < XIETATOL &&
           fabs(etaB - coupl_elepairs[i]->EtaB()) < XIETATOL)
       {
         if (PROJOUTPUT) std::cout << "found duplicate integration segment" << std::endl;
@@ -1065,9 +1065,9 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased::output_summary
   {
     std::cout << "Proc " << std::right << std::setw(2) << myrank_ << ": Artery-ele " << std::right
               << std::setw(5) << coupl_elepairs_[i]->Ele1GID() << ":   [" << std::left
-              << std::setw(11) << coupl_elepairs_[i]->EtaA() << "," << std::right << std::setw(11)
-              << coupl_elepairs_[i]->EtaB() << "] <---> continuous-ele " << std::right
-              << std::setw(7) << coupl_elepairs_[i]->Ele2GID() << std::endl;
+              << std::setw(11) << coupl_elepairs_[i]->Etadata() << "," << std::right
+              << std::setw(11) << coupl_elepairs_[i]->EtaB() << "] <---> continuous-ele "
+              << std::right << std::setw(7) << coupl_elepairs_[i]->Ele2GID() << std::endl;
   }
   comm().Barrier();
   if (myrank_ == 0) std::cout << "\n";

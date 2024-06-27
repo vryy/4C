@@ -121,7 +121,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_
     case Inpar::ScaTra::flux_total:
     {
       // ohmic contribution to current density
-      q.Update(-diff_manager()->GetCond(), var_manager()->GradPot());
+      q.update(-diff_manager()->GetCond(), var_manager()->GradPot());
       break;
     }
 
@@ -230,7 +230,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
 
       // compute velocity and its divergence
       static Core::LinAlg::Matrix<nsd_, 1> v;
-      v.Multiply(my::evelnp_, my::funct_);
+      v.multiply(my::evelnp_, my::funct_);
       double divv(0.);
       my::get_divergence(divv, my::evelnp_);
 
@@ -242,7 +242,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
       intcdivv += my::scatravarmanager_->Phinp(0) * divv_fac;
 
       // integral of velocity times concentration gradient
-      intvgradc += v.Dot(my::scatravarmanager_->GradPhi(0)) * fac;
+      intvgradc += v.dot(my::scatravarmanager_->GradPhi(0)) * fac;
     }  // loop over integration points
 
     // safety check
@@ -282,7 +282,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::calculate_
     case Inpar::ScaTra::flux_total:
     {
       // diffusive flux contribution
-      q.Update(-diff_manager()->GetIsotropicDiff(k), var_manager()->GradPhi(k));
+      q.update(-diff_manager()->GetIsotropicDiff(k), var_manager()->GradPhi(k));
       break;
     }
 

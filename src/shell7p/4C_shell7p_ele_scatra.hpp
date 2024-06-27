@@ -111,7 +111,7 @@ namespace Discret::ELEMENTS
 
     void unpack(const std::vector<char>& data) override;
 
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
 
     [[nodiscard]] Core::Elements::ElementType& ElementType() const override

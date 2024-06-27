@@ -280,7 +280,7 @@ namespace Core::DOFSets
     const Epetra_Map* DofColMap() const override;
 
     //! Print this class
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     //! Return true if \ref assign_degrees_of_freedom was called
     bool Filled() const override { return filled_; }

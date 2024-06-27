@@ -97,9 +97,9 @@ namespace GEOMETRYPAIR
           << face_element->ParentElementId() << "\n";
     }
     out << "Line:";
-    PrintElementData<line>::Print(element_data_line, out);
+    PrintElementData<line>::print(element_data_line, out);
     out << "Other:";
-    PrintElementData<other>::Print(element_data_other, out);
+    PrintElementData<other>::print(element_data_other, out);
   }
 
 }  // namespace GEOMETRYPAIR

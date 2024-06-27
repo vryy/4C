@@ -52,7 +52,7 @@ namespace Discret
       bool DiffusionCoeffBased() const { return diffusioncoefbased_; }
 
       //! return Newman constants
-      double NewmanConstA() const { return newmanconsta_; }
+      double NewmanConstdata() const { return newmanconsta_; }
       double NewmanConstB() const { return newmanconstb_; }
       double NewmanConstC() const { return newmanconstc_; }
       double Epsilon0() const { return epsilon_0_; }

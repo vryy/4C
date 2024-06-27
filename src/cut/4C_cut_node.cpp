@@ -204,7 +204,7 @@ void Core::Geo::Cut::NodalDofSet::CollectCutSides(Core::Geo::Cut::plain_int_set&
 
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::NodalDofSet::Print()
+void Core::Geo::Cut::NodalDofSet::print()
 {
   std::cout << "Core::Geo::Cut::NodalDofSet:\n"
             << "STD dofset = " << (this->Is_Standard_DofSet() ? "TRUE\n" : "FALSE\n")
@@ -214,7 +214,7 @@ void Core::Geo::Cut::NodalDofSet::Print()
 
 /*-----------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::CompositeNodalDofSet::Print()
+void Core::Geo::Cut::CompositeNodalDofSet::print()
 {
   std::cout << "Core::Geo::Cut::CompositeNodalDofSet which contains " << nodal_dofsets_.size()
             << " combined Core::Geo::Cut::NodalDofSet:\n "
@@ -487,7 +487,7 @@ int Core::Geo::Cut::Node::DofSetNumberNEW(const plain_volumecell_set& cells)
           std::cout << "node: " << Id() << std::endl;
           std::cout << "first dofset id: " << dofset << std::endl;
           std::cout << "new dofset id: " << i << std::endl;
-          cell->Print(std::cout);
+          cell->print(std::cout);
           FOUR_C_THROW("volume dofset not unique");
         }
       }
@@ -770,13 +770,13 @@ bool Core::Geo::Cut::Node::isAtSameLocation(const Node* nod) const
 {
   Core::LinAlg::Matrix<3, 1> nx1, nx2;
 
-  point_->Coordinates(nx1.A());
-  Coordinates(nx1.A());
-  nod->Coordinates(nx2.A());
+  point_->Coordinates(nx1.data());
+  Coordinates(nx1.data());
+  nod->Coordinates(nx2.data());
 
-  nx1.Update(-1, nx2, 1);
+  nx1.update(-1, nx2, 1);
 
-  if (nx1.Norm2() < (this->point()->Tolerance() + nod->point()->Tolerance())) return true;
+  if (nx1.norm2() < (this->point()->Tolerance() + nod->point()->Tolerance())) return true;
 
   return false;
 }

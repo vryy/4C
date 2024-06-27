@@ -776,7 +776,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
       // safety check
       if (DiscretPtr()->ElementColMap()->LID(elegid) < 0)
       {
-        elepairptr->Print(std::cout);
+        elepairptr->print(std::cout);
         FOUR_C_THROW("reset(): elegid %i not there on proc %i ", elegid, GState().get_my_rank());
       }
 
@@ -796,7 +796,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::reset()
     // conditions
     // **************************** DEBUG ****************************************
     Core::LinAlg::Matrix<3, 1> dist(true);
-    dist.Update(1.0, pos[0], -1.0, pos[1]);
+    dist.update(1.0, pos[0], -1.0, pos[1]);
     for (unsigned int i = 0; i < 3; ++i)
     {
       if (std::abs(dist(i)) > 0.5 * periodic_bounding_box_ptr()->EdgeLength(i))
@@ -1941,7 +1941,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
 
   // fixme: to avoid senseless FOUR_C_THROW in debug mode
   Core::LinAlg::Matrix<3, 1> dummy(clpos);
-  clpos.Update(0.5, bspot1pos, 0.5, dummy);
+  clpos.update(0.5, bspot1pos, 0.5, dummy);
 
   // shift the interpolated position back in the periodic box if necessary
   PeriodicBoundingBox().Shift3D(clpos);
@@ -1965,9 +1965,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::set_position_of_newly_fre
   Global::Problem::Instance()->Random()->Uni(randunivec, count);
   for (unsigned int dim = 0; dim < 3; ++dim) cldeltapos_i(dim) = randunivec[dim];
 
-  cldeltapos_i.Scale(crosslinker->GetMaterial()->LinkingLength() / cldeltapos_i.Norm2());
+  cldeltapos_i.scale(crosslinker->GetMaterial()->LinkingLength() / cldeltapos_i.norm2());
 
-  clpos.Update(1.0, cldeltapos_i, 1.0);
+  clpos.update(1.0, cldeltapos_i, 1.0);
 
   PeriodicBoundingBox().Shift3D(clpos);
 
@@ -2390,8 +2390,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_if_sphere_prohibits
       sphere_pos(dim) = sphere_iter->Nodes()[0]->X()[dim] + sphereeledisp[dim];
 
     Core::LinAlg::Matrix<3, 1> dist_vec(true);
-    dist_vec.Update(1.0, sphere_pos, -1.0, cldata_i->GetPosition());
-    const double distance = dist_vec.Norm2();
+    dist_vec.update(1.0, sphere_pos, -1.0, cldata_i->GetPosition());
+    const double distance = dist_vec.norm2();
 
     if (distance < crosslinker_i->GetMaterial()->NoBondDistSphere()) return true;
   }
@@ -3363,9 +3363,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::
   // acting on the cl
   Core::LinAlg::Matrix<3, 1> dist_vec(true);
   Core::LinAlg::Matrix<3, 1> bspotforceone(true);
-  dist_vec.Update(1.0, elepairptr->GetBindSpotPos1(), -1.0, elepairptr->GetBindSpotPos2());
+  dist_vec.update(1.0, elepairptr->GetBindSpotPos1(), -1.0, elepairptr->GetBindSpotPos2());
   for (unsigned int j = 0; j < 3; ++j) bspotforceone(j) = bspotforce[0](j);
-  double sgn = (dist_vec.Dot(bspotforceone) < 0.0) ? -1.0 : 1.0;
+  double sgn = (dist_vec.dot(bspotforceone) < 0.0) ? -1.0 : 1.0;
 
   /* note: you have a sign criterion that is dependent on the axial strain, but the force you are
    * using also contains shear parts. This means in cases of axial strains near 0 and (large) shear
@@ -3411,8 +3411,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_beam_binding_statu
   for (auto const& iter : unbindevent)
   {
     // get data
-    const int elegidtoupdate = iter->GetEleToUpdate().first;
-    const int bspotlocn = iter->GetEleToUpdate().second;
+    const int elegidtoupdate = iter->GetEleToupdate().first;
+    const int bspotlocn = iter->GetEleToupdate().second;
     const int colelelid = Discret().ElementColMap()->LID(elegidtoupdate);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -3722,11 +3722,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::dissolve_bond(Core::Nodes
   Teuchos::RCP<BEAMINTERACTION::Data::UnBindEventData> unbindevent =
       Teuchos::rcp(new BEAMINTERACTION::Data::UnBindEventData());
   unbindevent->SetClId(linker->Id());
-  unbindevent->SetEleToUpdate(cldata->GetBSpots()[freedbspotid]);
+  unbindevent->SetEleToupdate(cldata->GetBSpots()[freedbspotid]);
   unbindevent->SetLinkerType(crosslinker->GetMaterial()->LinkerType());
 
   // owner of beam
-  const int beamowner = DiscretPtr()->gElement(unbindevent->GetEleToUpdate().first)->Owner();
+  const int beamowner = DiscretPtr()->gElement(unbindevent->GetEleToupdate().first)->Owner();
 
   // check who needs to update the element status
   if (beamowner == GState().get_my_rank())

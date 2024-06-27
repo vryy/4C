@@ -208,10 +208,10 @@ void Discret::ELEMENTS::SoSh8p8::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              bborn 03/09|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8p8::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoSh8p8::print(std::ostream& os) const
 {
   os << "So_sh8p8 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }
@@ -279,7 +279,7 @@ void Discret::ELEMENTS::SoSh8p8::sosh8p8_expol(
 
   Core::LinAlg::Matrix<NUMNOD_, Mat::NUM_STRESS_3D> nodalstresses;
 
-  nodalstresses.Multiply(expol, stresses);
+  nodalstresses.multiply(expol, stresses);
 
   // "assembly" of extrapolated nodal stresses
   for (int i = 0; i < NUMNOD_; ++i)

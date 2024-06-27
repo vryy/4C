@@ -84,7 +84,7 @@ namespace Mat
     );
 
     /// print my DAT file section and possible materials from the discretization
-    std::ostream& Print(std::ostream& stream,  ///< the output stream
+    std::ostream& print(std::ostream& stream,  ///< the output stream
         const Core::FE::Discretization* dis = nullptr);
 
     /// my material name

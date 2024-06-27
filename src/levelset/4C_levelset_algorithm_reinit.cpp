@@ -512,7 +512,7 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
   discret_->evaluate(eleparams, sysmat_, residual_);
   discret_->ClearState();
 
-  // residual_->Print(std::cout);
+  // residual_->print(std::cout);
 
   // finalize the complete matrix
   sysmat_->Complete();
@@ -523,7 +523,7 @@ void ScaTra::LevelSetAlgorithm::correction_reinit()
   solver_params.reset = true;
   solver_->Solve(sysmat_->EpetraOperator(), phinp_, residual_, solver_params);
 
-  // phinp_->Print(std::cout);
+  // phinp_->print(std::cout);
 
   SystemMatrix()->reset();
   // reset the solver as well
@@ -738,7 +738,7 @@ void ScaTra::LevelSetAlgorithm::reinit_geo(
           delta(1) = allnodecoords[nodecoordbase + 1];
           delta(2) = allnodecoords[nodecoordbase + 2];
 
-          delta.Update(1.0, nodecoord, -1.0);
+          delta.update(1.0, nodecoord, -1.0);
 
           // take care of PBCs
           for (size_t ipbc = 0; ipbc < planenormal.size(); ++ipbc)
@@ -1157,26 +1157,26 @@ void ScaTra::LevelSetAlgorithm::compute_distance_to_edge(const Core::LinAlg::Mat
     }
 
     // compute distance vector from node to current first
-    vertex1tonode.Update(1.0, node, -1.0, vertex1);
+    vertex1tonode.update(1.0, node, -1.0, vertex1);
     // compute distance vector from current second first vertex to current frist vertex (edge)
-    vertex1tovertex2.Update(1.0, vertex2, -1.0, vertex1);
-    double normvertex1tovertex2 = vertex1tovertex2.Norm2();
+    vertex1tovertex2.update(1.0, vertex2, -1.0, vertex1);
+    double normvertex1tovertex2 = vertex1tovertex2.norm2();
     // normalize vector
-    vertex1tovertex2.Scale(1.0 / normvertex1tovertex2);
+    vertex1tovertex2.scale(1.0 / normvertex1tovertex2);
 
     // scalar product of vertex1tonode and the normed vertex1tovertex2
-    double lotfusspointdist = vertex1tovertex2.Dot(vertex1tonode);
+    double lotfusspointdist = vertex1tovertex2.dot(vertex1tonode);
 
     if ((lotfusspointdist >= 0.0) and
         (lotfusspointdist <= normvertex1tovertex2))  // lotfusspoint on edge
     {
       Core::LinAlg::Matrix<3, 1> lotfusspoint(true);
-      lotfusspoint.Update(1.0, vertex1, lotfusspointdist, vertex1tovertex2);
+      lotfusspoint.update(1.0, vertex1, lotfusspointdist, vertex1tovertex2);
       Core::LinAlg::Matrix<3, 1> nodetolotfusspoint(true);
-      nodetolotfusspoint.Update(1.0, lotfusspoint, -1.0, node);
+      nodetolotfusspoint.update(1.0, lotfusspoint, -1.0, node);
 
       // determine length of vector from node to lot fuss point
-      edgedisttmp = nodetolotfusspoint.Norm2();
+      edgedisttmp = nodetolotfusspoint.norm2();
       if (edgedisttmp < edgedist) edgedist = edgedisttmp;
     }
   }
@@ -1212,10 +1212,10 @@ void ScaTra::LevelSetAlgorithm::compute_distance_to_patch(const Core::LinAlg::Ma
     vertex(2) = patchcoord(2, ivert);
 
     // compute distance vector from flame front to node
-    dist.Update(1.0, node, -1.0, vertex);
+    dist.update(1.0, node, -1.0, vertex);
 
     // compute L2-norm of distance vector
-    vertexdisttmp = dist.Norm2();
+    vertexdisttmp = dist.norm2();
     if (vertexdisttmp < vertexdist) vertexdist = vertexdisttmp;
   }
 
@@ -1244,7 +1244,7 @@ void ScaTra::LevelSetAlgorithm::compute_normal_vector_to_interface(
 
   // first edge of flame front patch
   Core::LinAlg::Matrix<3, 1> edge1;
-  edge1.Update(1.0, point2, -1.0, point1);
+  edge1.update(1.0, point2, -1.0, point1);
 
   // third point of flame front patch
   point2(0) = patchcoord(0, 2);
@@ -1253,7 +1253,7 @@ void ScaTra::LevelSetAlgorithm::compute_normal_vector_to_interface(
 
   // second edge of flame front patch (if patch is triangle; if not: edge 2 is secant of polygon)
   Core::LinAlg::Matrix<3, 1> edge2;
-  edge2.Update(1.0, point2, -1.0, point1);
+  edge2.update(1.0, point2, -1.0, point1);
 
   // compute normal vector of patch (cross product: edge1 x edge2)
   // remark: normal vector points into unburnt domain (G<0)
@@ -1268,7 +1268,7 @@ void ScaTra::LevelSetAlgorithm::compute_normal_vector_to_interface(
   // compute unit (normed) normal vector
   double norm = sqrt(normal(0) * normal(0) + normal(1) * normal(1) + normal(2) * normal(2));
   if (norm == 0.0) FOUR_C_THROW("norm of normal vector is zero!");
-  normal.Scale(1.0 / norm);
+  normal.scale(1.0 / norm);
 
   return;
 }
@@ -1338,12 +1338,12 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
     // evaluate projection X of node P at current position \eta_1,\eta_2 on the patch
     // projX(i,j) = patchcoord(i,k)*funct(k,1)
     projX.clear();
-    projX.MultiplyNN(patchcoordfix, funct);
+    projX.multiply_nn(patchcoordfix, funct);
 
     // evaluate gradient of projection X of node P at current position \eta_1,\eta_2 on the patch
     // gradprojX(i,j) = patchcoord(i,k)*deriv(j,k)
     gradprojX.clear();
-    gradprojX.MultiplyNT(patchcoordfix, deriv);
+    gradprojX.multiply_nt(patchcoordfix, deriv);
 
     //---------------------------------------------------
     // build system of equations F and its gradient gradF
@@ -1371,7 +1371,7 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
     // solve linear system of equations: gradF * incr = -F
     //----------------------------------------------------
     // F = F*-1.0
-    f.Scale(-1.0);
+    f.scale(-1.0);
     // solve A.X=B
     Core::LinAlg::FixedSizeSerialDenseSolver<nsd, nsd, 1> solver;
     solver.SetMatrix(gradf);                 // set A=gradF

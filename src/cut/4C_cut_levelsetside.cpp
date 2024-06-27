@@ -160,7 +160,7 @@ bool Core::Geo::Cut::LevelSetSide<probdim>::find_ambiguous_cut_lines(
           }
 
           Core::LinAlg::Matrix<1, 1> midlsv;
-          midlsv.MultiplyTN(lsv, funct);
+          midlsv.multiply_tn(lsv, funct);
 
           for (unsigned i = 1; i < zero_positions.size(); ++i)
           {

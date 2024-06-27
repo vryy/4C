@@ -410,7 +410,7 @@ double Mat::UTILS::Muscle::FiberStretch(
 {
   // product C^T*M
   Core::LinAlg::Matrix<3, 3> transpCM(false);
-  transpCM.MultiplyTN(C, M);  // C^TM = C^T*M
+  transpCM.multiply_tn(C, M);  // C^TM = C^T*M
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
@@ -424,7 +424,7 @@ Core::LinAlg::Matrix<3, 3> Mat::UTILS::Muscle::DFiberStretch_DC(
 {
   // derivative of lambdaM w.r.t. C
   Core::LinAlg::Matrix<3, 3> dlambdaMdC(M);
-  dlambdaMdC.Scale(0.5 / lambdaM);
+  dlambdaMdC.scale(0.5 / lambdaM);
 
   return dlambdaMdC;
 }

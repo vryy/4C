@@ -99,18 +99,18 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_internal_variable
 
   //! transposed jacobian "dx/ds"
   Core::LinAlg::Matrix<nsd_, nsd_> dxds(true);
-  dxds.MultiplyNT(my::deriv_, xyze);
+  dxds.multiply_nt(my::deriv_, xyze);
 
   // deformation gradtient dx/dX = dx/ds * ds/dX = dx/ds * (dX/ds)^(-1)
   Core::LinAlg::Matrix<nsd_, nsd_> F(true);
-  F.MultiplyTT(dxds, my::xij_);
+  F.multiply_tt(dxds, my::xij_);
 
   // inverse of jacobian "dx/dX"
   Core::LinAlg::Matrix<nsd_, nsd_> F_inv(true);
-  j_ = F_inv.Invert(F);
+  j_ = F_inv.invert(F);
 
   // calculate inverse of cauchy-green stress tensor
-  c_inv_.MultiplyNT(F_inv, F_inv);
+  c_inv_.multiply_nt(F_inv, F_inv);
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
   // calculate derivative dJ/dX by finite differences
@@ -123,17 +123,17 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::set_internal_variable
     for (unsigned j = 0; j < nen_; ++j) xyze_epsilon(i, j) = xyze_epsilon(i, j) + epsilon;
 
     Core::LinAlg::Matrix<nsd_, nsd_> xjm_epsilon(true);
-    xjm_epsilon.MultiplyNT(my::deriv_, xyze_epsilon);
+    xjm_epsilon.multiply_nt(my::deriv_, xyze_epsilon);
 
     Core::LinAlg::Matrix<nsd_, nsd_> xij_epsilon(true);
-    xij_epsilon.Invert(xjm_epsilon);
+    xij_epsilon.invert(xjm_epsilon);
 
     // dx/dX = dx/ds * ds/dX = dx/ds * (dX/ds)^(-1)
     Core::LinAlg::Matrix<nsd_, nsd_> F_epsilon(true);
-    F_epsilon.MultiplyTT(dxds, xij_epsilon);
+    F_epsilon.multiply_tt(dxds, xij_epsilon);
 
     // inverse of transposed jacobian "ds/dX"
-    const double J_epsilon = F_epsilon.Determinant();
+    const double J_epsilon = F_epsilon.determinant();
     const double dJdX_i = (J_epsilon - j_) / epsilon;
 
     d_jd_x_(i, 0) = dJdX_i;
@@ -150,7 +150,7 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_diff(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
-  Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
+  Diff_tens.scale(my::diffmanager_->GetIsotropicDiff(k));
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -177,7 +177,7 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_mat_diff(
 
 
   Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
-  Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / j_);
+  Diff_tens2.scale(my::diffmanager_->GetIsotropicDiff(k) / j_);
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -214,7 +214,7 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_rhs_diff(
   // \D* \grad c_0 \times \grad \phi ...
   /////////////////////////////////////////////////////////////////////
   Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens(c_inv_);
-  Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
+  Diff_tens.scale(my::diffmanager_->GetIsotropicDiff(k));
 
   const Core::LinAlg::Matrix<nsd_, 1>& gradphi = my::scatravarmanager_->GradPhi(k);
 
@@ -239,7 +239,7 @@ void Discret::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::calc_rhs_diff(
   // ... + \D* c_0/J * \grad J \times \grad \phi
   /////////////////////////////////////////////////////////////////////
   Core::LinAlg::Matrix<nsd_, nsd_> Diff_tens2(c_inv_);
-  Diff_tens2.Scale(my::diffmanager_->GetIsotropicDiff(k) / j_ * my::scatravarmanager_->Phinp(k));
+  Diff_tens2.scale(my::diffmanager_->GetIsotropicDiff(k) / j_ * my::scatravarmanager_->Phinp(k));
 
   for (unsigned vi = 0; vi < nen_; ++vi)
   {

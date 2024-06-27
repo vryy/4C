@@ -529,9 +529,9 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
     | dr   ds   dt |        | dt   dt   dt |
     +-            -+        +-            -+
   */
-  my::xjm_.MultiplyNT(deriv_, xyze_);
+  my::xjm_.multiply_nt(deriv_, xyze_);
 
-  my::det_ = my::xji_.Invert(my::xjm_);
+  my::det_ = my::xji_.invert(my::xjm_);
 
   if (my::det_ < 1E-16)
     FOUR_C_THROW(
@@ -541,7 +541,7 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::
   my::fac_ = gpweight * my::det_;
 
   // compute global first derivates
-  derxy_.Multiply(my::xji_, deriv_);
+  derxy_.multiply(my::xji_, deriv_);
 
   //--------------------------------------------------------------
   //             compute global second derivatives
@@ -606,10 +606,10 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::eval_enrichment()
   if (is_blending_ele_)
   {
     Core::LinAlg::Matrix<nsd_, 1> derramp(true);
-    derramp.Multiply(derxy_, eramp_);
+    derramp.multiply(derxy_, eramp_);
     Core::LinAlg::Matrix<numderiv2_, 1> der2ramp(true);
-    der2ramp.Multiply(derxy2_, eramp_);
-    double ramp = eramp_.Dot(funct_);
+    der2ramp.multiply(derxy2_, eramp_);
+    double ramp = eramp_.dot(funct_);
 
     for (int inode = 0; inode < enren_; ++inode)
     {
@@ -669,16 +669,16 @@ double Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::enrichment_shape_
     Core::LinAlg::Matrix<nsd_, 1>& derpsigp, Core::LinAlg::Matrix<numderiv2_, 1>& der2psigp)
 {
   // calculate transformation ---------------------------------------
-  double wdist = ewdist_.Dot(funct_);
-  double tauw = etauw_.Dot(funct_);
+  double wdist = ewdist_.dot(funct_);
+  double tauw = etauw_.dot(funct_);
   Core::LinAlg::Matrix<nsd_, 1> derwdist(true);
-  derwdist.Multiply(derxy_, ewdist_);
+  derwdist.multiply(derxy_, ewdist_);
   Core::LinAlg::Matrix<nsd_, 1> dertauw(true);
-  dertauw.Multiply(derxy_, etauw_);
+  dertauw.multiply(derxy_, etauw_);
   Core::LinAlg::Matrix<numderiv2_, 1> der2wdist(true);
-  if (my::is_higher_order_ele_) der2wdist.Multiply(derxy2_, ewdist_);
+  if (my::is_higher_order_ele_) der2wdist.multiply(derxy2_, ewdist_);
   Core::LinAlg::Matrix<numderiv2_, 1> der2tauw(true);
-  if (my::is_higher_order_ele_) der2tauw.Multiply(derxy2_, etauw_);
+  if (my::is_higher_order_ele_) der2tauw.multiply(derxy2_, etauw_);
   Core::LinAlg::Matrix<nsd_, 1> dertrans(true);
   Core::LinAlg::Matrix<numderiv2_, 1> der2trans_1(true);
   Core::LinAlg::Matrix<numderiv2_, 1> der2trans_2(true);
@@ -867,33 +867,33 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
 
       // calculate wall-normal vector
       Core::LinAlg::Matrix<nsd_, 1> normwall(true);
-      normwall.Multiply(derxy_, ewdist_);
+      normwall.multiply(derxy_, ewdist_);
 
       // at certain corner elements, it can happen, that the normal vector calculated at the
       // boundary is zero. so we move a bit inside the element and calculate the properties there
       // instead
-      if (normwall.Norm2() < 1.0e-10)
+      if (normwall.norm2() < 1.0e-10)
       {
-        test.Scale(0.95);
+        test.scale(0.95);
         const std::array<double, 3> gp = {test(0, 0), test(1, 0), test(2, 0)};
         const double* gpc = gp.data();
         // evaluate shape functions and derivatives at integration point
         eval_shape_func_and_derivs_at_int_point(gpc, 1.0);
 
-        normwall.Multiply(derxy_, ewdist_);
-        if (normwall.Norm2() < 1.0e-10)
+        normwall.multiply(derxy_, ewdist_);
+        if (normwall.norm2() < 1.0e-10)
           FOUR_C_THROW("normal vector has length zero, even in the second try");
       }
 
       // unit vector
-      normwall.Scale(1.0 / normwall.Norm2());
+      normwall.scale(1.0 / normwall.norm2());
 
       Core::LinAlg::Matrix<nsd_, nsd_> velderxy(true);
-      velderxy.MultiplyNT(evel, my::derxy_);
+      velderxy.multiply_nt(evel, my::derxy_);
 
       // remove normal part
 
-      //      normwall.Scale(1.0/normwall.Norm2());
+      //      normwall.scale(1.0/normwall.norm2());
       Core::LinAlg::Matrix<nsd_, nsd_> velderxywoun(true);
       for (int idim = 0; idim < nsd_; idim++)
         for (int jdim = 0; jdim < nsd_; jdim++)
@@ -906,7 +906,7 @@ int Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
           veldern(idim) += velderxywoun(idim, jdim) * normwall(jdim);
 
       // calculate wall shear stress with dynamic! viscosity
-      elevec1(inode) = visc_ * dens_ * veldern.Norm2();
+      elevec1(inode) = visc_ * dens_ * veldern.norm2();
       // the following vector counts, how often this node is assembled
       //(e.g. from neighboring elements)
       elevec2(inode) = 1.0;
@@ -1364,8 +1364,8 @@ void Discret::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
   // the derivative of the wall distance with respect to the local coordinates
   // shows how the local axes are oriented with respect to the wall-normal vector
   Core::LinAlg::Matrix<nsd_, 1> normwallrst(true);
-  normwallrst.Multiply(deriv_, ewdist_);
-  double normwallrstnorm2 = normwallrst.Norm2();
+  normwallrst.multiply(deriv_, ewdist_);
+  double normwallrstnorm2 = normwallrst.norm2();
   const double dot1 = abs(normwallrst(0) / normwallrstnorm2);
   const double dot2 = abs(normwallrst(1) / normwallrstnorm2);
   const double dot3 = abs(normwallrst(2) / normwallrstnorm2);

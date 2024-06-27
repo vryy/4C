@@ -89,14 +89,14 @@ namespace Core::Geo
       template <class T1, class T2>
       bool local_coordinates(const T1& xyz, T2& rst)
       {
-        if (static_cast<unsigned>(xyz.M()) < ProbDim())
+        if (static_cast<unsigned>(xyz.m()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(rst.M()) < Dim())
+        if (static_cast<unsigned>(rst.m()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
-        bool success = local_coordinates(xyz.A(), rst.A());
+        bool success = local_coordinates(xyz.data(), rst.data());
 
-        std::fill(rst.A() + Dim(), rst.A() + rst.M(), 0.0);
+        std::fill(rst.data() + Dim(), rst.data() + rst.m(), 0.0);
 
         return success;
       }
@@ -111,14 +111,14 @@ namespace Core::Geo
       template <class T1, class T2>
       void global_coordinates(const T1& rst, T2& xyz)
       {
-        if (static_cast<unsigned>(xyz.M()) < ProbDim())
+        if (static_cast<unsigned>(xyz.m()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(rst.M()) < Dim())
+        if (static_cast<unsigned>(rst.m()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
-        global_coordinates(rst.A(), xyz.A());
+        global_coordinates(rst.data(), xyz.data());
 
-        std::fill(xyz.A() + ProbDim(), xyz.A() + xyz.M(), 0.0);
+        std::fill(xyz.data() + ProbDim(), xyz.data() + xyz.m(), 0.0);
       }
 
       /*! \brief Returns the element center global coordinates
@@ -130,10 +130,10 @@ namespace Core::Geo
       template <class T>
       void element_center(T& midpoint)
       {
-        if (static_cast<unsigned>(midpoint.M()) != ProbDim())
+        if (static_cast<unsigned>(midpoint.m()) != ProbDim())
           FOUR_C_THROW("The dimension of midpoint is wrong! (probdim = %d)", ProbDim());
 
-        return element_center(midpoint.A());
+        return element_center(midpoint.data());
       }
 
       /*! \brief Find the scalar value at a particular point inside the element
@@ -147,9 +147,9 @@ namespace Core::Geo
       template <class T>
       double Scalar(const std::vector<double>& ns, const T& rst)
       {
-        if (static_cast<unsigned>(rst.M()) != Dim())
+        if (static_cast<unsigned>(rst.m()) != Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
-        return Scalar(ns, rst.A());
+        return Scalar(ns, rst.data());
       }
 
       //! \brief Cutting the element with the given cut side
@@ -192,10 +192,10 @@ namespace Core::Geo
       template <class T>
       double get_level_set_value(const T& xyz)
       {
-        if (static_cast<unsigned>(xyz.M()) < ProbDim())
+        if (static_cast<unsigned>(xyz.m()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
-        return get_level_set_value(xyz.A());
+        return get_level_set_value(xyz.data());
       }
 
       /*! \brief Return the level set value at the given local coordinate
@@ -203,10 +203,10 @@ namespace Core::Geo
       template <class T>
       double get_level_set_value_at_local_coords(const T& rst)
       {
-        if (static_cast<unsigned>(rst.M()) < Dim())
+        if (static_cast<unsigned>(rst.m()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
-        return get_level_set_value_at_local_coords(rst.A());
+        return get_level_set_value_at_local_coords(rst.data());
       }
 
       /*! \brief Return the level set gradient at the given global coordinate
@@ -232,34 +232,34 @@ namespace Core::Geo
       template <class T>
       std::vector<double> get_level_set_gradient(const T& xyz)
       {
-        if (static_cast<unsigned>(xyz.M()) < ProbDim())
+        if (static_cast<unsigned>(xyz.m()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
-        return get_level_set_gradient(xyz.A());
+        return get_level_set_gradient(xyz.data());
       }
       template <class T>
       std::vector<double> get_level_set_gradient_at_local_coords(const T& rst)
       {
-        if (static_cast<unsigned>(rst.M()) < Dim())
+        if (static_cast<unsigned>(rst.m()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (dim = %d)", Dim());
 
-        return get_level_set_gradient_at_local_coords(rst.A());
+        return get_level_set_gradient_at_local_coords(rst.data());
       }
       template <class T>
       std::vector<double> get_level_set_gradient_in_local_coords(const T& xyz)
       {
-        if (static_cast<unsigned>(xyz.M()) < ProbDim())
+        if (static_cast<unsigned>(xyz.m()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
-        return get_level_set_gradient_in_local_coords(xyz.A());
+        return get_level_set_gradient_in_local_coords(xyz.data());
       }
       template <class T>
       std::vector<double> get_level_set_gradient_at_local_coords_in_local_coords(const T& rst)
       {
-        if (static_cast<unsigned>(rst.M()) < Dim())
+        if (static_cast<unsigned>(rst.m()) < Dim())
           FOUR_C_THROW("The dimension of rst is wrong! (probdim = %d)", ProbDim());
 
-        return get_level_set_gradient_at_local_coords_in_local_coords(rst.A());
+        return get_level_set_gradient_at_local_coords_in_local_coords(rst.data());
       }
       /*! \brief Does the element contain a level set side. */
       bool HasLevelSetSide();
@@ -332,13 +332,13 @@ namespace Core::Geo
       template <class T>
       void Coordinates(T& xyze) const
       {
-        if (static_cast<unsigned>(xyze.M()) != ProbDim())
+        if (static_cast<unsigned>(xyze.m()) != ProbDim())
           FOUR_C_THROW("xyze has the wrong number of rows! (probdim = %d)", ProbDim());
 
-        if (static_cast<unsigned>(xyze.N()) != NumNodes())
+        if (static_cast<unsigned>(xyze.n()) != NumNodes())
           FOUR_C_THROW("xyze has the wrong number of columns! (numNodes = %d)", NumNodes());
 
-        Coordinates(xyze.A());
+        Coordinates(xyze.data());
       }
 
       /*! \brief Get the coordinates of all the nodes of this linear shadow element */
@@ -422,10 +422,10 @@ namespace Core::Geo
                     // only for linear elements???)
 
         // get coordiantes of parent Quad element
-        if (shadow) CoordinatesQuad(xyze.A());
+        if (shadow) CoordinatesQuad(xyze.data());
         // get coordinates of linear shadow element
         else
-          Coordinates(xyze.A());
+          Coordinates(xyze.data());
 
         Core::LinAlg::Matrix<dim, nen> deriv;
         Core::LinAlg::Matrix<probdim, probdim> xjm;
@@ -434,8 +434,8 @@ namespace Core::Geo
         double det = 0;
         if (dim == probdim)
         {
-          xjm.MultiplyNT(deriv, xyze);
-          det = xjm.Determinant();
+          xjm.multiply_nt(deriv, xyze);
+          det = xjm.determinant();
         }
         // element dimension is smaller than the problem dimension (manifold)
         else if (dim < probdim)
@@ -669,7 +669,7 @@ namespace Core::Geo
 
       void Coordinates(Core::LinAlg::Matrix<probdim, numNodesElement>& xyze) const
       {
-        Coordinates(xyze.A());
+        Coordinates(xyze.data());
       }
 
       /*! \brief Get the coordinates of all the nodes of this linear shadow element */
@@ -727,7 +727,7 @@ namespace Core::Geo
         for (unsigned i = 0; i < numNodesElement; ++i)
         {
           Core::LinAlg::Matrix<probdim, 1> x(nodes[i]->point()->X());
-          xyz.Update(funct(i), x, 1);
+          xyz.update(funct(i), x, 1);
         }
       }
 
@@ -745,7 +745,7 @@ namespace Core::Geo
         this->Coordinates(xyze);
 
         Core::FE::shape_function<elementtype>(rst, funct);
-        xyz.Multiply(xyze, funct);
+        xyz.multiply(xyze, funct);
       }
 
       /*! \brief Returns the element center global coordinates
@@ -776,7 +776,7 @@ namespace Core::Geo
 
         Core::LinAlg::Matrix<numNodesElement, 1> scalar(ns.data());
         Core::LinAlg::Matrix<1, 1> res;
-        res.MultiplyTN(funct, scalar);
+        res.multiply_tn(funct, scalar);
         return res(0);
       }
 
@@ -813,7 +813,7 @@ namespace Core::Geo
           mm++;
         }
 
-        return funct.Dot(escaa);
+        return funct.dot(escaa);
       }
 
       /*! \brief Return the level set gradient in global coordinates
@@ -852,7 +852,7 @@ namespace Core::Geo
             xyze, rst, deriv1, metrictensor, xjm, &xij, &normalvec1, &normalvec2, true);
 
         // compute global first derivates
-        derxy.Multiply(xij, deriv1);
+        derxy.multiply(xij, deriv1);
         //----------------------------------
 
         const std::vector<Node*> ele_node = this->Nodes();
@@ -867,9 +867,9 @@ namespace Core::Geo
           mm++;
         }
         Core::LinAlg::Matrix<probdim, 1> phi_deriv1;
-        phi_deriv1.MultiplyNT(derxy, escaa);
+        phi_deriv1.multiply_nt(derxy, escaa);
 
-        std::vector<double> normal_facet(phi_deriv1.A(), phi_deriv1.A() + probdim);
+        std::vector<double> normal_facet(phi_deriv1.data(), phi_deriv1.data() + probdim);
         if (normal_facet.size() != probdim) FOUR_C_THROW("Something went wrong!");
 
         return normal_facet;
@@ -908,9 +908,9 @@ namespace Core::Geo
           mm++;
         }
         Core::LinAlg::Matrix<dim, 1> phi_deriv1;
-        phi_deriv1.MultiplyNT(deriv1, escaa);
+        phi_deriv1.multiply_nt(deriv1, escaa);
 
-        std::vector<double> normal_facet(phi_deriv1.A(), phi_deriv1.A() + dim);
+        std::vector<double> normal_facet(phi_deriv1.data(), phi_deriv1.data() + dim);
         if (normal_facet.size() != dim) FOUR_C_THROW("Something went wrong! (dim=%d)", dim);
 
         return normal_facet;

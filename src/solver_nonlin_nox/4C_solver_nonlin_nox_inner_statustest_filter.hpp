@@ -170,7 +170,7 @@ namespace NOX
           StatusType GetStatus() const override;
 
           //! Output formatted description of inner stopping test to output stream.
-          std::ostream& Print(std::ostream& stream, int indent = 0) const override;
+          std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
          private:
           /// initialize the (filter) points
@@ -628,10 +628,10 @@ namespace NOX
             inline const double& operator()(unsigned index) const { return coords_(index); }
 
             /// access the data pointer of the point coordinates
-            inline double* A() { return coords_.values(); }
+            inline double* data() { return coords_.values(); }
 
             /// access the data pointer of the point coordinates (read-only)
-            inline const double* A() const { return coords_.values(); }
+            inline const double* data() const { return coords_.values(); }
 
             /// return the maximal infeasibility measure of this point
             inline double maxTheta() const { return coords_(num_obj_coords_ + max_theta_id_); }

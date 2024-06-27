@@ -459,7 +459,7 @@ namespace Mat
      * This is an or operation: $this = $other (for all items)
      * @param other (in) : Other Summand properties
      */
-    void Update(const SummandProperties& other)
+    void update(const SummandProperties& other)
     {
       isoprinc = other.isoprinc;
       isomod = other.isomod;

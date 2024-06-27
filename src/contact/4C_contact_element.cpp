@@ -82,17 +82,17 @@ Core::Elements::Element* CONTACT::Element::Clone() const
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const CONTACT::Element& element)
 {
-  element.Print(os);
+  element.print(os);
   return os;
 }
 
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Element::Print(std::ostream& os) const
+void CONTACT::Element::print(std::ostream& os) const
 {
   os << "Contact ";
-  Mortar::Element::Print(os);
+  Mortar::Element::print(os);
 
   return;
 }
@@ -234,7 +234,7 @@ void CONTACT::Element::deriv_normal_at_xi(double* xi, int& i,
 
     // total weighting matrix
     static Core::LinAlg::Matrix<3, 3> WF;
-    WF.MultiplyNN(W, F);
+    WF.multiply_nn(W, F);
 
     // create directional derivatives
     for (int j = 0; j < 3; ++j)
@@ -269,20 +269,20 @@ void CONTACT::Element::OldUnitNormalAtXi(
 
     for (int d = 0; d < Dim(); ++d)
     {
-      if (Core::LinAlg::Matrix<3, 1>(cnode->Data().Normal_old(), true).Norm2() < 0.9)
+      if (Core::LinAlg::Matrix<3, 1>(cnode->Data().Normal_old(), true).norm2() < 0.9)
         FOUR_C_THROW("where's my old normal");
       tmp_n(d) += val(i) * cnode->Data().Normal_old()[d];
       for (int x = 0; x < Dim() - 1; ++x)
         tmp_n_deriv(d, x) += deriv(i, x) * cnode->Data().Normal_old()[d];
     }
   }
-  const double l = tmp_n.Norm2();
-  n_old.Update(1. / l, tmp_n, 0.);
+  const double l = tmp_n.norm2();
+  n_old.update(1. / l, tmp_n, 0.);
 
   Core::LinAlg::Matrix<2, 1> dli_dxi;
-  dli_dxi.MultiplyTN(-1. / (l * l * l), tmp_n_deriv, tmp_n, 0.);
-  d_n_old_dxi.Update(1. / l, tmp_n_deriv, 0.);
-  d_n_old_dxi.MultiplyNT(1., tmp_n, dli_dxi, 1.);
+  dli_dxi.multiply_tn(-1. / (l * l * l), tmp_n_deriv, tmp_n, 0.);
+  d_n_old_dxi.update(1. / l, tmp_n_deriv, 0.);
+  d_n_old_dxi.multiply_nt(1., tmp_n, dli_dxi, 1.);
 }
 
 /*----------------------------------------------------------------------*

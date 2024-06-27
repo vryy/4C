@@ -260,10 +260,10 @@ void Discret::ELEMENTS::SoPyramid5::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoPyramid5::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoPyramid5::print(std::ostream& os) const
 {
   os << "So_pyramid5 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

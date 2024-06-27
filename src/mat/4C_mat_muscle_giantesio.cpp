@@ -37,10 +37,10 @@ namespace
       const Core::LinAlg::FourTensor<3>& tensor_C, const double& scalar)
   {
     Core::LinAlg::Matrix<3, 3> mBmC(false);
-    mBmC.MultiplyNN(matrix_B, matrix_C);
+    mBmC.multiply_nn(matrix_B, matrix_C);
 
     Core::LinAlg::Matrix<3, 3> mAmB(false);
-    mAmB.MultiplyNN(matrix_A, matrix_B);
+    mAmB.multiply_nn(matrix_A, matrix_B);
 
     // part1 = tensor_A * matrix_B * matrix_C
     Core::LinAlg::FourTensor<3> part1(true);
@@ -77,8 +77,8 @@ namespace
       const Core::LinAlg::Matrix<3, 3>& right)
   {
     Core::LinAlg::Matrix<3, 3> NN(true);
-    NN.MultiplyNN(left, middle);
-    NNN.MultiplyNN(scalar, NN, right, 1.0);
+    NN.multiply_nn(left, middle);
+    NNN.multiply_nn(scalar, NN, right, 1.0);
   }
 
   /*!
@@ -103,7 +103,7 @@ namespace
       const Core::LinAlg::Matrix<3, 3>& M, const double& omega0)
   {
     Core::LinAlg::Matrix<3, 3> L(M);
-    L.Scale(1.0 - omega0);  // omegap*M
+    L.scale(1.0 - omega0);  // omegap*M
     for (unsigned i = 0; i < 3; ++i) L(i, i) += omega0 / 3.0;
 
     return L;
@@ -144,26 +144,26 @@ namespace
 
     // inverse of the elastic right Cauchy Green tensor Ce
     Core::LinAlg::Matrix<3, 3> invCe(true);
-    invCe.Invert(Ce);
+    invCe.invert(Ce);
     Core::LinAlg::Matrix<6, 1> invCev(true);
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(invCe, invCev);
 
     // product invCe*L
     Core::LinAlg::Matrix<3, 3> invCeL(true);
-    invCeL.MultiplyNN(invCe, L);
+    invCeL.multiply_nn(invCe, L);
 
     // product invCe*L*invCe
     Core::LinAlg::Matrix<3, 3> invCeLinvCe(true);
-    invCeLinvCe.MultiplyNN(invCeL, invCe);
+    invCeLinvCe.multiply_nn(invCeL, invCe);
     Core::LinAlg::Matrix<6, 1> invCeLinvCev(true);
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(invCeLinvCe, invCeLinvCev);
 
     // product Ce^T*L
     Core::LinAlg::Matrix<3, 3> transpCeL(true);
-    transpCeL.MultiplyTN(Ce, L);
+    transpCeL.multiply_tn(Ce, L);
 
     // generalized elastic invariants including only passive properties
-    double detCe = Ce.Determinant();  // determinant of Ce
+    double detCe = Ce.determinant();  // determinant of Ce
     // Ie = C:L = tr(C^T L) since A:B = tr(A^T B) for real matrices
     double Ie = transpCeL(0, 0) + transpCeL(1, 1) + transpCeL(2, 2);
     // Je = cof(Ce):L = tr(cof(Ce)^T L) = tr(adj(Ce) L) = tr(det(Ce) Ce^-1 L) = det(Ce)*tr(Ce^-1 L)
@@ -175,24 +175,24 @@ namespace
     // elastic second Piola Kirchhoff stress tensor Se
     // Se = (0.5 * gamma * (expalpha * L + expbeta * (Je * invCe - invCeLinvCe)))
     Core::LinAlg::Matrix<3, 3> Se(true);
-    Se.Update(expalpha, L);
-    Se.Update(-expbeta * detCe, invCeLinvCe, 1.0);
-    Se.Update(Je * expbeta, invCe, 1.0);
-    Se.Scale(0.5 * gamma);
+    Se.update(expalpha, L);
+    Se.update(-expbeta * detCe, invCeLinvCe, 1.0);
+    Se.update(Je * expbeta, invCe, 1.0);
+    Se.scale(0.5 * gamma);
 
     // derivative of Se w.r.t Ce
     // taken from Weickenmeier et al.
     Core::LinAlg::Matrix<6, 6> dSedCev(true);
-    dSedCev.MultiplyNT(alpha * expalpha, Lv, Lv, 1.0);  // add contributions
-    dSedCev.MultiplyNT(beta * expbeta * std::pow(detCe, 2), invCeLinvCev, invCeLinvCev, 1.0);
-    dSedCev.MultiplyNT(-(beta * Je + 1.) * expbeta * detCe, invCev, invCeLinvCev, 1.0);
-    dSedCev.MultiplyNT(-(beta * Je + 1.) * expbeta * detCe, invCeLinvCev, invCev, 1.0);
-    dSedCev.MultiplyNT((beta * Je + 1.) * Je * expbeta, invCev, invCev, 1.0);
+    dSedCev.multiply_nt(alpha * expalpha, Lv, Lv, 1.0);  // add contributions
+    dSedCev.multiply_nt(beta * expbeta * std::pow(detCe, 2), invCeLinvCev, invCeLinvCev, 1.0);
+    dSedCev.multiply_nt(-(beta * Je + 1.) * expbeta * detCe, invCev, invCeLinvCev, 1.0);
+    dSedCev.multiply_nt(-(beta * Je + 1.) * expbeta * detCe, invCeLinvCev, invCev, 1.0);
+    dSedCev.multiply_nt((beta * Je + 1.) * Je * expbeta, invCev, invCev, 1.0);
     // adds scalar * (invC boeppel invC) to cmat, see Holzapfel2000, p. 254
     Mat::add_holzapfel_product(dSedCev, invCev, -Je * expbeta);
     // adds -expbeta * detCe * dinvCLinvCdCv to cmat
     Mat::add_derivative_of_inva_b_inva_product(-expbeta * detCe, invCev, invCeLinvCev, dSedCev);
-    dSedCev.Scale(gamma / 2);
+    dSedCev.scale(gamma / 2);
 
     Core::LinAlg::FourTensor<3> dSedCe(true);
     Mat::setup_four_tensor_from_6x6_voigt_matrix(dSedCe, dSedCev);
@@ -395,13 +395,13 @@ void Mat::MuscleGiantesio::setup(int numgp, Input::LineDefinition* linedef)
   anisotropy_.read_anisotropy_from_element(linedef);
 }
 
-void Mat::MuscleGiantesio::Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
+void Mat::MuscleGiantesio::update(Core::LinAlg::Matrix<3, 3> const& defgrd, int const gp,
     Teuchos::ParameterList& params, int const eleGID)
 {
   // compute the current fibre stretch using the deformation gradient and the structural tensor
   // right Cauchy Green tensor C= F^T F
   Core::LinAlg::Matrix<3, 3> C(false);
-  C.MultiplyTN(defgrd, defgrd);
+  C.multiply_tn(defgrd, defgrd);
 
   // structural tensor M, i.e. dyadic product of fibre directions
   const Core::LinAlg::Matrix<3, 3>& M = anisotropy_extension_.get_structural_tensor(gp, 0);
@@ -438,17 +438,17 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // compute matrices
   // right Cauchy Green tensor C
   Core::LinAlg::Matrix<3, 3> C(false);  // matrix notation
-  C.MultiplyTN(*defgrd, *defgrd);       // C = F^T F
+  C.multiply_tn(*defgrd, *defgrd);      // C = F^T F
 
   // determinant of C
-  double detC = C.Determinant();
+  double detC = C.determinant();
 
   // derivative of C w.r.t C
   Core::LinAlg::FourTensor<3> dCdC = ComputeDCDC();
 
   // inverse right Cauchy Green tensor C^-1
   Core::LinAlg::Matrix<3, 3> invC(true);                         // matrix notation
-  invC.Invert(C);                                                // invC = C^-1
+  invC.invert(C);                                                // invC = C^-1
   Core::LinAlg::Matrix<6, 1> invCv(true);                        // Voigt notation
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(invC, invCv);  // invCv
 
@@ -482,14 +482,14 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // first derivative of omegaa w.r.t. C
   // domegaadC = domegaadlambdaM dlambdaMdC
   Core::LinAlg::Matrix<3, 3> domegaadC(dlambdaMdC);
-  domegaadC.Scale(omegaaAndDerivs.val_deriv_funct);
+  domegaadC.scale(omegaaAndDerivs.val_deriv_funct);
   Core::LinAlg::Matrix<6, 1> domegaadCv(false);
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(domegaadC, domegaadCv);
 
   // second derivative of omegaa w.r.t. C
   // ddomegaaddC = (ddomegaaddlambdaM - 1/lambdaM domegaadlambdaM) dlambdaM_ij dlambdaM_kl
   Core::LinAlg::Matrix<6, 6> ddomegaaddCv(false);
-  ddomegaaddCv.MultiplyNT(
+  ddomegaaddCv.multiply_nt(
       omegaaAndDerivs.val_deriv_deriv_funct - omegaaAndDerivs.val_deriv_funct / lambdaM,
       dlambdaMdCv, dlambdaMdCv);
 
@@ -505,7 +505,7 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       dd_act_def_grad_dd_act_level(omegaaAndDerivs.val_funct, M);
 
   // determinant of Fa
-  double detFa = Fa.Determinant();
+  double detFa = Fa.determinant();
 
   // --------------------------------------------------------------
   // inverse of active deformation gradient Fa^{-1}
@@ -543,11 +543,11 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   Core::LinAlg::Matrix<6, 1> S2v(domegaadCv);
   double scalar_contraction = -2.0 * Mat::contract_matrix_matrix(CinvFadFadomegaa, S1);
-  S2v.Scale(scalar_contraction);
+  S2v.scale(scalar_contraction);
 
   // Svol = - gamma/2 * detC^-kappa
   Core::LinAlg::Matrix<6, 1> Svolv(invCv);
-  Svolv.Scale(-0.5 * gamma * std ::pow(detC, -kappa));
+  Svolv.scale(-0.5 * gamma * std ::pow(detC, -kappa));
 
   // --------------------------------------------------------------
   // compute material tangent components cmat1, cmat2, cmatvol
@@ -561,7 +561,7 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   dS1dC =
       SumMultiplyTmmMtmMmt(invFa, Se_dSedC.Se, invFa, dinvFadC, Se_dSedC.dSedC, dinvFadC, detFa);
   Mat::setup_6x6_voigt_matrix_from_four_tensor(cmat1v, dS1dC);
-  cmat1v.Scale(2.0);
+  cmat1v.scale(2.0);
 
   // compute cmat2 = 2 dS2dC
   Core::LinAlg::Matrix<6, 6> cmat2v(true);
@@ -575,14 +575,14 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   // derivative of the scalar (-2 S1_ij (C Fa^-1 dFadomegaa)_ij) w.r.t. C
   // dscalardC_pq = -2 (dS1dC_ijpq (C invFa dFadomegaa)_ij + S1_ij d(C invFa dFadomegaa)dC_ijpq )
   Core::LinAlg::Matrix<3, 3> H(true);
-  H.MultiplyNN(dinvFadomegaa, dFadomegaa);
-  H.MultiplyNN(1.0, invFa, ddFaddomegaa, 1.0);
+  H.multiply_nn(dinvFadomegaa, dFadomegaa);
+  H.multiply_nn(1.0, invFa, ddFaddomegaa, 1.0);
   Core::LinAlg::Matrix<3, 3> CH(true);
-  CH.MultiplyNN(C, H);
+  CH.multiply_nn(C, H);
   double helper = Mat::contract_matrix_matrix(S1, CH);
 
   Core::LinAlg::Matrix<3, 3> dscalardC(domegaadC);
-  dscalardC.Scale(helper);
+  dscalardC.scale(helper);
   MultiplyNNN(dscalardC, 1.0, S1, dFadomegaa, invFa);
   Mat::add_contraction_matrix_four_tensor(dscalardC, CinvFadFadomegaa, dS1dC);
   Core::LinAlg::Matrix<6, 1> dscalardCv(true);
@@ -590,23 +590,23 @@ void Mat::MuscleGiantesio::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
       dscalardC, dscalardCv);  // not yet scaled with -2.0
 
   // compute cmat2 = 2 dS2dC = 2 [domegaadC_sl dscalardC_pq + scalar * ddomegaaddC_slpq]
-  cmat2v.MultiplyNT(-4.0, domegaadCv, dscalardCv);             // 2 * dscalardC_pq domegaadC_sl
-  cmat2v.Update(2.0 * scalar_contraction, ddomegaaddCv, 1.0);  // 2 * scalar * ddomegaaddC_slpq
+  cmat2v.multiply_nt(-4.0, domegaadCv, dscalardCv);            // 2 * dscalardC_pq domegaadC_sl
+  cmat2v.update(2.0 * scalar_contraction, ddomegaaddCv, 1.0);  // 2 * scalar * ddomegaaddC_slpq
 
   // compute cmatvol = 2 dS2dC
   Core::LinAlg::Matrix<6, 6> cmatvolv(true);
-  cmatvolv.MultiplyNT(gamma * kappa * std::pow(detC, -kappa), invCv, invCv, 1.0);
+  cmatvolv.multiply_nt(gamma * kappa * std::pow(detC, -kappa), invCv, invCv, 1.0);
   Mat::add_holzapfel_product(cmatvolv, invCv, gamma * std::pow(detC, -kappa));
 
   // --------------------------------------------------------------
   // update constituent stress and material tangent
-  stress->Update(1.0, S1v, 1.0);
-  stress->Update(1.0, S2v, 1.0);
-  stress->Update(1.0, Svolv, 1.0);
+  stress->update(1.0, S1v, 1.0);
+  stress->update(1.0, S2v, 1.0);
+  stress->update(1.0, Svolv, 1.0);
 
-  cmat->Update(1.0, cmat1v, 1.0);
-  cmat->Update(1.0, cmat2v, 1.0);
-  cmat->Update(1.0, cmatvolv, 1.0);
+  cmat->update(1.0, cmat1v, 1.0);
+  cmat->update(1.0, cmat2v, 1.0);
+  cmat->update(1.0, cmatvolv, 1.0);
 }
 
 Core::UTILS::ValuesFunctAndFunctDerivs
@@ -773,7 +773,7 @@ Core::LinAlg::Matrix<3, 3> Mat::MuscleGiantesio::act_def_grad(
 {
   // active deformation gradient Fa
   Core::LinAlg::Matrix<3, 3> Fa(M);
-  Fa.Scale(1 - omegaa - std::pow(1. - omegaa, -0.5));
+  Fa.scale(1 - omegaa - std::pow(1. - omegaa, -0.5));
   for (unsigned j = 0; j < 3; ++j) Fa(j, j) += std::pow(1. - omegaa, -0.5);
   return Fa;
 }
@@ -785,7 +785,7 @@ Core::LinAlg::Matrix<3, 3> Mat::MuscleGiantesio::d_act_def_grad_d_act_level(
   Core::LinAlg::Matrix<3, 3> dFadomegaa(M);
   if (omegaa != 0)
   {
-    dFadomegaa.Scale(-1.0 - 0.5 * std::pow(1. - omegaa, -1.5));
+    dFadomegaa.scale(-1.0 - 0.5 * std::pow(1. - omegaa, -1.5));
     for (unsigned j = 0; j < 3; ++j) dFadomegaa(j, j) += 0.5 * std::pow(1. - omegaa, -1.5);
   }
   else
@@ -802,7 +802,7 @@ Core::LinAlg::Matrix<3, 3> Mat::MuscleGiantesio::dd_act_def_grad_dd_act_level(
   Core::LinAlg::Matrix<3, 3> ddFaddomegaa(M);
   if (omegaa != 0)
   {
-    ddFaddomegaa.Scale(-0.75 * std::pow(1. - omegaa, -2.5));
+    ddFaddomegaa.scale(-0.75 * std::pow(1. - omegaa, -2.5));
     for (unsigned j = 0; j < 3; ++j) ddFaddomegaa(j, j) += 0.75 * std::pow(1. - omegaa, -2.5);
   }
   else
@@ -817,7 +817,7 @@ Core::LinAlg::Matrix<3, 3> Mat::MuscleGiantesio::inv_act_def_grad(
 {
   // inverse of active deformation gradient Fa^{-1}
   Core::LinAlg::Matrix<3, 3> invFa(true);
-  invFa.Invert(Fa);
+  invFa.invert(Fa);
   return invFa;
 }
 

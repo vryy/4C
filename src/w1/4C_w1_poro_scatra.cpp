@@ -96,10 +96,10 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::unpack(const std::vector<char>
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1PoroScatra<distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::Wall1PoroScatra<distype>::print(std::ostream& os) const
 {
   os << "Wall1_Poro_Scatra ";
-  Core::Elements::Element::Print(os);
+  Core::Elements::Element::print(os);
   std::cout << std::endl;
   return;
 }

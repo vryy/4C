@@ -231,7 +231,7 @@ namespace Mat
     bool UsesExtendedUpdate() override { return true; }
 
     /// update
-    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
+    void update(Core::LinAlg::Matrix<3, 3> const& defgrd,  ///< Deformation gradient
         int const gp,                                      ///< Current Gauss-Point
         Teuchos::ParameterList& params,                    ///< Container for additional information
         int const eleGID) override;                        ///< Element ID

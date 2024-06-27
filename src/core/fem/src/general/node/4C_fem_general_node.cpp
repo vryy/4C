@@ -68,14 +68,14 @@ Core::Nodes::Node* Core::Nodes::Node::Clone() const
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const Core::Nodes::Node& node)
 {
-  node.Print(os);
+  node.print(os);
   return os;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Nodes::Node::Print(std::ostream& os) const
+void Core::Nodes::Node::print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Node " << std::setw(12) << Id() << " Owner " << std::setw(4) << Owner() << " Coords "

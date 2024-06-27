@@ -32,7 +32,7 @@ namespace Core::CLN
   {
     for (unsigned int idx = 0; idx < in.numRows() * in.numCols(); ++idx)
     {
-      out.A()[idx] = cln::double_approx(in.A()[idx].Value());
+      out.data()[idx] = cln::double_approx(in.data()[idx].Value());
     }
   }
 
@@ -45,14 +45,14 @@ namespace Core::CLN
     {
       ClnWrapper clnnum;
       // zeros do not convert properly to CLN (loss of precision)
-      if ((in.A()[idx] == 0.0))
+      if ((in.data()[idx] == 0.0))
       {
         // returning the cached value from the ClnWrapper cln table
         clnnum = 0.0;
       }
       else
-        clnnum = cln::cl_float(in.A()[idx], cln::float_format(precision));
-      out.A()[idx] = clnnum;
+        clnnum = cln::cl_float(in.data()[idx], cln::float_format(precision));
+      out.data()[idx] = clnnum;
     }
   }
 
@@ -66,14 +66,14 @@ namespace Core::CLN
     {
       ClnWrapper clnnum;
       // zeros do not convert properly to CLN (loss of precision)
-      if ((in.A()[idx] == 0.0))
+      if ((in.data()[idx] == 0.0))
       {
         // returning the cached value from the ClnWrapper cln table
         clnnum = 0.0;
       }
       else
-        clnnum = cln::cl_float(in.A()[idx].Value(), cln::float_format(precision));
-      out.A()[idx] = clnnum;
+        clnnum = cln::cl_float(in.data()[idx].Value(), cln::float_format(precision));
+      out.data()[idx] = clnnum;
     }
   }
 

@@ -90,7 +90,7 @@ void Core::Geo::Cut::BoundaryCell::transform_local_coords(Element* elem1,
   Core::FE::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
   Core::FE::ComputeMetricTensorForBoundaryEle<celldistype>(xyze, deriv, metrictensor, drs, &normal);
 
-  x_gp_lin.Multiply(xyze, funct);
+  x_gp_lin.multiply(xyze, funct);
 
   return;
 }
@@ -123,19 +123,19 @@ double Core::Geo::Cut::Tri3BoundaryCell::Area()
   Core::LinAlg::Matrix<numnodes, 1> v02;
   Core::LinAlg::Matrix<numnodes, 1> v12;
 
-  v01.Update(1, p1, -1, p0, 0);
-  v02.Update(1, p2, -1, p0, 0);
-  v12.Update(1, p1, -1, p2, 0);
+  v01.update(1, p1, -1, p0, 0);
+  v02.update(1, p2, -1, p0, 0);
+  v12.update(1, p1, -1, p2, 0);
 
 
-  double a = v01.Norm2();
-  double b = v02.Norm2();
-  double c = v12.Norm2();
+  double a = v01.norm2();
+  double b = v02.norm2();
+  double c = v12.norm2();
 
   // Herons formula:
   //    sqrt((a+(b+c))(c-(a-b))(c+(a-b))(a+(b-c)))/4
-  //    double s=0.5*(v01.Norm2() + v02.Norm2() + v12.Norm2());
-  //    double area = sqrt( s*(s-v01.Norm2())*(s-v02.Norm2())*(s-v12.Norm2()) );
+  //    double s=0.5*(v01.norm2() + v02.norm2() + v12.norm2());
+  //    double area = sqrt( s*(s-v01.norm2())*(s-v02.norm2())*(s-v12.norm2()) );
 
   double areasqr = (a + (b + c)) * (c - (a - b)) * (c + (a - b)) * (a + (b - c));
   if (areasqr < 0.0)
@@ -203,10 +203,10 @@ void Core::Geo::Cut::Tri3BoundaryCell::DumpGmshNormal(std::ofstream& file)
     cur(0, 0) = xyz_(0, i);
     cur(1, 0) = xyz_(1, i);
     cur(2, 0) = xyz_(2, i);
-    midpoint_triag.Update(1.0, cur, 1.0);
+    midpoint_triag.update(1.0, cur, 1.0);
   }
 
-  midpoint_triag.Scale(1.0 / 3.0);
+  midpoint_triag.scale(1.0 / 3.0);
   file << midpoint_triag(0, 0) << "," << midpoint_triag(1, 0) << "," << midpoint_triag(2, 0);
   file << "){";
 
@@ -235,10 +235,10 @@ void Core::Geo::Cut::Quad4BoundaryCell::DumpGmshNormal(std::ofstream& file)
     cur(0, 0) = xyz_(0, i);
     cur(1, 0) = xyz_(1, i);
     cur(2, 0) = xyz_(2, i);
-    midpoint_quad.Update(1.0, cur, 1.0);
+    midpoint_quad.update(1.0, cur, 1.0);
   }
 
-  midpoint_quad.Scale(1.0 / 4.0);
+  midpoint_quad.scale(1.0 / 4.0);
   file << midpoint_quad(0, 0) << "," << midpoint_quad(1, 0) << "," << midpoint_quad(2, 0);
   file << "){";
 
@@ -266,10 +266,10 @@ void Core::Geo::Cut::Line2BoundaryCell::DumpGmshNormal(std::ofstream& file)
   for (unsigned i = 0; i < num_nodes; ++i)
   {
     Core::LinAlg::Matrix<3, 1> xyz(&xyz_(0, i), true);
-    midpoint.Update(1.0, xyz, 1.0);
+    midpoint.update(1.0, xyz, 1.0);
   }
 
-  midpoint.Scale(1.0 / num_nodes);
+  midpoint.scale(1.0 / num_nodes);
   for (unsigned j = 0; j < 3; ++j)
   {
     if (j > 0) file << ",";
@@ -304,7 +304,7 @@ void Core::Geo::Cut::ArbitraryBoundaryCell::DumpGmshNormal(std::ofstream& file)
 void Core::Geo::Cut::Point1BoundaryCell::Normal(
     const Core::LinAlg::Matrix<2, 1>& xsi, Core::LinAlg::Matrix<3, 1>& normal) const
 {
-  normal.putScalar(0.0);
+  normal.put_scalar(0.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -336,15 +336,15 @@ void Core::Geo::Cut::Tri3BoundaryCell::Normal(
   Core::LinAlg::Matrix<2, 3> A;
 
   Core::FE::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), Core::FE::CellType::tri3);
-  A.MultiplyNT(deriv, side_xyze);
+  A.multiply_nt(deriv, side_xyze);
 
   // cross product to get the normal at the point
   normal(0) = A(0, 1) * A(1, 2) - A(0, 2) * A(1, 1);
   normal(1) = A(0, 2) * A(1, 0) - A(0, 0) * A(1, 2);
   normal(2) = A(0, 0) * A(1, 1) - A(0, 1) * A(1, 0);
 
-  double norm = normal.Norm2();
-  normal.Scale(1. / norm);
+  double norm = normal.norm2();
+  normal.scale(1. / norm);
 }
 
 /*----------------------------------------------------------------------------*
@@ -361,15 +361,15 @@ void Core::Geo::Cut::Quad4BoundaryCell::Normal(
   Core::LinAlg::Matrix<2, 3> A;
 
   Core::FE::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), Core::FE::CellType::quad4);
-  A.MultiplyNT(deriv, side_xyze);
+  A.multiply_nt(deriv, side_xyze);
 
   // cross product to get the normal at the point
   normal(0) = A(0, 1) * A(1, 2) - A(0, 2) * A(1, 1);
   normal(1) = A(0, 2) * A(1, 0) - A(0, 0) * A(1, 2);
   normal(2) = A(0, 0) * A(1, 1) - A(0, 1) * A(1, 0);
 
-  double norm = normal.Norm2();
-  normal.Scale(1. / norm);
+  double norm = normal.norm2();
+  normal.scale(1. / norm);
 }
 
 /*----------------------------------------------------------------------------*
@@ -384,8 +384,8 @@ void Core::Geo::Cut::ArbitraryBoundaryCell::Normal(
   normal( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
   normal( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );*/
 
-  //   double norm = normal.Norm2();
-  //   normal.Scale( 1./norm );
+  //   double norm = normal.norm2();
+  //   normal.scale( 1./norm );
 }
 
 /*----------------------------------------------------------------------------*
@@ -438,7 +438,7 @@ void Core::Geo::Cut::ArbitraryBoundaryCell::element_center(Core::LinAlg::Matrix<
  *----------------------------------------------------------------------------*/
 void Core::Geo::Cut::Point1BoundaryCell::element_center(Core::LinAlg::Matrix<3, 1>& midpoint)
 {
-  std::copy(xyz_.values(), xyz_.values() + 3, midpoint.A());
+  std::copy(xyz_.values(), xyz_.values() + 3, midpoint.data());
 }
 
 /*----------------------------------------------------------------------------*
@@ -516,12 +516,12 @@ Core::LinAlg::Matrix<3, 1> Core::Geo::Cut::ArbitraryBoundaryCell::GetNormalVecto
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::BoundaryCell::Print(std::ostream& stream)
+void Core::Geo::Cut::BoundaryCell::print(std::ostream& stream)
 {
   stream << "--- boundary cell ( address: " << std::setw(10) << this << " )\n";
   for (unsigned i = 0; i < points_->size(); i++)
   {
-    (*points_)()[i]->Print(stream);
+    (*points_)()[i]->print(stream);
     stream << "\n";
   }
 }
@@ -557,32 +557,32 @@ bool Core::Geo::Cut::Tri3BoundaryCell::IsValidBoundaryCell()
   Core::LinAlg::Matrix<numnodes, 1> v02;
   Core::LinAlg::Matrix<numnodes, 1> v12;
 
-  v01.Update(1, p1, -1, p0, 0);
-  v02.Update(1, p2, -1, p0, 0);
-  v12.Update(1, p1, -1, p2, 0);
+  v01.update(1, p1, -1, p0, 0);
+  v02.update(1, p2, -1, p0, 0);
+  v12.update(1, p1, -1, p2, 0);
 
   // Get distance to origin
   Core::LinAlg::Matrix<numnodes, 1> temp(true);
-  temp(0, 0) = p0.Norm2();  // Distance of points to origin
-  temp(1, 0) = p1.Norm2();
-  temp(2, 0) = p2.Norm2();
+  temp(0, 0) = p0.norm2();  // Distance of points to origin
+  temp(1, 0) = p1.norm2();
+  temp(2, 0) = p2.norm2();
 
   // This is to scale the tolerance, it determines our maximum precision (i.e. machine precision)
   //  double max_dist_to_orgin = temp.NormInf();
 
   // Distance between points in triangle
-  temp(0, 0) = v01.Norm2();
-  temp(1, 0) = v02.Norm2();
-  temp(2, 0) = v12.Norm2();
+  temp(0, 0) = v01.norm2();
+  temp(1, 0) = v02.norm2();
+  temp(2, 0) = v12.norm2();
 
-  double min_dist_in_tri = temp.MinValue();
+  double min_dist_in_tri = temp.min_value();
   // We want to test with this one I think... But might lead to problems.
   //  double tolerance = LINSOLVETOL*max_dist_to_orgin;
 
   temp(0, 0) = points[0]->Tolerance();
   temp(1, 0) = points[1]->Tolerance();
   temp(2, 0) = points[2]->Tolerance();
-  double max_tol_points = temp.MaxValue();
+  double max_tol_points = temp.max_value();
 
 
   //  std::cout << "min_dist_in_tri: " << min_dist_in_tri << std::endl;

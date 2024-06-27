@@ -66,7 +66,7 @@ namespace
     {
       Core::LinAlg::SerialDenseMatrix v(length, 1, false);
       for (std::size_t j = 0; j < length; ++j) v(j, 0) = eigenvectors(j, i);
-      Core::LinAlg::multiplyNT(1.0, A_result, eigenvalues(i), v, v);
+      Core::LinAlg::multiply_nt(1.0, A_result, eigenvalues(i), v, v);
     }
 
     FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);
@@ -85,7 +85,7 @@ namespace
     {
       Core::LinAlg::Matrix<size, 1> v(false);
       for (unsigned int j = 0; j < size; ++j) v(j, 0) = eigenvectors(j, i);
-      A_result.MultiplyNT(eigenvalues(i, i), v, v, 1.0);
+      A_result.multiply_nt(eigenvalues(i, i), v, v, 1.0);
     }
 
     FOUR_C_EXPECT_NEAR(A, A_result, 1e-9);

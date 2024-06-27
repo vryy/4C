@@ -172,7 +172,7 @@ void Core::Geo::Cut::ColoredGraph::Graph::TestFacets()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::ColoredGraph::Graph::Print() const
+void Core::Geo::Cut::ColoredGraph::Graph::print() const
 {
   for (std::map<int, plain_int_set>::const_iterator i = graph_.begin(); i != graph_.end(); ++i)
   {
@@ -523,10 +523,10 @@ bool Core::Geo::Cut::ColoredGraph::Graph::ContainsTrace(const std::vector<int>& 
   return true;
 }
 
-void Core::Geo::Cut::ColoredGraph::Cycle::Print() const
+void Core::Geo::Cut::ColoredGraph::Cycle::print() const
 {
   std::cout << "Cycle:\n";
-  cycle_.Print();
+  cycle_.print();
   std::cout << "\n";
 }
 
@@ -915,9 +915,9 @@ void Core::Geo::Cut::ColoredGraph::CycleList::push_back(Graph& g)
   c.Assign(g);
 }
 
-void Core::Geo::Cut::ColoredGraph::CycleList::Print() const
+void Core::Geo::Cut::ColoredGraph::CycleList::print() const
 {
-  for (const Cycle& c : cycles_) c.Print();
+  for (const Cycle& c : cycles_) c.print();
 }
 
 void Core::Geo::Cut::ColoredGraph::Graph::DumpGraph(const std::string& name)

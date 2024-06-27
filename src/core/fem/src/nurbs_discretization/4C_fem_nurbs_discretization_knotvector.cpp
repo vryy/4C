@@ -1072,7 +1072,7 @@ int Core::FE::Nurbs::Knotvector::convert_ele_knot_ids_to_gid(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::FE::Nurbs::Knotvector::Print(std::ostream& os) const
+void Core::FE::Nurbs::Knotvector::print(std::ostream& os) const
 {
   os << "\nPrinting a Knotvector: " << std::endl;
   for (int patch = 0; patch < npatches_; ++patch)

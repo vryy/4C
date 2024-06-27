@@ -122,7 +122,7 @@ void Mat::add_elasticity_tensor_product(Core::LinAlg::Matrix<6, 6>& C, const dou
   B_voigt(4, 0) = B(2, 1);
   B_voigt(5, 0) = B(2, 0);
 
-  C.MultiplyNT(scalar_AB, A_voigt, B_voigt, scalar_this);
+  C.multiply_nt(scalar_AB, A_voigt, B_voigt, scalar_this);
 }
 
 void Mat::add_symmetric_elasticity_tensor_product(Core::LinAlg::Matrix<6, 6>& C,
@@ -160,8 +160,8 @@ void Mat::add_symmetric_elasticity_tensor_product(Core::LinAlg::Matrix<6, 6>& C,
   B_voigt(4, 0) = B(2, 1);
   B_voigt(5, 0) = B(2, 0);
 
-  C.MultiplyNT(scalar_AB, A_voigt, B_voigt, scalar_this);
-  C.MultiplyNT(scalar_AB, B_voigt, A_voigt, 1.0);
+  C.multiply_nt(scalar_AB, A_voigt, B_voigt, scalar_this);
+  C.multiply_nt(scalar_AB, B_voigt, A_voigt, 1.0);
 }
 
 void Mat::add_kronecker_tensor_product(Core::LinAlg::Matrix<6, 6>& C, const double scalar_AB,
@@ -244,7 +244,7 @@ void Mat::volumetrify_and_isochorify(Core::LinAlg::Matrix<6, 1>* pk2vol,
   // right Cauchy--Green tensor
   // REMARK: stored in _strain_-like 6-Voigt vector
   Core::LinAlg::Matrix<6, 1> rcg(gl);
-  rcg.Scale(2.0);
+  rcg.scale(2.0);
   for (int i = 0; i < 3; i++) rcg(i) += 1.0;
 
   // third invariant (determinant) of right Cauchy--Green strains
@@ -265,18 +265,18 @@ void Mat::volumetrify_and_isochorify(Core::LinAlg::Matrix<6, 1>* pk2vol,
   // double contraction of 2nd Piola--Kirchhoff stress and right Cauchy--Green strain,
   // i.e. in index notation S^{AB} C_{AB}
   // REMARK: equal to S^T C, because S is stress-like and C is strain-like 6-Voigt vector
-  const double pk2rcg = pk2.Dot(rcg);
+  const double pk2rcg = pk2.dot(rcg);
 
   // stress splitting
   {
     // volumetric 2nd Piola--Kirchhoff stress
     Core::LinAlg::Matrix<6, 1> pk2vol_tmp(false);
-    if (pk2vol != nullptr) pk2vol_tmp.SetView(*pk2vol);
-    pk2vol_tmp.Update(pk2rcg / 3.0, icg);
+    if (pk2vol != nullptr) pk2vol_tmp.set_view(*pk2vol);
+    pk2vol_tmp.update(pk2rcg / 3.0, icg);
 
     // isochoric 2nd Piola--Kirchhoff stress
     // S^{AB}_iso = S^{AB} - S^{AB}_{vol}
-    if (pk2iso != nullptr) pk2iso->Update(1.0, pk2, -1.0, pk2vol_tmp);
+    if (pk2iso != nullptr) pk2iso->update(1.0, pk2, -1.0, pk2vol_tmp);
   }
 
   // elasticity tensor splitting
@@ -284,7 +284,7 @@ void Mat::volumetrify_and_isochorify(Core::LinAlg::Matrix<6, 1>* pk2vol,
     // 'linearised' 2nd Piola--Kirchhoff stress
     // S^{CD}_lin = S^{CD} + 1/2 C_{AB} C^{ABCD}
     Core::LinAlg::Matrix<6, 1> pk2lin(pk2);
-    pk2lin.MultiplyTN(0.5, cmat, rcg, 1.0);  // transpose on purpose
+    pk2lin.multiply_tn(0.5, cmat, rcg, 1.0);  // transpose on purpose
 
     // volumetric part of constitutive tensor
     // C^{ABCD}_vol = 2/3 (C^{-1})^{AB} S^{CD}_lin
@@ -292,13 +292,13 @@ void Mat::volumetrify_and_isochorify(Core::LinAlg::Matrix<6, 1>* pk2vol,
     //                (C^{-1})^{AC} (C^{-1})^{BD} + (C^{-1})^{AD} (C^{-1})^{BC}
     //              ) )
     Core::LinAlg::Matrix<6, 6> cvol_tmp(false);
-    if (cvol != nullptr) cvol_tmp.SetView(*cvol);
-    cvol_tmp.MultiplyNT(2.0 / 3.0, icg, pk2lin);
+    if (cvol != nullptr) cvol_tmp.set_view(*cvol);
+    cvol_tmp.multiply_nt(2.0 / 3.0, icg, pk2lin);
     add_holzapfel_product(cvol_tmp, icg, -2.0 / 3.0 * pk2rcg);
 
     // isochoric part of constitutive tensor
     // C^{ABCD}_iso = C^{ABCD} - C^{ABCD}_vol
-    if (ciso != nullptr) ciso->Update(1.0, cmat, -1.0, cvol_tmp);
+    if (ciso != nullptr) ciso->update(1.0, cmat, -1.0, cvol_tmp);
   }
 }
 
@@ -758,7 +758,7 @@ void Mat::invariants_principal(
              tens(0, 1) * tens(1, 0) - tens(1, 2) * tens(2, 1) - tens(0, 2) * tens(2, 0);
 
   // 3rd invariant, determinant tens
-  prinv(2) = tens.Determinant();
+  prinv(2) = tens.determinant();
 }
 
 void Mat::invariants_modified(
@@ -799,7 +799,7 @@ void Mat::stretches_modified(
   const double detdefgrad = prstr(0) * prstr(1) * prstr(2);
 
   // determine modified principal stretches
-  modstr.Update(std::pow(detdefgrad, -1.0 / 3.0), prstr);
+  modstr.update(std::pow(detdefgrad, -1.0 / 3.0), prstr);
 }
 
 template <int dim>

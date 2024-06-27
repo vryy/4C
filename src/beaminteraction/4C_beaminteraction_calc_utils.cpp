@@ -539,9 +539,9 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<3, 1> const& pos2, double const lowerbound, double const upperbound)
     {
       Core::LinAlg::Matrix<3, 1> dist_vec(true);
-      dist_vec.Update(1.0, pos1, -1.0, pos2);
+      dist_vec.update(1.0, pos1, -1.0, pos2);
 
-      const double distance = dist_vec.Norm2();
+      const double distance = dist_vec.norm2();
 
       return (distance < lowerbound or distance > upperbound) ? true : false;
     }
@@ -554,7 +554,7 @@ namespace BEAMINTERACTION
     {
       // cosine of angle is scalar product of vectors divided by their norms
       // direction vectors should be unit vectors since they come from triads, but anyway ...
-      double cos_angle = direction1.Dot(direction2) / direction1.Norm2() / direction2.Norm2();
+      double cos_angle = direction1.dot(direction2) / direction1.norm2() / direction2.norm2();
 
       // to enable parallel directions that are numerically slightly > 1 ( < -1)
       // ( would lead to NaN in std::acos )
@@ -916,7 +916,7 @@ namespace BEAMINTERACTION
               eledisp);
 
         eleforce[elei].size(numdof_ele);
-        Core::LinAlg::multiplyTN(eleforce[elei], trafomatrix, bspotforce[elei]);
+        Core::LinAlg::multiply_tn(eleforce[elei], trafomatrix, bspotforce[elei]);
       }
     }
 
@@ -972,10 +972,10 @@ namespace BEAMINTERACTION
             ele1disp);
 
         auxmat[0][0].shape(numdof_ele1, 6);
-        Core::LinAlg::multiplyTN(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
+        Core::LinAlg::multiply_tn(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
 
         auxmat[0][1].shape(numdof_ele1, 6);
-        Core::LinAlg::multiplyTN(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
+        Core::LinAlg::multiply_tn(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele1);
@@ -1001,10 +1001,10 @@ namespace BEAMINTERACTION
             ele2disp);
 
         elestiff[1][0].shape(numdof_ele2, numdof_ele1);
-        Core::LinAlg::multiplyTN(elestiff[1][0], trafomatrix, auxmat[1][0]);
+        Core::LinAlg::multiply_tn(elestiff[1][0], trafomatrix, auxmat[1][0]);
 
         auxmat[1][1].shape(numdof_ele2, 6);
-        Core::LinAlg::multiplyTN(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
+        Core::LinAlg::multiply_tn(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele2);
@@ -1091,13 +1091,13 @@ namespace BEAMINTERACTION
             ele1disp);
 
         eleforce[0].size(numdof_ele1);
-        Core::LinAlg::multiplyTN(eleforce[0], trafomatrix, bspotforce[0]);
+        Core::LinAlg::multiply_tn(eleforce[0], trafomatrix, bspotforce[0]);
 
         auxmat[0][0].shape(numdof_ele1, 6);
-        Core::LinAlg::multiplyTN(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
+        Core::LinAlg::multiply_tn(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
 
         auxmat[0][1].shape(numdof_ele1, 6);
-        Core::LinAlg::multiplyTN(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
+        Core::LinAlg::multiply_tn(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele1);
@@ -1135,13 +1135,13 @@ namespace BEAMINTERACTION
             ele2disp);
 
         eleforce[1].size(numdof_ele2);
-        Core::LinAlg::multiplyTN(eleforce[1], trafomatrix, bspotforce[1]);
+        Core::LinAlg::multiply_tn(eleforce[1], trafomatrix, bspotforce[1]);
 
         elestiff[1][0].shape(numdof_ele2, numdof_ele1);
-        Core::LinAlg::multiplyTN(elestiff[1][0], trafomatrix, auxmat[1][0]);
+        Core::LinAlg::multiply_tn(elestiff[1][0], trafomatrix, auxmat[1][0]);
 
         auxmat[1][1].shape(numdof_ele2, 6);
-        Core::LinAlg::multiplyTN(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
+        Core::LinAlg::multiply_tn(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele2);

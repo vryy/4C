@@ -360,7 +360,7 @@ double Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_res(
   // Compute convective term including convective part of migration term
   const double convmigphi = convphi + myelch::diff_manager()->GetIsotropicDiff(k) *
                                           myelch::diff_manager()->GetValence(k) *
-                                          (migconv.Dot(my::ephinp_[k]));
+                                          (migconv.dot(my::ephinp_[k]));
 
   // Compute diffusive term and reactive part of migration term (only significant for higher-order
   // elements)
@@ -372,9 +372,9 @@ double Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_res(
     Core::LinAlg::Matrix<nen_, 1> laplace(true);
     my::get_laplacian_strong_form(laplace);
 
-    diffphi = myelch::diff_manager()->GetIsotropicDiff(k) * laplace.Dot(my::ephinp_[k]);
+    diffphi = myelch::diff_manager()->GetIsotropicDiff(k) * laplace.dot(my::ephinp_[k]);
     reamigphi = -frt * myelch::diff_manager()->GetIsotropicDiff(k) *
-                myelch::diff_manager()->GetValence(k) * laplace.Dot(my::ephinp_[my::numscal_]) *
+                myelch::diff_manager()->GetValence(k) * laplace.dot(my::ephinp_[my::numscal_]) *
                 conint;
   }
 
@@ -488,7 +488,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_conv_stab(
         // 4a) linearization w.r.t. concentration c_k
         matvalconc -= timetaufac_conv_eff_vi * frt * myelch::diff_manager()->GetIsotropicDiff(k) *
                       myelch::diff_manager()->GetValence(k) *
-                      laplace.Dot(my::ephinp_[my::numscal_]) * my::funct_(ui);
+                      laplace.dot(my::ephinp_[my::numscal_]) * my::funct_(ui);
 
         // 4b) linearization w.r.t. electric potential Phi
         matvalpot -= timetaufac_conv_eff_vi_conint_k_frt_valence_k *
@@ -1119,7 +1119,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
     {
       // Compute effective velocity as sum of convective and migration velocities
       Core::LinAlg::Matrix<nsd_, 1> veleff(var_manager()->ConVel(k));
-      veleff.Update(
+      veleff.update(
           myelch::diff_manager()->GetValence(k) * myelch::diff_manager()->GetIsotropicDiff(k),
           var_manager()->MigVelInt(), 1.);
 
@@ -1204,7 +1204,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_tau_der_pot_taylor_hu
 
   // Finalize derivative of present tau w.r.t electric potential
   // Note: Factor alpha_f in gen-alpha time integration scheme is included at a later point
-  tauderpot.Scale(0.5 * tau * tau * tau);
+  tauderpot.scale(0.5 * tau * tau * tau);
 
   return;
 }

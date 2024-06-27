@@ -364,17 +364,17 @@ void CONTACT::Interface::set_cn_ct_values(const int& iter)
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const CONTACT::Interface& interface)
 {
-  interface.Print(os);
+  interface.print(os);
   return os;
 }
 
 /*----------------------------------------------------------------------*
  |  print interface (public)                                 mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::Print(std::ostream& os) const
+void CONTACT::Interface::print(std::ostream& os) const
 {
   if (Comm().MyPID() == 0) os << "Contact ";
-  Mortar::Interface::Print(os);
+  Mortar::Interface::print(os);
 
   return;
 }
@@ -9151,7 +9151,7 @@ void CONTACT::Interface::GetForceOfNode(Core::LinAlg::Matrix<3, 1>& nodal_force,
   idiscret_->Dof(&node, dofs);
 
   // reset nodal force vector
-  std::fill(nodal_force.A(), nodal_force.A() + 3, 0.0);
+  std::fill(nodal_force.data(), nodal_force.data() + 3, 0.0);
   const double* f_vals = force.Values();
 
   if (dofs.size() > 3) FOUR_C_THROW("The interface node seems to have more than 3 DOFs!");

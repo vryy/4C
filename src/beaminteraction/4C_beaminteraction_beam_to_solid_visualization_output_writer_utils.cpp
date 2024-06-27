@@ -199,7 +199,7 @@ void BEAMINTERACTION::GetNodeCouplingForceResultants(const std::vector<double>& 
   }
 
   // Add the moment values for this node.
-  node_moment.CrossProduct(node_pos, node_force);
+  node_moment.cross_product(node_pos, node_force);
   for (unsigned int dim = 0; dim < 3; ++dim) resultant(dim, 1) += node_moment(dim);
 }
 

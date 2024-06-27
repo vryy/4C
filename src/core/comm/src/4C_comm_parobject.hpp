@@ -449,7 +449,7 @@ namespace Core::Communication
     {
       add_to_pack(data, i);
       add_to_pack(data, j);
-      add_to_pack(data, stuff.A(), stuff.M() * stuff.N() * sizeof(double));
+      add_to_pack(data, stuff.data(), stuff.m() * stuff.n() * sizeof(double));
     }
 
     /*!
@@ -469,7 +469,7 @@ namespace Core::Communication
 
       for (int p = 0; p < vectorlength; ++p)
       {
-        const double* A = stuff[p].A();
+        const double* A = stuff[p].data();
 
         // add all data in vector to pack
         add_to_pack(data, A, i * j * sizeof(double));
@@ -885,7 +885,7 @@ namespace Core::Communication
       int n = 0;
       extract_from_pack(position, data, n);
       if (n != j) FOUR_C_THROW("second dimension mismatch");
-      extract_from_pack(position, data, stuff.A(), stuff.M() * stuff.N() * sizeof(double));
+      extract_from_pack(position, data, stuff.data(), stuff.m() * stuff.n() * sizeof(double));
     }
 
     /*!
@@ -912,7 +912,7 @@ namespace Core::Communication
 
       for (int p = 0; p < vectorlength; ++p)
       {
-        double* A = stuff[p].A();
+        double* A = stuff[p].data();
 
         // actual extraction of data
         extract_from_pack(position, data, A, i * j * sizeof(double));

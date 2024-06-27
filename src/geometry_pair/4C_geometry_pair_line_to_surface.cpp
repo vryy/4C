@@ -145,7 +145,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
   Core::LinAlg::Matrix<4, 1, scalar_type> residuum;
   Core::LinAlg::Matrix<4, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * Constants::projection_xi_eta_tol);
+  delta_xi.put_scalar(10 * Constants::projection_xi_eta_tol);
 
   // Jacobian / inverse.
   Core::LinAlg::Matrix<4, 4, scalar_type> J_J_inv;
@@ -166,8 +166,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       EvaluateSurfacePositionAndDerivative(element_data_surface, xi, r_surface, dr_surface);
 
       // Evaluate the residuum $r_{surface} - r_{line} = R_{pos}$ and $xi(i) - value = R_{edge}$
-      J_J_inv.PutScalar(0.);
-      residuum.PutScalar(0.);
+      J_J_inv.put_scalar(0.);
+      residuum.put_scalar(0.);
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
         residuum(i_dir) = r_surface(i_dir) - r_line(i_dir);
 
@@ -411,13 +411,13 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
     {
       // Position of the projection point within the segment.
       auto& projection_point_double = segment_double.GetProjectionPoints()[i_point];
-      const double factor = (projection_point_double.GetEta() - segment_double.GetEtaA()) /
+      const double factor = (projection_point_double.GetEta() - segment_double.GetEtadata()) /
                             segment_double.GetSegmentLength();
 
       // Calculate spatial point.
       auto& projection_point = projection_points[i_point];
       projection_point.set_from_other_point_double(projection_point_double);
-      projection_point.SetEta(new_segment.GetEtaA() + new_segment.GetSegmentLength() * factor);
+      projection_point.SetEta(new_segment.GetEtadata() + new_segment.GetSegmentLength() * factor);
 
       EvaluatePosition<line>(projection_point.GetEta(), element_data_line, point_in_space);
 
@@ -441,7 +441,7 @@ void GEOMETRYPAIR::ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, scalar
   Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
   Core::LinAlg::Matrix<3, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * Constants::projection_xi_eta_tol);
+  delta_xi.put_scalar(10 * Constants::projection_xi_eta_tol);
   Core::LinAlg::Matrix<3, 1, scalar_type> residuum;
 
   // Jacobian / inverse.

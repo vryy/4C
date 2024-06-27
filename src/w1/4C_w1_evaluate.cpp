@@ -837,7 +837,7 @@ void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
       }
 
       // add Kda . res_d to feas
-      Core::LinAlg::multiplyTN(1.0, (*oldfeas), 1.0, *oldKda, res_d);
+      Core::LinAlg::multiply_tn(1.0, (*oldfeas), 1.0, *oldKda, res_d);
       // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
       Core::LinAlg::multiply(1.0, (*alpha), -1.0, *oldKaainv, *oldfeas);
     }  // if (iseas)
@@ -1031,7 +1031,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       }
 
       // add Kda . res_d to feas
-      Core::LinAlg::multiplyTN(1.0, (*oldfeas), 1.0, *oldKda, res_d);
+      Core::LinAlg::multiply_tn(1.0, (*oldfeas), 1.0, *oldKda, res_d);
       // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
       Core::LinAlg::multiply(1.0, (*alpha), -1.0, *oldKaainv, *oldfeas);
     }  // if (not IsInterface())
@@ -1270,7 +1270,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kad  with Kad=Kda^T
-      if (stiffmatrix) Core::LinAlg::multiplyNT(1.0, (*stiffmatrix), -1.0, KdaKaa, Kda);
+      if (stiffmatrix) Core::LinAlg::multiply_nt(1.0, (*stiffmatrix), -1.0, KdaKaa, Kda);
 
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
       if (force) Core::LinAlg::multiply(1.0, *force, -1.0, KdaKaa, feas);
@@ -1823,7 +1823,7 @@ void Discret::ELEMENTS::Wall1::stress_cauchy(const int ip, const double& F11, co
 
   // PK1 stress tensor in Cartesian matrix notation
   Core::LinAlg::SerialDenseMatrix pk1stress(2, 2);
-  Core::LinAlg::multiplyNT(0.0, pk1stress, 1.0 / detf, pk2stress, defgrad);
+  Core::LinAlg::multiply_nt(0.0, pk1stress, 1.0 / detf, pk2stress, defgrad);
 
   // Cauchy stress tensor in Cartesian matrix notation
   Core::LinAlg::SerialDenseMatrix cauchystress(2, 2);

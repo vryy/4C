@@ -134,12 +134,12 @@ void STR::MODELEVALUATOR::Structure::reset(const Epetra_Vector& x)
 
   /* --- reset external forces
    * Please note, that PutScalar is safer (but maybe slower) than
-   * putScalar(0.0), because of possible NaN and inf values! */
+   * put_scalar(0.0), because of possible NaN and inf values! */
   fext_np().PutScalar(0.0);
 
   /* --- reset internal forces
    * Please note, that PutScalar is safer (but maybe slower) than
-   * putScalar(0.0), because of possible NaN and inf values! */
+   * put_scalar(0.0), because of possible NaN and inf values! */
   fint_np().PutScalar(0.0);
 
   // reset stiffness matrix
@@ -857,7 +857,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
     discret().set_state(0, "displacement", global_state().get_dis_np());
     discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
-    // global_state().get_dis_np()->Print(std::cout);
+    // global_state().get_dis_np()->print(std::cout);
 
     // Set dummy evaluation vectors and matrices.
     std::array<Teuchos::RCP<Epetra_Vector>, 3> eval_vec = {

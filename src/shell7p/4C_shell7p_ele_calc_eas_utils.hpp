@@ -639,9 +639,9 @@ namespace Discret::ELEMENTS::Shell::EAS
     g.metric_kovariant_(1, 2) = g.metric_kovariant_(2, 1);
 
     // re-evaluate kontravariant metric tensor
-    g.metric_kontravariant_.Update(g.metric_kovariant_);
+    g.metric_kontravariant_.update(g.metric_kovariant_);
 
-    double detJ = g.metric_kontravariant_.Invert();
+    double detJ = g.metric_kontravariant_.invert();
     g.detJ_ = std::sqrt(detJ);
   }
 

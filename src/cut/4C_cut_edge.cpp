@@ -678,7 +678,7 @@ void Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
   double distance = 0;
   Core::LinAlg::Matrix<probDim, 1> xsi;
   Core::LinAlg::Matrix<probDim, numNodesEdge> xyze_edge;
-  Coordinates(xyze_edge.A());
+  Coordinates(xyze_edge.data());
 
   const std::vector<Node*> edge_nodes = Nodes();
 
@@ -690,7 +690,7 @@ void Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
     Node* node = *it;
     Point* p = node->point();
     Core::LinAlg::Matrix<probDim, 1> p_coord;
-    p->Coordinates(p_coord.A());
+    p->Coordinates(p_coord.data());
 
     bool conv = false;
     Kernel::PointOnSurfaceLoc loc;
@@ -758,7 +758,7 @@ bool Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::com
 
   // nodal edge coordinates
   Core::LinAlg::Matrix<probDim, numNodesEdge> xyze_this;
-  Coordinates(xyze_this.A());
+  Coordinates(xyze_this.data());
 
   // nodal pseudo side coordinates
   /* Note: We insert the this edge as side. In this way we can use the
@@ -841,7 +841,7 @@ bool Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::com
         Point* p = nullptr;
         for (unsigned i = 0; i < xyz_cuts.size(); ++i)
         {
-          p = Point::NewPoint(*mesh, xyz_cuts[i].A(), r_cuts[i](0), this, side, tolerance);
+          p = Point::NewPoint(*mesh, xyz_cuts[i].data(), r_cuts[i](0), this, side, tolerance);
 
           p->AddEdge(this);
           p->AddEdge(other);

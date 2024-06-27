@@ -156,9 +156,9 @@ namespace Discret
         vm::set_internal_variables(funct, derxy, etempnp, etempn, econvelnp, ehist, eforcevelocity);
 
         // set local values of scatra variables at time t_(n+1) or t_(n+alpha_F)
-        conc_ = funct.Dot(econcnp);          // concentration
-        gradconc_.Multiply(derxy, econcnp);  // gradient of concentration
-        gradpot_.Multiply(derxy, epotnp);    // gradient of electric potential
+        conc_ = funct.dot(econcnp);          // concentration
+        gradconc_.multiply(derxy, econcnp);  // gradient of concentration
+        gradpot_.multiply(derxy, epotnp);    // gradient of electric potential
 
         return;
       }

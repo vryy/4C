@@ -126,7 +126,7 @@ namespace PoroMultiPhaseScaTra
         const std::string disname, const double& timefacrhs_art, const double& timefacrhs_cont) = 0;
 
     //! beginning of integration segment
-    virtual double EtaA() const = 0;
+    virtual double Etadata() const = 0;
     //! end of integration segment
     virtual double EtaB() const = 0;
 
@@ -223,7 +223,7 @@ namespace PoroMultiPhaseScaTra
         Core::LinAlg::SerialDenseMatrix* stiffmat12) override;
 
     //! beginning and end of integration segment
-    double EtaA() const override { return eta_a_; }
+    double Etadata() const override { return eta_a_; }
     double EtaB() const override { return eta_b_; }
 
     //! element 1 (= artery) GID

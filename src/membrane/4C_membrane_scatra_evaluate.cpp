@@ -83,7 +83,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
         for (int k = 0; k < numscal; ++k)
         {
           // identical shapefunctions for displacements and scalar fields
-          scalar_curr_gp.at(k) = shapefcts.Dot(elescalar.at(k));
+          scalar_curr_gp.at(k) = shapefcts.dot(elescalar.at(k));
         }
 
         gpscalar->at(gp) = scalar_curr_gp;

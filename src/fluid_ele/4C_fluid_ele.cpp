@@ -292,10 +292,10 @@ void Discret::ELEMENTS::Fluid::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Fluid::Print(std::ostream& os) const
+void Discret::ELEMENTS::Fluid::print(std::ostream& os) const
 {
   os << "Fluid ";
-  Element::Print(os);
+  Element::print(os);
   // cout << endl;
   return;
 }

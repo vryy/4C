@@ -88,7 +88,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
   Core::LinAlg::Matrix<4, 1, scalar_type> residuum;
   Core::LinAlg::Matrix<4, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * Constants::projection_xi_eta_tol);
+  delta_xi.put_scalar(10 * Constants::projection_xi_eta_tol);
 
   // Jacobian / inverse.
   Core::LinAlg::Matrix<4, 4, scalar_type> J_J_inv;
@@ -106,8 +106,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
       EvaluatePosition<volume>(xi, element_data_volume, r_volume);
 
       // Evaluate the residuum $r_{volume} - r_{line} = R_{pos}$ and $xi(i) - value = R_{surf}$
-      J_J_inv.PutScalar(0.);
-      residuum.PutScalar(0.);
+      J_J_inv.put_scalar(0.);
+      residuum.put_scalar(0.);
       for (unsigned int i = 0; i < 3; i++)
       {
         residuum(i) = r_volume(i) - r_line(i);
@@ -128,8 +128,8 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
       }
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < Constants::local_newton_res_tol &&
-          delta_xi.Norm2() < Constants::projection_xi_eta_tol)
+      if (residuum.norm2() < Constants::local_newton_res_tol &&
+          delta_xi.norm2() < Constants::projection_xi_eta_tol)
       {
         // Check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) && ValidParameter3D<volume>(xi))
@@ -140,7 +140,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolume<scalar_type, line, volume>::intersec
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (residuum.Norm2() > Constants::local_newton_res_max) break;
+      if (residuum.norm2() > Constants::local_newton_res_max) break;
 
       // Get the positional derivatives.
       EvaluatePositionDerivative1<line>(eta, element_data_line, dr_line);
@@ -251,7 +251,7 @@ void GEOMETRYPAIR::ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, scalar_
   // Increment of xi.
   Core::LinAlg::Matrix<3, 1, scalar_type> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
-  delta_xi.PutScalar(10 * Constants::projection_xi_eta_tol);
+  delta_xi.put_scalar(10 * Constants::projection_xi_eta_tol);
 
   // Residuum.
   Core::LinAlg::Matrix<3, 1, scalar_type> residuum;
@@ -272,8 +272,8 @@ void GEOMETRYPAIR::ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, scalar_
       residuum -= point;
 
       // Check if tolerance is fulfilled.
-      if (residuum.Norm2() < Constants::local_newton_res_tol &&
-          delta_xi.Norm2() < Constants::projection_xi_eta_tol)
+      if (residuum.norm2() < Constants::local_newton_res_tol &&
+          delta_xi.norm2() < Constants::projection_xi_eta_tol)
       {
         if (ValidParameter3D<volume>(xi))
           projection_result = ProjectionResult::projection_found_valid;
@@ -283,7 +283,7 @@ void GEOMETRYPAIR::ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, scalar_
       }
 
       // Check if residuum is in a sensible range where we still expect to find a solution.
-      if (residuum.Norm2() > Constants::local_newton_res_max) break;
+      if (residuum.norm2() > Constants::local_newton_res_max) break;
 
       // Get the jacobian.
       GEOMETRYPAIR::EvaluatePositionDerivative1<volume>(xi, element_data_volume, J_J_inv);

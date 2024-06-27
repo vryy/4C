@@ -243,7 +243,7 @@ void Core::Geo::Cut::FacetGraph::add_to_volume_cells(Mesh &mesh, Element *elemen
     // check facet number
     if (collected_facets.size() < (element->Dim() + 1))
     {
-      Print();
+      print();
 
       int fsc = 0;
       for (std::vector<plain_facet_set>::const_iterator fs = volumes.begin(); fs != volumes.end();

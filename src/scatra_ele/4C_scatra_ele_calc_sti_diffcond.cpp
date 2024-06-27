@@ -142,21 +142,21 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_joul
 
   // current density
   Core::LinAlg::Matrix<nsd_, 1> i = var_manager()->GradPot();
-  i.Update((1 - t) * invfval * 2. * R * my::scatravarmanager_->Phinp(0) / concentration,
+  i.update((1 - t) * invfval * 2. * R * my::scatravarmanager_->Phinp(0) / concentration,
       var_manager()->GradConc(), invfval * R * log(concentration),
       my::scatravarmanager_->GradPhi(0), -1.);
-  i.Scale(kappa);
+  i.scale(kappa);
 
   // derivative of current density w.r.t. temperature
   Core::LinAlg::Matrix<nsd_, 1> di_dT = var_manager()->GradConc();
-  di_dT.Scale(kappa * (1 - t) * invfval * 2. * R / concentration);
+  di_dT.scale(kappa * (1 - t) * invfval * 2. * R / concentration);
 
   // formal, symbolic derivative of current density w.r.t. temperature gradient
   const double di_dgradT = kappa * invfval * R * log(concentration);
 
   // derivative of square of current density w.r.t. temperature gradient
   Core::LinAlg::Matrix<nsd_, 1> di2_dgradT = i;
-  di2_dgradT.Scale(2. * di_dgradT);
+  di2_dgradT.scale(2. * di_dgradT);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -169,11 +169,11 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_joul
 
       // linearizations of Joule's heat term in thermo residuals w.r.t. thermo dofs
       emat(vi, ui) -= timefacfac * my::funct_(vi) / kappa *
-                      (di2_dgradT_gradN + 2. * i.Dot(di_dT) * my::funct_(ui));
+                      (di2_dgradT_gradN + 2. * i.dot(di_dT) * my::funct_(ui));
     }
 
     // contributions of Joule's heat term to thermo residuals
-    erhs[vi] += rhsfac * my::funct_(vi) * i.Dot(i) / kappa;
+    erhs[vi] += rhsfac * my::funct_(vi) * i.dot(i) / kappa;
   }
 }
 
@@ -187,7 +187,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_joul
   // no contributions to matrix
 
   // square of gradient of electric potential
-  const double gradpot2 = var_manager()->GradPot().Dot(var_manager()->GradPot());
+  const double gradpot2 = var_manager()->GradPot().dot(var_manager()->GradPot());
 
   // linearizations of Joule's heat term in thermo residuals w.r.t. thermo dofs are zero
   // contributions of Joule's heat term to thermo residuals
@@ -220,10 +220,10 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_mixi
 
   // gradient of concentration plus scaled gradient of temperature
   Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->GradConc();
-  a.Update(concentration * soret / temperature, gradtemp, 1.);
+  a.update(concentration * soret / temperature, gradtemp, 1.);
 
   // square of abovementioned gradient
-  const double a2 = a.Dot(a);
+  const double a2 = a.dot(a);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -236,7 +236,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_mixi
       // intermediate terms
       const double term1 = 1. / concentration * a2 * my::funct_(ui);
       const double term2 =
-          -2. * temperature * a.Dot(gradtemp) * soret * pow(1 / temperature, 2) * my::funct_(ui);
+          -2. * temperature * a.dot(gradtemp) * soret * pow(1 / temperature, 2) * my::funct_(ui);
       const double term3 = 2. * temperature * laplawfrhs_a * soret / temperature;
 
       // linearizations of heat of mixing term in thermo residuals w.r.t. thermo dofs
@@ -273,7 +273,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_sore
 
   // gradient of concentration plus scaled gradient of temperature
   Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->GradConc();
-  a.Update(concentration * soret / temperature, gradtemp, 1.);
+  a.update(concentration * soret / temperature, gradtemp, 1.);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -300,7 +300,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_sore
       my::get_laplacian_weak_form(laplawf, ui, vi);
 
       // intermediate terms
-      const double term1 = -gradtemp.Dot(gradtemp) * soret / pow(temperature, 2) * my::funct_(ui);
+      const double term1 = -gradtemp.dot(gradtemp) * soret / pow(temperature, 2) * my::funct_(ui);
       const double term2 = laplawfrhs_a_ui / concentration;
       const double term3 = laplawfrhs_gradtemp_ui * soret / temperature;
       const double term4 = my::funct_(ui) * laplawfrhs_a_vi / concentration;
@@ -314,7 +314,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_and_rhs_sore
 
     // contributions of Soret effect term to thermo residuals
     erhs[vi] -= rhsfac * diffcoeff * 2. * R * soret *
-                (a.Dot(gradtemp) * my::funct_(vi) + temperature * laplawfrhs_a_vi);
+                (a.dot(gradtemp) * my::funct_(vi) + temperature * laplawfrhs_a_vi);
   }
 }
 
@@ -424,13 +424,13 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_joule_od(
 
   // current density
   Core::LinAlg::Matrix<nsd_, 1> i = gradpot;
-  i.Update((1 - t) * invfval * 2. * R * temperature / concentration, gradconc,
+  i.update((1 - t) * invfval * 2. * R * temperature / concentration, gradconc,
       invfval * R * log(concentration), gradtemp, -1.);
-  i.Scale(kappa);
+  i.scale(kappa);
 
   // derivative of current density w.r.t. concentration
   Core::LinAlg::Matrix<nsd_, 1> di_dc = gradpot;
-  di_dc.Update(kappaderiv * (1 - t) * invfval * 2. * R * temperature / concentration -
+  di_dc.update(kappaderiv * (1 - t) * invfval * 2. * R * temperature / concentration -
                    kappa * diffmanagerdiffcond_->GetDerivTransNum(0, 0) * invfval * 2. * R *
                        temperature / concentration -
                    kappa * (1 - t) * invfval * 2. * R * temperature / pow(concentration, 2),
@@ -441,18 +441,18 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_joule_od(
   const double di_dgradc = kappa * (1 - t) * invfval * 2. * R * temperature / concentration;
 
   // square of current density
-  const double i2 = i.Dot(i);
+  const double i2 = i.dot(i);
 
   // derivative of square of current density w.r.t. concentration
-  const double di2_dc = 2. * i.Dot(di_dc);
+  const double di2_dc = 2. * i.dot(di_dc);
 
   // derivative of square of current density w.r.t. concentration gradient
   Core::LinAlg::Matrix<nsd_, 1> di2_dgradc = i;
-  di2_dgradc.Scale(2. * di_dgradc);
+  di2_dgradc.scale(2. * di_dgradc);
 
   // derivative of square of current density w.r.t. gradient of electric potential
   Core::LinAlg::Matrix<nsd_, 1> di2_dgradpot = i;
-  di2_dgradpot.Scale(-2. * kappa);
+  di2_dgradpot.scale(-2. * kappa);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -490,7 +490,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_joule_solid_
 {
   // extract variables and parameters
   const Core::LinAlg::Matrix<nsd_, 1>& gradpot = var_manager()->GradPot();
-  const double gradpot2 = gradpot.Dot(gradpot);
+  const double gradpot2 = gradpot.dot(gradpot);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -534,10 +534,10 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_mixing_od(
 
   // gradient of concentration plus scaled gradient of temperature
   Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->GradConc();
-  a.Update(concentration * soret / temperature, gradtemp, 1.);
+  a.update(concentration * soret / temperature, gradtemp, 1.);
 
   // square of abovementioned gradient
-  const double a2 = a.Dot(a);
+  const double a2 = a.dot(a);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -552,7 +552,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_mixing_od(
                            diffmanagerdiffcond_->get_conc_deriv_iso_diff_coef(0, 0) * a2 *
                            my::funct_(ui);
       const double term2 = -pow(diffcoeff, 2) / pow(concentration, 2) * a2 * my::funct_(ui);
-      const double term3 = 2. * pow(diffcoeff, 2) / concentration * a.Dot(gradtemp) * soret /
+      const double term3 = 2. * pow(diffcoeff, 2) / concentration * a.dot(gradtemp) * soret /
                            temperature * my::funct_(ui);
       const double term4 = 2. * pow(diffcoeff, 2) / concentration * laplawfrhs_a;
 
@@ -588,14 +588,14 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::calc_mat_soret_od(
       Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant();
 
   // square of temperature gradient
-  const double gradtemp2 = gradtemp.Dot(gradtemp);
+  const double gradtemp2 = gradtemp.dot(gradtemp);
 
   // gradient of concentration plus scaled gradient of temperature
   Core::LinAlg::Matrix<nsd_, 1> a = var_manager()->GradConc();
-  a.Update(concentration * soret / temperature, gradtemp, 1.);
+  a.update(concentration * soret / temperature, gradtemp, 1.);
 
   // abovementioned gradient times temperature gradient
-  const double gradtemp_a = gradtemp.Dot(a);
+  const double gradtemp_a = gradtemp.dot(a);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {

@@ -131,9 +131,9 @@ namespace Core::Geo
       template <class T>
       bool is_closer_side(const T& startpoint_xyz, Core::Geo::Cut::Side* other, bool& is_closer)
       {
-        if (startpoint_xyz.M() != ProbDim())
+        if (startpoint_xyz.m() != ProbDim())
           FOUR_C_THROW("The dimension of startpoint_xyz is wrong! (probdim = %d)", ProbDim());
-        return is_closer_side(startpoint_xyz.A(), other, is_closer);
+        return is_closer_side(startpoint_xyz.data(), other, is_closer);
       }
 
       /*! \brief Calculates the points at which the side is cut by this edge */
@@ -149,34 +149,34 @@ namespace Core::Geo
       template <class T1>
       void EdgeAt(const T1& rs, std::vector<Edge*>& edges)
       {
-        if (static_cast<unsigned>(rs.M()) != Dim())
+        if (static_cast<unsigned>(rs.m()) != Dim())
           FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
-        EdgeAt(rs.A(), edges);
+        EdgeAt(rs.data(), edges);
       }
 
       /*! \brief get the global coordinates on side at given local coordinates */
       template <class T1, class T2>
       void PointAt(const T1& rs, T2& xyz)
       {
-        if (static_cast<unsigned>(xyz.M()) < ProbDim())
+        if (static_cast<unsigned>(xyz.m()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(rs.M()) != Dim())
+        if (static_cast<unsigned>(rs.m()) != Dim())
           FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
-        PointAt(rs.A(), xyz.A());
+        PointAt(rs.data(), xyz.data());
 
         // fill remaining entries with zeros
-        std::fill(xyz.A() + ProbDim(), xyz.A() + xyz.M(), 0.0);
+        std::fill(xyz.data() + ProbDim(), xyz.data() + xyz.m(), 0.0);
       }
 
       /*! \brief get global coordinates of the center of the side */
       template <class T1>
       void SideCenter(T1& midpoint)
       {
-        if (midpoint.M() != ProbDim())
+        if (midpoint.m() != ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        SideCenter(midpoint.A());
+        SideCenter(midpoint.data());
       }
 
       /*! \brief Calculates the local coordinates (\c rsd) with respect to the element shape
@@ -187,14 +187,14 @@ namespace Core::Geo
       bool local_coordinates(
           const T1& xyz, T2& rsd, bool allow_dist = false, double tol = POSITIONTOL)
       {
-        if (static_cast<unsigned>(xyz.M()) < ProbDim())
+        if (static_cast<unsigned>(xyz.m()) < ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(rsd.M()) < ProbDim())
+        if (static_cast<unsigned>(rsd.m()) < ProbDim())
           FOUR_C_THROW("The dimension of rsd is wrong! (dim = %d)", Dim());
 
-        const bool check = local_coordinates(xyz.A(), rsd.A(), allow_dist, tol);
+        const bool check = local_coordinates(xyz.data(), rsd.data(), allow_dist, tol);
 
-        std::fill(rsd.A() + ProbDim(), rsd.A() + rsd.M(), 0.0);
+        std::fill(rsd.data() + ProbDim(), rsd.data() + rsd.m(), 0.0);
 
         return check;
       }
@@ -207,12 +207,12 @@ namespace Core::Geo
       template <class T1, class T2>
       bool WithinSide(const T1& xyz, T2& rs, double& dist)
       {
-        if (static_cast<unsigned>(xyz.M()) != ProbDim())
+        if (static_cast<unsigned>(xyz.m()) != ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(rs.M()) != Dim())
+        if (static_cast<unsigned>(rs.m()) != Dim())
           FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
-        return WithinSide(xyz.A(), rs.A(), dist);
+        return WithinSide(xyz.data(), rs.data(), dist);
       }
 
       /* \brief compute the cut of a ray through two points with the 2D space defined by
@@ -220,10 +220,10 @@ namespace Core::Geo
       template <class T1, class T2>
       bool RayCut(const T1& p1_xyz, const T1& p2_xyz, T2& rs, double& line_xi)
       {
-        if (p1_xyz.M() != ProbDim())
+        if (p1_xyz.m() != ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (rs.M() != Dim()) FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
-        return ray_cut(p1_xyz.A(), p2_xyz.A(), rs.A(), line_xi);
+        if (rs.m() != Dim()) FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
+        return ray_cut(p1_xyz.data(), p2_xyz.data(), rs.data(), line_xi);
       }
 
       /*! \brief Calculates the normal vector with respect to the element shape
@@ -231,12 +231,12 @@ namespace Core::Geo
       template <class T1, class T2>
       void Normal(const T1& rs, T2& n, bool unitnormal = true)
       {
-        if (static_cast<unsigned>(n.M()) != ProbDim())
+        if (static_cast<unsigned>(n.m()) != ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(rs.M()) != Dim())
+        if (static_cast<unsigned>(rs.m()) != Dim())
           FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
-        normal(rs.A(), n.A(), unitnormal);
+        normal(rs.data(), n.data(), unitnormal);
       }
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
@@ -245,12 +245,12 @@ namespace Core::Geo
       template <class T1, class T2>
       void Basis(const T1& rs, T2& t1, T2& t2, T2& n)
       {
-        if (static_cast<unsigned>(t1.M()) != ProbDim())
+        if (static_cast<unsigned>(t1.m()) != ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(rs.M()) != Dim())
+        if (static_cast<unsigned>(rs.m()) != Dim())
           FOUR_C_THROW("The dimension of rs is wrong! (dim = %d)", Dim());
 
-        Basis(rs.A(), t1.A(), t2.A(), n.A());
+        Basis(rs.data(), t1.data(), t2.data(), n.data());
       }
 
       /* \brief Calculates a Basis of two tangential vectors (non-orthogonal!) and
@@ -259,10 +259,10 @@ namespace Core::Geo
       template <class T>
       void basis_at_center(T& t1, T& t2, T& n)
       {
-        if (static_cast<unsigned>(t1.M()) != ProbDim())
+        if (static_cast<unsigned>(t1.m()) != ProbDim())
           FOUR_C_THROW("The dimension of xyz is wrong! (probdim = %d)", ProbDim());
 
-        basis_at_center(t1.A(), t2.A(), n.A());
+        basis_at_center(t1.data(), t2.data(), n.data());
       }
 
       /*! \brief Returns the global coordinates of the nodes of this side */
@@ -397,21 +397,21 @@ namespace Core::Geo
 
       void GetBoundaryCells(plain_boundarycell_set& bcells);
 
-      void Print();
+      void print();
 
       template <class T>
       Node* OnNode(const T& x)
       {
-        if (x.M() != ProbDim())
+        if (x.m() != ProbDim())
           FOUR_C_THROW("x has the wrong dimension! (probDim = %d)", ProbDim());
 
         T nx;
         for (std::vector<Node*>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
         {
           Node* n = *i;
-          n->Coordinates(nx.A());
-          nx.Update(-1, x, 1);
-          if (nx.Norm2() <= (x.NormInf() * POSITIONTOL + n->point()->Tolerance()))
+          n->Coordinates(nx.data());
+          nx.update(-1, x, 1);
+          if (nx.norm2() <= (x.norm_inf() * POSITIONTOL + n->point()->Tolerance()))
           {
             return n;
           }
@@ -836,7 +836,7 @@ namespace Core::Geo
         Core::LinAlg::Matrix<dim, probdim> A(true);
 
         Core::FE::shape_function_deriv1<sidetype>(xsi, deriv);
-        A.MultiplyNT(deriv, side_xyze);
+        A.multiply_nt(deriv, side_xyze);
 
         switch (dim)
         {
@@ -870,8 +870,8 @@ namespace Core::Geo
         // force unit length
         if (unitnormal)
         {
-          double norm = normal.Norm2();
-          normal.Scale(1. / norm);
+          double norm = normal.norm2();
+          normal.scale(1. / norm);
         }
       }
 
@@ -899,14 +899,14 @@ namespace Core::Geo
         Core::LinAlg::Matrix<dim, probdim> A(true);
 
         Core::FE::shape_function_deriv1<sidetype>(xsi, deriv);
-        A.MultiplyNT(deriv, side_xyze);
+        A.multiply_nt(deriv, side_xyze);
 
         // set the first tangential vector
         t1(0) = A(0, 0);
         t1(1) = A(0, 1);
         t1(2) = A(0, 2);
 
-        t1.Scale(1. / t1.Norm2());
+        t1.scale(1. / t1.norm2());
 
 
         switch (dim)
@@ -924,7 +924,7 @@ namespace Core::Geo
             t2(1) = A(1, 1);
             t2(2) = A(1, 2);
 
-            t2.Scale(1. / t2.Norm2());
+            t2.scale(1. / t2.norm2());
             break;
           }
         }
@@ -935,7 +935,7 @@ namespace Core::Geo
       /// get coordinates of side
       void Coordinates(Core::LinAlg::Matrix<probdim, numNodesSide>& xyze_surfaceElement) const
       {
-        Coordinates(xyze_surfaceElement.A());
+        Coordinates(xyze_surfaceElement.data());
       }
 
       /*! \brief Returns the global coordinates of the nodes of this side */

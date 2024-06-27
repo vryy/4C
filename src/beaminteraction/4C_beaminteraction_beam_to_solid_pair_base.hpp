@@ -89,7 +89,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Print information about this beam contact element pair to screen.
      */
-    void Print(std::ostream& out) const override;
+    void print(std::ostream& out) const override;
 
     /**
      * \brief Print this beam contact element pair to screen.

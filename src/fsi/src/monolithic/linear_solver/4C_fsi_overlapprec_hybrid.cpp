@@ -298,7 +298,7 @@ void FSI::OverlappingBlockMatrixHybridSchwarz::SetupPreconditioner()
   //
   //  Core::LinAlg::PrintMatrixInMatlabFormat("testmat.dat",*testmat);
   //  std::cout<<"\nEpetraMatrix: "<<std::endl;
-  //  testmat->Print(std::cout);
+  //  testmat->print(std::cout);
   //
   //  comm.Barrier();
   //

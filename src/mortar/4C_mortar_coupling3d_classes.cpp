@@ -683,7 +683,7 @@ bool Mortar::IntCell::LocalToGlobal(const double* xi, double* globcoord, int int
 /*----------------------------------------------------------------------*
  |  output for integration cell                              farah 01/16|
  *----------------------------------------------------------------------*/
-void Mortar::IntCell::Print()
+void Mortar::IntCell::print()
 {
   std::cout << "Slave  ID= " << GetSlaveId() << std::endl;
   std::cout << "Master ID= " << GetMasterId() << std::endl;

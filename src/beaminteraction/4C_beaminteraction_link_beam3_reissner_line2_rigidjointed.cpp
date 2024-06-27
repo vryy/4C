@@ -129,7 +129,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::setup(int matnum)
   linkele_->set_up_reference_geometry<2, 2, 1>(refpos, refrotvec);
 
   //  std::cout << "\nSetup():";
-  //  this->Print(std::cout);
+  //  this->print(std::cout);
 
   issetup_ = true;
 }

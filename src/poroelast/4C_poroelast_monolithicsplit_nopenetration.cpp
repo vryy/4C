@@ -497,7 +497,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   k_porofluid_->Complete();
   k_porodisp_->Complete();
 
-  //------------------------------Invert D Matrix!-----------------------------------------------
+  //------------------------------invert D Matrix!-----------------------------------------------
   tmp_k_D->Complete();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> invd =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(*tmp_k_D, Core::LinAlg::Copy));
@@ -530,7 +530,7 @@ void PoroElast::MonolithicSplitNoPenetration::apply_fluid_coupl_matrix(
   // re-insert inverted diagonal into invd
   err = invd->replace_diagonal_values(*diag);
   invd->Complete();
-  //------------------------------End of Invert D
+  //------------------------------End of invert D
   // Matrix!-----------------------------------------------
 
   // Transform also colum map of D-Matrix

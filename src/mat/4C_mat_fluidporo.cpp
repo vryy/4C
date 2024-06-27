@@ -47,7 +47,7 @@ namespace Mat::FLUIDPORO
         }
       }
 
-      structure_tensor.Scale(1. / square_length);
+      structure_tensor.scale(1. / square_length);
     }
     else
       FOUR_C_THROW("Check for a zero direction vector");
@@ -88,7 +88,7 @@ namespace Mat::FLUIDPORO
      *
      * @param [out] reaction_tensor    The 2D reaction tensor computed according to the
      *                                    anisotropy strategy
-     * @param [in] J  Determinant of the deformation gradient in case the reaction tensor is
+     * @param [in] J  determinant of the deformation gradient in case the reaction tensor is
      *                dependent on it
      * @param [in] porosity   Porosity value in case the reaction tensor is dependent on it
      * @param [in] anisotropic_permeability_directions    Principal directions of anisotropy
@@ -111,7 +111,7 @@ namespace Mat::FLUIDPORO
      *
      * @param [out] reaction_tensor   The 3D reaction tensor computed according to the
      *                                anisotropy strategy (3x3 dyadic)
-     * @param [in] J  Determinant of the deformation gradient
+     * @param [in] J  determinant of the deformation gradient
      * @param [in] porosity   Porosity value
      * @param [in] anisotropic_permeability_directions    Principal directions of anisotropy
      *                                                    required to construct the reaction
@@ -134,7 +134,7 @@ namespace Mat::FLUIDPORO
      * (2x2 dyadic)
      * @param [out] linreac_dJ    Derivative of the material reaction tensor w.r.t. the
      *                            determinant of the deformation gradient (2x2 dyadic)
-     * @param [in] J  Determinant of the deformation gradient
+     * @param [in] J  determinant of the deformation gradient
      * @param [in] porosity   Porosity value
      */
     virtual void compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<2, 2>& linreac_dphi,
@@ -156,7 +156,7 @@ namespace Mat::FLUIDPORO
      *                            (3x3 dyadic)
      * @param [out] linreac_dJ    Derivative of the material reaction tensor w.r.t. the
      *                            determinant of the deformation gradient (3x3 dyadic)
-     * @param [in] J  Determinant of the deformation gradient
+     * @param [in] J  determinant of the deformation gradient
      * @param [in] porosity   Porosity value
      */
     virtual void compute_lin_mat_reaction_tensor(Core::LinAlg::Matrix<3, 3>& linreac_dphi,
@@ -232,7 +232,7 @@ namespace Mat::FLUIDPORO
      *
      * @tparam dim  Number of spatial dimensions
      * @param [out] reaction_tensor Reaction tensor (@tp dim x @p dim dyadic)
-     * @param [in] J  Determinant of the deformation gradient
+     * @param [in] J  determinant of the deformation gradient
      * @param [in] porosity   Porosity value
      * @param [in] anisotropic_permeability_directions  Unused - Principal directions of
      *                                                  anisotropy required to construct the
@@ -291,7 +291,7 @@ namespace Mat::FLUIDPORO
      *                              (@p dim x @p dim dyadic)
      * @param [out] linreac_dJ  Derivative of the material reaction tensor w.r.t. the
      *                          determinant of the deformation gradient (@p dim x @p dim dyadic)
-     * @param [in] J    Determinant of the deformation gradient
+     * @param [in] J    determinant of the deformation gradient
      * @param [in] porosity Porosity value
      */
     template <unsigned int dim>
@@ -388,7 +388,7 @@ namespace Mat::FLUIDPORO
      *
      * @tparam dim  Number of spatial dimensions
      * @param [out] reaction_tensor   Reaction tensor (@p dim x @p dim dyadic)
-     * @param [in] J  Determinant of the deformation gradient
+     * @param [in] J  determinant of the deformation gradient
      * @param [in] porosity   Porosity value
      * @param [in] anisotropic_permeability_directions    Principal directions of anisotropy
      *                                                    required to construct the reaction
@@ -423,10 +423,10 @@ namespace Mat::FLUIDPORO
       for (unsigned int i = 0; i < dim; ++i) permeability_tensor(i, i) += permeability;
 
       // Axial component of the transversely isotropic permeability tensor
-      permeability_tensor.Update(axial_permeability - permeability, structure_tensor, 1.0);
+      permeability_tensor.update(axial_permeability - permeability, structure_tensor, 1.0);
 
-      reaction_tensor.Invert(permeability_tensor);
-      reaction_tensor.Scale(dynamic_viscosity);
+      reaction_tensor.invert(permeability_tensor);
+      reaction_tensor.scale(dynamic_viscosity);
     }
   };
 
@@ -498,11 +498,11 @@ namespace Mat::FLUIDPORO
       {
         CreateStructureTensorFromVector<3>(
             anisotropic_permeability_directions[dim], structure_tensor);
-        permeability_tensor.Update(orthotropic_permeabilities[dim], structure_tensor, 1.0);
+        permeability_tensor.update(orthotropic_permeabilities[dim], structure_tensor, 1.0);
       }
 
-      reaction_tensor.Invert(permeability_tensor);
-      reaction_tensor.Scale(dynamic_viscosity);
+      reaction_tensor.invert(permeability_tensor);
+      reaction_tensor.scale(dynamic_viscosity);
     };
 
     //! constant material orthotropy in 2D is not allowed
@@ -579,7 +579,7 @@ namespace Mat::FLUIDPORO
      *
      * @tparam dim  Number of spatial dimensions
      * @param [out] reaction_tensor Reaction tensor (@p dim x @p dim dyadic)
-     * @param [in] J  Determinant of the deformation gradient
+     * @param [in] J  determinant of the deformation gradient
      * @param [in] porosity   Porosity value
      * @param [in] anisotropic_permeability_directions    Principal directions of anisotropy
      *                                                    required to construct the reaction
@@ -612,12 +612,12 @@ namespace Mat::FLUIDPORO
       {
         CreateStructureTensorFromVector<dim>(
             anisotropic_permeability_directions[i], structure_tensor);
-        permeability_tensor.Update(
+        permeability_tensor.update(
             permeability * anisotropic_permeability_coeffs[i], structure_tensor, 1.0);
       }
 
-      reaction_tensor.Invert(permeability_tensor);
-      reaction_tensor.Scale(dynamic_viscosity);
+      reaction_tensor.invert(permeability_tensor);
+      reaction_tensor.scale(dynamic_viscosity);
     }
   };
 

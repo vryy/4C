@@ -176,10 +176,10 @@ void Discret::ELEMENTS::SoHex8fbar::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                               popp 07/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoHex8fbar::print(std::ostream& os) const
 {
   os << "So_hex8fbar ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

@@ -86,10 +86,10 @@ void Discret::ELEMENTS::Ale3Surface::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3Surface::Print(std::ostream& os) const
+void Discret::ELEMENTS::Ale3Surface::print(std::ostream& os) const
 {
   os << "Ale3Surface ";
-  Element::Print(os);
+  Element::print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

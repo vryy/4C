@@ -474,9 +474,9 @@ unsigned int Core::Geo::Cut::TriangulateFacet::find_second_best_ear(
     bool isEar = true;
 
     Core::LinAlg::Matrix<3, 3> tri_coord;
-    tri[0]->Coordinates(tri_coord.A());
-    tri[1]->Coordinates(tri_coord.A() + 3);
-    tri[2]->Coordinates(tri_coord.A() + 6);
+    tri[0]->Coordinates(tri_coord.data());
+    tri[1]->Coordinates(tri_coord.data() + 3);
+    tri[2]->Coordinates(tri_coord.data() + 6);
     // check whether any point of polygon is inside
     for (unsigned j = 0; j < reflex.size(); j++)
     {
@@ -818,7 +818,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
       Point* maincyclepoint = *i;
       Core::LinAlg::Matrix<3, 1> maincyclepointcoordinates;
       Core::LinAlg::Matrix<3, 1> localmaincyclepointcoordinates;
-      maincyclepoint->Coordinates(maincyclepointcoordinates.A());
+      maincyclepoint->Coordinates(maincyclepointcoordinates.data());
       parentside->local_coordinates(
           maincyclepointcoordinates, localmaincyclepointcoordinates, false);
       localmaincyclepoints[j] = localmaincyclepointcoordinates;
@@ -833,7 +833,7 @@ void Core::Geo::Cut::TriangulateFacet::ear_clipping_with_holes(Side* parentside)
         Point* holecyclepoint = *i;
         Core::LinAlg::Matrix<3, 1> holecyclepointcoordinates;
         Core::LinAlg::Matrix<3, 1> localholecyclepointcoordinates;
-        holecyclepoint->Coordinates(holecyclepointcoordinates.A());
+        holecyclepoint->Coordinates(holecyclepointcoordinates.data());
         parentside->local_coordinates(
             holecyclepointcoordinates, localholecyclepointcoordinates, false);
         localholecyclespoints[k] = localholecyclepointcoordinates;

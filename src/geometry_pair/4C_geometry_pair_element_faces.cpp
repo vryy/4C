@@ -103,7 +103,7 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_norm
 {
   if (averaged_normal)
   {
-    n.PutScalar(0.0);
+    n.put_scalar(0.0);
     return;
   }
   else
@@ -378,7 +378,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::evaluate_face
       }
       else
       {
-        n.PutScalar(0.0);
+        n.put_scalar(0.0);
       }
     }
   }
@@ -398,10 +398,10 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::average_nodal
     Core::LinAlg::Matrix<surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, T>>& normals,
     Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const
 {
-  averaged_normals.PutScalar(0.0);
+  averaged_normals.put_scalar(0.0);
   for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
   {
-    normals(i_node).Scale(1.0 / Core::FADUtils::VectorNorm(normals(i_node)));
+    normals(i_node).scale(1.0 / Core::FADUtils::VectorNorm(normals(i_node)));
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     {
       averaged_normals(i_dim + 3 * i_node) = normals(i_node)(i_dim);

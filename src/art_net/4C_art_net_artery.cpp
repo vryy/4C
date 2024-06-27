@@ -169,10 +169,10 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Artery::Li
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/09|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Artery::Print(std::ostream& os) const
+void Discret::ELEMENTS::Artery::print(std::ostream& os) const
 {
   os << "Artery ";
-  Element::Print(os);
+  Element::print(os);
 
   return;
 }

@@ -140,7 +140,7 @@ void MIXTURE::MixtureConstituentSolidMaterial::read_element(
 void MIXTURE::MixtureConstituentSolidMaterial::update(Core::LinAlg::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
-  material_->Update(defgrd, gp, params, eleGID);
+  material_->update(defgrd, gp, params, eleGID);
 }
 
 void MIXTURE::MixtureConstituentSolidMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>& F,

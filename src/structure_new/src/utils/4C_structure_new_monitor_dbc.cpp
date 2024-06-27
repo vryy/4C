@@ -287,8 +287,8 @@ void STR::MonitorDbc::Execute(Core::IO::DiscretizationWriter& writer)
   for (const Teuchos::RCP<Core::Conditions::Condition>& rcond_ptr : rconds)
   {
     std::fill(area.data(), area.data() + 2, 0.0);
-    std::fill(rforce_xyz.A(), rforce_xyz.A() + DIM, 0.0);
-    std::fill(rmoment_xyz.A(), rmoment_xyz.A() + DIM, 0.0);
+    std::fill(rforce_xyz.data(), rforce_xyz.data() + DIM, 0.0);
+    std::fill(rmoment_xyz.data(), rmoment_xyz.data() + DIM, 0.0);
 
     const int rid = rcond_ptr->Id();
     get_area(area.data(), rcond_ptr.get());
@@ -379,7 +379,7 @@ void STR::MonitorDbc::write_condition_header(
 {
   if (cond)
   {
-    cond->Print(os);
+    cond->print(os);
     os << "\n\n";
   }
 }
@@ -521,8 +521,8 @@ double STR::MonitorDbc::get_reaction_force(
     for (int i = 0; i < react_maps[d]->NumMyElements(); ++i) lrforce_comp += vals[i];
   }
 
-  discret_ptr_->Comm().SumAll(lrforce_xyz.A(), rforce_xyz.A(), DIM);
-  return rforce_xyz.Norm2();
+  discret_ptr_->Comm().SumAll(lrforce_xyz.data(), rforce_xyz.data(), DIM);
+  return rforce_xyz.norm2();
 }
 
 /*----------------------------------------------------------------------------*
@@ -565,7 +565,7 @@ double STR::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmomen
 
     // Get the reaction force at this node. This force will only contain non-zero values at the DOFs
     // where the DBC is active.
-    node_reaction_force.PutScalar(0.0);
+    node_reaction_force.put_scalar(0.0);
     for (unsigned i = 0; i < DIM; ++i)
     {
       if ((*onoff)[i] == 1)
@@ -579,12 +579,12 @@ double STR::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmomen
     }
 
     // Add the moment contribution w.r.t the origin of this reaction force.
-    node_reaction_moment.CrossProduct(node_position, node_reaction_force);
+    node_reaction_moment.cross_product(node_position, node_reaction_force);
     lrmoment_xyz += node_reaction_moment;
   }
 
-  discret_ptr_->Comm().SumAll(lrmoment_xyz.A(), rmoment_xyz.A(), DIM);
-  return rmoment_xyz.Norm2();
+  discret_ptr_->Comm().SumAll(lrmoment_xyz.data(), rmoment_xyz.data(), DIM);
+  return rmoment_xyz.norm2();
 }
 
 FOUR_C_NAMESPACE_CLOSE

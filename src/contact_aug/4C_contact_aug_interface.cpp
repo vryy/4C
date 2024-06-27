@@ -265,13 +265,13 @@ void CONTACT::Aug::Interface::initialize()
 
     // reset nodal scaling factor
     cnode->AugData().GetKappa() = 1.0e12;
-    cnode->AugData().GetAugA() = 0.0;
+    cnode->AugData().GetAugdata() = 0.0;
 
     // reset kappaLin
     cnode->AugData().GetDeriv1st_Kappa().clear();
     cnode->AugData().GetDeriv2nd_Kappa().clear();
-    cnode->AugData().GetDeriv1st_A().clear();
-    cnode->AugData().GetDeriv2nd_A().clear();
+    cnode->AugData().GetDeriv1st_data().clear();
+    cnode->AugData().GetDeriv2nd_data().clear();
 
     // reset variables of the complete variational approach
     cnode->AugData().GetDeriv1st_WGapSl().clear();
@@ -801,7 +801,7 @@ void CONTACT::Aug::Interface::AssembleAugAVector(
     Node* cnode = static_cast<Node*>(node);
 
     // *** augmented Area ***
-    const double augA = cnode->AugData().GetAugA();
+    const double augA = cnode->AugData().GetAugdata();
 
     if (augA > 0.0)
     {
@@ -868,7 +868,7 @@ void CONTACT::Aug::Interface::assemble_aug_inactive_rhs(
 
     double cn_inv = 1 / cnVec[cnVec.Map().LID(gid)];
     double* lm = cnode->MoData().lm();
-    double augA = cnode->AugData().GetAugA();
+    double augA = cnode->AugData().GetAugdata();
 
     std::vector<int> rGid(Dim());
     std::vector<int> rOwner(Dim(), cnode->Owner());
@@ -1091,7 +1091,7 @@ void CONTACT::Aug::Interface::assemble_aug_inactive_diag_matrix(
           " Node ownership inconsistency!");
 
     const double cn_inv_scale = 2.0 * inactive_scale / cnVec[cnVec.Map().LID(gid)];
-    double augA = cnode->AugData().GetAugA();
+    double augA = cnode->AugData().GetAugdata();
 
     const int numdof = cnode->NumDof();
 
@@ -1149,7 +1149,7 @@ void CONTACT::Aug::Interface::assemble_aug_inactive_lin_matrix(
 
     double cn_inv = 1 / cnVec[cnVec.Map().LID(gid)];
     double* lm = cnode->MoData().lm();
-    Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_A();
+    Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_data();
 
     for (int j = 0; j < Dim(); ++j)
     {
@@ -1232,7 +1232,7 @@ void CONTACT::Aug::Interface::assemble_contact_potential_terms(
     const int cn_lid = cnVec.Map().LID(gid);
     if (cn_lid < 0) FOUR_C_THROW("Couldn't find the cn-LID for GID %d.", gid);
     const double cn_inv = 1.0 / cnVec[cn_lid];
-    const double augA = cnode->AugData().GetAugA();
+    const double augA = cnode->AugData().GetAugdata();
 
     // get the lagrange multiplier
     const double* lm = cnode->MoData().lm();
@@ -1977,9 +1977,9 @@ double CONTACT::Aug::Interface::my_characteristic_element_length(
         const Core::LinAlg::Matrix<3, 1> X0(cnode0.X().data(), true);
         Core::LinAlg::Matrix<3, 1> diffX(cnode1.X().data(), false);
 
-        diffX.Update(-1.0, X0, 1.0);
+        diffX.update(-1.0, X0, 1.0);
 
-        my_max_h_ele = std::max(my_max_h_ele, diffX.Norm2());
+        my_max_h_ele = std::max(my_max_h_ele, diffX.norm2());
 
         break;
       }

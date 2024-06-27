@@ -524,9 +524,9 @@ bool Core::Conditions::HaveSameNodes(
       {
         std::cout << "Node with global ID: " << condition1nodegid
                   << "  which is part of condition: ";
-        condition1->Print(std::cout);
+        condition1->print(std::cout);
         std::cout << " is not part of condition: ";
-        condition2->Print(std::cout);
+        condition2->print(std::cout);
         FOUR_C_THROW(
             "Did you assign those conditions to the same nodeset? Please check your input file and "
             "fix this inconsistency!");

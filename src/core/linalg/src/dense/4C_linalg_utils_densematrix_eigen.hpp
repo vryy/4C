@@ -88,23 +88,23 @@ namespace Core::LinAlg
   void SYEV(Core::LinAlg::Matrix<dim, dim>& A, Core::LinAlg::Matrix<dim, dim>& S,
       Core::LinAlg::Matrix<dim, dim>& V)
   {
-    const char jobz = 'V';               // Compute eigenvalues and eigenvectors.
-    const char uplo = 'U';               // Upper triangle of A is stored;
-    const int N = dim;                   // The order of the matrix A.  N >= 0.
-    Matrix<dim, dim> tmp(A.A(), false);  // copy, because content of matrix is destroyed
-    const int lda = dim;                 // The leading dimension of the array A.  LDA >=max(1,N).
+    const char jobz = 'V';                  // Compute eigenvalues and eigenvectors.
+    const char uplo = 'U';                  // Upper triangle of A is stored;
+    const int N = dim;                      // The order of the matrix A.  N >= 0.
+    Matrix<dim, dim> tmp(A.data(), false);  // copy, because content of matrix is destroyed
+    const int lda = dim;  // The leading dimension of the array A.  LDA >=max(1,N).
     std::vector<double> w(dim);
     const int lwork = 2 * dim * dim + 6 * dim + 1;
     std::vector<double> work(lwork);
     int info;
 
     Teuchos::LAPACK<int, double> lapack;
-    lapack.SYEV(jobz, uplo, N, tmp.A(), lda, w.data(), work.data(), lwork, &info);
+    lapack.SYEV(jobz, uplo, N, tmp.data(), lda, w.data(), work.data(), lwork, &info);
 
     if (info) FOUR_C_THROW("Lapack's SYEV returned %d", info);
 
     // return eigenvectors
-    V.Update(tmp);
+    V.update(tmp);
 
     // return eigenvalues
     S.clear();

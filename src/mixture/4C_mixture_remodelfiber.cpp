@@ -280,8 +280,8 @@ Core::LinAlg::Matrix<2, 2, T> MIXTURE::Implementation::RemodelFiberImplementatio
           "The local newton didn't converge within 500 iterations. Residuum is %.3e > %.3e",
           Core::FADUtils::CastToDouble(Core::FADUtils::VectorNorm(b)), 1e-10);
     }
-    K.Invert();
-    x_np.MultiplyNN(-1, K, b, 1.0);
+    K.invert();
+    x_np.multiply_nn(-1, K, b, 1.0);
     states_.back().growth_scalar = x_np(0);
     states_.back().lambda_r = x_np(1);
     std::tie(K, b) = EvaluateLocalNewtonLinearSystem();

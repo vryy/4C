@@ -165,9 +165,9 @@ namespace CONTACT
     void GetNurbsWeights(const Mortar::Element& ele, T& weights)
     {
       const Core::Nodes::Node* const* nodes = ele.Nodes();
-      FOUR_C_ASSERT(static_cast<int>(weights.M()) == ele.num_node(), "Size mismatch!");
+      FOUR_C_ASSERT(static_cast<int>(weights.m()) == ele.num_node(), "Size mismatch!");
 
-      for (unsigned nlid = 0; nlid < static_cast<unsigned>(weights.M()); ++nlid)
+      for (unsigned nlid = 0; nlid < static_cast<unsigned>(weights.m()); ++nlid)
         weights(nlid, 0) = static_cast<const Mortar::Node*>(nodes[nlid])->NurbsW();
     }
 

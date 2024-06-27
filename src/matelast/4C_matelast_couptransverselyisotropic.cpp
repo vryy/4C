@@ -33,7 +33,7 @@ Mat::Elastic::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(
   /* empty */
 }
 
-void Mat::Elastic::PAR::CoupTransverselyIsotropic::Print() const
+void Mat::Elastic::PAR::CoupTransverselyIsotropic::print() const
 {
   Core::IO::cout << "--- Material parameters of CoupTransverselyIsotropic\n";
   Core::IO::cout << "ALPHA           = " << alpha_ << Core::IO::endl;
@@ -142,10 +142,10 @@ void Mat::Elastic::CoupTransverselyIsotropic::SetFiberVecs(const double newangle
   // pull back in reference configuration
   Core::LinAlg::Matrix<3, 1> A_0(true);
   Core::LinAlg::Matrix<3, 3> idefgrd(true);
-  idefgrd.Invert(defgrd);
+  idefgrd.invert(defgrd);
 
-  A_0.Multiply(idefgrd, ca);
-  a_.Update(1. / A_0.Norm2(), A_0);
+  A_0.multiply(idefgrd, ca);
+  a_.update(1. / A_0.norm2(), A_0);
 
   params_->structural_tensor_strategy()->setup_structural_tensor(a_, aa_);
 }
@@ -156,13 +156,13 @@ void Mat::Elastic::CoupTransverselyIsotropic::AddStrainEnergy(double& psi,
 {
   // build Cartesian identity 2-tensor I_{AB}
   Core::LinAlg::Matrix<6, 1> identity(true);
-  std::fill(identity.A(), identity.A() + 3, 1.0);
+  std::fill(identity.data(), identity.data() + 3, 1.0);
 
   // convert Green-Lagrange strain to right Cauchy-Green Tensor
   // C_{AB} = 2 * E_{AB} + I_{AB} [ REMARK: strain-like 6-Voigt vector ]
   Core::LinAlg::Matrix<6, 1> rcg(true);
-  rcg.Update(2.0, glstrain, 1.0);
-  rcg.Update(1.0, identity, 1.0);
+  rcg.update(2.0, glstrain, 1.0);
+  rcg.update(1.0, identity, 1.0);
 
   reset_invariants(rcg);
 
@@ -204,14 +204,14 @@ void Mat::Elastic::CoupTransverselyIsotropic::update_elasticity_tensor(
   // (0) contribution
   {
     const double delta = 8.0 * gamma;
-    cmat.MultiplyNT(delta, aa_, aa_, 1.0);
+    cmat.multiply_nt(delta, aa_, aa_, 1.0);
   }
 
   // (1) contribution
   {
     const double delta = 2.0 * beta;
-    cmat.MultiplyNT(delta, rcg_inv_s, aa_, 1.0);
-    cmat.MultiplyNT(delta, aa_, rcg_inv_s, 1.0);
+    cmat.multiply_nt(delta, rcg_inv_s, aa_, 1.0);
+    cmat.multiply_nt(delta, aa_, rcg_inv_s, 1.0);
   }
 
   using vmap = Core::LinAlg::Voigt::IndexMappings;
@@ -303,13 +303,13 @@ void Mat::Elastic::CoupTransverselyIsotropic::update_second_piola_kirchhoff_stre
   // (0) contribution
   {
     const double fac = beta * (i4_ - 1.0);
-    stress.Update(fac, rcg_inv_s, 1.0);
+    stress.update(fac, rcg_inv_s, 1.0);
   }
 
   // (1) contribution
   {
     const double fac = 2.0 * (alpha + beta * std::log(j_) + 2.0 * gamma * (i4_ - 1.0));
-    stress.Update(fac, aa_, 1.0);
+    stress.update(fac, aa_, 1.0);
   }
 
   // (2) contribution
@@ -321,7 +321,7 @@ void Mat::Elastic::CoupTransverselyIsotropic::update_second_piola_kirchhoff_stre
     Core::LinAlg::Voigt::Stresses::symmetric_outer_product(ca, a_, caa_aac);
 
     const double fac = -alpha;
-    stress.Update(fac, caa_aac, 1.0);
+    stress.update(fac, caa_aac, 1.0);
   }
 }
 

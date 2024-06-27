@@ -400,9 +400,9 @@ void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial2To1(
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 
-      if (diffcoords.Norm2() - mindistance < 1e-16)
+      if (diffcoords.norm2() - mindistance < 1e-16)
       {
-        mindistance = diffcoords.Norm2();
+        mindistance = diffcoords.norm2();
         ele2 = actele2;
       }
     }
@@ -450,9 +450,9 @@ void PoroElast::UTILS::PoroMaterialStrategy::AssignMaterial1To2(
 
       for (int j = 0; j < 3; ++j) diffcoords(j, 0) = centercoords1[j] - centercoords2[j];
 
-      if (diffcoords.Norm2() - mindistance < 1e-16)
+      if (diffcoords.norm2() - mindistance < 1e-16)
       {
-        mindistance = diffcoords.Norm2();
+        mindistance = diffcoords.norm2();
         ele1 = actele1;
       }
     }

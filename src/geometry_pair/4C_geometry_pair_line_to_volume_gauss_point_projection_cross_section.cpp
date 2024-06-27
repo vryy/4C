@@ -122,7 +122,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
         eta_cross_section(2) = sin(alpha) * radius;
 
         // Get the point on the beams surface.
-        r_cross_section.Multiply(triad, eta_cross_section);
+        r_cross_section.multiply(triad, eta_cross_section);
         r_surface = r_line;
         r_surface += r_cross_section;
 

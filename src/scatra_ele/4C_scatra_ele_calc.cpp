@@ -505,7 +505,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::
       // provide necessary velocities and gradients at element center
       // get velocity at element center
       Core::LinAlg::Matrix<nsd_, 1> fsvelint(true);
-      fsvelint.Multiply(efsvel_, funct_);
+      fsvelint.multiply(efsvel_, funct_);
 
       // calculate model coefficients
       for (int k = 0; k < numscal_; ++k)  // loop of each transported scalar
@@ -540,7 +540,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::
     // get fine-scale velocity and its derivatives at integration point
     Core::LinAlg::Matrix<nsd_, 1> fsvelint(true);
     if (turbparams_->TurbModel() == Inpar::FLUID::multifractal_subgrid_scales)
-      fsvelint.Multiply(efsvel_, funct_);
+      fsvelint.multiply(efsvel_, funct_);
 
     // loop all scalars
     for (int k = 0; k < numscal_; ++k)  // deal with a system of transported scalars
@@ -551,7 +551,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::
 
       // compute gradient of fine-scale part of scalar value
       Core::LinAlg::Matrix<nsd_, 1> fsgradphi(true);
-      if (turbparams_->FSSGD()) fsgradphi.Multiply(derxy_, fsphinp_[k]);
+      if (turbparams_->FSSGD()) fsgradphi.multiply(derxy_, fsphinp_[k]);
 
       // compute rhs containing bodyforce (divided by specific heat capacity) and,
       // for temperature equation, the time derivative of thermodynamic pressure,
@@ -622,7 +622,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::
               ele, sgvelint, densam[k], densnp[k], visc, scatravarmanager_->ConVel(k), tau[k]);
 
           // calculation of subgrid-scale convective part
-          sgconv.MultiplyTN(derxy_, sgvelint);
+          sgconv.multiply_tn(derxy_, sgvelint);
         }
 
         // (re)compute stabilization parameter at integration point, since diffusion may have
@@ -638,7 +638,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         get_laplacian_strong_form(diff);
-        diff.Scale(diffmanager_->GetIsotropicDiff(k));
+        diff.scale(diffmanager_->GetIsotropicDiff(k));
       }
 
       // prepare multifractal subgrid-scale modeling
@@ -667,15 +667,15 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::
         {
           // get divergence of subgrid-scale velocity
           Core::LinAlg::Matrix<nsd_, nsd_> mfsvderxy;
-          mfsvderxy.MultiplyNT(efsvel_, derxy_);
+          mfsvderxy.multiply_nt(efsvel_, derxy_);
           for (unsigned idim = 0; idim < nsd_; idim++)
             mfsvdiv += mfsvderxy(idim, idim) * B_mfs(idim, 0);
         }
 
         // calculate fine-scale scalar and its derivative for multifractal subgrid-scale modeling
-        mfssgphi = D_mfs * funct_.Dot(fsphinp_[k]);
-        mfsggradphi.Multiply(derxy_, fsphinp_[k]);
-        mfsggradphi.Scale(D_mfs);
+        mfssgphi = D_mfs * funct_.dot(fsphinp_[k]);
+        mfsggradphi.multiply(derxy_, fsphinp_[k]);
+        mfsggradphi.scale(D_mfs);
       }
 
       //----------------------------------------------------------------
@@ -966,7 +966,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_d
     FOUR_C_THROW("GLOBAL ELEMENT NO. %d \nZERO OR NEGATIVE JACOBIAN DETERMINANT: %lf", eid_, det);
 
   // compute global spatial derivatives
-  derxy_.Multiply(xij_, deriv_);
+  derxy_.multiply(xij_, deriv_);
 
   // set integration factor: fac = Gauss weight * det(J)
   const double fac = intpoints.IP().qwgt[iquad] * det;
@@ -1036,8 +1036,8 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
       +-            -+        +-            -+
     */
 
-    xjm_.MultiplyNT(deriv_, xyze_);
-    det = xij_.Invert(xjm_);
+    xjm_.multiply_nt(deriv_, xyze_);
+    det = xij_.invert(xjm_);
   }
   else  // element dimension is smaller than problem dimension -> manifold
   {
@@ -1084,7 +1084,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
     // transform the derivatives and Jacobians to the higher dimensional coordinates(problem
     // dimension)
     static Core::LinAlg::Matrix<nsd_ele_, nsd_> xjm_red;
-    xjm_red.MultiplyNT(deriv_red, xyze_);
+    xjm_red.multiply_nt(deriv_red, xyze_);
 
     for (unsigned i = 0; i < nsd_; ++i)
     {
@@ -1117,7 +1117,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
       for (unsigned i = 0; i < nen_; i++) deriv_(2, i) = 0.0;
     }
 
-    xij_.Invert(xjm_);
+    xij_.invert(xjm_);
   }
 
   // modify Jacobian determinant in case of spherical coordinates
@@ -1126,7 +1126,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
     static Core::LinAlg::Matrix<nsd_, 1> xyzint;
 
     // evaluate radial coordinate
-    xyzint.Multiply(xyze_, funct_);
+    xyzint.multiply(xyze_, funct_);
 
     // multiply standard Jacobian determinant by square of radial coordinate and 4 pi
     constexpr double four_pi = 4.0 * M_PI;
@@ -1314,7 +1314,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_divergence(
     double& vdiv, const Core::LinAlg::Matrix<nsd_, nen_>& evel)
 {
   Core::LinAlg::Matrix<nsd_, nsd_> vderxy;
-  vderxy.MultiplyNT(evel, derxy_);
+  vderxy.multiply_nt(evel, derxy_);
 
   vdiv = 0.0;
   // compute vel x,x  + vel y,y +  vel z,z at integration point
@@ -1334,7 +1334,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_rhs_int(
   // for temperature equation, the time derivative of thermodynamic pressure,
   // if not constant, and for temperature equation of a reactive
   // equation system, the reaction-rate term
-  rhsint = bodyforce_[k].Dot(funct_);
+  rhsint = bodyforce_[k].dot(funct_);
 }
 
 /*-----------------------------------------------------------------------------*
@@ -1771,14 +1771,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::recompute_scatra_res_fo
       // value at time n
       // gradient of scalar value at n
       Core::LinAlg::Matrix<nsd_, 1> gradphi;
-      gradphi.Multiply(derxy_, ephin_[k]);
+      gradphi.multiply(derxy_, ephin_[k]);
 
       // convective term using scalar value at n
-      double conv_phi = convelint.Dot(gradphi);
+      double conv_phi = convelint.dot(gradphi);
 
       // diffusive term using current scalar value for higher-order elements
       double diff_phin = 0.0;
-      if (use2ndderiv_) diff_phin = diff.Dot(ephin_[k]);
+      if (use2ndderiv_) diff_phin = diff.dot(ephin_[k]);
 
       // reactive term using scalar value at n
       // if no reaction is chosen, GetReaCoeff(k) returns 0.0
@@ -1817,7 +1817,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::recompute_conv_phi_for_
   {
     // addition to convective term due to subgrid-scale velocity
     // (not included in residual)
-    double sgconv_phi = sgvelint.Dot(gradphi);
+    double sgconv_phi = sgvelint.dot(gradphi);
     conv_phi += sgconv_phi;
 
     // addition to convective term for conservative form
@@ -1840,7 +1840,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::recompute_conv_phi_for_
   {
     // addition to convective term due to subgrid-scale velocity
     // (not included in residual)
-    double sgconv_phi = sgvelint.Dot(gradphi);
+    double sgconv_phi = sgvelint.dot(gradphi);
     conv_phi += sgconv_phi;
 
     // addition to convective term for conservative form
@@ -2016,8 +2016,8 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsmfs(
   // fixed-point iteration only (i.e. beta=0.0 assumed), cf
   // turbulence part in evaluate()
   {
-    double cross = convelint.Dot(mfsggradphi) + mfsgvelint.Dot(gradphi);
-    double reynolds = mfsgvelint.Dot(mfsggradphi);
+    double cross = convelint.dot(mfsggradphi) + mfsgvelint.dot(gradphi);
+    double reynolds = mfsgvelint.dot(mfsggradphi);
 
     // conservative formulation
     double conserv = 0.0;

@@ -72,7 +72,7 @@ namespace RTD
   unsigned Table::GetRows() const { return tablerows_.size(); }
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void Table::Print(std::ostream &stream) const
+  void Table::print(std::ostream &stream) const
   {
     // if the widths are not set, they are currently set to 100/tablewidth_
     unsigned defaultcolsize = 100 / tablewidth_;
@@ -199,7 +199,7 @@ namespace RTD
    *----------------------------------------------------------------------*/
   std::ostream &operator<<(std::ostream &stream, const Table &table)
   {
-    table.Print(stream);
+    table.print(stream);
     return stream;
   }
 
@@ -357,7 +357,7 @@ namespace RTD
       tablerow = {"no parameters", "", ""};
       parametertable.AddRow(tablerow);
     }
-    parametertable.Print(stream);
+    parametertable.print(stream);
 
     return;
   }
@@ -587,7 +587,7 @@ namespace RTD
       parametertable.SetWidths({0, 0, 50});
       parametertable.AddDirective("header-rows", "1");
 
-      parametertable.Print(stream);
+      parametertable.print(stream);
     }
 
     /*------ PART 5 -------------------------
@@ -688,7 +688,7 @@ namespace RTD
       tablerow = {"no parameters", "", ""};
       parametertable.AddRow(tablerow);
     }
-    parametertable.Print(stream);
+    parametertable.print(stream);
 
     return;
   }

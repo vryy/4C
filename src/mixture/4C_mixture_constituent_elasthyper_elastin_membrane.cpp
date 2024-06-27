@@ -37,7 +37,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::on_global_data_initialized()
     {
       std::array<Core::LinAlg::Matrix<3, 1>, 1> fibers;
 
-      fibers[0].Update(get_anisotropy()->get_gp_cylinder_coordinate_system(gp).GetRad());
+      fibers[0].update(get_anisotropy()->get_gp_cylinder_coordinate_system(gp).GetRad());
       Mat::FiberAnisotropyExtension<1>::set_fibers(gp, fibers);
     }
 
@@ -49,7 +49,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::on_global_data_initialized()
   {
     std::array<Core::LinAlg::Matrix<3, 1>, 1> fibers;
 
-    fibers[0].Update(get_anisotropy()->get_element_cylinder_coordinate_system().GetRad());
+    fibers[0].update(get_anisotropy()->get_element_cylinder_coordinate_system().GetRad());
     FiberAnisotropyExtension<1>::set_fibers(BaseAnisotropyExtension::GPDEFAULT, fibers);
 
     orthogonal_structural_tensor_.resize(1);
@@ -67,7 +67,7 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::on_global_data_initialized()
   {
     orthogonal_structural_tensor_[gp] = Core::LinAlg::IdentityMatrix<3>();
 
-    orthogonal_structural_tensor_[gp].Update(-1.0, get_structural_tensor(gp, 0), 1.0);
+    orthogonal_structural_tensor_[gp].update(-1.0, get_structural_tensor(gp, 0), 1.0);
   }
 }
 
@@ -227,7 +227,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::update(
   current_reference_growth_[gp] =
       Global::Problem::Instance()
           ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(params_->damage_function_id_ - 1)
-          .evaluate(reference_coordinates.A(), totaltime, 0);
+          .evaluate(reference_coordinates.data(), totaltime, 0);
 
   MixtureConstituentElastHyperBase::update(defgrd, params, gp, eleGID);
 
@@ -276,7 +276,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_elastic_part
 {
   // Compute total inelastic deformation gradient
   static Core::LinAlg::Matrix<3, 3> iFin(false);
-  iFin.MultiplyNN(iFextin, prestretch_tensor(gp));
+  iFin.multiply_nn(iFextin, prestretch_tensor(gp));
 
   // Evaluate 3D elastic part
   Mat::ElastHyperEvaluateElasticPart(
@@ -287,8 +287,8 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_elastic_part
   static Core::LinAlg::Matrix<6, 6> cmatmembrane(false);
   evaluate_stress_c_mat_membrane(F, iFin, params, Smembrane_stress, cmatmembrane, gp, eleGID);
 
-  S_stress.Update(1.0, Smembrane_stress, 1.0);
-  cmat.Update(1.0, cmatmembrane, 1.0);
+  S_stress.update(1.0, Smembrane_stress, 1.0);
+  cmat.update(1.0, cmatmembrane, 1.0);
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_membrane_stress(
@@ -298,7 +298,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_membrane_str
   const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::IdentityMatrix<3>();
   Core::LinAlg::Matrix<3, 3> iFin(false);
 
-  iFin.MultiplyNN(Id, prestretch_tensor(gp));
+  iFin.multiply_nn(Id, prestretch_tensor(gp));
 
   evaluate_stress_c_mat_membrane(Id, iFin, params, S, cmat, gp, eleGID);
 }
@@ -318,7 +318,7 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
 
   static Core::LinAlg::Matrix<3, 3> AorthgrCeAorthgrArad(false);
   evaluate_aorthgr_ce_aorthgr_arad(AorthgrCeAorthgrArad, Aradgr, Aorthgr, Ce);
-  double detX = AorthgrCeAorthgrArad.Determinant();
+  double detX = AorthgrCeAorthgrArad.determinant();
 
   static Core::LinAlg::Matrix<3, 3> iFinAorthgriFinT(false);
   evaluatei_fin_aorthgri_fin_t(iFinAorthgriFinT, iFin, Aorthgr);
@@ -342,8 +342,8 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
 
   // Compute membrane stress
   static Core::LinAlg::Matrix<3, 3> Smembrane;
-  Smembrane.Update(mue * mue_frac_[gp], iFinAorthgriFinT, 0.0);
-  Smembrane.Update(-mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym, 1.0);
+  Smembrane.update(mue * mue_frac_[gp], iFinAorthgriFinT, 0.0);
+  Smembrane.update(-mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym, 1.0);
 
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(Smembrane, S_stress);
 
@@ -353,9 +353,9 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
 
   Mat::add_holzapfel_product(dAradgriXAradgr_symdC, iFinTAorthgrTiXTAorthgriFin_sym_stress, -2.0);
 
-  cmat.MultiplyNT(2.0 * mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym_stress,
+  cmat.multiply_nt(2.0 * mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym_stress,
       iFinTAorthgrTiXTAorthgriFin_sym_stress, 0.0);
-  cmat.Update(-mue * mue_frac_[gp] / detX, dAradgriXAradgr_symdC, 1.0);
+  cmat.update(-mue * mue_frac_[gp] / detX, dAradgriXAradgr_symdC, 1.0);
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::
@@ -365,20 +365,20 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::
 {
   // Compute inelastic right Cauchy-Green deformation gradient
   static Core::LinAlg::Matrix<3, 3> iCin(false);
-  iCin.MultiplyNT(iFin, iFin);
+  iCin.multiply_nt(iFin, iFin);
 
   static Core::LinAlg::Matrix<3, 3> Fin(false);
-  Fin.Invert(iFin);
+  Fin.invert(iFin);
 
   // Compute radial structural tensor in grown configuration
   static Core::LinAlg::Matrix<3, 3> FinArad(false);
-  FinArad.MultiplyNN(Fin, anisotropy_extension_.get_structural_tensor(gp, 0));
-  Aradgr.MultiplyNT(
-      iCin.Dot(anisotropy_extension_.get_structural_tensor(gp, 0)), FinArad, Fin, 0.0);
+  FinArad.multiply_nn(Fin, anisotropy_extension_.get_structural_tensor(gp, 0));
+  Aradgr.multiply_nt(
+      iCin.dot(anisotropy_extension_.get_structural_tensor(gp, 0)), FinArad, Fin, 0.0);
 
   // Compute orthogonal (to radial) structural tensor in grown configuration
   Aorthgr = Core::LinAlg::IdentityMatrix<3>();
-  Aorthgr.Update(-1.0, Aradgr, 1.0);
+  Aorthgr.update(-1.0, Aradgr, 1.0);
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_aorthgr_ce_aorthgr_arad(
@@ -386,9 +386,9 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluate_aorthgr_ce_a
     const Core::LinAlg::Matrix<3, 3>& Aorthgr, const Core::LinAlg::Matrix<3, 3>& Ce)
 {
   static Core::LinAlg::Matrix<3, 3> AorthgrCe(false);
-  AorthgrCe.MultiplyNN(Aorthgr, Ce);
-  AorthgrCeAorthgrArad.MultiplyNN(AorthgrCe, Aorthgr);
-  AorthgrCeAorthgrArad.Update(1.0, Aradgr, 1.0);
+  AorthgrCe.multiply_nn(Aorthgr, Ce);
+  AorthgrCeAorthgrArad.multiply_nn(AorthgrCe, Aorthgr);
+  AorthgrCeAorthgrArad.update(1.0, Aradgr, 1.0);
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluatei_fin_aorthgri_fin_t(
@@ -396,8 +396,8 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::evaluatei_fin_aorthgr
     const Core::LinAlg::Matrix<3, 3>& Aorthgr)
 {
   static Core::LinAlg::Matrix<3, 3> iFinAorthgr(false);
-  iFinAorthgr.MultiplyNN(iFin, Aorthgr);
-  iFinAorthgriFinT.MultiplyNT(iFinAorthgr, iFin);
+  iFinAorthgr.multiply_nn(iFin, Aorthgr);
+  iFinAorthgriFinT.multiply_nt(iFinAorthgr, iFin);
 }
 
 void MIXTURE::MixtureConstituentElastHyperElastinMembrane::
@@ -407,18 +407,18 @@ void MIXTURE::MixtureConstituentElastHyperElastinMembrane::
         const Core::LinAlg::Matrix<3, 3>& iFin, const Core::LinAlg::Matrix<3, 3>& Aorthgr)
 {
   static Core::LinAlg::Matrix<3, 3> iAorthgrCeAorthgrArad(false);
-  iAorthgrCeAorthgrArad.Invert(AorthgrCeAorthgrArad);
+  iAorthgrCeAorthgrArad.invert(AorthgrCeAorthgrArad);
 
   static Core::LinAlg::Matrix<3, 3> AorthgriFin(false);
-  AorthgriFin.MultiplyNN(Aorthgr, iFin);
+  AorthgriFin.multiply_nn(Aorthgr, iFin);
 
   static Core::LinAlg::Matrix<3, 3> iFinTAorthgrTiXT(false);
-  iFinTAorthgrTiXT.MultiplyTT(AorthgriFin, iAorthgrCeAorthgrArad);
+  iFinTAorthgrTiXT.multiply_tt(AorthgriFin, iAorthgrCeAorthgrArad);
 
   static Core::LinAlg::Matrix<3, 3> iFinTAorthgrTiXTAorthgriFin(false);
-  iFinTAorthgrTiXTAorthgriFin.MultiplyNN(iFinTAorthgrTiXT, AorthgriFin);
+  iFinTAorthgrTiXTAorthgriFin.multiply_nn(iFinTAorthgrTiXT, AorthgriFin);
 
-  iFinTAorthgrTiXTAorthgriFin_sym.Update(0.5, iFinTAorthgrTiXTAorthgriFin, 0.0);
-  iFinTAorthgrTiXTAorthgriFin_sym.UpdateT(0.5, iFinTAorthgrTiXTAorthgriFin, 1.0);
+  iFinTAorthgrTiXTAorthgriFin_sym.update(0.5, iFinTAorthgrTiXTAorthgriFin, 0.0);
+  iFinTAorthgrTiXTAorthgriFin_sym.update_t(0.5, iFinTAorthgrTiXTAorthgriFin, 1.0);
 }
 FOUR_C_NAMESPACE_CLOSE

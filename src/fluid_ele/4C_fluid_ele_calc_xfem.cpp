@@ -231,19 +231,19 @@ namespace Discret
 
         // get velocity at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        my::velint_.Multiply(evelaf, my::funct_);
+        my::velint_.multiply(evelaf, my::funct_);
 
         // get velocity derivatives at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        my::vderxy_.MultiplyNT(evelaf, my::derxy_);
+        my::vderxy_.multiply_nt(evelaf, my::derxy_);
 
         // get pressure at integration point
         // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        double preint = my::funct_.Dot(epreaf);
+        double preint = my::funct_.dot(epreaf);
 
         // get coordinates at integration point
         Core::LinAlg::Matrix<nsd_, 1> xyzint(true);
-        xyzint.Multiply(my::xyze_, my::funct_);
+        xyzint.multiply(my::xyze_, my::funct_);
 
         // get viscosity
         if (mat->MaterialType() == Core::Materials::m_fluid)
@@ -266,8 +266,8 @@ namespace Discret
 
         // compute difference between analytical solution and numerical solution
         p_err = preint - p_analyt;
-        u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
-        grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
+        u_err.update(1.0, my::velint_, -1.0, u_analyt, 0.0);
+        grad_u_err.update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
 
         // error on pre-defined functional
         // here G=sin(x)( u,x - u,x exact )
@@ -1132,15 +1132,15 @@ namespace Discret
 
             // get velocity at integration point
             // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::velint_.Multiply(evelaf, my::funct_);
+            my::velint_.multiply(evelaf, my::funct_);
 
             // get velocity derivatives at integration point
             // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::vderxy_.MultiplyNT(evelaf, my::derxy_);
+            my::vderxy_.multiply_nt(evelaf, my::derxy_);
 
             // get pressure at integration point
             // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            double press = my::funct_.Dot(epreaf);
+            double press = my::funct_.dot(epreaf);
 
             //----------------------------------------------
             // get convective velocity at integration point
@@ -1172,12 +1172,12 @@ namespace Discret
 
             if (cond_type == Inpar::XFEM::CouplingCond_SURF_FLUIDFLUID)
             {
-              u_err.Update(1.0, my::velint_, -1.0, velint_s, 0.0);
+              u_err.update(1.0, my::velint_, -1.0, velint_s, 0.0);
 
               Core::LinAlg::Matrix<nsd_, nsd_> grad_u_side(true);
               ci->get_interface_vel_gradnp(grad_u_side);
 
-              grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_side, 0.0);
+              grad_u_err.update(1.0, my::vderxy_, -1.0, grad_u_side, 0.0);
 
               double press_coupl = 0.0;
               ci->GetInterfacePresnp(press_coupl);
@@ -1186,13 +1186,13 @@ namespace Discret
             }
             else
             {
-              u_err.Update(1.0, my::velint_, -1.0, u_analyt, 0.0);
-              grad_u_err.Update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
+              u_err.update(1.0, my::velint_, -1.0, u_analyt, 0.0);
+              grad_u_err.update(1.0, my::vderxy_, -1.0, grad_u_analyt, 0.0);
               p_err = press - p_analyt;
             }
 
-            flux_u_err.Multiply(grad_u_err, normal);
-            flux_p_err.Update(p_err, normal, 0.0);
+            flux_u_err.multiply(grad_u_err, normal);
+            flux_p_err.update(p_err, normal, 0.0);
 
             /*
              * Scaling of interface error norms:
@@ -1254,7 +1254,7 @@ namespace Discret
                 fldparaxfem_->ConvStabScaling(), fldparaxfem_->XffConvStabScaling(),
                 my::fldpara_->IsConservative(), true);
 
-            const double veln_normal = my::convvelint_.Dot(normal);  // TODO: shift this to routine
+            const double veln_normal = my::convvelint_.dot(normal);  // TODO: shift this to routine
             double NIT_inflow_stab = std::max(0.0, -veln_normal);
 
             ele_interf_norms[0] += visc_stab_fac * u_err_squared;
@@ -1917,7 +1917,7 @@ namespace Discret
 
             // get velocity at integration point
             // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::velint_.Multiply(evelaf, my::funct_);
+            my::velint_.multiply(evelaf, my::funct_);
 
 
             //-----------------------------------------------------------------------------
@@ -1971,7 +1971,7 @@ namespace Discret
             {
               //--------------------------------------------
 
-              bK_ss.MultiplyNT(my::funct_, my::funct_);
+              bK_ss.multiply_nt(my::funct_, my::funct_);
 
               /*                      \
                 - |  (virt tau) * n^f , Du  |
@@ -2079,11 +2079,11 @@ namespace Discret
                     "FOUR_C_THROW!");
                 //            // get velocity at integration point
                 //            // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-                //            my::velintn_.Multiply(eveln,my::funct_);
+                //            my::velintn_.multiply(eveln,my::funct_);
                 //
                 //            // get velocity derivatives at integration point
                 //            // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-                //            my::vderxyn_.MultiplyNT(eveln,my::derxy_);
+                //            my::vderxyn_.multiply_nt(eveln,my::derxy_);
                 //
                 //            //-----------------------------------------------------------------------------
                 //            // evaluate the coupling terms for coupling with current side
@@ -2132,11 +2132,11 @@ namespace Discret
 
             // get velocity derivatives at integration point
             // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::vderxy_.MultiplyNT(evelaf, my::derxy_);
+            my::vderxy_.multiply_nt(evelaf, my::derxy_);
 
             // get pressure at integration point
             // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            double press = my::funct_.Dot(epreaf);
+            double press = my::funct_.dot(epreaf);
 
             //-------------------------------
             // traction vector w.r.t fluid domain, resulting stresses acting on the fluid surface
@@ -2162,11 +2162,11 @@ namespace Discret
       // compute inverse K_ss^-1
       Core::LinAlg::FixedSizeSerialDenseSolver<nen_, nen_> invsolver;
       invsolver.SetMatrix(invbK_ss);
-      invsolver.Invert();
+      invsolver.invert();
 
       // the non-diagonal entries (shear stresses) lead to the factor 2 in the
       // K_ss matrix; inversion leads to 1/2 in the matrix blocks of the shear stress
-      halfInvbK_ss.Update(0.5, invbK_ss, 0.0);
+      halfInvbK_ss.update(0.5, invbK_ss, 0.0);
 
       invK_ss.AddView(Sigmaxx, Sigmaxx, invbK_ss);
       invK_ss.AddView(Sigmaxy, Sigmaxy, halfInvbK_ss);
@@ -2188,17 +2188,17 @@ namespace Discret
           KusinvKss;
 
       // (K_us + G_us) K_ss^-1 (MHVS) or G_us K_ss^-1 (MHCS)
-      KusinvKss.Multiply(K_us, invK_ss);
+      KusinvKss.multiply(K_us, invK_ss);
 
       // (K_us + G_us) K_ss^-1 (K_su + G_su) (MHVS) or G_us  K_ss^-1 (K_su + G_su + K_sp) (MHCS)
       Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numdofpernode_, numdofpernode_>
           KusinvKssKsu;
-      KusinvKssKsu.Multiply(KusinvKss, K_su);
+      KusinvKssKsu.multiply(KusinvKss, K_su);
 
       // (K_us + G_us) K_ss^-1 rhs_s (MHVS) or G_us K_ss^-1 rhs_s (MHCS)
       Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, 1>, numdofpernode_, 1> KusinvKssrhs_s;
 
-      KusinvKssrhs_s.Multiply(KusinvKss, rhs_s);
+      KusinvKssrhs_s.multiply(KusinvKss, rhs_s);
 
       // REMARK: The following term goes into the interface element's rhs-vector rhC_ui!
       /*
@@ -2739,15 +2739,15 @@ namespace Discret
 
       // get velocity at integration point
       // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-      my::velint_.Multiply(evelaf, my::funct_);
+      my::velint_.multiply(evelaf, my::funct_);
 
       // get velocity derivatives at integration point
       // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-      my::vderxy_.MultiplyNT(evelaf, my::derxy_);
+      my::vderxy_.multiply_nt(evelaf, my::derxy_);
 
       // get pressure at integration point
       // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-      double press = my::funct_.Dot(epreaf);
+      double press = my::funct_.dot(epreaf);
 
       // time integration factor & spatial integration factor
       const double timefacfac = my::fldparatimint_->TimeFac() * my::fac_;
@@ -2763,18 +2763,18 @@ namespace Discret
       }
 
       // block - K_ss
-      bK_ss.MultiplyNT(my::funct_, my::funct_);
+      bK_ss.multiply_nt(my::funct_, my::funct_);
 
 
-      conv_x.MultiplyNT(my::funct_, dx);
-      conv_y.MultiplyNT(my::funct_, dy);
-      conv_z.MultiplyNT(my::funct_, dz);
+      conv_x.multiply_nt(my::funct_, dx);
+      conv_y.multiply_nt(my::funct_, dy);
+      conv_z.multiply_nt(my::funct_, dz);
 
       /*                     \
     - |  virt tau , eps(Dtau)  |
       \                     */
 
-      invbK_ss.Update(-viscfac * timefacfac, bK_ss, 1.0);
+      invbK_ss.update(-viscfac * timefacfac, bK_ss, 1.0);
 
       /*                 \
      | virt tau , eps(Du) |
@@ -2783,27 +2783,27 @@ namespace Discret
 
       // K_su
 
-      K_su(Sigmaxx, Velx)->Update(timefacfac, conv_x, 1.0);
-      K_su(Sigmaxy, Velx)->Update(timefacfac, conv_y, 1.0);
-      K_su(Sigmayx, Vely)->Update(timefacfac, conv_x, 1.0);
-      K_su(Sigmaxz, Velx)->Update(timefacfac, conv_z, 1.0);
-      K_su(Sigmazx, Velz)->Update(timefacfac, conv_x, 1.0);
-      K_su(Sigmayy, Vely)->Update(timefacfac, conv_y, 1.0);
-      K_su(Sigmayz, Vely)->Update(timefacfac, conv_z, 1.0);
-      K_su(Sigmazy, Velz)->Update(timefacfac, conv_y, 1.0);
-      K_su(Sigmazz, Velz)->Update(timefacfac, conv_z, 1.0);
+      K_su(Sigmaxx, Velx)->update(timefacfac, conv_x, 1.0);
+      K_su(Sigmaxy, Velx)->update(timefacfac, conv_y, 1.0);
+      K_su(Sigmayx, Vely)->update(timefacfac, conv_x, 1.0);
+      K_su(Sigmaxz, Velx)->update(timefacfac, conv_z, 1.0);
+      K_su(Sigmazx, Velz)->update(timefacfac, conv_x, 1.0);
+      K_su(Sigmayy, Vely)->update(timefacfac, conv_y, 1.0);
+      K_su(Sigmayz, Vely)->update(timefacfac, conv_z, 1.0);
+      K_su(Sigmazy, Velz)->update(timefacfac, conv_y, 1.0);
+      K_su(Sigmazz, Velz)->update(timefacfac, conv_z, 1.0);
 
       // r_su
 
-      rhs_s(Sigmaxx, 0)->Update(-timefacfac * my::vderxy_(0, 0), my::funct_, 1.0);
+      rhs_s(Sigmaxx, 0)->update(-timefacfac * my::vderxy_(0, 0), my::funct_, 1.0);
       rhs_s(Sigmaxy, 0)
-          ->Update(-timefacfac * (my::vderxy_(0, 1) + my::vderxy_(1, 0)), my::funct_, 1.0);
+          ->update(-timefacfac * (my::vderxy_(0, 1) + my::vderxy_(1, 0)), my::funct_, 1.0);
       rhs_s(Sigmaxz, 0)
-          ->Update(-timefacfac * (my::vderxy_(0, 2) + my::vderxy_(2, 0)), my::funct_, 1.0);
-      rhs_s(Sigmayy, 0)->Update(-timefacfac * my::vderxy_(1, 1), my::funct_, 1.0);
+          ->update(-timefacfac * (my::vderxy_(0, 2) + my::vderxy_(2, 0)), my::funct_, 1.0);
+      rhs_s(Sigmayy, 0)->update(-timefacfac * my::vderxy_(1, 1), my::funct_, 1.0);
       rhs_s(Sigmayz, 0)
-          ->Update(-timefacfac * (my::vderxy_(1, 2) + my::vderxy_(2, 1)), my::funct_, 1.0);
-      rhs_s(Sigmazz, 0)->Update(-timefacfac * my::vderxy_(2, 2), my::funct_, 1.0);
+          ->update(-timefacfac * (my::vderxy_(1, 2) + my::vderxy_(2, 1)), my::funct_, 1.0);
+      rhs_s(Sigmazz, 0)->update(-timefacfac * my::vderxy_(2, 2), my::funct_, 1.0);
 
       // stressbar-pressure coupling
       /*
@@ -2815,14 +2815,14 @@ namespace Discret
       */
 
       // K_sp
-      K_su(Sigmaxx, Pres)->Update(-viscfac * timefacfac, bK_ss, 1.0);
-      K_su(Sigmayy, Pres)->Update(-viscfac * timefacfac, bK_ss, 1.0);
-      K_su(Sigmazz, Pres)->Update(-viscfac * timefacfac, bK_ss, 1.0);
+      K_su(Sigmaxx, Pres)->update(-viscfac * timefacfac, bK_ss, 1.0);
+      K_su(Sigmayy, Pres)->update(-viscfac * timefacfac, bK_ss, 1.0);
+      K_su(Sigmazz, Pres)->update(-viscfac * timefacfac, bK_ss, 1.0);
 
       // r_sp
-      rhs_s(Sigmaxx, 0)->Update(viscfac * timefacfac * press, my::funct_, 1.0);
-      rhs_s(Sigmayy, 0)->Update(viscfac * timefacfac * press, my::funct_, 1.0);
-      rhs_s(Sigmazz, 0)->Update(viscfac * timefacfac * press, my::funct_, 1.0);
+      rhs_s(Sigmaxx, 0)->update(viscfac * timefacfac * press, my::funct_, 1.0);
+      rhs_s(Sigmayy, 0)->update(viscfac * timefacfac * press, my::funct_, 1.0);
+      rhs_s(Sigmazz, 0)->update(viscfac * timefacfac * press, my::funct_, 1.0);
 
       return;
 
@@ -2846,10 +2846,10 @@ namespace Discret
         const double& mhvs_param)
     {
       // velocities at current gauss point
-      my::velint_.Multiply(evelaf, my::funct_);
+      my::velint_.multiply(evelaf, my::funct_);
 
       // velocity gradient at current gauss point
-      my::vderxy_.MultiplyNT(evelaf, my::derxy_);
+      my::vderxy_.multiply_nt(evelaf, my::derxy_);
 
       // compute shape function derivatives:
       // get derivatives of nodal shape function vector w. r. t. x,y,z
@@ -2866,7 +2866,7 @@ namespace Discret
       }
 
       // fill the (nen_ x nen_) matrix block of K_ss
-      bK_ss.MultiplyNT(my::funct_, my::funct_);  // N * N^T
+      bK_ss.multiply_nt(my::funct_, my::funct_);  // N * N^T
 
       // scaling with inverse dynamic effective viscosity
       const double viscfac = -1.0 / (2.0 * my::visceff_);
@@ -2881,7 +2881,7 @@ namespace Discret
        * (-)  ---   *  |  \tau, \sigma    |
        *   (2n \mu)     \                /
        */
-      invbK_ss.Update(viscfac * timefacfac, bK_ss, 1.0);
+      invbK_ss.update(viscfac * timefacfac, bK_ss, 1.0);
 
       /*
        *  K_su
@@ -2898,22 +2898,22 @@ namespace Discret
       Core::LinAlg::Matrix<nen_, nen_> NdNdyT;
       Core::LinAlg::Matrix<nen_, nen_> NdNdzT;
 
-      NdNdxT.MultiplyNT(my::funct_, dx);
-      NdNdyT.MultiplyNT(my::funct_, dy);
-      NdNdzT.MultiplyNT(my::funct_, dz);
+      NdNdxT.multiply_nt(my::funct_, dx);
+      NdNdyT.multiply_nt(my::funct_, dy);
+      NdNdzT.multiply_nt(my::funct_, dz);
 
       // add main diagonal blocks
-      K_su(Sigmaxx, Velx)->Update(timefacfac, NdNdxT, 1.0);
-      K_su(Sigmayy, Vely)->Update(timefacfac, NdNdyT, 1.0);
-      K_su(Sigmazz, Velz)->Update(timefacfac, NdNdzT, 1.0);
+      K_su(Sigmaxx, Velx)->update(timefacfac, NdNdxT, 1.0);
+      K_su(Sigmayy, Vely)->update(timefacfac, NdNdyT, 1.0);
+      K_su(Sigmazz, Velz)->update(timefacfac, NdNdzT, 1.0);
 
       // add off-diagonal blocks
-      K_su(Sigmaxy, Velx)->Update(timefacfac, NdNdyT, 1.0);
-      K_su(Sigmaxz, Velx)->Update(timefacfac, NdNdzT, 1.0);
-      K_su(Sigmayx, Vely)->Update(timefacfac, NdNdxT, 1.0);
-      K_su(Sigmayz, Vely)->Update(timefacfac, NdNdzT, 1.0);
-      K_su(Sigmazx, Velz)->Update(timefacfac, NdNdxT, 1.0);
-      K_su(Sigmazy, Velz)->Update(timefacfac, NdNdyT, 1.0);
+      K_su(Sigmaxy, Velx)->update(timefacfac, NdNdyT, 1.0);
+      K_su(Sigmaxz, Velx)->update(timefacfac, NdNdzT, 1.0);
+      K_su(Sigmayx, Vely)->update(timefacfac, NdNdxT, 1.0);
+      K_su(Sigmayz, Vely)->update(timefacfac, NdNdzT, 1.0);
+      K_su(Sigmazx, Velz)->update(timefacfac, NdNdxT, 1.0);
+      K_su(Sigmazy, Velz)->update(timefacfac, NdNdyT, 1.0);
 
       /*
        * rhs_s contribution
@@ -2925,15 +2925,15 @@ namespace Discret
        *
        */
 
-      rhs_s(Sigmaxx, 0)->Update(-timefacfac * my::vderxy_(0, 0), my::funct_, 1.0);
+      rhs_s(Sigmaxx, 0)->update(-timefacfac * my::vderxy_(0, 0), my::funct_, 1.0);
       rhs_s(Sigmaxy, 0)
-          ->Update(-timefacfac * (my::vderxy_(1, 0) + my::vderxy_(0, 1)), my::funct_, 1.0);
+          ->update(-timefacfac * (my::vderxy_(1, 0) + my::vderxy_(0, 1)), my::funct_, 1.0);
       rhs_s(Sigmaxz, 0)
-          ->Update(-timefacfac * (my::vderxy_(0, 2) + my::vderxy_(2, 0)), my::funct_, 1.0);
-      rhs_s(Sigmayy, 0)->Update(-timefacfac * my::vderxy_(1, 1), my::funct_, 1.0);
+          ->update(-timefacfac * (my::vderxy_(0, 2) + my::vderxy_(2, 0)), my::funct_, 1.0);
+      rhs_s(Sigmayy, 0)->update(-timefacfac * my::vderxy_(1, 1), my::funct_, 1.0);
       rhs_s(Sigmayz, 0)
-          ->Update(-timefacfac * (my::vderxy_(1, 2) + my::vderxy_(2, 1)), my::funct_, 1.0);
-      rhs_s(Sigmazz, 0)->Update(-timefacfac * my::vderxy_(2, 2), my::funct_, 1.0);
+          ->update(-timefacfac * (my::vderxy_(1, 2) + my::vderxy_(2, 1)), my::funct_, 1.0);
+      rhs_s(Sigmazz, 0)->update(-timefacfac * my::vderxy_(2, 2), my::funct_, 1.0);
 
       // nothing like K_sp here, as this is a purely viscous stress-based approach
 
@@ -2953,9 +2953,9 @@ namespace Discret
       Core::LinAlg::Matrix<nen_, nen_> dNdyNT;
       Core::LinAlg::Matrix<nen_, nen_> dNdzNT;
 
-      dNdxNT.UpdateT(NdNdxT);
-      dNdyNT.UpdateT(NdNdyT);
-      dNdzNT.UpdateT(NdNdzT);
+      dNdxNT.update_t(NdNdxT);
+      dNdyNT.update_t(NdNdyT);
+      dNdzNT.update_t(NdNdzT);
 
       // leads to terms, that are analogous to a symmetric/non-symmetric Nitsche-formulation
       // REMARK: behaves unstable for betau=-1.0 in fluid-fluid problems, so keep that in mind!
@@ -2966,17 +2966,17 @@ namespace Discret
       const double alpha = fldparaxfem_->is_viscous_adjoint_symmetric() ? 1.0 : -1.0;
 
       // add main diagonal submatrices
-      K_us(Velx, Sigmaxx)->Update(alpha * timefacfac, dNdxNT, 1.0);
-      K_us(Vely, Sigmayy)->Update(alpha * timefacfac, dNdyNT, 1.0);
-      K_us(Velz, Sigmazz)->Update(alpha * timefacfac, dNdzNT, 1.0);
+      K_us(Velx, Sigmaxx)->update(alpha * timefacfac, dNdxNT, 1.0);
+      K_us(Vely, Sigmayy)->update(alpha * timefacfac, dNdyNT, 1.0);
+      K_us(Velz, Sigmazz)->update(alpha * timefacfac, dNdzNT, 1.0);
 
       // add off-diagonal blocks
-      K_us(Velx, Sigmaxy)->Update(alpha * timefacfac, dNdyNT, 1.0);
-      K_us(Velx, Sigmaxz)->Update(alpha * timefacfac, dNdzNT, 1.0);
-      K_us(Vely, Sigmayx)->Update(alpha * timefacfac, dNdxNT, 1.0);
-      K_us(Vely, Sigmayz)->Update(alpha * timefacfac, dNdzNT, 1.0);
-      K_us(Velz, Sigmazx)->Update(alpha * timefacfac, dNdxNT, 1.0);
-      K_us(Velz, Sigmazy)->Update(alpha * timefacfac, dNdyNT, 1.0);
+      K_us(Velx, Sigmaxy)->update(alpha * timefacfac, dNdyNT, 1.0);
+      K_us(Velx, Sigmaxz)->update(alpha * timefacfac, dNdzNT, 1.0);
+      K_us(Vely, Sigmayx)->update(alpha * timefacfac, dNdxNT, 1.0);
+      K_us(Vely, Sigmayz)->update(alpha * timefacfac, dNdzNT, 1.0);
+      K_us(Velz, Sigmazx)->update(alpha * timefacfac, dNdxNT, 1.0);
+      K_us(Velz, Sigmazy)->update(alpha * timefacfac, dNdyNT, 1.0);
 
       // computation of additional stress term, scaled with inverse MHVS-parameter
 
@@ -3003,11 +3003,11 @@ namespace Discret
       {
         for (int jdim = 0; jdim < nsd_; ++jdim)
         {
-          dNidxj.MultiplyNT(*dN[jdim], *dN[idim]);
-          K_uu(idim, jdim)->Update(visc_timefac_mhvs, dNidxj, 1.0);
-          dNjdxj.MultiplyNT(*dN[jdim], *dN[jdim]);
-          K_uu(idim, idim)->Update(visc_timefac_mhvs, dNjdxj, 1.0);
-          rhs_uu(idim, 0)->Update(
+          dNidxj.multiply_nt(*dN[jdim], *dN[idim]);
+          K_uu(idim, jdim)->update(visc_timefac_mhvs, dNidxj, 1.0);
+          dNjdxj.multiply_nt(*dN[jdim], *dN[jdim]);
+          K_uu(idim, idim)->update(visc_timefac_mhvs, dNjdxj, 1.0);
+          rhs_uu(idim, 0)->update(
               -visc_timefac_mhvs * (my::vderxy_(idim, jdim) + my::vderxy_(jdim, idim)), *dN[jdim],
               1.0);
         }
@@ -3038,15 +3038,15 @@ namespace Discret
         const Core::LinAlg::Matrix<nsd_, 1>& itraction_jump, const bool eval_side_coupling,
         const bool is_MHVS)
     {
-      K_us(Velx, Sigmaxx)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
-      K_us(Velx, Sigmaxy)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
-      K_us(Velx, Sigmaxz)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
-      K_us(Vely, Sigmayx)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
-      K_us(Vely, Sigmayy)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
-      K_us(Vely, Sigmayz)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
-      K_us(Velz, Sigmazx)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
-      K_us(Velz, Sigmazy)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
-      K_us(Velz, Sigmazz)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
+      K_us(Velx, Sigmaxx)->update(-timesurffac * normal(Velx), bK_ss, 1.0);
+      K_us(Velx, Sigmaxy)->update(-timesurffac * normal(Vely), bK_ss, 1.0);
+      K_us(Velx, Sigmaxz)->update(-timesurffac * normal(Velz), bK_ss, 1.0);
+      K_us(Vely, Sigmayx)->update(-timesurffac * normal(Velx), bK_ss, 1.0);
+      K_us(Vely, Sigmayy)->update(-timesurffac * normal(Vely), bK_ss, 1.0);
+      K_us(Vely, Sigmayz)->update(-timesurffac * normal(Velz), bK_ss, 1.0);
+      K_us(Velz, Sigmazx)->update(-timesurffac * normal(Velx), bK_ss, 1.0);
+      K_us(Velz, Sigmazy)->update(-timesurffac * normal(Vely), bK_ss, 1.0);
+      K_us(Velz, Sigmazz)->update(-timesurffac * normal(Velz), bK_ss, 1.0);
 
 
       // K_su - add the blocks from the surface contribution
@@ -3057,39 +3057,39 @@ namespace Discret
        *   - |       \tau_{ij} * n_j, u^i   |
        *     \                             /
        */
-      K_su(Sigmaxx, Velx)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
-      K_su(Sigmaxy, Velx)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
-      K_su(Sigmaxz, Velx)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
-      K_su(Sigmayx, Vely)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
-      K_su(Sigmayy, Vely)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
-      K_su(Sigmayz, Vely)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
-      K_su(Sigmazx, Velz)->Update(-timesurffac * normal(Velx), bK_ss, 1.0);
-      K_su(Sigmazy, Velz)->Update(-timesurffac * normal(Vely), bK_ss, 1.0);
-      K_su(Sigmazz, Velz)->Update(-timesurffac * normal(Velz), bK_ss, 1.0);
+      K_su(Sigmaxx, Velx)->update(-timesurffac * normal(Velx), bK_ss, 1.0);
+      K_su(Sigmaxy, Velx)->update(-timesurffac * normal(Vely), bK_ss, 1.0);
+      K_su(Sigmaxz, Velx)->update(-timesurffac * normal(Velz), bK_ss, 1.0);
+      K_su(Sigmayx, Vely)->update(-timesurffac * normal(Velx), bK_ss, 1.0);
+      K_su(Sigmayy, Vely)->update(-timesurffac * normal(Vely), bK_ss, 1.0);
+      K_su(Sigmayz, Vely)->update(-timesurffac * normal(Velz), bK_ss, 1.0);
+      K_su(Sigmazx, Velz)->update(-timesurffac * normal(Velx), bK_ss, 1.0);
+      K_su(Sigmazy, Velz)->update(-timesurffac * normal(Vely), bK_ss, 1.0);
+      K_su(Sigmazz, Velz)->update(-timesurffac * normal(Velz), bK_ss, 1.0);
 
       // Add surface integral contribution to rhs_s
 
       // from diagonal terms
-      rhs_s(Sigmaxx, 0)->Update(timesurffac * normal(Velx) * my::velint_(Velx), my::funct_, 1.0);
-      rhs_s(Sigmayy, 0)->Update(timesurffac * normal(Vely) * my::velint_(Vely), my::funct_, 1.0);
-      rhs_s(Sigmazz, 0)->Update(timesurffac * normal(Velz) * my::velint_(Velz), my::funct_, 1.0);
+      rhs_s(Sigmaxx, 0)->update(timesurffac * normal(Velx) * my::velint_(Velx), my::funct_, 1.0);
+      rhs_s(Sigmayy, 0)->update(timesurffac * normal(Vely) * my::velint_(Vely), my::funct_, 1.0);
+      rhs_s(Sigmazz, 0)->update(timesurffac * normal(Velz) * my::velint_(Velz), my::funct_, 1.0);
 
       // from off-diagonal terms
       rhs_s(Sigmaxy, 0)
-          ->Update(
+          ->update(
               timesurffac * (normal(Vely) * my::velint_(Velx) + normal(Velx) * my::velint_(Vely)),
               my::funct_, 1.0);
       rhs_s(Sigmaxz, 0)
-          ->Update(
+          ->update(
               timesurffac * (normal(Velz) * my::velint_(Velx) + normal(Velx) * my::velint_(Velz)),
               my::funct_, 1.0);
       rhs_s(Sigmayz, 0)
-          ->Update(
+          ->update(
               timesurffac * (normal(Velz) * my::velint_(Vely) + normal(Vely) * my::velint_(Velz)),
               my::funct_, 1.0);
 
       // get pressure at current integration point
-      double press = my::funct_.Dot(epreaf);
+      double press = my::funct_.dot(epreaf);
 
       // MHVS terms
       if (is_MHVS)
@@ -3101,14 +3101,14 @@ namespace Discret
          *    |   v, p n   |
          *     \          /
          */
-        G_up(Velx, 0)->Update(timesurffac * normal(0), bK_ss, 1.0);
-        G_up(Vely, 0)->Update(timesurffac * normal(1), bK_ss, 1.0);
-        G_up(Velz, 0)->Update(timesurffac * normal(2), bK_ss, 1.0);
+        G_up(Velx, 0)->update(timesurffac * normal(0), bK_ss, 1.0);
+        G_up(Vely, 0)->update(timesurffac * normal(1), bK_ss, 1.0);
+        G_up(Velz, 0)->update(timesurffac * normal(2), bK_ss, 1.0);
 
         // velocity residual rhs_up
-        rhs_up(Velx, 0)->Update(-timesurffac * normal(Velx) * press, my::funct_, 1.0);
-        rhs_up(Vely, 0)->Update(-timesurffac * normal(Vely) * press, my::funct_, 1.0);
-        rhs_up(Velz, 0)->Update(-timesurffac * normal(Velz) * press, my::funct_, 1.0);
+        rhs_up(Velx, 0)->update(-timesurffac * normal(Velx) * press, my::funct_, 1.0);
+        rhs_up(Vely, 0)->update(-timesurffac * normal(Vely) * press, my::funct_, 1.0);
+        rhs_up(Velz, 0)->update(-timesurffac * normal(Velz) * press, my::funct_, 1.0);
 
         // pressure-tested interface continuity term
         /*
@@ -3117,14 +3117,14 @@ namespace Discret
          *    -|  q n, u   |
          *      \         /
          */
-        G_pu(0, Velx)->Update(-timesurffac * normal(0), bK_ss, 1.0);
-        G_pu(0, Vely)->Update(-timesurffac * normal(1), bK_ss, 1.0);
-        G_pu(0, Velz)->Update(-timesurffac * normal(2), bK_ss, 1.0);
+        G_pu(0, Velx)->update(-timesurffac * normal(0), bK_ss, 1.0);
+        G_pu(0, Vely)->update(-timesurffac * normal(1), bK_ss, 1.0);
+        G_pu(0, Velz)->update(-timesurffac * normal(2), bK_ss, 1.0);
 
         // pressure residual rhs_pu
         // this results from -(q, u_i * n_i)_{\Gamma} (pressure-tested kinematic continuity)
-        const double normalvel = my::velint_.Dot(normal);
-        rhs_pu.Update(timesurffac * normalvel, my::funct_, 1.0);
+        const double normalvel = my::velint_.dot(normal);
+        rhs_pu.update(timesurffac * normalvel, my::funct_, 1.0);
       }
 
       // the terms involving side-DOF are treated by the side implementation class,
@@ -3152,23 +3152,23 @@ namespace Discret
 
         // from diagonal terms
         rhs_s(Sigmaxx, 0)
-            ->Update(-timesurffac * normal(Velx) * ivelint_jump(Velx), my::funct_, 1.0);
+            ->update(-timesurffac * normal(Velx) * ivelint_jump(Velx), my::funct_, 1.0);
         rhs_s(Sigmayy, 0)
-            ->Update(-timesurffac * normal(Vely) * ivelint_jump(Vely), my::funct_, 1.0);
+            ->update(-timesurffac * normal(Vely) * ivelint_jump(Vely), my::funct_, 1.0);
         rhs_s(Sigmazz, 0)
-            ->Update(-timesurffac * normal(Velz) * ivelint_jump(Velz), my::funct_, 1.0);
+            ->update(-timesurffac * normal(Velz) * ivelint_jump(Velz), my::funct_, 1.0);
 
         // from off-diagonal terms
         rhs_s(Sigmaxy, 0)
-            ->Update(-timesurffac *
+            ->update(-timesurffac *
                          (normal(Vely) * ivelint_jump(Velx) + normal(Velx) * ivelint_jump(Vely)),
                 my::funct_, 1.0);
         rhs_s(Sigmaxz, 0)
-            ->Update(-timesurffac *
+            ->update(-timesurffac *
                          (normal(Velz) * ivelint_jump(Velx) + normal(Velx) * ivelint_jump(Velz)),
                 my::funct_, 1.0);
         rhs_s(Sigmayz, 0)
-            ->Update(-timesurffac *
+            ->update(-timesurffac *
                          (normal(Velz) * ivelint_jump(Vely) + normal(Vely) * ivelint_jump(Velz)),
                 my::funct_, 1.0);
 
@@ -3182,9 +3182,9 @@ namespace Discret
          *    +|  q n, u   |
          *      \         /
          */
-        const double normalvel = ivelint_jump.Dot(normal);
+        const double normalvel = ivelint_jump.dot(normal);
 
-        rhs_pu.Update(-timesurffac * normalvel, my::funct_, 1.0);
+        rhs_pu.update(-timesurffac * normalvel, my::funct_, 1.0);
       }
     }
 
@@ -3717,15 +3717,15 @@ namespace Discret
 
             // get velocity at integration point
             // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::velint_.Multiply(evelaf_, my::funct_);
+            my::velint_.multiply(evelaf_, my::funct_);
 
             // get velocity derivatives at integration point
             // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-            my::vderxy_.MultiplyNT(evelaf_, my::derxy_);
+            my::vderxy_.multiply_nt(evelaf_, my::derxy_);
 
             // get pressure at integration point
             // (value at n+1)
-            double press = my::funct_.Dot(epreaf_);
+            double press = my::funct_.dot(epreaf_);
 
             //----------------------------------------------
             // get convective velocity at integration point
@@ -3813,7 +3813,7 @@ namespace Discret
               std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>>& configmap =
                   coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_, my::densaf_,
                       NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_, coupcond.second, ele,
-                      side, my::funct_.A(), my::derxy_.A(), rst_slave, normal_, my::velint_,
+                      side, my::funct_.data(), my::derxy_.data(), rst_slave, normal_, my::velint_,
                       &fulltraction);
 
               //-----------------------------------------------------------------------------
@@ -3854,11 +3854,11 @@ namespace Discret
               {
                 // get velocity at integration point
                 // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-                my::velintn_.Multiply(eveln_, my::funct_);
+                my::velintn_.multiply(eveln_, my::funct_);
 
                 // get velocity derivatives at integration point
                 // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-                my::vderxyn_.MultiplyNT(eveln_, my::derxy_);
+                my::vderxyn_.multiply_nt(eveln_, my::derxy_);
 
                 ivelintn_jump_.clear();
                 itractionn_jump_.clear();
@@ -3881,14 +3881,14 @@ namespace Discret
                 {
                   get_interface_jump_vectors_old_state(coupcond, coupling, ivelintn_jump_,
                       itractionn_jump_, x_gp_lin_, normal_, si,
-                      my::funct_.Dot(epren_),  // bg p^n
+                      my::funct_.dot(epren_),  // bg p^n
                       rst_);
                 }
                 else
                 {
                   get_interface_jump_vectors_old_state(coupcond, coupling, ivelintn_jump_,
                       itractionn_jump_, x_gp_lin_, normal_, ci,
-                      my::funct_.Dot(epren_),  // bg p^n
+                      my::funct_.dot(epren_),  // bg p^n
                       rst_);
                 }
 
@@ -3926,7 +3926,7 @@ namespace Discret
                 std::map<Inpar::XFEM::CoupTerm, std::pair<bool, double>> configmap_n =
                     coupling->GetConfigurationmap(kappa_m, viscaf_master_, viscaf_slave_,
                         my::densaf_, NIT_visc_stab_fac_tang, NIT_full_stab_fac, x_gp_lin_,
-                        coupcond.second, ele, side, my::funct_.A(), my::derxy_.A(), rst_slave,
+                        coupcond.second, ele, side, my::funct_.data(), my::derxy_.data(), rst_slave,
                         normal_, my::velint_, &fulltraction);
 
                 const double timefacfacn =
@@ -3938,7 +3938,7 @@ namespace Discret
                     my::funct_,              // bg shape functions
                     my::derxy_,              // bg shape function gradient
                     my::vderxyn_,            // bg grad u^n
-                    my::funct_.Dot(epren_),  // bg p^n
+                    my::funct_.dot(epren_),  // bg p^n
                     my::velintn_,            // bg u^n
                     ivelintn_jump_,          // velocity jump at interface (i.e. [| u |])
                     proj_tangential_,        // tangential projection matrix
@@ -4262,23 +4262,23 @@ namespace Discret
           double presn_s = 0.0;
           si->GetInterfacePresn(presn_s);
 
-          itractionn_jump.Update(-(presn_m - presn_s), normal, 0.0);
+          itractionn_jump.update(-(presn_m - presn_s), normal, 0.0);
 
           // Shear tensor part
           //===================
           Core::LinAlg::Matrix<nsd_, nsd_> tmp_matrix(true);
-          tmp_matrix.Update(viscaf_master_, my::vderxyn_, -viscaf_slave_, vderxyn_s);
+          tmp_matrix.update(viscaf_master_, my::vderxyn_, -viscaf_slave_, vderxyn_s);
 
           // Initialize dummy variable
           Core::LinAlg::Matrix<nsd_, 1> tmp_vector(true);
 
           // Normal
-          tmp_vector.Multiply(tmp_matrix, normal);
-          itractionn_jump.Update(1.0, tmp_vector, 1.0);
+          tmp_vector.multiply(tmp_matrix, normal);
+          itractionn_jump.update(1.0, tmp_vector, 1.0);
 
           // Transposed
-          tmp_vector.MultiplyTN(tmp_matrix, normal);
-          itractionn_jump.Update(1.0, tmp_vector, 1.0);
+          tmp_vector.multiply_tn(tmp_matrix, normal);
+          itractionn_jump.update(1.0, tmp_vector, 1.0);
           //===================
 
           break;
@@ -4406,11 +4406,11 @@ namespace Discret
 
       // evaluate the derivatives of shape functions
       Core::FE::shape_function_deriv1<distype>(rst, my::deriv_);
-      my::xjm_.MultiplyNT(my::deriv_, my::xyze_);
-      my::det_ = my::xji_.Invert(my::xjm_);
+      my::xjm_.multiply_nt(my::deriv_, my::xyze_);
+      my::det_ = my::xji_.invert(my::xjm_);
 
       // compute global first derivates
-      my::derxy_.Multiply(my::xji_, my::deriv_);
+      my::derxy_.multiply(my::xji_, my::deriv_);
 
       return;
     }
@@ -4438,10 +4438,10 @@ namespace Discret
       //-------------------------------
 
       // t = ( -pI + 2mu eps(u) )*n^f
-      traction.Multiply(two_eps, normal);
+      traction.multiply(two_eps, normal);
 
       // add the pressure part and scale the viscous part with the viscosity
-      traction.Update(-press, normal, viscaf_master_);
+      traction.update(-press, normal, viscaf_master_);
 
       return;
     }
@@ -4488,7 +4488,7 @@ namespace Discret
 
       // funct_m * timefac * fac
       Core::LinAlg::Matrix<nen_, 1> funct_m_timefacfac(funct_m);
-      funct_m_timefacfac.Scale(timefacfac);
+      funct_m_timefacfac.scale(timefacfac);
 
       //-----------------------------------------------------------------
       // standard consistency Neumann term

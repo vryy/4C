@@ -57,10 +57,10 @@ void Core::LinAlg::Voigt::VoigtUtils<type>::symmetric_outer_product(
     const Core::LinAlg::Matrix<3, 1>& vec_a, const Core::LinAlg::Matrix<3, 1>& vec_b,
     Core::LinAlg::Matrix<6, 1>& ab_ba)
 {
-  std::fill(ab_ba.A(), ab_ba.A() + 6, 0.0);
+  std::fill(ab_ba.data(), ab_ba.data() + 6, 0.0);
 
   Core::LinAlg::Matrix<3, 3> outer_product;
-  outer_product.MultiplyNT(vec_a, vec_b);
+  outer_product.multiply_nt(vec_a, vec_b);
 
   for (unsigned i = 0; i < 3; ++i)
     for (unsigned j = i; j < 3; ++j)
@@ -94,7 +94,7 @@ template <NotationType type>
 void Core::LinAlg::Voigt::VoigtUtils<type>::power_of_symmetric_tensor(const unsigned pow,
     const Core::LinAlg::Matrix<6, 1>& strain, Core::LinAlg::Matrix<6, 1>& strain_pow)
 {
-  std::copy(strain.A(), strain.A() + 6, strain_pow.A());
+  std::copy(strain.data(), strain.data() + 6, strain_pow.data());
 
   if (pow > 1)
   {
@@ -105,7 +105,7 @@ void Core::LinAlg::Voigt::VoigtUtils<type>::power_of_symmetric_tensor(const unsi
 
     for (unsigned p = 1; p < pow; ++p)
     {
-      std::fill(prod.A(), prod.A() + 6, 0.0);
+      std::fill(prod.data(), prod.data() + 6, 0.0);
 
       for (unsigned i = 0; i < 3; ++i)
       {
@@ -121,7 +121,7 @@ void Core::LinAlg::Voigt::VoigtUtils<type>::power_of_symmetric_tensor(const unsi
         }
       }
 
-      std::copy(prod.A(), prod.A() + 6, strain_pow.A());
+      std::copy(prod.data(), prod.data() + 6, strain_pow.data());
     }
 
     // scale the off-diagonal values again

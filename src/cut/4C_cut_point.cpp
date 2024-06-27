@@ -257,7 +257,7 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
   std::map<Edge*, double>::iterator i = t_.find(edge);
   if (i == t_.end())
   {
-    Core::LinAlg::Matrix<3, 1> x(coord.A());
+    Core::LinAlg::Matrix<3, 1> x(coord.data());
 
     Point* p1 = edge->BeginNode()->point();
     Point* p2 = edge->EndNode()->point();
@@ -271,8 +271,8 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
     Core::LinAlg::Matrix<3, 1> x1;
     Core::LinAlg::Matrix<3, 1> x2;
 
-    p1->Coordinates(x1.A());
-    p2->Coordinates(x2.A());
+    p1->Coordinates(x1.data());
+    p2->Coordinates(x2.data());
 
 
 #ifdef CLN_CALC_OUTSIDE_KERNEL_POINT
@@ -289,11 +289,11 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
     ConvDoulbeCLN(x1, x1_cln., prec);
     ConvDoulbeCLN(x2, x2_cln., prec);
 
-    x_cln.Update(-1.0, x1_cln, 1.0);
-    x2_cln.Update(-1.0, x1_cln, 1.0);
+    x_cln.update(-1.0, x1_cln, 1.0);
+    x2_cln.update(-1.0, x1_cln, 1.0);
 
-    Core::CLN::ClnWrapper l1_cln = x_cln.Norm2();
-    Core::CLN::ClnWrapper l2_cln = x2_cln.Norm2();
+    Core::CLN::ClnWrapper l1_cln = x_cln.norm2();
+    Core::CLN::ClnWrapper l2_cln = x2_cln.norm2();
 
     if (Core::MathOperations<Core::CLN::ClnWrapper>::abs(l2_cln) <
         (p1->Tolerance() + p2->Tolerance()))
@@ -304,13 +304,13 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
 
     Core::CLN::ClnWrapper z_cln = l1_cln / l2_cln;
 
-    x_cln.Update(-z_cln, x2_cln, 1.0);
+    x_cln.update(-z_cln, x2_cln, 1.0);
 
-    if (x_cln.Norm2() > (Tolerance() + p1->Tolerance() + p2->Tolerance()))
+    if (x_cln.norm2() > (Tolerance() + p1->Tolerance() + p2->Tolerance()))
     {
       std::stringstream str;
       str << "point id " << this->Id() << "\n";
-      str << "point not on edge, no edge position: " << x.Norm2()
+      str << "point not on edge, no edge position: " << x.norm2()
           << " (Tol = " << Tolerance() + p1->Tolerance() + p2->Tolerance() << ")"
           << "\n"
           << x << x1 << x2 << "\n";
@@ -322,11 +322,11 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
     Core::CLN::ClnWrapper::precision_ = prec_old;  // restoring previous cln precision
 
 #else
-    x.Update(-1, x1, 1);
-    x2.Update(-1, x1, 1);
+    x.update(-1, x1, 1);
+    x2.update(-1, x1, 1);
 
-    double l1 = x.Norm2();
-    double l2 = x2.Norm2();
+    double l1 = x.norm2();
+    double l2 = x2.norm2();
 
     if (fabs(l2) < (p1->Tolerance() + p2->Tolerance()))
     {
@@ -335,9 +335,9 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
 
     double z = l1 / l2;
 
-    x.Update(-z, x2, 1);
+    x.update(-z, x2, 1);
     // one could think of choosing a tighter tolerance here, but why?
-    if (x.Norm2() > (Tolerance() + p1->Tolerance() + p2->Tolerance()))
+    if (x.norm2() > (Tolerance() + p1->Tolerance() + p2->Tolerance()))
     {
       std::ofstream file("point_not_on_on_edge.pos");
       Core::Geo::Cut::Output::GmshEdgeDump(file, edge, std::string("Edge"));
@@ -347,7 +347,7 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
 
       std::stringstream str;
       str << "point id " << this->Id() << "\n";
-      str << "point not on edge, no edge position: " << x.Norm2()
+      str << "point not on edge, no edge position: " << x.norm2()
           << " (Tol = " << Tolerance() + p1->Tolerance() + p2->Tolerance() << ")"
           << "\n"
           << x << x1 << x2 << "\n";
@@ -416,7 +416,7 @@ double Core::Geo::Cut::Point::t(Edge* edge, const Core::LinAlg::Matrix<3, 1>& co
 double Core::Geo::Cut::Point::t(Edge* edge)
 {
   Core::LinAlg::Matrix<3, 1> x;
-  Coordinates(x.A());
+  Coordinates(x.data());
   double rv = Core::Geo::Cut::Point::t(edge, x);
   return rv;
 }
@@ -484,15 +484,15 @@ bool Core::Geo::Cut::Point::AlmostNodalPoint(
   Core::LinAlg::Matrix<3, 1> np;
   Core::LinAlg::Matrix<3, 1> p;
 
-  this->Coordinates(p.A());
+  this->Coordinates(p.data());
 
   for (std::vector<Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
     Node* n = *i;
-    n->point()->Coordinates(np.A());
-    np.Update(-1, p, 1);
+    n->point()->Coordinates(np.data());
+    np.update(-1, p, 1);
 
-    if (np.Norm2() <= tolerance)
+    if (np.norm2() <= tolerance)
     {
       return true;
     }
@@ -863,7 +863,7 @@ void Core::Geo::Cut::Point::Replace(Point* p)
   }
 
   Core::LinAlg::Matrix<3, 1> real_coord;
-  Coordinates(real_coord.A());
+  Coordinates(real_coord.data());
   for (Edge* e : cut_edges_)
   {
     e->RemovePoint(this);
@@ -1044,7 +1044,7 @@ Core::Geo::Cut::Edge* Core::Geo::Cut::Point::CommonCutEdge(Side* side)
  *----------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Point& point)
 {
-  point.Print(stream);
+  point.print(stream);
   return stream;
 }
 
@@ -1052,7 +1052,7 @@ std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Point& point)
  *----------------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Point* point)
 {
-  point->Print(stream);
+  point->print(stream);
   return stream;
 }
 
@@ -1077,16 +1077,16 @@ void Core::Geo::Cut::FindCommonElements(
 double Core::Geo::Cut::DistanceBetweenPoints(Point* p1, Point* p2)
 {
   Core::LinAlg::Matrix<3, 1> p1_x;
-  p1->Coordinates(p1_x.A());
+  p1->Coordinates(p1_x.data());
   Core::LinAlg::Matrix<3, 1> p2_x;
-  p2->Coordinates(p2_x.A());
+  p2->Coordinates(p2_x.data());
   return DistanceBetweenPoints(p1_x, p2_x);
 }
 
 double Core::Geo::Cut::DistanceBetweenPoints(Point* p1, const Core::LinAlg::Matrix<3, 1>& coord_b)
 {
   Core::LinAlg::Matrix<3, 1> p1_x;
-  p1->Coordinates(p1_x.A());
+  p1->Coordinates(p1_x.data());
   return DistanceBetweenPoints(p1_x, coord_b);
 }
 

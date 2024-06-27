@@ -39,7 +39,7 @@ void Discret::ELEMENTS::SoSh8p8::axial_metrics_at_origin(
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> df0(df0_vector, true);  // view
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
-  jac0.Multiply(df0, xrefe);
+  jac0.multiply(df0, xrefe);
 
   // line metrics of r-, s- and t-axis in reference space
   for (int i = 0; i < NUMDIM_; ++i)
@@ -178,9 +178,9 @@ void Discret::ELEMENTS::SoSh8p8::ans_setup2(
   for (int sp = 0; sp < num_sp; ++sp)
   {
     // compute (REFERENCE) Jacobian matrix at all sampling points
-    jac_sps[sp].Multiply(df_sp[sp], xrefe);
+    jac_sps[sp].multiply(df_sp[sp], xrefe);
     // compute CURRENT Jacobian matrix at all sampling points
-    jac_cur_sps[sp].Multiply(df_sp[sp], xcurr);
+    jac_cur_sps[sp].multiply(df_sp[sp], xcurr);
   }
 
   /*
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::SoSh8p8::ans_setup2(
     **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
     ** Used to transform the global displacements into parametric space
     */
-    jac_cur.Multiply(df_sp[sp], xcurr);
+    jac_cur.multiply(df_sp[sp], xcurr);
 
     // fill up B-operator
     for (int inode = 0; inode < NUMNOD_; ++inode)
@@ -317,9 +317,9 @@ void Discret::ELEMENTS::SoSh8p8::ans_setup3(
   for (int sp = 0; sp < num_sp; ++sp)
   {
     // compute (REFERENCE) Jacobian matrix at all sampling points
-    jac_sps[sp].Multiply(df_sp[sp], xrefe);
+    jac_sps[sp].multiply(df_sp[sp], xrefe);
     // compute CURRENT Jacobian matrix at all sampling points
-    jac_cur_sps[sp].Multiply(df_sp[sp], xcurr);
+    jac_cur_sps[sp].multiply(df_sp[sp], xcurr);
   }
 
   /*
@@ -336,7 +336,7 @@ void Discret::ELEMENTS::SoSh8p8::ans_setup3(
     **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
     ** Used to transform the global displacements into parametric space
     */
-    jac_cur.Multiply(df_sp[sp], xcurr);
+    jac_cur.multiply(df_sp[sp], xcurr);
 
     // fill up B-operator
     for (int inode = 0; inode < NUMNOD_; ++inode)
@@ -845,7 +845,7 @@ void Discret::ELEMENTS::SoSh8p8::stretch_tensor(
   // squared right Cauchy-Green deformation tensor
   // C^2 = C . C
   Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> c2t;
-  c2t.MultiplyTN(ct, ct);
+  c2t.multiply_tn(ct, ct);
 
   // invariants of right Cauchy-Green tensor
   // 1st principal invariant: I_C = tr(C)
@@ -854,7 +854,7 @@ void Discret::ELEMENTS::SoSh8p8::stretch_tensor(
   const double c2i = c2t(0, 0) + c2t(1, 1) + c2t(2, 2);
   const double cii = 0.5 * (ci * ci - c2i);
   // 3rd principal invariant: III_C = det(C)
-  const double ciii = ct.Determinant();
+  const double ciii = ct.determinant();
 
   // determination of I_U acc. to [1]
   double ui = 0.0;
@@ -1394,7 +1394,7 @@ void Discret::ELEMENTS::SoSh8p8::gnuplot_out(
     is = ls;
     is -= os;
     Core::LinAlg::Matrix<NUMDOF_, 1> incresid;
-    incresid.MultiplyNN(lasttangent, is);
+    incresid.multiply_nn(lasttangent, is);
 
     for (int ir = 0; ir < NUMDOF_; ++ir) txtline << std::scientific << " " << incresid(ir);
   }

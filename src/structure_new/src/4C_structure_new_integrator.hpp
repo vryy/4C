@@ -417,7 +417,7 @@ namespace STR
       bool store_energy_n() const;
 
       /// print energy info to output stream
-      void Print(std::ostream& os) const;
+      void print(std::ostream& os) const;
 
       /// Get total energy measure in accordance to the surrounding time integrator
       double get_total() const;

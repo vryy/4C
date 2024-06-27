@@ -141,10 +141,10 @@ void Discret::ELEMENTS::FluidBoundary::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidBoundary::print(std::ostream& os) const
 {
   os << "FluidBoundary ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

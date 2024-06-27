@@ -223,10 +223,10 @@ void Discret::ELEMENTS::Elemag::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                         berardocco 02/18|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Elemag::Print(std::ostream& os) const
+void Discret::ELEMENTS::Elemag::print(std::ostream& os) const
 {
   os << "Elemag ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 
@@ -400,10 +400,10 @@ void Discret::ELEMENTS::ElemagBoundary::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                        berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::ElemagBoundary::print(std::ostream& os) const
 {
   os << "ElemagBoundary ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 
@@ -771,10 +771,10 @@ void Discret::ELEMENTS::ElemagIntFace::PatchLocationVector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                        berardocco 02/18 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagIntFace::Print(std::ostream& os) const
+void Discret::ELEMENTS::ElemagIntFace::print(std::ostream& os) const
 {
   os << "ElemagIntFace ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

@@ -118,7 +118,7 @@ namespace Discret
           FOUR_C_THROW("Cannot apply convective stabilization terms for XFF_ConvStabScaling_none!");
 
         // funct_m * timefac * fac * funct_m  * kappa_m (dyadic product)
-        funct_m_m_dyad_.MultiplyNT(funct_m, funct_m);
+        funct_m_m_dyad_.multiply_nt(funct_m, funct_m);
 
         // velint_s
         velint_s_.clear();
@@ -127,9 +127,9 @@ namespace Discret
 
         // add the prescribed interface velocity for weak Dirichlet boundary conditions or the jump
         // height for coupled problems
-        velint_s_.Update(1.0, ivelint_jump, 1.0);
+        velint_s_.update(1.0, ivelint_jump, 1.0);
 
-        velint_diff_.Update(1.0, velint_m, -1.0, velint_s_, 0.0);
+        velint_diff_.update(1.0, velint_m, -1.0, velint_s_, 0.0);
 
 
         // REMARK:
@@ -165,9 +165,9 @@ namespace Discret
             ser->GetSlaveFunct(funct_s);
 
             // funct_s * timefac * fac * funct_s * kappa_s (dyadic product)
-            funct_s_s_dyad_.MultiplyNT(funct_s_, funct_s);
+            funct_s_s_dyad_.multiply_nt(funct_s_, funct_s);
 
-            funct_s_m_dyad_.MultiplyNT(funct_s_, funct_m);
+            funct_s_m_dyad_.multiply_nt(funct_s_, funct_m);
 
             if (fldparaxfem_.XffConvStabScaling() == Inpar::XFEM::XFF_ConvStabScaling_upwinding)
             {
@@ -255,12 +255,12 @@ namespace Discret
         // Create projection matrices
         //--------------------------------------------
         proj_tangential_ = proj_tangential;
-        proj_normal_.putScalar(0.0);
+        proj_normal_.put_scalar(0.0);
         for (unsigned i = 0; i < nsd_; i++) proj_normal_(i, i) = 1.0;
-        proj_normal_.Update(-1.0, proj_tangential_, 1.0);
+        proj_normal_.update(-1.0, proj_tangential_, 1.0);
 
-        half_normal_.Update(0.5, normal, 0.0);
-        normal_pres_timefacfac_.Update(pres_timefacfac, normal, 0.0);
+        half_normal_.update(0.5, normal, 0.0);
+        normal_pres_timefacfac_.update(pres_timefacfac, normal, 0.0);
 
         // get velocity at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -282,20 +282,20 @@ namespace Discret
             configmap.at(Inpar::XFEM::F_Pen_Row).first ||
             configmap.at(Inpar::XFEM::X_Pen_Row).first)
         {
-          velint_diff_.Update(configmap.at(Inpar::XFEM::F_Adj_Col).second, velint_m,
+          velint_diff_.update(configmap.at(Inpar::XFEM::F_Adj_Col).second, velint_m,
               -configmap.at(Inpar::XFEM::X_Adj_Col).second, velint_s_, 0.0);
           // add the prescribed interface velocity for weak Dirichlet boundary conditions or the
           // jump height for coupled problems
-          velint_diff_.Update(-1.0, ivelint_jump, 1.0);
+          velint_diff_.update(-1.0, ivelint_jump, 1.0);
 
 #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
           Core::LinAlg::Matrix<nsd_, 1> tmp_pval;
-          tmp_pval.Multiply(proj_normal_, normal_pres_timefacfac_);
+          tmp_pval.multiply(proj_normal_, normal_pres_timefacfac_);
           // Project the velocity jump [|u|] in the pressure term with the projection matrix.
           //  Useful if smoothed normals are used (performs better for rotating cylinder case).
-          velint_diff_pres_timefacfac_ = velint_diff_.Dot(tmp_pval);
+          velint_diff_pres_timefacfac_ = velint_diff_.dot(tmp_pval);
 #else
-          velint_diff_pres_timefacfac_ = velint_diff_.Dot(normal_pres_timefacfac_);
+          velint_diff_pres_timefacfac_ = velint_diff_.dot(normal_pres_timefacfac_);
 #endif
         }
 
@@ -308,21 +308,21 @@ namespace Discret
         {
           // velint_diff_proj_normal_ = (u^m_k - u^s_k - u^{jump}_k) P^n_{kj}
           // (([|u|]-u_0)*P^n) Apply from right for consistency
-          velint_diff_normal_.Update(configmap.at(Inpar::XFEM::F_Pen_n_Col).second, velint_m,
+          velint_diff_normal_.update(configmap.at(Inpar::XFEM::F_Pen_n_Col).second, velint_m,
               -configmap.at(Inpar::XFEM::X_Pen_n_Col).second, velint_s_, 0.0);
           // add the prescribed interface velocity for weak Dirichlet boundary conditions or the
           // jump height for coupled problems
-          velint_diff_normal_.Update(-1.0, ivelint_jump, 1.0);
-          velint_diff_proj_normal_.MultiplyTN(proj_normal_, velint_diff_normal_);
+          velint_diff_normal_.update(-1.0, ivelint_jump, 1.0);
+          velint_diff_proj_normal_.multiply_tn(proj_normal_, velint_diff_normal_);
 
 #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
           Core::LinAlg::Matrix<nsd_, 1> tmp_pval;
-          tmp_pval.Multiply(proj_normal_, normal_pres_timefacfac_);
+          tmp_pval.multiply(proj_normal_, normal_pres_timefacfac_);
           // Project the velocity jump [|u|] in the pressure term with the projection matrix.
           //  Useful if smoothed normals are used (performs better for rotating cylinder case).
-          velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.Dot(tmp_pval);
+          velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.dot(tmp_pval);
 #else
-          velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.Dot(normal_pres_timefacfac_);
+          velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.dot(normal_pres_timefacfac_);
 #endif
         }
 
@@ -335,12 +335,12 @@ namespace Discret
         {
           // velint_diff_proj_tangential_ = (u^m_k - u^s_k - u^{jump}_k) P^t_{kj}
           // (([|u|]-u_0)*P^t) Apply from right for consistency
-          velint_diff_tangential_.Update(configmap.at(Inpar::XFEM::F_Pen_t_Col).second, velint_m,
+          velint_diff_tangential_.update(configmap.at(Inpar::XFEM::F_Pen_t_Col).second, velint_m,
               -configmap.at(Inpar::XFEM::X_Pen_t_Col).second, velint_s_, 0.0);
           // add the prescribed interface velocity for weak Dirichlet boundary conditions or the
           // jump height for coupled problems
-          velint_diff_tangential_.Update(-1.0, ivelint_jump, 1.0);
-          velint_diff_proj_tangential_.MultiplyTN(proj_tangential_, velint_diff_tangential_);
+          velint_diff_tangential_.update(-1.0, ivelint_jump, 1.0);
+          velint_diff_proj_tangential_.multiply_tn(proj_tangential_, velint_diff_tangential_);
         }
 
         // funct_s * timefac * fac
@@ -348,13 +348,13 @@ namespace Discret
         if (slave_distype != Core::FE::CellType::dis_none) this->GetSlaveFunct(funct_s_);
 
         // funct_m * timefac * fac * funct_m  * kappa_m (dyadic product)
-        funct_m_m_dyad_.MultiplyNT(funct_m, funct_m);
+        funct_m_m_dyad_.multiply_nt(funct_m, funct_m);
 
         // funct_s * timefac * fac * funct_s * kappa_s (dyadic product)
-        funct_s_s_dyad_.MultiplyNT(funct_s_, funct_s_);
+        funct_s_s_dyad_.multiply_nt(funct_s_, funct_s_);
 
         // funct_s * timefac * fac * funct_m (dyadic product)
-        funct_s_m_dyad_.MultiplyNT(funct_s_, funct_m);
+        funct_s_m_dyad_.multiply_nt(funct_s_, funct_m);
 
         //-----------------------------------------------------------------
         // viscous stability term
@@ -419,17 +419,17 @@ namespace Discret
 
         // 2 * mu_m * timefac * fac
         const double km_viscm_fac = 2.0 * timefacfac * visceff_m;
-        half_normal_viscm_timefacfac_km_.Update(km_viscm_fac, half_normal_, 0.0);
+        half_normal_viscm_timefacfac_km_.update(km_viscm_fac, half_normal_, 0.0);
 
-        half_normal_deriv_m_viscm_timefacfac_km_.MultiplyTN(
+        half_normal_deriv_m_viscm_timefacfac_km_.multiply_tn(
             derxy_m, half_normal_);  // 0.5*normal(k)*derxy_m(k,ic)
-        half_normal_deriv_m_viscm_timefacfac_km_.Scale(km_viscm_fac);
+        half_normal_deriv_m_viscm_timefacfac_km_.scale(km_viscm_fac);
 
         // 0.5* (\nabla u + (\nabla u)^T) * normal
-        vderxy_m_normal_.Multiply(vderxy_m, half_normal_);
-        vderxy_m_normal_transposed_viscm_timefacfac_km_.MultiplyTN(vderxy_m, half_normal_);
-        vderxy_m_normal_transposed_viscm_timefacfac_km_.Update(1.0, vderxy_m_normal_, 1.0);
-        vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(km_viscm_fac);
+        vderxy_m_normal_.multiply(vderxy_m, half_normal_);
+        vderxy_m_normal_transposed_viscm_timefacfac_km_.multiply_tn(vderxy_m, half_normal_);
+        vderxy_m_normal_transposed_viscm_timefacfac_km_.update(1.0, vderxy_m_normal_, 1.0);
+        vderxy_m_normal_transposed_viscm_timefacfac_km_.scale(km_viscm_fac);
 
         //-----------------------------------------------------------------
         // pressure consistency term
@@ -621,14 +621,14 @@ namespace Discret
 
           // 2 * mu_s * kappa_s * timefac * fac
           const double ks_viscs_fac = 2.0 * visceff_s * timefacfac;
-          half_normal_viscs_timefacfac_ks_.Update(ks_viscs_fac, half_normal_, 0.0);
-          half_normal_deriv_s_viscs_timefacfac_ks_.MultiplyTN(
+          half_normal_viscs_timefacfac_ks_.update(ks_viscs_fac, half_normal_, 0.0);
+          half_normal_deriv_s_viscs_timefacfac_ks_.multiply_tn(
               derxy_s, half_normal_);  // half_normal(k)*derxy_s(k,ic);
-          half_normal_deriv_s_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
-          vderxy_s_normal_.Multiply(vderxy_s, half_normal_);
-          vderxy_s_normal_transposed_viscs_timefacfac_ks_.MultiplyTN(vderxy_s, half_normal_);
-          vderxy_s_normal_transposed_viscs_timefacfac_ks_.Update(1.0, vderxy_s_normal_, 1.0);
-          vderxy_s_normal_transposed_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
+          half_normal_deriv_s_viscs_timefacfac_ks_.scale(ks_viscs_fac);
+          vderxy_s_normal_.multiply(vderxy_s, half_normal_);
+          vderxy_s_normal_transposed_viscs_timefacfac_ks_.multiply_tn(vderxy_s, half_normal_);
+          vderxy_s_normal_transposed_viscs_timefacfac_ks_.update(1.0, vderxy_s_normal_, 1.0);
+          vderxy_s_normal_transposed_viscs_timefacfac_ks_.scale(ks_viscs_fac);
 
           if (configmap.at(Inpar::XFEM::XF_Con_Col).first)
           {
@@ -643,7 +643,7 @@ namespace Discret
           // viscous adjoint consistency term
 
           Core::LinAlg::Matrix<nsd_, slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
-          derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_ * ks_viscs_fac);
+          derxy_s_viscs_timefacfac_ks.scale(adj_visc_scale_ * ks_viscs_fac);
 
           // TODO: Needs added Projection. (If deemed necessary!)
           if (configmap.at(Inpar::XFEM::XF_Adj_Row).first)
@@ -663,11 +663,11 @@ namespace Discret
               configmap.at(Inpar::XFEM::X_TJ_Rhs).first)
           {
             // funct_s * timefac * fac * kappa_m
-            funct_s_timefacfac_km_.Update(
+            funct_s_timefacfac_km_.update(
                 configmap.at(Inpar::XFEM::X_TJ_Rhs).second * timefacfac, funct_s_, 0.0);
 
             // funct_m * timefac * fac * kappa_s
-            funct_m_timefacfac_ks_.Update(
+            funct_m_timefacfac_ks_.update(
                 configmap.at(Inpar::XFEM::F_TJ_Rhs).second * timefacfac, funct_m, 0.0);
 
             nit_traction_consistency_term(
@@ -680,10 +680,10 @@ namespace Discret
               configmap.at(Inpar::XFEM::X_LB_Rhs).first)
           {
             Core::LinAlg::Matrix<nsd_, slave_nen_> derxy_s_timefacfac_km(derxy_s);
-            derxy_s_timefacfac_km.Scale(configmap.at(Inpar::XFEM::X_LB_Rhs).second * timefacfac);
+            derxy_s_timefacfac_km.scale(configmap.at(Inpar::XFEM::X_LB_Rhs).second * timefacfac);
 
             Core::LinAlg::Matrix<nsd_, nen_> derxy_m_timefacfac_ks(derxy_m);
-            derxy_m_timefacfac_ks.Scale(configmap.at(Inpar::XFEM::F_LB_Rhs).second * timefacfac);
+            derxy_m_timefacfac_ks.scale(configmap.at(Inpar::XFEM::F_LB_Rhs).second * timefacfac);
 
             nit_projected_traction_consistency_term(
                 derxy_m_timefacfac_ks, derxy_s_timefacfac_km, LB_proj_matrix);
@@ -841,7 +841,7 @@ namespace Discret
               bool only_rhs)
       {
         static Core::LinAlg::Matrix<nsd_, 1> proj_traction;
-        proj_traction.MultiplyTN(proj_matrix, traction_);
+        proj_traction.multiply_tn(proj_matrix, traction_);
 
         const double facms = m_row.second * s_col.second;
         const double facss = s_row.second * s_col.second;
@@ -1068,12 +1068,12 @@ namespace Discret
         // Create projection matrices
         //--------------------------------------------
         proj_tangential_ = proj_tangential;
-        proj_normal_.putScalar(0.0);
+        proj_normal_.put_scalar(0.0);
         for (unsigned i = 0; i < nsd_; i++) proj_normal_(i, i) = 1.0;
-        proj_normal_.Update(-1.0, proj_tangential_, 1.0);
+        proj_normal_.update(-1.0, proj_tangential_, 1.0);
 
-        half_normal_.Update(0.5, normal, 0.0);
-        normal_pres_timefacfac_.Update(timefacfac, normal, 0.0);
+        half_normal_.update(0.5, normal, 0.0);
+        normal_pres_timefacfac_.update(timefacfac, normal, 0.0);
 
         // get velocity at integration point
         // (values at n)
@@ -1095,21 +1095,21 @@ namespace Discret
             configmap.at(Inpar::XFEM::F_Pen_Row).first ||
             configmap.at(Inpar::XFEM::X_Pen_Row).first)
         {
-          velint_diff_.Update(configmap.at(Inpar::XFEM::F_Adj_Col).second, velint_m,
+          velint_diff_.update(configmap.at(Inpar::XFEM::F_Adj_Col).second, velint_m,
               -configmap.at(Inpar::XFEM::X_Adj_Col).second, velint_s_, 0.0);
           // add the prescribed interface velocity for weak Dirichlet boundary conditions or the
           // jump height for coupled problems
-          velint_diff_.Update(-1.0, ivelint_jump, 1.0);
+          velint_diff_.update(-1.0, ivelint_jump, 1.0);
 
           //    #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT //Todo: commented this not to change results
           //    with this commit
           //      Core::LinAlg::Matrix<nsd_,1> tmp_pval;
-          //      tmp_pval.Multiply(proj_normal_,normal_pres_timefacfac_);
+          //      tmp_pval.multiply(proj_normal_,normal_pres_timefacfac_);
           //      //Project the velocity jump [|u|] in the pressure term with the projection matrix.
           //      //  Useful if smoothed normals are used (performs better for rotating cylinder
           //      case). velint_diff_pres_timefacfac_ = velint_diff_.Dot(tmp_pval);
           //    #else
-          velint_diff_pres_timefacfac_ = velint_diff_.Dot(normal_pres_timefacfac_);
+          velint_diff_pres_timefacfac_ = velint_diff_.dot(normal_pres_timefacfac_);
           //    #endif
         }
 
@@ -1122,22 +1122,22 @@ namespace Discret
         {
           // velint_diff_proj_normal_ = (u^m_k - u^s_k - u^{jump}_k) P^n_{kj}
           // (([|u|]-u_0)*P^n) Apply from right for consistency
-          velint_diff_normal_.Update(configmap.at(Inpar::XFEM::F_Adj_n_Col).second, velint_m,
+          velint_diff_normal_.update(configmap.at(Inpar::XFEM::F_Adj_n_Col).second, velint_m,
               -configmap.at(Inpar::XFEM::X_Adj_n_Col).second, velint_s_, 0.0);
           // add the prescribed interface velocity for weak Dirichlet boundary conditions or the
           // jump height for coupled problems
-          velint_diff_normal_.Update(-1.0, ivelint_jump, 1.0);
-          velint_diff_proj_normal_.MultiplyTN(proj_normal_, velint_diff_normal_);
+          velint_diff_normal_.update(-1.0, ivelint_jump, 1.0);
+          velint_diff_proj_normal_.multiply_tn(proj_normal_, velint_diff_normal_);
 
           //    #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT //Todo: commented this not to change results
           //    with this commit
           //      Core::LinAlg::Matrix<nsd_,1> tmp_pval;
-          //      tmp_pval.Multiply(proj_normal_,normal_pres_timefacfac_);
+          //      tmp_pval.multiply(proj_normal_,normal_pres_timefacfac_);
           //      //Project the velocity jump [|u|] in the pressure term with the projection matrix.
           //      //  Useful if smoothed normals are used (performs better for rotating cylinder
           //      case). velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.Dot(tmp_pval);
           //    #else
-          velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.Dot(normal_pres_timefacfac_);
+          velint_diff_normal_pres_timefacfac_ = velint_diff_normal_.dot(normal_pres_timefacfac_);
           //    #endif
         }
 
@@ -1149,12 +1149,12 @@ namespace Discret
         {
           // velint_diff_proj_tangential_ = (u^m_k - u^s_k - u^{jump}_k) P^t_{kj}
           // (([|u|]-u_0)*P^t) Apply from right for consistency
-          velint_diff_tangential_.Update(configmap.at(Inpar::XFEM::F_Adj_t_Col).second, velint_m,
+          velint_diff_tangential_.update(configmap.at(Inpar::XFEM::F_Adj_t_Col).second, velint_m,
               -configmap.at(Inpar::XFEM::X_Adj_t_Col).second, velint_s_, 0.0);
           // add the prescribed interface velocity for weak Dirichlet boundary conditions or the
           // jump height for coupled problems
-          velint_diff_tangential_.Update(-1.0, ivelint_jump, 1.0);
-          velint_diff_proj_tangential_.MultiplyTN(proj_tangential_, velint_diff_tangential_);
+          velint_diff_tangential_.update(-1.0, ivelint_jump, 1.0);
+          velint_diff_proj_tangential_.multiply_tn(proj_tangential_, velint_diff_tangential_);
         }
 
         // funct_s * timefac * fac
@@ -1162,13 +1162,13 @@ namespace Discret
         if (slave_distype != Core::FE::CellType::dis_none) this->GetSlaveFunct(funct_s_);
 
         // funct_m * funct_m (dyadic product)
-        funct_m_m_dyad_.MultiplyNT(funct_m, funct_m);
+        funct_m_m_dyad_.multiply_nt(funct_m, funct_m);
 
         // funct_s * funct_s (dyadic product)
-        funct_s_s_dyad_.MultiplyNT(funct_s_, funct_s_);
+        funct_s_s_dyad_.multiply_nt(funct_s_, funct_s_);
 
         // funct_s * funct_m (dyadic product)
-        funct_s_m_dyad_.MultiplyNT(funct_s_, funct_m);
+        funct_s_m_dyad_.multiply_nt(funct_s_, funct_m);
 
         // penalty term
         if (fldparaxfem_.interface_terms_previous_state() == Inpar::XFEM::PreviousState_full)
@@ -1197,13 +1197,13 @@ namespace Discret
 
         // 2 * mu_m * kappa_m * timefac * fac
         const double km_viscm_fac = 2.0 * timefacfac * visceff_m;
-        half_normal_viscm_timefacfac_km_.Update(km_viscm_fac, half_normal_, 0.0);
+        half_normal_viscm_timefacfac_km_.update(km_viscm_fac, half_normal_, 0.0);
 
         // 0.5* (\nabla u + (\nabla u)^T) * normal
-        vderxy_m_normal_.Multiply(vderxy_m, half_normal_);
-        vderxy_m_normal_transposed_viscm_timefacfac_km_.MultiplyTN(vderxy_m, half_normal_);
-        vderxy_m_normal_transposed_viscm_timefacfac_km_.Update(1.0, vderxy_m_normal_, 1.0);
-        vderxy_m_normal_transposed_viscm_timefacfac_km_.Scale(km_viscm_fac);
+        vderxy_m_normal_.multiply(vderxy_m, half_normal_);
+        vderxy_m_normal_transposed_viscm_timefacfac_km_.multiply_tn(vderxy_m, half_normal_);
+        vderxy_m_normal_transposed_viscm_timefacfac_km_.update(1.0, vderxy_m_normal_, 1.0);
+        vderxy_m_normal_transposed_viscm_timefacfac_km_.scale(km_viscm_fac);
 
         // evaluate the terms, that contribute to the background fluid
         // system - two-sided or xfluid-sided:
@@ -1351,10 +1351,10 @@ namespace Discret
           // 2 * mu_s * kappa_s * timefac * fac
           double ks_viscs_fac = 2.0 * visceff_s * timefacfac;
 
-          vderxy_s_normal_.Multiply(vderxyn_s, half_normal_);
-          vderxy_s_normal_transposed_viscs_timefacfac_ks_.MultiplyTN(vderxyn_s, half_normal_);
-          vderxy_s_normal_transposed_viscs_timefacfac_ks_.Update(1.0, vderxy_s_normal_, 1.0);
-          vderxy_s_normal_transposed_viscs_timefacfac_ks_.Scale(ks_viscs_fac);
+          vderxy_s_normal_.multiply(vderxyn_s, half_normal_);
+          vderxy_s_normal_transposed_viscs_timefacfac_ks_.multiply_tn(vderxyn_s, half_normal_);
+          vderxy_s_normal_transposed_viscs_timefacfac_ks_.update(1.0, vderxy_s_normal_, 1.0);
+          vderxy_s_normal_transposed_viscs_timefacfac_ks_.scale(ks_viscs_fac);
 
           if (configmap.at(Inpar::XFEM::XF_Con_Col).first)
           {
@@ -1400,7 +1400,7 @@ namespace Discret
             this->get_slave_funct_deriv(derxy_s);
 
             Core::LinAlg::Matrix<nsd_, slave_nen_> derxy_s_viscs_timefacfac_ks(derxy_s);
-            derxy_s_viscs_timefacfac_ks.Scale(adj_visc_scale_ * ks_viscs_fac);
+            derxy_s_viscs_timefacfac_ks.scale(adj_visc_scale_ * ks_viscs_fac);
 
             // TODO: Needs added Projection. (If deemed necessary!)
             if (configmap.at(Inpar::XFEM::XF_Adj_Row).first)
@@ -1421,11 +1421,11 @@ namespace Discret
         if (configmap.at(Inpar::XFEM::F_TJ_Rhs).first || configmap.at(Inpar::XFEM::X_TJ_Rhs).first)
         {
           // funct_s * timefac * fac * kappa_m
-          funct_s_timefacfac_km_.Update(
+          funct_s_timefacfac_km_.update(
               configmap.at(Inpar::XFEM::F_TJ_Rhs).second * timefacfac, funct_s_, 0.0);
 
           // funct_m * timefac * fac * kappa_s
-          funct_m_timefacfac_ks_.Update(
+          funct_m_timefacfac_ks_.update(
               configmap.at(Inpar::XFEM::X_TJ_Rhs).second * timefacfac, funct_m, 0.0);
 
           nit_traction_consistency_term(
@@ -1440,10 +1440,10 @@ namespace Discret
               "Check if we need the (Laplace-Beltrami) for the old timestep, "
               "then you should not forget to add the LB_proj_matrix as member to this function?");
           //    Core::LinAlg::Matrix<nsd_,slave_nen_> derxy_s_timefacfac_km(derxy_s);
-          //    derxy_s_timefacfac_km.Scale(configmap.at(Inpar::XFEM::F_LB_Rhs).second*timefacfac);
+          //    derxy_s_timefacfac_km.scale(configmap.at(Inpar::XFEM::F_LB_Rhs).second*timefacfac);
           //
           //    Core::LinAlg::Matrix<nsd_,nen_> derxy_m_timefacfac_ks(derxy_m);
-          //    derxy_m_timefacfac_ks.Scale(configmap.at(Inpar::XFEM::X_LB_Rhs).second*timefacfac);
+          //    derxy_m_timefacfac_ks.scale(configmap.at(Inpar::XFEM::X_LB_Rhs).second*timefacfac);
           //
           //    nit_projected_traction_consistency_term(
           //    derxy_m_timefacfac_ks,
@@ -1799,7 +1799,7 @@ namespace Discret
 
 #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
         Core::LinAlg::Matrix<nsd_, 1> proj_norm_timefacfac;
-        proj_norm_timefacfac.Multiply(proj_normal_, normal_timefacfac);
+        proj_norm_timefacfac.multiply(proj_normal_, normal_timefacfac);
 #endif
         //-----------------------------------------------
         //    - (qm*n, km *(Dum))
@@ -1880,7 +1880,7 @@ namespace Discret
 
 #ifdef PROJECT_VEL_FOR_PRESSURE_ADJOINT
         Core::LinAlg::Matrix<nsd_, 1> proj_norm_timefacfac;
-        proj_norm_timefacfac.Multiply(proj_normal_, normal_timefacfac);
+        proj_norm_timefacfac.multiply(proj_normal_, normal_timefacfac);
 #endif
 
         const double velint_diff_normal_timefacfac_ks =
@@ -2071,11 +2071,11 @@ namespace Discret
         //----------------------------------------------------------------------------------------
 
         // 2.0 * timefacfac * visceff_m * k_m * [\nabla N^(IX)]_k P^t_{kj}
-        proj_matrix_derxy_m_.MultiplyTN(proj_matrix, derxy_m);  // Apply from right for consistency
-        proj_matrix_derxy_m_.Scale(km_viscm_fac);
+        proj_matrix_derxy_m_.multiply_tn(proj_matrix, derxy_m);  // Apply from right for consistency
+        proj_matrix_derxy_m_.scale(km_viscm_fac);
 
         // P_norm * {2.0 * timefacfac * visceff_m * 0.5 * (\nabla u + (\nabla u)^T)}
-        vderxy_x_normal_transposed_viscx_timefacfac_kx_pmatrix_.MultiplyTN(
+        vderxy_x_normal_transposed_viscx_timefacfac_kx_pmatrix_.multiply_tn(
             proj_matrix, vderxy_m_normal_transposed_viscm_timefacfac_km_);
 
         // here we use a non-optimal order to assemble the values into C_umum
@@ -2277,12 +2277,12 @@ namespace Discret
         // viscous adjoint consistency term
 
         double tmp_fac = adj_visc_scale_ * viscm_fac;
-        derxy_m_viscm_timefacfac_.Update(tmp_fac, derxy_m);  // 2 * mu_m * timefacfac *
+        derxy_m_viscm_timefacfac_.update(tmp_fac, derxy_m);  // 2 * mu_m * timefacfac *
                                                              // derxy_m(k,ic)
 
         static Core::LinAlg::Matrix<nsd_, nsd_> velint_diff_dyad_normal,
             velint_diff_dyad_normal_symm;
-        velint_diff_dyad_normal.MultiplyNT(velint_diff_, normal);
+        velint_diff_dyad_normal.multiply_nt(velint_diff_, normal);
 
         for (unsigned jvel = 0; jvel < nsd_; ++jvel)
         {
@@ -2315,7 +2315,7 @@ namespace Discret
         const double facmm = m_row.second * m_col.second;
         const double facms = m_row.second * s_col.second;
 
-        normal_deriv_m_viscm_km_.MultiplyTN(
+        normal_deriv_m_viscm_km_.multiply_tn(
             derxy_m_viscm_timefacfac_, half_normal_);  // half_normal(k)*derxy_m(k,ic)*viscm*km
 
         // here we use a non-optimal order to assemble the values into C_umum
@@ -2448,7 +2448,7 @@ namespace Discret
         // static Core::LinAlg::Matrix<nsd_,nsd_> velint_proj_norm_diff_dyad_normal,
         // velint_proj_norm_diff_dyad_normal_symm;
         // velint_diff_proj_normal_ = (u^m_k - u^s_k) P^n_{kj} * n
-        velint_proj_norm_diff_dyad_normal_.MultiplyNT(velint_diff_proj_matrix_, normal);
+        velint_proj_norm_diff_dyad_normal_.multiply_nt(velint_diff_proj_matrix_, normal);
 
         for (unsigned jvel = 0; jvel < nsd_; ++jvel)
         {
@@ -2526,7 +2526,7 @@ namespace Discret
 
         static Core::LinAlg::Matrix<nsd_, nsd_> velint_diff_dyad_normal,
             velint_diff_dyad_normal_symm;
-        velint_diff_dyad_normal.MultiplyNT(velint_diff_, normal);
+        velint_diff_dyad_normal.multiply_nt(velint_diff_, normal);
 
         for (unsigned jvel = 0; jvel < nsd_; ++jvel)
         {
@@ -2558,7 +2558,7 @@ namespace Discret
 
         const double facsm = s_row.second * m_col.second;
         const double facss = s_row.second * s_col.second;
-        normal_deriv_s_viscs_ks_.MultiplyTN(
+        normal_deriv_s_viscs_ks_.multiply_tn(
             derxy_s_viscs_timefacfac_ks, half_normal_);  // half_normal(k)*derxy_m(k,ic)*viscm*km
 
         for (unsigned ir = 0; ir < slave_nen_; ++ir)
@@ -2643,30 +2643,30 @@ namespace Discret
         //  //normal_deriv_m_viscm_km_ = 2.0 * alpha * half_normal(k) * mu_m * timefacfac * km *
         //  derxy_m(k,ic)
         //  //                         = mu_m * alpha * timefacfac *km * c(ix)
-        //  normal_deriv_m_viscm_km_.MultiplyTN(derxy_m_viscm_timefacfac_km, half_normal_);
+        //  normal_deriv_m_viscm_km_.multiply_tn(derxy_m_viscm_timefacfac_km, half_normal_);
 
         //  Core::LinAlg::Matrix<nen_,1> normal_deriv_m;
-        normal_deriv_m_.MultiplyTN(derxy_m, half_normal_);
-        normal_deriv_m_.Scale(2.0);  // 2.0 * half_normal(k) * derxy_m(k,ix) =c(ix)
+        normal_deriv_m_.multiply_tn(derxy_m, half_normal_);
+        normal_deriv_m_.scale(2.0);  // 2.0 * half_normal(k) * derxy_m(k,ix) =c(ix)
 
         //  Core::LinAlg::Matrix<nsd_,nen_> proj_tang_derxy_m_1;
         //  // proj_matrix_derxy_m_ = alpha * 2.0 * P^t_{jk} * derxy_m(k,IX) * mu_m * timefacfac *
         //  km
         //  //                      = 2.0 * mu_m * timefacefac * km * p_1(IX,j)
         //  // IF P^t_{jk} IS SYMMETRIC: p_1(IX,j) = p_2(IX,j)
-        //  proj_tang_derxy_m_1.Multiply(proj_matrix_,derxy_m_viscm_timefacfac_km);
+        //  proj_tang_derxy_m_1.multiply(proj_matrix_,derxy_m_viscm_timefacfac_km);
 
         //  Core::LinAlg::Matrix<nsd_,nen_> proj_tang_derxy_m_2;
         //  // proj_tang_derxy_m = 2.0 * P^t_{jk} * derxy_m(k,IX) * mu_m * timefacfac * km
         //  //                   = 2.0 * mu_m * timefacefac * km * p_2(IX,j)
         //  // IF P^t_{jk} IS SYMMETRIC: p_1(IX,j) = p_2(IX,j)
-        //  proj_tang_derxy_m_2.MultiplyTN(proj_matrix_,derxy_m_viscm_timefacfac_km);
+        //  proj_tang_derxy_m_2.multiply_tn(proj_matrix_,derxy_m_viscm_timefacfac_km);
 
         //  Core::LinAlg::Matrix<nen_,nen_> derxy_m_P_derxy_m;
         // derxy_m_P_derxy_m = 2.0 * derxy_m(j,IC) P^t_{jk} * derxy_m(k,IR) * mu_m * timefacfac * km
         //                   = 2.0 * C(IC,IR) * mu_m * timefacfac * km
-        //  derxy_m_P_derxy_m.MultiplyTN(derxy_m,proj_tang_derxy_m_1);
-        derxy_m_p_derxy_m_.MultiplyTN(derxy_m, proj_matrix_derxy_m_);
+        //  derxy_m_P_derxy_m.multiply_tn(derxy_m,proj_tang_derxy_m_1);
+        derxy_m_p_derxy_m_.multiply_tn(derxy_m, proj_matrix_derxy_m_);
 
         // here we use a non-optimal order to assemble the values into C_umum
         // however for this term we have to save operations
@@ -2698,18 +2698,18 @@ namespace Discret
         // 2.0 * timefacfac * visceff_m * 0.5* (\nabla u + (\nabla u)^T) * normal
         // vderxy_m_normal_transposed_viscm_timefacfac_km_
 
-        vderxy_m_normal_tang_.Multiply(vderxy_m, normal);
-        vderxy_m_normal_transposed_.MultiplyTN(vderxy_m, normal);
-        vderxy_m_normal_transposed_.Update(
+        vderxy_m_normal_tang_.multiply(vderxy_m, normal);
+        vderxy_m_normal_transposed_.multiply_tn(vderxy_m, normal);
+        vderxy_m_normal_transposed_.update(
             1.0, vderxy_m_normal_tang_, 1.0);  // (\nabla u + (\nabla u)^T) * normal
 
         // (\nabla u + (\nabla u)^T) * normal * P^t
-        vderxy_m_normal_tang_.MultiplyTN(proj_matrix_, vderxy_m_normal_transposed_);
+        vderxy_m_normal_tang_.multiply_tn(proj_matrix_, vderxy_m_normal_transposed_);
 
         // 2.0 * derxy_m(k,IX) * mu_m * timefacfac * km ( (\nabla u + (\nabla u)^T) * normal * P^t
         // )_k
         static Core::LinAlg::Matrix<nen_, 1> tmp_rhs;
-        tmp_rhs.MultiplyTN(derxy_m_viscm_timefacfac_km, vderxy_m_normal_tang_);
+        tmp_rhs.multiply_tn(derxy_m_viscm_timefacfac_km, vderxy_m_normal_tang_);
 
         for (unsigned ir = 0; ir < nen_; ++ir)
         {
@@ -2756,7 +2756,7 @@ namespace Discret
         // + gamma*mu/h_K (vm, um))
 
         const double stabfac_timefacfac_m = timefacfac * m_row.second;
-        velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac_m, velint_diff_, 0.0);
+        velint_diff_timefacfac_stabfac_.update(stabfac_timefacfac_m, velint_diff_, 0.0);
 
         for (unsigned ir = 0; ir < nen_; ++ir)
         {
@@ -2773,7 +2773,7 @@ namespace Discret
         if (s_row.first)
         {
           const double stabfac_timefacfac_s = timefacfac * s_row.second;
-          velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac_s, velint_diff_, 0.0);
+          velint_diff_timefacfac_stabfac_.update(stabfac_timefacfac_s, velint_diff_, 0.0);
 
           for (unsigned ir = 0; ir < slave_nen_; ++ir)
           {
@@ -2887,7 +2887,7 @@ namespace Discret
         if (only_rhs) return;
 
         const double stabfac_timefacfac_m = timefacfac;
-        velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac_m, velint_diff_, 0.0);
+        velint_diff_timefacfac_stabfac_.update(stabfac_timefacfac_m, velint_diff_, 0.0);
 
         for (unsigned ir = 0; ir < nen_; ++ir)
         {
@@ -2980,7 +2980,7 @@ namespace Discret
         }
 
         const double stabfac_timefacfac_m = timefacfac * m_row.second;
-        velint_diff_timefacfac_stabfac_.Update(stabfac_timefacfac_m, velint_diff_proj_matrix_, 0.0);
+        velint_diff_timefacfac_stabfac_.update(stabfac_timefacfac_m, velint_diff_proj_matrix_, 0.0);
         for (unsigned ir = 0; ir < nen_; ++ir)
         {
           const double tmp_val = funct_m(ir);
@@ -3064,7 +3064,7 @@ namespace Discret
           }
 
           const double stabfac_timefacfac_s = timefacfac * s_row.second;
-          velint_diff_timefacfac_stabfac_.Update(
+          velint_diff_timefacfac_stabfac_.update(
               stabfac_timefacfac_s, velint_diff_proj_matrix_, 0.0);
 
           for (unsigned ir = 0; ir < slave_nen_; ++ir)
@@ -3107,7 +3107,7 @@ namespace Discret
         // { v }_m = 0.5* (v^b + v^e) leads to the scaling with 0.5;
         // beta: convective velocity, currently beta=u^b_Gamma;
         // n:= n^b
-        const double stabfac_avg_scaled = 0.5 * velint_m.Dot(normal) * density * timefacfac;
+        const double stabfac_avg_scaled = 0.5 * velint_m.dot(normal) * density * timefacfac;
 
         for (unsigned ivel = 0; ivel < nsd_; ++ivel)
         {
@@ -3179,7 +3179,7 @@ namespace Discret
           )
       {
         // Create the identity matrix (Probably not the fastest way...) Might make it global?
-        proj_tangential_.putScalar(0.0);
+        proj_tangential_.put_scalar(0.0);
         for (unsigned int i = 0; i < nsd_; ++i) proj_tangential_(i, i) = 1;
 
         //   Non-smoothed projection matrix
@@ -3191,9 +3191,9 @@ namespace Discret
           }
         }
 
-        proj_normal_.putScalar(0.0);
+        proj_normal_.put_scalar(0.0);
         for (unsigned i = 0; i < nsd_; ++i) proj_normal_(i, i) = 1.0;
-        proj_normal_.Update(-1.0, proj_tangential_, 1.0);
+        proj_normal_.update(-1.0, proj_tangential_, 1.0);
       }
 
       /*----------------------------------------------------------------------*
@@ -3222,24 +3222,25 @@ namespace Discret
         proj_matrix_ = projection_matrix;
 
         // 2.0 * timefacfac * visceff_m * k_m * [\nabla N^(IX)]_k P^t_{kj}
-        proj_matrix_derxy_m_.MultiplyTN(proj_matrix_, derxy_m);  // Apply from right for consistency
-        proj_matrix_derxy_m_.Scale(km_viscm_fac);
+        proj_matrix_derxy_m_.multiply_tn(
+            proj_matrix_, derxy_m);  // Apply from right for consistency
+        proj_matrix_derxy_m_.scale(km_viscm_fac);
 
         //-----------------------------------------------------------------
         // viscous adjoint consistency term
 
         double tmp_fac = adj_visc_scale_ * km_viscm_fac;
-        derxy_m_viscm_timefacfac_.Update(tmp_fac, derxy_m);  // 2 * mu_m * timefacfac *
+        derxy_m_viscm_timefacfac_.update(tmp_fac, derxy_m);  // 2 * mu_m * timefacfac *
                                                              // derxy_m(k,ic)
 
         // Scale with adjoint viscous scaling {-1,+1}
-        proj_matrix_derxy_m_.Scale(adj_visc_scale_);
+        proj_matrix_derxy_m_.scale(adj_visc_scale_);
 
         // Same as half_normal_deriv_m_viscm_timefacfac_km_? Might be unnecessary?
         // normal_deriv_m_viscm_km_ = alpha * half_normal(k)* 2 * km * mu_m * timefacfac *
         // derxy_m(k,IX)
         //                          = alpha * mu_m * viscfac_km * c(IX)
-        normal_deriv_m_viscm_km_.MultiplyTN(derxy_m_viscm_timefacfac_, half_normal_);
+        normal_deriv_m_viscm_km_.multiply_tn(derxy_m_viscm_timefacfac_, half_normal_);
 
         nit_visc_adjoint_consistency_master_terms_projected(
             derxy_m_viscm_timefacfac_, funct_m, normal, m_row, m_col, s_col);

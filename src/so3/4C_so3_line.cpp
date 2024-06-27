@@ -110,10 +110,10 @@ void Discret::ELEMENTS::StructuralLine::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralLine::Print(std::ostream& os) const
+void Discret::ELEMENTS::StructuralLine::print(std::ostream& os) const
 {
   os << "StructuralLine ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

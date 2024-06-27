@@ -98,10 +98,10 @@ namespace Core::LinAlg
     }
 
     template <class lhs, class rhs, unsigned int inner>
-    inline void Multiply(
+    inline void multiply(
         const BlockMatrix<lhs, brows, inner>& left, const BlockMatrix<rhs, inner, bcols>& right)
     {
-      PutScalar(0.);
+      put_scalar(0.);
       for (unsigned int ic = 0; ic < bcols; ++ic)
       {
         for (unsigned int i = 0; i < inner; ++i)
@@ -113,7 +113,7 @@ namespace Core::LinAlg
               if (left.IsUsed(ir, i))
               {
                 value_type* b = (*this)(ir, ic);
-                b->Multiply(1, *left(ir, i), *right(i, ic), 1);
+                b->multiply(1, *left(ir, i), *right(i, ic), 1);
               }
             }
           }
@@ -121,13 +121,13 @@ namespace Core::LinAlg
       }
     }
 
-    void PutScalar(scalar_type scalar)
+    void put_scalar(scalar_type scalar)
     {
       for (unsigned i = 0; i < brows * bcols; ++i)
       {
         if (blocks_[i] != nullptr)
         {
-          blocks_[i]->PutScalar(scalar);
+          blocks_[i]->put_scalar(scalar);
         }
       }
     }

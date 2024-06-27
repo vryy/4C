@@ -131,9 +131,9 @@ bool XFEM::XfluidTimeintBase::changed_side_same_time(
   //-----------------------------------------------------------------------
   // special case of equal coordinates x1 and x2 -> no line
   Core::LinAlg::Matrix<3, 1> diff(true);
-  diff.Update(1.0, x1, -1.0, x2);
+  diff.update(1.0, x1, -1.0, x2);
 
-  if (diff.Norm2() < 1.0e-13) return false;
+  if (diff.norm2() < 1.0e-13) return false;
 
   //-----------------------------------------------------------------------
   // standard case of a real line between x1 and x2
@@ -634,12 +634,12 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
     Core::LinAlg::Matrix<3, numnode> shapeFcnDeriv;
     Core::FE::shape_function_3D_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), DISTYPE);
 
-    Core::LinAlg::Matrix<nsd, nsd> xjm(true);   // jacobi matrix
-    xjm.MultiplyNT(shapeFcnDeriv, nodecoords);  // jacobian J = (dx/dxi)^T
+    Core::LinAlg::Matrix<nsd, nsd> xjm(true);    // jacobi matrix
+    xjm.multiply_nt(shapeFcnDeriv, nodecoords);  // jacobian J = (dx/dxi)^T
     xji.clear();
-    xji.Invert(xjm);  // jacobian inverted J^(-1) = dxi/dx
+    xji.invert(xjm);  // jacobian inverted J^(-1) = dxi/dx
 
-    shapeFcnDerivXY.Multiply(xji, shapeFcnDeriv);  // (dN/dx)^T = (dN/dxi)^T * J^(-T)
+    shapeFcnDerivXY.multiply(xji, shapeFcnDeriv);  // (dN/dx)^T = (dN/dxi)^T * J^(-T)
   }
 
   return;
@@ -1179,14 +1179,14 @@ void XFEM::XfluidStd::getGPValuesT(Core::Elements::Element* ele,  ///< pointer t
   //-------------------------------------------------------
   // interpolate velocity and pressure values at starting point
   vel.clear();  // set to zero
-  vel.Multiply(evel, shapeFcn);
+  vel.multiply(evel, shapeFcn);
 
-  pres = epre.Dot(shapeFcn);
+  pres = epre.dot(shapeFcn);
 
   if (compute_deriv)
   {
-    vel_deriv.MultiplyNT(evel, shapeFcnDeriv);
-    pres_deriv.MultiplyTT(epre, shapeFcnDeriv);
+    vel_deriv.multiply_nt(evel, shapeFcnDeriv);
+    pres_deriv.multiply_tt(epre, shapeFcnDeriv);
   }
 
   return;
@@ -1714,9 +1714,9 @@ void XFEM::XfluidStd::project_and_trackback(TimeIntData& data)
   if (data.proj_ != TimeIntData::failed_)
   {
     // fill data
-    //  data.startpoint_.Update(1.0,newNodeCoords,-dt_,nodevel);
-    data.startpoint_.Update(1.0, start_point, 0.0);
-    data.initialpoint_.Update(1.0, start_point, 0.0);
+    //  data.startpoint_.update(1.0,newNodeCoords,-dt_,nodevel);
+    data.startpoint_.update(1.0, start_point, 0.0);
+    data.initialpoint_.update(1.0, start_point, 0.0);
     data.initial_eid_ = -1;
     data.initial_ele_owner_ = -1;
     data.dMin_ = min_dist;
@@ -1917,7 +1917,7 @@ void XFEM::XfluidStd::compute_start_point_side(
   callget_normal_side_tn(side, normal, side_xyze, lm, proj_x_n, xi_side);
 
   // map point into fluid domain along normal vector
-  start_point.Update(1.0, proj_x_n, dist, normal);
+  start_point.update(1.0, proj_x_n, dist, normal);
 
   return;
 }
@@ -1949,36 +1949,36 @@ void XFEM::XfluidStd::compute_start_point_line(
 
 
   for (int i = 0; i < side1->num_node(); i++)
-    xi_1_avg.Update(1.0, Core::FE::GetNodeCoordinates(i, side1->Shape()), 1.0);
+    xi_1_avg.update(1.0, Core::FE::GetNodeCoordinates(i, side1->Shape()), 1.0);
 
-  xi_1_avg.Scale(1.0 / side1->num_node());
+  xi_1_avg.scale(1.0 / side1->num_node());
 
   xi_side1(0, 0) = xi_1_avg(0, 0);
   xi_side1(1, 0) = xi_1_avg(1, 0);
 
   callget_normal_side_tn(side1, normal1, side1_xyze, lm1, proj_x_n_dummy1, xi_side1);
 
-  normal_avg.Update(1.0, normal1, 1.0);
+  normal_avg.update(1.0, normal1, 1.0);
 
   if (side2 != nullptr)  // in case we have side2, use averaged normal
   {
     for (int i = 0; i < side2->num_node(); i++)
-      xi_2_avg.Update(1.0, Core::FE::GetNodeCoordinates(i, side2->Shape()), 1.0);
+      xi_2_avg.update(1.0, Core::FE::GetNodeCoordinates(i, side2->Shape()), 1.0);
 
-    xi_2_avg.Scale(1.0 / side2->num_node());
+    xi_2_avg.scale(1.0 / side2->num_node());
 
     xi_side2(0, 0) = xi_2_avg(0, 0);
     xi_side2(1, 0) = xi_2_avg(1, 0);
 
     callget_normal_side_tn(side2, normal2, side2_xyze, lm2, proj_x_n_dummy1, xi_side2);
 
-    normal_avg.Update(1.0, normal2, 1.0);
+    normal_avg.update(1.0, normal2, 1.0);
   }
 
-  normal_avg.Scale(1.0 / normal_avg.Norm2());
+  normal_avg.scale(1.0 / normal_avg.norm2());
 
   // map point into fluid domain along normal vector
-  start_point.Update(1.0, proj_x_n, dist, normal_avg);
+  start_point.update(1.0, proj_x_n, dist, normal_avg);
 
   return;
 }
@@ -2016,7 +2016,7 @@ void XFEM::XfluidStd::compute_start_point_avg(
       side_center(1) += local_node_coord(1);
     }
 
-    side_center.Scale(1.0 / side->num_node());
+    side_center.scale(1.0 / side->num_node());
 
     // get the normal at the side center
     Core::LinAlg::Matrix<3, 1> proj_x_n_dummy1(true);
@@ -2028,10 +2028,10 @@ void XFEM::XfluidStd::compute_start_point_avg(
     normal_avg += side_normal;
   }
 
-  normal_avg.Scale(1.0 / normal_avg.Norm2());
+  normal_avg.scale(1.0 / normal_avg.norm2());
 
   // map point into fluid domain along normal vector
-  start_point.Update(1.0, proj_x_n, dist, normal_avg);
+  start_point.update(1.0, proj_x_n, dist, normal_avg);
 
   return;
 }
@@ -2153,9 +2153,9 @@ void XFEM::XfluidStd::get_normal_side_tn(
   Core::FE::shape_function_2D(funct, xi_side(0), xi_side(1), side_distype);
   Core::FE::shape_function_2D_deriv1(deriv, xi_side(0), xi_side(1), side_distype);
 
-  proj_x_n.Multiply(xyze_, funct);
+  proj_x_n.multiply(xyze_, funct);
 
-  derxy.MultiplyNT(xyze_, deriv);
+  derxy.multiply_nt(xyze_, deriv);
 
 
   // set dx_dr and dx_ds
@@ -2170,7 +2170,7 @@ void XFEM::XfluidStd::get_normal_side_tn(
   normal(1) = dx_dr(2) * dx_ds(0) - dx_ds(2) * dx_dr(0);
   normal(2) = dx_dr(0) * dx_ds(1) - dx_ds(0) * dx_dr(1);
 
-  normal.Scale(1.0 / normal.Norm2());
+  normal.scale(1.0 / normal.norm2());
 
   return;
 }
@@ -2266,7 +2266,7 @@ void XFEM::XfluidStd::get_projxn_line(
   Core::FE::shape_function_1D(funct, xi_line, line_distype);
 
   // projected point tracked back at t^n
-  proj_x_n.Multiply(xyze_, funct);
+  proj_x_n.multiply(xyze_, funct);
 
 
   return;
@@ -2457,9 +2457,9 @@ void XFEM::XfluidStd::call_project_on_side(
       // update minimal distance
       min_dist = curr_dist;
       // update projection point
-      proj_x_np.Update(1.0, x_side, 0.0);
+      proj_x_np.update(1.0, x_side, 0.0);
       // update local coordinates w.r.t side
-      proj_xi_side.Update(1.0, xi_side, 0.0);
+      proj_xi_side.update(1.0, xi_side, 0.0);
       //--------------------
     }
     else if (curr_dist < 0)
@@ -2607,7 +2607,7 @@ void XFEM::XfluidStd::call_project_on_line(
       // update minimal distance
       min_dist = curr_dist;
       // update projection point
-      proj_x_np.Update(1.0, x_line, 0.0);
+      proj_x_np.update(1.0, x_line, 0.0);
 
 
 
@@ -2708,7 +2708,7 @@ void XFEM::XfluidStd::call_project_on_point(Core::Nodes::Node* node,  ///< point
     // update minimal distance
     min_dist = curr_dist;
     // update point with minimal distance
-    proj_x_np.Update(1.0, x_point, 0.0);
+    proj_x_np.update(1.0, x_point, 0.0);
     // update node id of point with minimal distance
     proj_nid_np = node->Id();
     //--------------------
@@ -2805,11 +2805,11 @@ bool XFEM::XfluidStd::project_on_side(
     Core::FE::shape_function_2D_deriv1(deriv, sol(0), sol(1), side_distype);
     Core::FE::shape_function_2D_deriv2(deriv2, sol(0), sol(1), side_distype);
 
-    x.Multiply(xyze_, funct);
+    x.multiply(xyze_, funct);
 
-    derxy.MultiplyNT(xyze_, deriv);
+    derxy.multiply_nt(xyze_, deriv);
 
-    derxy2.MultiplyNT(xyze_, deriv2);
+    derxy2.multiply_nt(xyze_, deriv2);
 
     // set dx_dr and dx_ds
     for (int i = 0; i < 3; i++)
@@ -2863,16 +2863,16 @@ bool XFEM::XfluidStd::project_on_side(
 
 
 
-    sysmat.Invert();
+    sysmat.invert();
 
     // solve Newton iteration
     incr.clear();
-    incr.Multiply(-1.0, sysmat, residuum);  // incr = -Systemmatrix^-1 * residuum
+    incr.multiply(-1.0, sysmat, residuum);  // incr = -Systemmatrix^-1 * residuum
 
     // update solution
-    sol.Update(1.0, incr, 1.0);
+    sol.update(1.0, incr, 1.0);
 
-    if ((incr.Norm2() < absTolIncr) && (residuum.Norm2() < absTolRes))
+    if ((incr.norm2() < absTolIncr) && (residuum.norm2() < absTolRes))
     {
       converged = true;
     }
@@ -2882,7 +2882,7 @@ bool XFEM::XfluidStd::project_on_side(
     //       relative criterion for whole residuum
     if (  // sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1)) <  relTolIncr
         sqrt(incr(0) * incr(0) + incr(1) * incr(1)) < absTolIncr && incr(2) < absTOLdist &&
-        residuum.Norm2() < absTolRes)
+        residuum.norm2() < absTolRes)
     {
       converged = true;
     }
@@ -2901,12 +2901,12 @@ bool XFEM::XfluidStd::project_on_side(
               << std::endl;
     std::cout << "absolute criterion for distance " << incr(2) << " \tabsTOL: " << absTOLdist
               << std::endl;
-    std::cout << "absolute criterion whole residuum " << residuum.Norm2()
+    std::cout << "absolute criterion whole residuum " << residuum.norm2()
               << " \tabsTOL: " << absTolRes << std::endl;
 
 
-    std::cout << "sysmat.Invert" << sysmat << std::endl;
-    std::cout << "sol-norm " << sol.Norm2() << std::endl;
+    std::cout << "sysmat.invert" << sysmat << std::endl;
+    std::cout << "sol-norm " << sol.norm2() << std::endl;
     std::cout << "sol " << sol << std::endl;
     std::cout << "x_gp_lin" << x_gp_lin << std::endl;
     std::cout << "side " << xyze_ << std::endl;
@@ -2934,7 +2934,7 @@ bool XFEM::XfluidStd::project_on_side(
 
 
       // get length of current normal vector
-      double normal_length = dx_dr_times_dx_ds.Norm2();
+      double normal_length = dx_dr_times_dx_ds.norm2();
 
 
       dist = -sol(2) * normal_length;  // negative sol(2)!!! and scaling with normal length
@@ -2943,7 +2943,7 @@ bool XFEM::XfluidStd::project_on_side(
       Core::FE::shape_function_2D(funct, sol(0), sol(1), side_distype);
 
       // get projected gauss point
-      x_side.Multiply(xyze_, funct);
+      x_side.multiply(xyze_, funct);
 
       // set local coordinates w.r.t side
       xi_side(0) = sol(0);
@@ -3015,12 +3015,12 @@ bool XFEM::XfluidStd::project_on_line(
       dir_tmp(isd) = x_point_np(isd, 0) - 0.5 * (xyze_(isd, 1) + xyze_(isd, 0));
     }
 
-    double line_length = line_dir.Norm2();  // || (x2-x1) ||
+    double line_length = line_dir.norm2();  // || (x2-x1) ||
 
     if (line_length < 1e-12) FOUR_C_THROW("line has lenght smaller than 1e-12");
 
     // 2.0/|| (x2-x1) ||^2 * < x-0.5(x1+x2),x2-x1 >
-    xi_line = 2.0 / (line_length * line_length) * line_dir.Dot(dir_tmp);
+    xi_line = 2.0 / (line_length * line_length) * line_dir.dot(dir_tmp);
 
     // check if projection within line segement between x1 and x2
     Core::LinAlg::Matrix<3, 1> xsi(true);
@@ -3046,7 +3046,7 @@ bool XFEM::XfluidStd::project_on_line(
       }
 
       // compute distance
-      dist = dist_vec.Norm2();
+      dist = dist_vec.norm2();
     }
     else
     {
@@ -3099,12 +3099,12 @@ void XFEM::XfluidStd::project_on_point(
 
   // compute direction vector between two points
   Core::LinAlg::Matrix<3, 1> direction(true);
-  direction.Update(1.0, x_point_np, -1.0, p);
+  direction.update(1.0, x_point_np, -1.0, p);
 
   // compute distance
-  dist = direction.Norm2();
+  dist = direction.norm2();
 
-  x_point.Update(1.0, p, 0.0);
+  x_point.update(1.0, p, 0.0);
 
   return;
 }  // project_on_point

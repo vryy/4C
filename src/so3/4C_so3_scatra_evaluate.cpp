@@ -90,7 +90,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::Param
         for (int k = 0; k < numscal; ++k)
         {
           // identical shapefunctions for displacements and temperatures
-          conc_gp_k.at(k) = shapefunct_gp.Dot(econc.at(k));
+          conc_gp_k.at(k) = shapefunct_gp.dot(econc.at(k));
 
           mass_ref.at(k) += conc_gp_k.at(k) * detJrefpar_wgp;
         }
@@ -155,7 +155,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::Param
 
           // temperature at Gauss point withidentical shapefunctions for displacements and
           // temperatures
-          gptemp->at(igp) = shapefunct_gp.Dot(etemp);
+          gptemp->at(igp) = shapefunct_gp.dot(etemp);
         }
 
         params.set<Teuchos::RCP<std::vector<double>>>("gp_temp", gptemp);
@@ -261,7 +261,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::get_cauchy_n_dir_and_deriva
     Core::FE::shape_function<distype>(xi, shapefunct);
     // calculate DsntDs
     Core::LinAlg::Matrix<numnod_, 1>(d_cauchyndir_ds->values(), true)
-        .Update(d_cauchyndir_ds_gp, shapefunct, 1.0);
+        .update(d_cauchyndir_ds_gp, shapefunct, 1.0);
   }
 }
 
@@ -326,15 +326,15 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(
 
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 . N_rst
-    N_XYZ.Multiply(inv_j_[gp], deriv);
+    N_XYZ.multiply(inv_j_[gp], deriv);
 
     // (material) deformation gradient
     // F = d xcurr / d xrefe = xcurr^T . N_XYZ^T
-    defgrad.MultiplyTT(xcurr, N_XYZ);
+    defgrad.multiply_tt(xcurr, N_XYZ);
 
     // right Cauchy-Green tensor = F^T . F
     Core::LinAlg::Matrix<3, 3> cauchygreen;
-    cauchygreen.MultiplyTN(defgrad, defgrad);
+    cauchygreen.multiply_tn(defgrad, defgrad);
 
     // calculate vector of right Cauchy-Green tensor
     Core::LinAlg::Matrix<numstr_, 1> cauchygreenvec;
@@ -372,7 +372,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(
     // k_dS = B^T . dS/dc * detJ * N * w(gp)
     const double detJ_w = det_j_[gp] * intpoints_.qwgt[gp];
     Core::LinAlg::Matrix<numdofperelement_, 1> BdSdc(true);
-    BdSdc.MultiplyTN(detJ_w, bop, dSdc);
+    BdSdc.multiply_tn(detJ_w, bop, dSdc);
 
     // loop over rows
     for (int rowi = 0; rowi < numdofperelement_; ++rowi)
@@ -507,9 +507,9 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::InitElement()
                  [ X_,t  Y_,t  Z_,t ]
      */
 
-    inv_j_[gp].Multiply(deriv, xrefe);
+    inv_j_[gp].multiply(deriv, xrefe);
     // here Jacobian is inverted and det(J) is calculated
-    det_j_[gp] = inv_j_[gp].Invert();
+    det_j_[gp] = inv_j_[gp].invert();
 
     // make sure determinant of jacobian is positive
     if (det_j_[gp] <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", det_j_[gp]);

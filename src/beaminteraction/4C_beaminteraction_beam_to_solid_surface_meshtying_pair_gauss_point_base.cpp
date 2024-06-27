@@ -83,7 +83,7 @@ scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scala
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Evaluate the coupling vector.
       coupling_vector = this->evaluate_coupling(projected_gauss_point);
@@ -91,7 +91,7 @@ scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scala
       // Calculate the difference between the coupling vectors and add the
       // corresponding term to the potential.
       potential += projected_gauss_point.GetGaussWeight() * segment_jacobian *
-                   coupling_vector.Dot(coupling_vector) * penalty_parameter * 0.5;
+                   coupling_vector.dot(coupling_vector) * penalty_parameter * 0.5;
     }
   }
 

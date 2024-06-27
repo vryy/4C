@@ -40,11 +40,11 @@ void CONTACT::IntegratorNitscheFpi::IntegrateDerivEle3D(Mortar::Element& sele,
   // do quick orientation check
   Core::LinAlg::Matrix<3, 1> sn, mn;
   double center[2] = {0., 0.};
-  sele.compute_unit_normal_at_xi(center, sn.A());
+  sele.compute_unit_normal_at_xi(center, sn.data());
   for (auto mit = meles.begin(); mit != meles.end(); ++mit)
   {
-    (*mit)->compute_unit_normal_at_xi(center, mn.A());
-    if (sn.Dot(mn) > -1e-1)
+    (*mit)->compute_unit_normal_at_xi(center, mn.data());
+    if (sn.dot(mn) > -1e-1)
     {
       meles.erase(mit);
       --mit;

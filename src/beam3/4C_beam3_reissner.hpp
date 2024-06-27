@@ -254,7 +254,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       /** \brief get centerline position at xi \in [-1,1] (element parameter space)
        *
@@ -744,7 +744,7 @@ namespace Discret
             xi, N_i_xi, this->Shape(), this->RefLength());
         this->calc_r_xi<nnodecl, vpernode, double>(disp_centerline_ref, N_i_xi, r0_xi);
 
-        return r0_xi.Norm2();
+        return r0_xi.norm2();
       }
 
       /*!
@@ -802,7 +802,7 @@ namespace Discret
         Tinv = Core::LargeRotations::Tinvmatrix<T>(Psi_l);
         // It is important to use the transposed matrix Tinv^T instead of Tinv (these two only
         // differ in one of three terms)
-        K.MultiplyTN(Tinv, Psi_l_s);
+        K.multiply_tn(Tinv, Psi_l_s);
 
         // mechanically relevant curvature is current curvature minus curvature in reference
         // position
@@ -820,7 +820,7 @@ namespace Discret
         Gamma.clear();
 
         // convected strain gamma according to Crisfield 1999, eq. (3.4)
-        Gamma.MultiplyTN(Lambda, r_s);
+        Gamma.multiply_tn(Lambda, r_s);
 
         /* In contrary to Crisfield 1999, eq. (3.4), the current implementation allows for initial
          * values of the vector gammaref which has also a second and a third component, i.e. it

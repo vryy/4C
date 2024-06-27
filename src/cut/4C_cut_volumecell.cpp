@@ -363,7 +363,7 @@ void Core::Geo::Cut::VolumeCell::Position(Point::PointPosition position)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::VolumeCell::Print(std::ostream& stream) const
+void Core::Geo::Cut::VolumeCell::print(std::ostream& stream) const
 {
   stream << "\n==========================================\n";
   stream << "=== VolumeCell ( address: " << std::setw(10) << this << " ) ===\n";
@@ -377,7 +377,7 @@ void Core::Geo::Cut::VolumeCell::Print(std::ostream& stream) const
   {
     Facet* f = *i;
     stream << "\n# Facet " << count++ << " of VolumeCell:\n";
-    f->Print(stream);
+    f->print(stream);
   }
 
   count = 0;
@@ -385,7 +385,7 @@ void Core::Geo::Cut::VolumeCell::Print(std::ostream& stream) const
   {
     BoundaryCell* bcell = *i;
     stream << "\n# BoundaryCell " << count++ << " of VolumeCell:\n";
-    bcell->Print(stream);
+    bcell->print(stream);
   }
 
   count = 0;
@@ -394,7 +394,7 @@ void Core::Geo::Cut::VolumeCell::Print(std::ostream& stream) const
   {
     IntegrationCell* icell = *i;
     stream << "\n# IntegrationCell " << count++ << " of VolumeCell:\n";
-    icell->Print(stream);
+    icell->print(stream);
   }
 
   stream << "\n";
@@ -650,7 +650,7 @@ void Core::Geo::Cut::VolumeCell::NewPyramid5Cell(Mesh& mesh, const std::vector<P
 std::string Core::Geo::Cut::VolumeCell::IsThisPointInside(Point* pt)
 {
   Core::LinAlg::Matrix<3, 1> xglo;
-  pt->Coordinates(xglo.A());
+  pt->Coordinates(xglo.data());
   std::string inside = IsThisPointInside(xglo);
   return inside;
 }
@@ -724,7 +724,7 @@ void Core::Geo::Cut::VolumeCell::TestSurface()
         if (bc->GetFacet() == f)
         {
           //          std::cout << "Printing boundary cell: " << std::endl;
-          //          bc->Print();
+          //          bc->print();
           //          std::cout << std::endl;
           const std::vector<Point*>& points = bc->Points();
           Cycle cycle(points);
@@ -735,14 +735,14 @@ void Core::Geo::Cut::VolumeCell::TestSurface()
       if (lines.size() != 0)
       {
         //        std::cout << "Problem Facet: " << std::endl;
-        //        f->Print(std::cout);
+        //        f->print(std::cout);
         //        std::cout << std::endl;
         //        std::cout << "lines.size(): " << lines.size() << std::endl;
         //        for(unsigned k=0; k< lines.size(); k++)
         //        {
         //          std::cout << "#: " << k <<std::endl;
-        //          lines[k].first->Print(std::cout);
-        //          lines[k].second->Print(std::cout);
+        //          lines[k].first->print(std::cout);
+        //          lines[k].second->print(std::cout);
         //          std::cout << std::endl;
         //        }
         //
@@ -1041,9 +1041,9 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::VolumeCell::create_projected
   {
     Core::Geo::Cut::Point* p = cpoints[i];
     Core::LinAlg::Matrix<3, 1> xg, xi;
-    p->Coordinates(xg.A());
+    p->Coordinates(xg.data());
     element_->local_coordinates(xg, xi);
-    std::copy(xi.A(), xi.A() + 3, &xie(0, i));
+    std::copy(xi.data(), xi.data() + 3, &xie(0, i));
   }
 
   Teuchos::RCP<Core::FE::GaussPoints> gp = Core::FE::GaussIntegration::create_projected<distype>(
@@ -1632,7 +1632,7 @@ void Core::Geo::Cut::VolumeCell::project_gauss_points_to_local_coodinates()
       case Core::FE::CellType::hex20:
       {
         Core::LinAlg::Matrix<3, 20> xyze;
-        element_->CoordinatesQuad(xyze.A());
+        element_->CoordinatesQuad(xyze.data());
         gp_ = Core::FE::GaussIntegration::project_gauss_points_global_to_local<
             Core::FE::CellType::hex20>(xyze, intpoints, false);
         break;
@@ -1640,7 +1640,7 @@ void Core::Geo::Cut::VolumeCell::project_gauss_points_to_local_coodinates()
       case Core::FE::CellType::hex27:
       {
         Core::LinAlg::Matrix<3, 27> xyze;
-        element_->CoordinatesQuad(xyze.A());
+        element_->CoordinatesQuad(xyze.data());
         gp_ = Core::FE::GaussIntegration::project_gauss_points_global_to_local<
             Core::FE::CellType::hex27>(xyze, intpoints, false);
         break;
@@ -1657,7 +1657,7 @@ void Core::Geo::Cut::VolumeCell::project_gauss_points_to_local_coodinates()
   else
   {
     Core::LinAlg::Matrix<3, 8> xyze;
-    element_->Coordinates(xyze.A());
+    element_->Coordinates(xyze.data());
     gp_ =
         Core::FE::GaussIntegration::project_gauss_points_global_to_local<Core::FE::CellType::hex8>(
             xyze, intpoints, false);
@@ -1743,7 +1743,7 @@ bool Core::Geo::Cut::VolumeCell::set_position_cut_side_based()
       // normal vector)
       //-----
       Core::LinAlg::Matrix<3, 1> ref_vec;
-      ref_vec.Update(1.0, facecen, -1.0, elecen);
+      ref_vec.update(1.0, facecen, -1.0, elecen);
 
       //-----
       // STEP 4: get point from parent side as the normal orientation should be calculated from the
@@ -1760,7 +1760,7 @@ bool Core::Geo::Cut::VolumeCell::set_position_cut_side_based()
       for (unsigned dim = 0; dim < 3; dim++) norm_fac(dim, 0) = eqn_plane[dim];
 
       double dotProduct =
-          ref_vec.Dot(norm_fac);  // > 0 ...Side Normal is pointing outside of the Element //< 0
+          ref_vec.dot(norm_fac);  // > 0 ...Side Normal is pointing outside of the Element //< 0
                                   // Side Normal points inside the element!
       if (abs(dotProduct) < BASICTOL)
       {

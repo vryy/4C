@@ -148,18 +148,18 @@ Mortar::Node* Mortar::Node::Clone() const
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const Mortar::Node& mrtrnode)
 {
-  mrtrnode.Print(os);
+  mrtrnode.print(os);
   return os;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Node::Print(std::ostream& os) const
+void Mortar::Node::print(std::ostream& os) const
 {
   // Print id and coordinates
   os << "Mortar ";
-  Core::Nodes::Node::Print(os);
+  Core::Nodes::Node::print(os);
 
   if (IsSlave())
     os << " Slave  ";

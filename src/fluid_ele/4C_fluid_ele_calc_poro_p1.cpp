@@ -213,7 +213,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::compute_porosity(
   if (myporosity == nullptr)
     FOUR_C_THROW("no porosity values given!!");
   else
-    porosity = shapfct.Dot(*myporosity);
+    porosity = shapfct.dot(*myporosity);
 }
 
 template <Core::FE::CellType distype>
@@ -226,9 +226,9 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::compute_porosity_gradient(c
     FOUR_C_THROW("no porosity values given for calculation of porosity gradient!!");
 
   //--------------------- current porosity gradient
-  grad_porosity.Multiply(Base::derxy_, *eporositynp);
+  grad_porosity.multiply(Base::derxy_, *eporositynp);
 
-  refgrad_porosity.Multiply(Base::xjm_, grad_porosity);
+  refgrad_porosity.multiply(Base::xjm_, grad_porosity);
 }
 
 template <Core::FE::CellType distype>
@@ -252,7 +252,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_pressure_equation(
 
     if (eporositydot)
     {
-      double porositydot = Base::funct_.Dot(*eporositydot);
+      double porositydot = Base::funct_.dot(*eporositydot);
       // double porositydot =  Base::funct_.Dot(*eporositydotn);
 
       for (int vi = 0; vi < nen_; ++vi)
@@ -262,7 +262,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::evaluate_pressure_equation(
       }
 
       // just update internal variables, no contribution to rhs
-      const double porositydotn = Base::funct_.Dot(*eporositydotn);
+      const double porositydotn = Base::funct_.dot(*eporositydotn);
 
       Base::hist_con_ = Base::fldparatimint_->OmTheta() * Base::fldparatimint_->Dt() * porositydotn;
 
@@ -644,7 +644,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
 
     // inverse deformation gradient F^-1
     static Core::LinAlg::Matrix<nsd_, nsd_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     // volume change (used for porosity law). Same as J in nonlinear theory.
     double volchange = 0.0;
@@ -666,7 +666,7 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
     Base::porosity_ = 0.0;
 
     // compute scalar at n+alpha_F or n+1
-    const double scalaraf = Base::funct_.Dot(escaaf);
+    const double scalaraf = Base::funct_.dot(escaaf);
     params.set<double>("scalar", scalaraf);
     compute_porosity(params, Base::press_, volchange, *(iquad), Base::funct_, eporositynp,
         Base::porosity_, &dphi_dp, &dphi_dJ, &dphi_dJdp, &dphi_dJJ,
@@ -821,10 +821,10 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::gauss_point_loop_p1_od(
       }
 
       static Core::LinAlg::Matrix<nsd_, 1> viscstress_gradphi(false);
-      viscstress_gradphi.Multiply(viscstress, Base::grad_porosity_);
+      viscstress_gradphi.multiply(viscstress, Base::grad_porosity_);
 
       static Core::LinAlg::Matrix<nsd_, nen_> viscstress_derxy(false);
-      viscstress_derxy.Multiply(viscstress, Base::derxy_);
+      viscstress_derxy.multiply(viscstress, Base::derxy_);
 
       const double porosity_inv = 1.0 / Base::porosity_;
 
@@ -1133,16 +1133,16 @@ void Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::compute_linearization_od(co
 
     //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
     static Core::LinAlg::Matrix<1, nsd_> temp;
-    temp.MultiplyTN(defgrd_IT_vec, F_x);
+    temp.multiply_tn(defgrd_IT_vec, F_x);
 
     //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
     static Core::LinAlg::Matrix<nsd_, nen_ * nsd_> dgradJ_dus;
 
-    dgradJ_dus.MultiplyTN(temp, dJ_dus);
+    dgradJ_dus.multiply_tn(temp, dJ_dus);
 
-    dgradJ_dus.Update(Base::J_, dFinvdus_dFdx, 1.0);
+    dgradJ_dus.update(Base::J_, dFinvdus_dFdx, 1.0);
 
-    dgradJ_dus.Update(Base::J_, FinvT_dFx_dus, 1.0);
+    dgradJ_dus.update(Base::J_, FinvT_dFx_dus, 1.0);
   }
 }
 
@@ -1202,12 +1202,12 @@ int Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::compute_volume(Teuchos::Para
     Base::eval_shape_func_and_derivs_at_int_point(iquad.Point(), iquad.Weight());
 
     //-----------------------------------computing the porosity
-    Base::porosity_ = Base::funct_.Dot(eporositynp);
+    Base::porosity_ = Base::funct_.dot(eporositynp);
 
     // get structure velocity derivatives at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     Core::LinAlg::Matrix<nsd_, nsd_> gridvelderxy;
-    gridvelderxy.MultiplyNT(egridvnp, Base::derxy_);
+    gridvelderxy.multiply_nt(egridvnp, Base::derxy_);
 
     Base::gridvel_div_ = 0.0;
     for (int idim = 0; idim < nsd_; ++idim) Base::gridvel_div_ += gridvelderxy(idim, idim);

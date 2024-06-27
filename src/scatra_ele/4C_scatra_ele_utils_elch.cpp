@@ -88,13 +88,13 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
   std::vector<double> conint(numscal_, 0.0);
 
   // concentration is evaluated at all GP since some reaction models depend on all concentrations
-  for (int kk = 0; kk < numscal_; ++kk) conint[kk] = funct.Dot(ephinp[kk]);
+  for (int kk = 0; kk < numscal_; ++kk) conint[kk] = funct.dot(ephinp[kk]);
 
   // el. potential at integration point
-  const double potint = funct.Dot(ephinp[numscal_]);
+  const double potint = funct.dot(ephinp[numscal_]);
 
   // history of potential on electrode boundary at integration point
-  const double pothistint = funct.Dot(ehist[numscal_]);
+  const double pothistint = funct.dot(ehist[numscal_]);
 
   // electrode potential difference (epd) at integration point
   const double epd = (pot0 - potint);
@@ -717,13 +717,13 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
   std::vector<double> conint(numscal_, 0.0);
 
   // elch-specific values at integration point
-  for (int kk = 0; kk < numscal_; ++kk) conint[kk] = funct.Dot(ephinp[kk]);
+  for (int kk = 0; kk < numscal_; ++kk) conint[kk] = funct.dot(ephinp[kk]);
 
   // el. potential at integration point
-  const double potint = funct.Dot(ephinp[numscal_]);
+  const double potint = funct.dot(ephinp[numscal_]);
 
   // history term of el. potential at integration point
-  const double potdtnpint = funct.Dot(ephidtnp[numscal_]);
+  const double potdtnpint = funct.dot(ephidtnp[numscal_]);
 
   // electrode potential difference epd at integration point
   double epd = (pot0 - potint);

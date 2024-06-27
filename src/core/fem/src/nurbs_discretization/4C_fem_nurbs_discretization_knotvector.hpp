@@ -455,7 +455,7 @@ namespace Core::FE
 
       @param[in] os Output stream to be used for printing
       */
-      void Print(std::ostream& os) const;
+      void print(std::ostream& os) const;
 
      private:
       //! Knotvector types

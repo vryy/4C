@@ -179,10 +179,10 @@ void Discret::ELEMENTS::Ale2::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::Print(std::ostream& os) const
+void Discret::ELEMENTS::Ale2::print(std::ostream& os) const
 {
   os << "Ale2 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

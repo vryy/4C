@@ -213,9 +213,9 @@ void Core::DOFSets::DofSetBase::NotifyReset()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::DOFSets::DofSetBase::Print(std::ostream& os) const
+void Core::DOFSets::DofSetBase::print(std::ostream& os) const
 {
-  FOUR_C_THROW("Print() is not implemented in base class. Override Print() in subclass");
+  FOUR_C_THROW("print() is not implemented in base class. Override print() in subclass");
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -90,7 +90,7 @@ namespace RTD
      *
      * @param stream The output file stream of the restructuredText file.
      */
-    void Print(std::ostream& stream) const;
+    void print(std::ostream& stream) const;
 
    private:
     /*!

@@ -151,7 +151,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
     if (std::abs(eta - eta_last_gauss_point) > 1e-10)
     {
       GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1posref_, dr_beam_ref);
-      beam_jacobian = 0.5 * dr_beam_ref.Norm2();
+      beam_jacobian = 0.5 * dr_beam_ref.norm2();
 
       GEOMETRYPAIR::EvaluateShapeFunctionMatrix<beam>(H, eta, q_beam.shape_function_data_);
       GEOMETRYPAIR::EvaluatePosition<beam>(eta, q_beam, pos_beam);
@@ -184,10 +184,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
     cross_section_vector_ref(0) = 0.0;
     cross_section_vector_ref(1) = projected_gauss_point.GetEtaCrossSection()(0);
     cross_section_vector_ref(2) = projected_gauss_point.GetEtaCrossSection()(1);
-    cross_section_vector_current.Multiply(triad_fad, cross_section_vector_ref);
+    cross_section_vector_current.multiply(triad_fad, cross_section_vector_ref);
 
     // Reset the local force vector for this Gauss point.
-    force_pair_local.PutScalar(0.0);
+    force_pair_local.put_scalar(0.0);
 
     // Numerical integration factor for this Gauss point.
     const double integration_factor =
@@ -202,13 +202,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
     r_diff -= pos_solid;
 
     // Evaluate the force on the solid DOFs.
-    temp_solid_force.MultiplyTN(N, r_diff);
-    temp_solid_force.Scale(-1.0);
+    temp_solid_force.multiply_tn(N, r_diff);
+    temp_solid_force.scale(-1.0);
     for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
       force_pair_local(i_dof + beam::n_dof_) += temp_solid_force(i_dof);
 
     // Evaluate the force on the positional beam DOFs.
-    temp_beam_force.MultiplyTN(H, r_diff);
+    temp_beam_force.multiply_tn(H, r_diff);
     for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
       force_pair_local(i_dof) += temp_beam_force(i_dof);
 
@@ -216,13 +216,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
     // In comparison to the mentioned paper, the relative cross section vector is also contained
     // here, but it cancels out in the cross product with itself.
     Core::LinAlg::Matrix<3, 1, scalar_type_pair> temp_beam_rot_cross;
-    temp_beam_rot_cross.CrossProduct(cross_section_vector_current, r_diff);
-    temp_beam_force_rot.MultiplyTN(L, temp_beam_rot_cross);
+    temp_beam_rot_cross.cross_product(cross_section_vector_current, r_diff);
+    temp_beam_force_rot.multiply_tn(L, temp_beam_rot_cross);
     for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
       force_pair_local(i_dof + beam::n_dof_ + solid::n_dof_) += temp_beam_force_rot(i_dof);
 
     // Add to pair force contributions.
-    force_pair_local.Scale(integration_factor);
+    force_pair_local.scale(integration_factor);
     force_pair += Core::FADUtils::CastToDouble(force_pair_local);
 
     // The rotational stiffness contributions have to be handled separately due to the non-additive
@@ -231,8 +231,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
         d_force_d_psi(i_dof, i_dir) =
             force_pair_local(i_dof).dx(beam::n_dof_ + solid::n_dof_ + i_dir);
-    T_times_I_tilde.Multiply(T_beam_double, I_tilde);
-    local_stiffness_rot.MultiplyNN(d_force_d_psi, T_times_I_tilde);
+    T_times_I_tilde.multiply(T_beam_double, I_tilde);
+    local_stiffness_rot.multiply_nn(d_force_d_psi, T_times_I_tilde);
 
     // Add the full stiffness contribution from this Gauss point.
     for (unsigned int i_dof = 0; i_dof < n_dof_pair_; i_dof++)
@@ -273,7 +273,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<beam, solid>::Evalu
 
   // If given, assemble force terms into the global force vector.
   if (force_vector != Teuchos::null)
-    force_vector->SumIntoGlobalValues(gid_pair.numRows(), gid_pair.A(), force_pair.A());
+    force_vector->SumIntoGlobalValues(gid_pair.numRows(), gid_pair.data(), force_pair.data());
 
   // If given, assemble force terms into the global stiffness matrix.
   if (stiffness_matrix != Teuchos::null)

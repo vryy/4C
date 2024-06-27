@@ -53,7 +53,7 @@ namespace NOX
           StatusType GetStatus() const override;
 
           //! Output formatted description of inner stopping test to output stream.
-          std::ostream& Print(std::ostream& stream, int indent = 0) const override;
+          std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
           //! Add another test to this combination.
           /*!

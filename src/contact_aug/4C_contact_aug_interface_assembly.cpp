@@ -220,7 +220,7 @@ void CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<
   }
 
   // consistency check
-  //  sl_force_lm_inactive.Print( std::cout );
+  //  sl_force_lm_inactive.print( std::cout );
   //
   //  const double* vals = sl_force_lm_inactive.Values();
   //  double check = 0.0;
@@ -600,7 +600,7 @@ void CONTACT::Aug::INTERFACE::CompleteAssemblePolicy::assemble_inactive_dd_matri
     const double scale, const NodeDataContainer& augdata,
     Core::LinAlg::SparseMatrix& inactive_dd_matrix) const
 {
-  const Deriv2ndMap& dd_a = augdata.GetDeriv2nd_A();
+  const Deriv2ndMap& dd_a = augdata.GetDeriv2nd_data();
   // sanity check
   if (dd_a.empty())
     FOUR_C_THROW("The 2-nd order derivative of the inactive tributary area is empty!");
@@ -611,7 +611,7 @@ void CONTACT::Aug::INTERFACE::CompleteAssemblePolicy::assemble_inactive_dd_matri
 
     //    if ( inactive_dd_matrix.RowMap().LID( rgid ) == -1 )
     //    {
-    //      inactive_dd_matrix.RowMap().Print( std::cout );
+    //      inactive_dd_matrix.RowMap().print( std::cout );
     //      FOUR_C_THROW( "rgid #%d is no part of the slave row map on proc #%d!", rgid,
     //          inactive_dd_matrix.RowMap().Comm().MyPID() );
     //    }
@@ -647,7 +647,7 @@ bool CONTACT::Aug::INTERFACE::CompleteAssemblePolicy::Add_Var_A_GG(
 bool CONTACT::Aug::INTERFACE::CompleteAssemblePolicy::assemble_sl_force_lm_inactive(
     const double scale, const NodeDataContainer& augdata, Epetra_Vector& sl_force_lminactive) const
 {
-  const Deriv1stMap& d_a = augdata.GetDeriv1st_A();
+  const Deriv1stMap& d_a = augdata.GetDeriv1st_data();
 
   double* vals = sl_force_lminactive.Values();
   for (auto& d_a_var : d_a)

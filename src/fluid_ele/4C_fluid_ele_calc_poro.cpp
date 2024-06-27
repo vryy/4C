@@ -923,8 +923,8 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_pressure_equation_no
     // auxiliary variables
     static Core::LinAlg::Matrix<1, nen_> dgradphi_dp_gridvel;
     static Core::LinAlg::Matrix<1, nen_> dgradphi_dp_velint;
-    dgradphi_dp_gridvel.MultiplyTN(gridvel_int_, dgradphi_dp);
-    dgradphi_dp_velint.MultiplyTN(Base::velint_, dgradphi_dp);
+    dgradphi_dp_gridvel.multiply_tn(gridvel_int_, dgradphi_dp);
+    dgradphi_dp_velint.multiply_tn(Base::velint_, dgradphi_dp);
 
     // pressure terms on left-hand side
     /* poroelasticity term */
@@ -1024,7 +1024,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_pressure_equation_no
     }
 
     Core::LinAlg::Matrix<1, nen_> deriv_vel;
-    deriv_vel.MultiplyTN(Base::velint_, Base::derxy_);
+    deriv_vel.multiply_tn(Base::velint_, Base::derxy_);
     // stationary right-hand side
     for (int vi = 0; vi < nen_; ++vi)
     {
@@ -1075,7 +1075,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_pressure_equation_no
       */
 
       Core::LinAlg::Matrix<1, nen_> deriv_gridvel;
-      deriv_gridvel.MultiplyTN(gridvel_int_, Base::derxy_);
+      deriv_gridvel.multiply_tn(gridvel_int_, Base::derxy_);
 
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -1147,7 +1147,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
 
     // inverse deformation gradient F^-1
     static Core::LinAlg::Matrix<nsd_, nsd_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     // volume change (used for porosity law). Same as J in nonlinear theory.
     double volchange = 0.0;
@@ -1168,7 +1168,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
 
     // compute scalar at n+alpha_F or n+1
     Teuchos::RCP<std::vector<double>> scalars = Teuchos::rcp(new std::vector<double>(0));
-    const double scalaraf = Base::funct_.Dot(escaaf);
+    const double scalaraf = Base::funct_.dot(escaaf);
     scalars->push_back(scalaraf);
     params.set<Teuchos::RCP<std::vector<double>>>("scalar", scalars);
 
@@ -1403,7 +1403,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
       }
 
       static Core::LinAlg::Matrix<nsd_, 1> viscstress_gradphi(false);
-      viscstress_gradphi.Multiply(viscstress, grad_porosity_);
+      viscstress_gradphi.multiply(viscstress, grad_porosity_);
 
       // computation of right-hand-side viscosity term
       for (int idim = 0; idim < nsd_; ++idim)
@@ -1422,7 +1422,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
       }
 
       static Core::LinAlg::Matrix<nsd_, nen_> viscstress_dgradphidp(false);
-      viscstress_dgradphidp.Multiply(viscstress, dgradphi_dp);
+      viscstress_dgradphidp.multiply(viscstress, dgradphi_dp);
       for (int idim = 0; idim < nsd_; ++idim)
       {
         const double viscstress_gradphi_idim = viscstress_gradphi(idim);
@@ -1657,7 +1657,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop_od(
 
     // inverse deformation gradient F^-1
     static Core::LinAlg::Matrix<nsd_, nsd_> defgrd_inv(false);
-    defgrd_inv.Invert(defgrd);
+    defgrd_inv.invert(defgrd);
 
     // volume change (used for porosity law). Same as J in nonlinear theory.
     double volchange = 0.0;
@@ -1673,7 +1673,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop_od(
 
     // compute scalar at n+alpha_F or n+1
     Teuchos::RCP<std::vector<double>> scalars = Teuchos::rcp(new std::vector<double>(0));
-    const double scalaraf = Base::funct_.Dot(escaaf);
+    const double scalaraf = Base::funct_.dot(escaaf);
     scalars->push_back(scalaraf);
     params.set<Teuchos::RCP<std::vector<double>>>("scalar", scalars);
 
@@ -1863,10 +1863,10 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_momentum_od(const
     }
 
     static Core::LinAlg::Matrix<nsd_, 1> viscstress_gradphi(false);
-    viscstress_gradphi.Multiply(viscstress, grad_porosity_);
+    viscstress_gradphi.multiply(viscstress, grad_porosity_);
 
     static Core::LinAlg::Matrix<nsd_, nen_ * nsd_> viscstress_dgradphidus(false);
-    viscstress_dgradphidus.Multiply(viscstress, dgradphi_dus);
+    viscstress_dgradphidus.multiply(viscstress, dgradphi_dus);
 
     const double porosity_inv = 1.0 / porosity_;
 
@@ -2011,7 +2011,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const do
   {
     // auxiliary variables
     static Core::LinAlg::Matrix<1, nen_ * nsd_> grad_porosity_us_velint;
-    grad_porosity_us_velint.MultiplyTN(Base::velint_, dgradphi_dus);
+    grad_porosity_us_velint.multiply_tn(Base::velint_, dgradphi_dus);
 
     // structure coupling terms on left-hand side
     /*  stationary */
@@ -2041,7 +2041,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const do
     if (!Base::fldparatimint_->IsStationary())
     {
       static Core::LinAlg::Matrix<1, nen_ * nsd_> grad_porosity_us_gridvelint;
-      grad_porosity_us_gridvelint.MultiplyTN(gridvel_int_, dgradphi_dus);
+      grad_porosity_us_gridvelint.multiply_tn(gridvel_int_, dgradphi_dus);
 
       /*
         /                            \     /                                                    \
@@ -2092,7 +2092,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const do
   else
   {
     static Core::LinAlg::Matrix<1, nen_> deriv_vel;
-    deriv_vel.MultiplyTN(Base::velint_, Base::derxy_);
+    deriv_vel.multiply_tn(Base::velint_, Base::derxy_);
 
     // structure coupling terms on left-hand side
     /*  stationary */
@@ -2147,7 +2147,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const do
        */
 
       static Core::LinAlg::Matrix<1, nen_> deriv_gridvel;
-      deriv_gridvel.MultiplyTN(gridvel_int_, Base::derxy_);
+      deriv_gridvel.multiply_tn(gridvel_int_, Base::derxy_);
 
       for (int vi = 0; vi < nen_; ++vi)
       {
@@ -2193,7 +2193,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const do
       // linearization of stabilization parameter w.r.t. structure displacement
       const double v1 = -1.0 * timefacfacpre * dtau_dphi_(1) / scal_grad_q;
       static Core::LinAlg::Matrix<1, nen_> temp(false);
-      temp.MultiplyTN(Base::sgvelint_, Base::derxy_);
+      temp.multiply_tn(Base::sgvelint_, Base::derxy_);
 
       for (int jdim = 0; jdim < nsd_; ++jdim)
       {
@@ -3530,7 +3530,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3_d_pres_od(
 
       // shape derivative of Jacobian
       static Core::LinAlg::Matrix<nen_, 1> temp;
-      temp.MultiplyTN(Base::derxy_, Base::gradp_);
+      temp.multiply_tn(Base::derxy_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
         const double v3 = -1.0 * timefacfac * scal_grad_q * temp(vi);
@@ -3626,7 +3626,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3_d_pres_od(
 
       // shape derivative of Jacobian
       static Core::LinAlg::Matrix<nen_, 1> temp;
-      temp.MultiplyTN(Base::derxy_, Base::conv_old_);
+      temp.multiply_tn(Base::derxy_, Base::conv_old_);
       for (int vi = 0; vi < nen_; ++vi)
       {
         const double v3 = -1.0 * Base::densaf_ * timefacfac * scal_grad_q * temp(vi);
@@ -3740,7 +3740,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3_d_pres_od(
 
       // shape derivative of Jacobian
       static Core::LinAlg::Matrix<nen_, 1> temp;
-      temp.MultiplyTN(Base::derxy_, Base::gradp_);
+      temp.multiply_tn(Base::derxy_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
         const double v3 = -1.0 * timefacfac * tau_struct_ * temp(vi);
@@ -3792,7 +3792,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3_d_pres_od(
 
       // shape derivative of Jacobian
       static Core::LinAlg::Matrix<nen_, 1> temp;
-      temp.MultiplyTN(N_XYZ_, Base::gradp_);
+      temp.multiply_tn(N_XYZ_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
         const double v3 = timefacfac * porosity_ * tau_struct_ * temp(vi);
@@ -4304,7 +4304,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_2_d_pres_od(
 
       // shape derivative of Jacobian
       static Core::LinAlg::Matrix<nen_, 1> temp;
-      temp.MultiplyTN(Base::derxy_, Base::gradp_);
+      temp.multiply_tn(Base::derxy_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
         const double v1 = -1.0 * timefacfac * scal_grad_q * temp(vi);
@@ -4344,7 +4344,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_2_d_pres_od(
 
       // shape derivative of Jacobian
       static Core::LinAlg::Matrix<nen_, 1> temp;
-      temp.MultiplyTN(Base::derxy_, Base::conv_old_);
+      temp.multiply_tn(Base::derxy_, Base::conv_old_);
       for (int vi = 0; vi < nen_; ++vi)
       {
         const double v1 = -1.0 * Base::densaf_ * timefacfac * scal_grad_q * temp(vi);
@@ -4418,7 +4418,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_2_d_pres_od(
 
       // shape derivative of Jacobian
       static Core::LinAlg::Matrix<nen_, 1> temp;
-      temp.MultiplyTN(Base::derxy_, Base::gradp_);
+      temp.multiply_tn(Base::derxy_, Base::gradp_);
       for (int vi = 0; vi < nen_; ++vi)
       {
         const double v1 = -1.0 * timefacfac * tau_struct_ * temp(vi);
@@ -4704,7 +4704,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_f_derivative(
     }
   }
 
-  F_x.Multiply(F_X, defgrd_inv);
+  F_x.multiply(F_X, defgrd_inv);
 }
 
 template <Core::FE::CellType distype>
@@ -4716,7 +4716,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_gradients(const doubl
     Core::LinAlg::Matrix<nsd_, 1>& grad_porosity, Core::LinAlg::Matrix<nsd_, 1>& refgrad_porosity)
 {
   //---------------------------  dJ/dx = dJ/dF : dF/dx = JF^-T : dF/dx
-  gradJ.MultiplyTN(J, F_x, defgrd_IT_vec);
+  gradJ.multiply_tn(J, F_x, defgrd_IT_vec);
 
   // if(grad_porosity or refgrad_porosity)
   compute_porosity_gradient(
@@ -4735,7 +4735,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_porosity_gradient(con
     for (int idim = 0; idim < nsd_; ++idim)
       (grad_porosity)(idim) = dphidp * gradp(idim) + dphidJ * gradJ(idim);
 
-    refgrad_porosity.Multiply(Base::xjm_, grad_porosity);
+    refgrad_porosity.multiply(Base::xjm_, grad_porosity);
   }
 }
 
@@ -4748,9 +4748,9 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_linearization(const d
   {
     //--linearization of porosity gradient w.r.t. pressure at gausspoint
     // d(grad(phi))/dp = dphi/(dJdp)* dJ/dx + d^2phi/(dp)^2 * dp/dx + dphi/dp* N,x
-    dgradphi_dp.MultiplyNT(dphi_dJdp, gradJ, Base::funct_);
-    dgradphi_dp.MultiplyNT(dphi_dpp, Base::gradp_, Base::funct_, 1.0);
-    dgradphi_dp.Update(dphi_dp, Base::derxy_, 1.0);
+    dgradphi_dp.multiply_nt(dphi_dJdp, gradJ, Base::funct_);
+    dgradphi_dp.multiply_nt(dphi_dpp, Base::gradp_, Base::funct_, 1.0);
+    dgradphi_dp.update(dphi_dp, Base::derxy_, 1.0);
   }
   else
     dgradphi_dp.clear();
@@ -4772,7 +4772,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_linearization_od(cons
     for (int j = 0; j < nsd_; j++) dJ_dus(j + i * nsd_) = J_ * Base::derxy_(j, i);
 
   //--------------------- linearization of porosity w.r.t. structure displacements
-  dphi_dus.Update(dphi_dJ, dJ_dus);
+  dphi_dus.update(dphi_dJ, dJ_dus);
 
   if (!porofldpara_->PoroContiPartInt() or Base::visceff_)
   {
@@ -4834,22 +4834,22 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_linearization_od(cons
 
     //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
     static Core::LinAlg::Matrix<1, nsd_> temp;
-    temp.MultiplyTN(defgrd_IT_vec, F_x);
+    temp.multiply_tn(defgrd_IT_vec, F_x);
 
     //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
     static Core::LinAlg::Matrix<nsd_, nen_ * nsd_> dgradJ_dus;
 
-    dgradJ_dus.MultiplyTN(temp, dJ_dus);
+    dgradJ_dus.multiply_tn(temp, dJ_dus);
 
-    dgradJ_dus.Update(J_, dFinvdus_dFdx, 1.0);
+    dgradJ_dus.update(J_, dFinvdus_dFdx, 1.0);
 
-    dgradJ_dus.Update(J_, FinvT_dFx_dus, 1.0);
+    dgradJ_dus.update(J_, FinvT_dFx_dus, 1.0);
 
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) +
     // d\phi/(dp*du_s) * dp/dx
-    dgradphi_dus.Multiply(dphi_dJJ, gradJ, dJ_dus);
-    dgradphi_dus.Update(dphi_dJ, dgradJ_dus, 1.0);
-    dgradphi_dus.Multiply(dphi_dJp, Base::gradp_, dJ_dus, 1.0);
+    dgradphi_dus.multiply(dphi_dJJ, gradJ, dJ_dus);
+    dgradphi_dus.update(dphi_dJ, dgradJ_dus, 1.0);
+    dgradphi_dus.multiply(dphi_dJp, Base::gradp_, dJ_dus, 1.0);
   }
 }
 
@@ -4870,14 +4870,14 @@ double Discret::ELEMENTS::FluidEleCalcPoro<distype>::setup_material_derivatives(
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"
   Core::LinAlg::Matrix<nsd_, nsd_> xjm0;
-  xjm0.MultiplyNT(Base::deriv_, xyze0_);
+  xjm0.multiply_nt(Base::deriv_, xyze0_);
 
   // inverse of transposed jacobian "ds/dX"
   Core::LinAlg::Matrix<nsd_, nsd_> xji0(true);
-  double det0 = xji0.Invert(xjm0);
+  double det0 = xji0.invert(xjm0);
 
   // ----------------------compute derivatives N_XYZ_ at gp w.r.t. material coordinates
-  N_XYZ_.Multiply(xji0, Base::deriv_);
+  N_XYZ_.multiply(xji0, Base::deriv_);
 
   if (Base::is_higher_order_ele_)
   {
@@ -5161,12 +5161,12 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_spatial_reaction_term
 
   // spatial reaction tensor = J * F^-T * material reaction tensor * F^-1
   static Core::LinAlg::Matrix<nsd_, nsd_> temp(false);
-  temp.Multiply(J_ * porosity_, mat_reac_tensor_, invdefgrd);
-  reac_tensor_.MultiplyTN(invdefgrd, temp);
+  temp.multiply(J_ * porosity_, mat_reac_tensor_, invdefgrd);
+  reac_tensor_.multiply_tn(invdefgrd, temp);
 
-  reac_tensor_vel_.Multiply(reac_tensor_, Base::velint_);
-  reac_tensor_gridvel_.Multiply(reac_tensor_, gridvel_int_);
-  reac_tensor_convvel_.Multiply(reac_tensor_, convvel_);
+  reac_tensor_vel_.multiply(reac_tensor_, Base::velint_);
+  reac_tensor_gridvel_.multiply(reac_tensor_, gridvel_int_);
+  reac_tensor_convvel_.multiply(reac_tensor_, convvel_);
 
   // linearisations of material reaction tensor
   actmat->compute_lin_mat_reaction_tensor(
@@ -5175,11 +5175,11 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_spatial_reaction_term
   static Core::LinAlg::Matrix<nsd_, nsd_> lin_p_tmp_1(false);
   static Core::LinAlg::Matrix<nsd_, nsd_> lin_p_tmp_2(false);
 
-  lin_p_tmp_1.MultiplyTN(J_, invdefgrd, mat_reac_tensor_linporosity_);
-  lin_p_tmp_2.Multiply(lin_p_tmp_1, invdefgrd);
+  lin_p_tmp_1.multiply_tn(J_, invdefgrd, mat_reac_tensor_linporosity_);
+  lin_p_tmp_2.multiply(lin_p_tmp_1, invdefgrd);
 
-  lin_p_vel_.Multiply(lin_p_tmp_2, Base::velint_);
-  lin_p_vel_grid_.Multiply(lin_p_tmp_2, gridvel_int_);
+  lin_p_vel_.multiply(lin_p_tmp_2, Base::velint_);
+  lin_p_vel_grid_.multiply(lin_p_tmp_2, gridvel_int_);
 }
 
 template <Core::FE::CellType distype>
@@ -5325,7 +5325,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_old_rhs_and_subgrid_s
   if (Base::fldparatimint_->IsGenalpha() and (not porofldpara_->is_stationary_momentum()))
   {
     // rhs of momentum equation: density*bodyforce at n+alpha_F
-    Base::rhsmom_.Update(Base::densaf_, Base::bodyforce_, 0.0);
+    Base::rhsmom_.update(Base::densaf_, Base::bodyforce_, 0.0);
 
     // evaluate momentum residual once for all stabilization right hand sides
     for (int rr = 0; rr < nsd_; ++rr)
@@ -5343,8 +5343,8 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_old_rhs_and_subgrid_s
       // rhs of instationary momentum equation:
       // density*theta*bodyforce at n+1 + density*(histmom/dt)
       //                                      f = rho * g
-      // Base::rhsmom_.Update((Base::densn_/Base::fldparatimint_->Dt()),Base::histmom_,Base::densaf_*Base::fldparatimint_->Theta(),Base::bodyforce_);
-      Base::rhsmom_.Update(
+      // Base::rhsmom_.update((Base::densn_/Base::fldparatimint_->Dt()),Base::histmom_,Base::densaf_*Base::fldparatimint_->Theta(),Base::bodyforce_);
+      Base::rhsmom_.update(
           (Base::densn_ / Base::fldparatimint_->Dt() / Base::fldparatimint_->Theta()),
           Base::histmom_, Base::densaf_, Base::bodyforce_);
 
@@ -5368,7 +5368,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_old_rhs_and_subgrid_s
     {
       // rhs of stationary momentum equation: density*bodyforce
       //                                       f = rho * g
-      Base::rhsmom_.Update(Base::densaf_, Base::bodyforce_, 0.0);
+      Base::rhsmom_.update(Base::densaf_, Base::bodyforce_, 0.0);
 
       // compute stationary momentum residual:
       for (int rr = 0; rr < nsd_; ++rr)
@@ -5381,7 +5381,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_old_rhs_and_subgrid_s
   }
   //-------------------------------------------------------
   // compute subgrid-scale velocity
-  Base::sgvelint_.Update(-Base::tau_(1), Base::momres_old_, 0.0);
+  Base::sgvelint_.update(-Base::tau_(1), Base::momres_old_, 0.0);
 }
 
 template <Core::FE::CellType distype>
@@ -5860,40 +5860,40 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
   //----------------------------------------------------------------------
   // get velocity at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  Base::velint_.Multiply(evelaf, Base::funct_);
+  Base::velint_.multiply(evelaf, Base::funct_);
 
   // get velocity derivatives at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  Base::vderxy_.MultiplyNT(evelaf, Base::derxy_);
+  Base::vderxy_.multiply_nt(evelaf, Base::derxy_);
 
   // get velocity at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  gridvel_int_.Multiply(egridv, Base::funct_);
+  gridvel_int_.multiply(egridv, Base::funct_);
   // get velocity at integration point
   // (values at n)
-  gridvel_n_int_.Multiply(egridvn, Base::funct_);
+  gridvel_n_int_.multiply(egridvn, Base::funct_);
 
   // get convective velocity at integration point
   // (ALE case handled implicitly here using the (potential
   //  mesh-movement-dependent) convective velocity, avoiding
   //  various ALE terms used to be calculated before)
-  // convmy::velint_.Update(Base::velint_);
-  // Base::convvelint_.Multiply(-1.0, egridv, Base::funct_, 0.0);
-  Base::convvelint_.Update(-1.0, gridvel_int_, 0.0);
+  // convmy::velint_.update(Base::velint_);
+  // Base::convvelint_.multiply(-1.0, egridv, Base::funct_, 0.0);
+  Base::convvelint_.update(-1.0, gridvel_int_, 0.0);
 
-  convvel_.Update(-1.0, gridvel_int_, 1.0, Base::velint_);
+  convvel_.update(-1.0, gridvel_int_, 1.0, Base::velint_);
 
   // get pressure at integration point
   // (value at n+alpha_F for generalized-alpha scheme,
   //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
   if (Base::fldparatimint_->IsGenalphaNP())
-    press_ = Base::funct_.Dot(eprenp);
+    press_ = Base::funct_.dot(eprenp);
   else
-    press_ = Base::funct_.Dot(epreaf);
+    press_ = Base::funct_.dot(epreaf);
 
   // get pressure time derivative at integration point
   // (value at n+alpha_M for generalized-alpha scheme, n+1 otherwise)
-  press_dot_ = Base::funct_.Dot(epressam_timederiv);
+  press_dot_ = Base::funct_.dot(epressam_timederiv);
 
   //  // get pressure time derivative at integration point
   //  // (value at n )
@@ -5907,34 +5907,34 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
   // (value at n+alpha_F for generalized-alpha scheme,
   //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
   if (Base::fldparatimint_->IsGenalphaNP())
-    Base::gradp_.Multiply(Base::derxy_, eprenp);
+    Base::gradp_.multiply(Base::derxy_, eprenp);
   else
-    Base::gradp_.Multiply(Base::derxy_, epreaf);
+    Base::gradp_.multiply(Base::derxy_, epreaf);
 
   // fluid pressure at gradient w.r.t to reference coordinates at gauss point
-  refgrad_press_.Multiply(Base::deriv_, epreaf);
+  refgrad_press_.multiply(Base::deriv_, epreaf);
 
   // get bodyforce at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  Base::bodyforce_.Multiply(ebofoaf, Base::funct_);
+  Base::bodyforce_.multiply(ebofoaf, Base::funct_);
 
   // get momentum history data at integration point
   // (only required for one-step-theta and BDF2 time-integration schemes)
-  Base::histmom_.Multiply(emhist, Base::funct_);
+  Base::histmom_.multiply(emhist, Base::funct_);
 
   // "history" of continuity equation, i.e. p^n + \Delta t * (1-theta) * \dot{p}^n
-  hist_con_ = Base::funct_.Dot(echist);
+  hist_con_ = Base::funct_.dot(echist);
 
   // get acceleration at time n+alpha_M at integration point
-  Base::accint_.Multiply(eaccam, Base::funct_);
+  Base::accint_.multiply(eaccam, Base::funct_);
 
   // get structure velocity derivatives at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
   Core::LinAlg::Matrix<nsd_, nsd_> gridvelderxy;
-  gridvelderxy.MultiplyNT(egridv, Base::derxy_);
+  gridvelderxy.multiply_nt(egridv, Base::derxy_);
 
   // structure velocity derivatives w.r.t. reference coordinates at integration point
-  gridvel_deriv_.MultiplyNT(egridv, Base::deriv_);
+  gridvel_deriv_.multiply_nt(egridv, Base::deriv_);
 
   //----------------------------------------------------------------------
   //  evaluation of various partial operators at integration point
@@ -5949,14 +5949,14 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
   // Add convective part:
   if (porofldpara_->ConvectiveTerm())
   {
-    Base::conv_old_.Multiply(Base::vderxy_, convvel_);
-    Base::conv_c_.MultiplyTN(Base::derxy_, convvel_);
+    Base::conv_old_.multiply(Base::vderxy_, convvel_);
+    Base::conv_c_.multiply_tn(Base::derxy_, convvel_);
   }
   else
   {
     // set old convective term to ALE-Term only
-    Base::conv_old_.Multiply(Base::vderxy_, Base::convvelint_);
-    Base::conv_c_.MultiplyTN(Base::derxy_, Base::convvelint_);
+    Base::conv_old_.multiply(Base::vderxy_, Base::convvelint_);
+    Base::conv_c_.multiply_tn(Base::derxy_, Base::convvelint_);
   }
 
 
@@ -5979,7 +5979,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
     {
       // get vdiv at time n+1 for np_genalpha,
       Core::LinAlg::Matrix<nsd_, nsd_> vderxy;
-      vderxy.MultiplyNT(evelnp, Base::derxy_);
+      vderxy.multiply_nt(evelnp, Base::derxy_);
       Base::vdiv_ += vderxy(idim, idim);
 
       gridvel_div_ += gridvelderxy(idim, idim);
@@ -6012,42 +6012,42 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
   //----------------------------------------------------------------------
   // get velocity at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  Base::velint_.Multiply(evelaf, Base::funct_);
+  Base::velint_.multiply(evelaf, Base::funct_);
 
   // get velocity Base::derivatives at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  Base::vderxy_.MultiplyNT(evelaf, Base::derxy_);
+  Base::vderxy_.multiply_nt(evelaf, Base::derxy_);
 
-  Base::vderiv_.MultiplyNT(evelaf, Base::deriv_);
+  Base::vderiv_.multiply_nt(evelaf, Base::deriv_);
 
   // get velocity at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  gridvel_int_.Multiply(egridv, Base::funct_);
+  gridvel_int_.multiply(egridv, Base::funct_);
 
-  convvel_.Update(-1.0, gridvel_int_, 1.0, Base::velint_);
+  convvel_.update(-1.0, gridvel_int_, 1.0, Base::velint_);
 
   // get convective velocity at integration point
   // (ALE case handled implicitly here using the (potential
   //  mesh-movement-dependent) convective velocity, avoiding
   //  various ALE terms used to be calculated before)
-  // convvelint_.Update(Base::velint_);
-  Base::convvelint_.Update(-1.0, gridvel_int_, 0.0);
+  // convvelint_.update(Base::velint_);
+  Base::convvelint_.update(-1.0, gridvel_int_, 0.0);
 
   // get pressure at integration point
   // (value at n+alpha_F for generalized-alpha scheme,
   //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
   // double press(true);
   if (Base::fldparatimint_->IsGenalphaNP())
-    press_ = Base::funct_.Dot(eprenp);
+    press_ = Base::funct_.dot(eprenp);
   else
-    press_ = Base::funct_.Dot(epreaf);
+    press_ = Base::funct_.dot(epreaf);
 
   // fluid pressure at gradient w.r.t to paramater space coordinates at gauss point
-  refgrad_press_.Multiply(Base::deriv_, epreaf);
+  refgrad_press_.multiply(Base::deriv_, epreaf);
 
   // get pressure time derivative at integration point
   // (value at n+alpha_M for generalized-alpha scheme, n+1 otherwise)
-  press_dot_ = Base::funct_.Dot(epressam_timederiv);
+  press_dot_ = Base::funct_.dot(epressam_timederiv);
 
   // get pressure time derivative at integration point
   // (value at n )
@@ -6061,30 +6061,30 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
   // (value at n+alpha_F for generalized-alpha scheme,
   //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
   if (Base::fldparatimint_->IsGenalphaNP())
-    Base::gradp_.Multiply(Base::derxy_, eprenp);
+    Base::gradp_.multiply(Base::derxy_, eprenp);
   else
-    Base::gradp_.Multiply(Base::derxy_, epreaf);
+    Base::gradp_.multiply(Base::derxy_, epreaf);
 
   // get displacement Base::derivatives at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
   Core::LinAlg::Matrix<nsd_, nsd_> gridvelderxy;
-  gridvelderxy.MultiplyNT(egridv, Base::derxy_);
+  gridvelderxy.multiply_nt(egridv, Base::derxy_);
 
-  gridvel_deriv_.MultiplyNT(egridv, Base::deriv_);
+  gridvel_deriv_.multiply_nt(egridv, Base::deriv_);
 
   // get bodyforce at integration point
   // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-  Base::bodyforce_.Multiply(ebofoaf, Base::funct_);
+  Base::bodyforce_.multiply(ebofoaf, Base::funct_);
 
   // get momentum history data at integration point
   // (only required for one-step-theta and BDF2 time-integration schemes)
-  Base::histmom_.Multiply(emhist, Base::funct_);
+  Base::histmom_.multiply(emhist, Base::funct_);
 
   // "history" of continuity equation, i.e. p^n + \Delta t * (1-theta) * \dot{p}^n
-  hist_con_ = Base::funct_.Dot(echist);
+  hist_con_ = Base::funct_.dot(echist);
 
   // get acceleration at time n+alpha_M at integration point
-  Base::accint_.Multiply(eaccam, Base::funct_);
+  Base::accint_.multiply(eaccam, Base::funct_);
 
   //----------------------------------------------------------------------
   //  evaluation of various partial operators at integration point
@@ -6099,14 +6099,14 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
   // Add convective part:
   if (porofldpara_->ConvectiveTerm())
   {
-    Base::conv_old_.Multiply(Base::vderxy_, convvel_);
-    Base::conv_c_.MultiplyTN(Base::derxy_, convvel_);
+    Base::conv_old_.multiply(Base::vderxy_, convvel_);
+    Base::conv_c_.multiply_tn(Base::derxy_, convvel_);
   }
   else
   {
     // set old convective term to ALE-Term only
-    Base::conv_old_.Multiply(Base::vderxy_, Base::convvelint_);
-    Base::conv_c_.MultiplyTN(Base::derxy_, Base::convvelint_);
+    Base::conv_old_.multiply(Base::vderxy_, Base::convvelint_);
+    Base::conv_c_.multiply_tn(Base::derxy_, Base::convvelint_);
   }
 
   // compute divergence of velocity from previous iteration
@@ -6128,7 +6128,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
     {
       // get vdiv at time n+1 for np_genalpha,
       Core::LinAlg::Matrix<nsd_, nsd_> vderxy;
-      vderxy.MultiplyNT(evelnp, Base::derxy_);
+      vderxy.multiply_nt(evelnp, Base::derxy_);
       Base::vdiv_ += vderxy(idim, idim);
 
       gridvel_div_ += gridvelderxy(idim, idim);
@@ -6183,17 +6183,17 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_volume(Teuchos::Parame
     //------------------------get determinant of Jacobian dX / ds
     // transposed jacobian "dX/ds"
     Core::LinAlg::Matrix<nsd_, nsd_> xjm0;
-    xjm0.MultiplyNT(Base::deriv_, xyze0_);
+    xjm0.multiply_nt(Base::deriv_, xyze0_);
 
     // inverse of transposed jacobian "ds/dX"
-    const double det0 = xjm0.Determinant();
+    const double det0 = xjm0.determinant();
 
     // determinant of deformationgradient det F = det ( d x / d X ) = det (dx/ds) * ( det(dX/ds)
     // )^-1
     J_ = Base::det_ / det0;
 
     // pressure at integration point
-    press_ = Base::funct_.Dot(epressnp);
+    press_ = Base::funct_.dot(epressnp);
 
     //-----------------------------------computing the porosity
     porosity_ = 0.0;
@@ -6219,7 +6219,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_def_gradient(
   if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
-    defgrd.MultiplyNT(xcurr, N_XYZ);  //  (6.17)
+    defgrd.multiply_nt(xcurr, N_XYZ);  //  (6.17)
   }
   else if (kintype_ == Inpar::STR::KinemType::linear)  // linear kinematics
   {
@@ -6308,26 +6308,26 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    Base::velint_.Multiply(evelaf, Base::funct_);
+    Base::velint_.multiply(evelaf, Base::funct_);
 
     // get pressure at integration point
     // (value at n+alpha_F for generalized-alpha scheme,
     //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
     double preint(true);
     if (Base::fldparatimint_->IsGenalphaNP())
-      preint = Base::funct_.Dot(eprenp);
+      preint = Base::funct_.dot(eprenp);
     else
-      preint = Base::funct_.Dot(epreaf);
+      preint = Base::funct_.dot(epreaf);
 
     /* H1 -error norm
     // compute first derivative of the velocity
     Core::LinAlg::Matrix<nsd_,nsd_> dervelint;
-    dervelint.MultiplyNT(evelaf,derxy_);
+    dervelint.multiply_nt(evelaf,derxy_);
     */
 
     // get coordinates at integration point
     Core::LinAlg::Matrix<nsd_, 1> xyzint(true);
-    xyzint.Multiply(Base::xyze_, Base::funct_);
+    xyzint.multiply(Base::xyze_, Base::funct_);
 
     //  the error is evaluated at the specific time of the used time integration scheme
     //  n+alpha_F for generalized-alpha scheme
@@ -6407,7 +6407,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
 
     // compute difference between analytical solution and numerical solution
     deltap = preint - p;
-    deltavel.Update(1.0, Base::velint_, -1.0, u);
+    deltavel.update(1.0, Base::velint_, -1.0, u);
 
     /* H1 -error norm
     // compute error for first velocity derivative
@@ -6477,7 +6477,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
     {
       // Right Cauchy-Green tensor = F^T * F
       Core::LinAlg::Matrix<nsd_, nsd_> cauchygreen;
-      cauchygreen.MultiplyTN(defgrd, defgrd);
+      cauchygreen.multiply_tn(defgrd, defgrd);
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
       if (nsd_ == 3)
@@ -6613,7 +6613,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
     }
 
     static Core::LinAlg::Matrix<6, nsd_> cmat_E_X(true);
-    cmat_E_X.Multiply(cmat, E_X);
+    cmat_E_X.multiply(cmat, E_X);
     static Core::LinAlg::Matrix<nsd_, 1> cmat_E_X_vec(true);
     if (nsd_ == 3)
     {
@@ -6652,7 +6652,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
       for (int j = 0; j < nsd_; ++j)
         for (int k = 0; k < nsd_; ++k) mixres_(i) -= F_X(i * nsd_ + j, k) * stress(j, k);
 
-    mixres_.MultiplyNN(-1.0, defgrd, cmat_E_X_vec, 1.0);
+    mixres_.multiply_nn(-1.0, defgrd, cmat_E_X_vec, 1.0);
     if (computeLinOD)
     {
       mixresLinOD_.clear();
@@ -6773,7 +6773,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
         }
       }
 
-      mixresLinOD_.MultiplyNN(-1.0, defgrd, cmat_E_X_vec_Lin, 1.0);
+      mixresLinOD_.multiply_nn(-1.0, defgrd, cmat_E_X_vec_Lin, 1.0);
     }
   }
 }
@@ -6824,7 +6824,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_jacobian_determinant_
     const Core::LinAlg::Matrix<nsd_, nen_>& nodaldisp)
 {
   // compute J
-  J = defgrd.Determinant();
+  J = defgrd.determinant();
 
   if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
@@ -6839,7 +6839,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_jacobian_determinant_
     static Core::LinAlg::Matrix<nsd_, nsd_> dispgrad;
     dispgrad.clear();
     // gradient of displacements
-    dispgrad.MultiplyNT(nodaldisp, N_XYZ);
+    dispgrad.multiply_nt(nodaldisp, N_XYZ);
 
     volchange = 1.0;
     // volchange = 1 + trace of the linearized strains (= trace of displacement gradient)

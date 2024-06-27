@@ -1062,14 +1062,14 @@ void Airway::RedAirwayImplicitTimeInt::Solve(
   A_debug = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_); if (A_debug !=
   Teuchos::null)
   {
-     (A_debug->EpetraMatrix())->Print(std::cout);
+     (A_debug->EpetraMatrix())->print(std::cout);
   }
    //               std::cout<<"Map is:
   ("<<myrank_<<")"<<std::endl<<*(discret_->dof_row_map())<<std::endl;
   std::cout<<"---------------------------------------("<<myrank_<<"------------------------"<<std::endl;
 
   std::cout << "rhs_ = " << std::endl;
-  rhs_->Print(std::cout);*/
+  rhs_->print(std::cout);*/
 
   // double norm_bc_tog = 0.0;
   // rhs_->Norm1(&norm_bc_tog);

@@ -48,11 +48,11 @@ namespace Core::FE
       const Epetra_Vector& global, std::vector<matrix>& local, const std::vector<int>& lm)
   {
     // safety check
-    if (local[0].N() != 1 or local.size() * (unsigned)local[0].M() != lm.size())
+    if (local[0].n() != 1 or local.size() * (unsigned)local[0].m() != lm.size())
       FOUR_C_THROW("Received matrix vector of wrong size!");
 
     // loop over all nodes of current element
-    for (unsigned inode = 0; inode < local[0].M(); ++inode)
+    for (unsigned inode = 0; inode < local[0].m(); ++inode)
     {
       // loop over all dofs of current node
       for (unsigned idof = 0; idof < local.size(); ++idof)
@@ -183,8 +183,8 @@ namespace Core::FE
   {
     const int numnode = ele->num_node();
     const int numcol = global.NumVectors();
-    if (((int)local.N()) != 1) FOUR_C_THROW("local matrix must have one column");
-    if (((int)local.M()) != numnode * numcol) FOUR_C_THROW("local matrix has wrong number of rows");
+    if (((int)local.n()) != 1) FOUR_C_THROW("local matrix must have one column");
+    if (((int)local.m()) != numnode * numcol) FOUR_C_THROW("local matrix has wrong number of rows");
 
     // loop over element nodes
     for (int i = 0; i < numnode; ++i)

@@ -220,25 +220,25 @@ namespace Discret::ELEMENTS::Shell
 
     Core::LinAlg::SYEV(U_enh, EW, U_enh);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
-    tmp.Multiply(U_enh, EW);
-    tmp2.MultiplyNT(tmp, U_enh);
-    U_enh.Update(tmp2);
+    tmp.multiply(U_enh, EW);
+    tmp2.multiply_nt(tmp, U_enh);
+    U_enh.update(tmp2);
 
     // Second step: calculate displacement-based right stretch tensor
-    U_disp.MultiplyTN(defgrd_disp, defgrd_disp);
+    U_disp.multiply_tn(defgrd_disp, defgrd_disp);
 
     Core::LinAlg::SYEV(U_disp, EW, U_disp);
     for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
-    tmp.Multiply(U_disp, EW);
-    tmp2.MultiplyNT(tmp, U_disp);
-    U_disp.Update(tmp2);
+    tmp.multiply(U_disp, EW);
+    tmp2.multiply_nt(tmp, U_disp);
+    U_disp.update(tmp2);
 
     // Third step: compose consistent deformation gradient
-    U_disp.Invert();
-    R.Multiply(defgrd_disp, U_disp);
-    defgrd_enh.Multiply(R, U_enh);
+    U_disp.invert();
+    R.multiply(defgrd_disp, U_disp);
+    defgrd_enh.multiply(R, U_enh);
 
-    const double det_defgrd_enh = defgrd_enh.Determinant();
+    const double det_defgrd_enh = defgrd_enh.determinant();
     if (det_defgrd_enh <= 0.0)
     {
       FOUR_C_THROW("Negative jacobian determinant of modified deformation gradient");
@@ -575,15 +575,15 @@ namespace Discret::ELEMENTS::Shell
       const Core::LinAlg::Matrix<DETAIL::num_node<distype>, DETAIL::num_dim>& a3, const double zeta)
   {
     // interpolation of kovariant a1,a2
-    basis_and_metrics.kovariant_.MultiplyNN(1.0, shape_functions.derivatives_, x, 0.0);
+    basis_and_metrics.kovariant_.multiply_nn(1.0, shape_functions.derivatives_, x, 0.0);
 
     // displacement field in the third dimension is approximated by assuming a linear variation of
     // the displacements across the thickness
     if (zeta)
     {
       Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> tmp(true);
-      tmp.MultiplyNN(zeta, shape_functions.derivatives_, a3, 0.0);
-      basis_and_metrics.kovariant_.Update(1.0, tmp, 1.0);
+      tmp.multiply_nn(zeta, shape_functions.derivatives_, a3, 0.0);
+      basis_and_metrics.kovariant_.update(1.0, tmp, 1.0);
     }
 
     // interpolation of a3
@@ -595,11 +595,11 @@ namespace Discret::ELEMENTS::Shell
             shape_functions.shapefunctions_(inode) * a3(inode, idim);
     }
     // get kovariant metric tensor
-    basis_and_metrics.metric_kovariant_.MultiplyNT(
+    basis_and_metrics.metric_kovariant_.multiply_nt(
         1.0, basis_and_metrics.kovariant_, basis_and_metrics.kovariant_, 0.0);
 
     // get partial derivatives of the basis vector in thickness direction
-    basis_and_metrics.partial_derivative_.MultiplyNN(1.0, shape_functions.derivatives_, a3, 0.0);
+    basis_and_metrics.partial_derivative_.multiply_nn(1.0, shape_functions.derivatives_, a3, 0.0);
   }
 
   /*!
@@ -615,7 +615,7 @@ namespace Discret::ELEMENTS::Shell
   {
     // get kontravariant basis vectors g1,g2,g3 (inverse transpose of kov)
     metrics.kontravariant_ = metrics.kovariant_;
-    metrics.detJ_ = metrics.kontravariant_.Invert();
+    metrics.detJ_ = metrics.kontravariant_.invert();
 
     // get the transpose
     for (int i = 0; i < DETAIL::num_dim; ++i)
@@ -629,7 +629,7 @@ namespace Discret::ELEMENTS::Shell
     }
     metrics.metric_kontravariant_ = metrics.metric_kovariant_;
     // get  kontravariant metrictensor
-    metrics.metric_kontravariant_.Invert();
+    metrics.metric_kontravariant_.invert();
   }
 
   /*!
@@ -715,11 +715,11 @@ namespace Discret::ELEMENTS::Shell
     g_current.metric_kovariant_(2, 1) = g_current.metric_kovariant_(1, 2);
     g_current.metric_kovariant_(1, 0) = g_current.metric_kovariant_(0, 1);
 
-    g_current.metric_kontravariant_.Update(g_current.metric_kovariant_);
-    double detJ = g_current.metric_kontravariant_.Invert();
+    g_current.metric_kontravariant_.update(g_current.metric_kovariant_);
+    double detJ = g_current.metric_kontravariant_.invert();
     g_current.detJ_ = std::sqrt(detJ);
-    g_reference.metric_kontravariant_.Update(g_reference.metric_kovariant_);
-    detJ = g_reference.metric_kontravariant_.Invert();
+    g_reference.metric_kontravariant_.update(g_reference.metric_kovariant_);
+    detJ = g_reference.metric_kontravariant_.invert();
     g_reference.detJ_ = std::sqrt(detJ);
   }
 
@@ -820,11 +820,11 @@ namespace Discret::ELEMENTS::Shell
     g_current.metric_kovariant_(2, 1) = g_current.metric_kovariant_(1, 2);
     g_current.metric_kovariant_(1, 0) = g_current.metric_kovariant_(0, 1);
 
-    g_current.metric_kontravariant_.Update(g_current.metric_kovariant_);
-    double detJ = g_current.metric_kontravariant_.Invert();
+    g_current.metric_kontravariant_.update(g_current.metric_kovariant_);
+    double detJ = g_current.metric_kontravariant_.invert();
     g_current.detJ_ = std::sqrt(detJ);
-    g_reference.metric_kontravariant_.Update(g_reference.metric_kovariant_);
-    detJ = g_reference.metric_kontravariant_.Invert();
+    g_reference.metric_kontravariant_.update(g_reference.metric_kovariant_);
+    detJ = g_reference.metric_kontravariant_.invert();
     g_reference.detJ_ = std::sqrt(detJ);
   }
 
@@ -904,7 +904,7 @@ namespace Discret::ELEMENTS::Shell
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_reference,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& g_current)
   {
-    strains.defgrd_.MultiplyNT(1.0, g_current.kovariant_, g_reference.kontravariant_);
+    strains.defgrd_.multiply_nt(1.0, g_current.kovariant_, g_reference.kontravariant_);
   }
 
   /*!
@@ -984,7 +984,7 @@ namespace Discret::ELEMENTS::Shell
     // curvilinear coordinate system
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> Cmat(true);
     Core::LinAlg::Matrix<DETAIL::num_dim, DETAIL::num_dim> g_metrics_trans(true);
-    g_metrics_trans.UpdateT(g_reference.kontravariant_);
+    g_metrics_trans.update_t(g_reference.kontravariant_);
     Core::LinAlg::Tensor::InverseFourthTensorRotation(g_metrics_trans, stress.cmat_, Cmat);
 
     // re-arrange indices for shell element formulation
@@ -1098,16 +1098,16 @@ namespace Discret::ELEMENTS::Shell
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& ea)
   {
     Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> invdefgrd(defgrd);
-    invdefgrd.Invert();
+    invdefgrd.invert();
 
     Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> E_matrix;
     Core::LinAlg::Voigt::Strains::vector_to_matrix(gl, E_matrix);
 
     Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> invFTE;
-    invFTE.MultiplyTN(invdefgrd, E_matrix);
+    invFTE.multiply_tn(invdefgrd, E_matrix);
 
     Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> ea_matrix;
-    ea_matrix.MultiplyNN(invFTE, invdefgrd);
+    ea_matrix.multiply_nn(invFTE, invdefgrd);
 
     Core::LinAlg::Voigt::Strains::matrix_to_vector(ea_matrix, ea);
   }
@@ -1129,10 +1129,10 @@ namespace Discret::ELEMENTS::Shell
     Core::LinAlg::Voigt::Stresses::vector_to_matrix(pk2, S_matrix);
 
     Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> FS;
-    FS.MultiplyNN(defgrd, S_matrix);
+    FS.multiply_nn(defgrd, S_matrix);
 
     Core::LinAlg::Matrix<Shell::DETAIL::num_dim, Shell::DETAIL::num_dim> cauchy_matrix;
-    cauchy_matrix.MultiplyNT(1.0 / defgrd.Determinant(), FS, defgrd, 0.0);
+    cauchy_matrix.multiply_nt(1.0 / defgrd.determinant(), FS, defgrd, 0.0);
 
     Core::LinAlg::Voigt::Stresses::matrix_to_vector(cauchy_matrix, cauchy);
   }
@@ -1627,7 +1627,7 @@ namespace Discret::ELEMENTS::Shell
         h(2) = akovrefe(0, 0) * akovrefe(1, 1) - akovrefe(0, 1) * akovrefe(1, 0);
       }
       // make director unit length and get mid-surface area da from it
-      double da = h.Norm2();
+      double da = h.norm2();
 
       gp_evaluator(xi_gp, shapefunctions, a_current, a_reference, gpweight, da, gp);
     }

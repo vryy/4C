@@ -210,13 +210,13 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::calc_convective_
       const double porosity = compute_porosity(ele);
 
       // get velocity at integration point
-      my::velint_.Multiply(evelnp, my::funct_);
+      my::velint_.multiply(evelnp, my::funct_);
 
       // normal velocity (note: normal_ is already a unit(!) normal)
-      const double normvel = my::velint_.Dot(my::normal_);
+      const double normvel = my::velint_.dot(my::normal_);
 
       // scalar at integration point
-      const double phi = my::funct_.Dot(ephinp[k]);
+      const double phi = my::funct_.dot(ephinp[k]);
 
       const double val = porosity * phi * normvel * fac;
       integralflux[k] += val;
@@ -246,7 +246,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::compute_p
 
   if (isnodalporosity_)
   {
-    porosity = eporosity_.Dot(my::funct_);
+    porosity = eporosity_.dot(my::funct_);
   }
   else
   {

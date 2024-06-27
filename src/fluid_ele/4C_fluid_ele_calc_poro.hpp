@@ -968,7 +968,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nsd_, nen_>& xcurr  //!<<    (i) current position of gausspoint
       );
 
-      //! Compute Jacobian Determinant and the volume change
+      //! Compute Jacobian determinant and the volume change
       void compute_jacobian_determinant_volume_change(double& J, double& volchange,
           const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd,
           const Core::LinAlg::Matrix<nsd_, nen_>& N_XYZ,

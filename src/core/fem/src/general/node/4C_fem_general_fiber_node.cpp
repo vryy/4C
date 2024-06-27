@@ -95,10 +95,10 @@ void Core::Nodes::FiberNode::unpack(const std::vector<char>& data)
 /*
   Print this fiber node
 */
-void Core::Nodes::FiberNode::Print(std::ostream& os) const
+void Core::Nodes::FiberNode::print(std::ostream& os) const
 {
   os << "Fiber Node :";
-  Core::Nodes::Node::Print(os);
+  Core::Nodes::Node::print(os);
   os << "(" << fibers_.size() << " fibers, " << angles_.size() << " angles)";
 }
 

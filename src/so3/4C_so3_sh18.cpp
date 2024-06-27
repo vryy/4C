@@ -194,10 +194,10 @@ void Discret::ELEMENTS::SoSh18::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                             seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoSh18::print(std::ostream& os) const
 {
   os << "So_sh18 ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

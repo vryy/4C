@@ -67,7 +67,7 @@ void Mat::BeamElastHyperMaterial<T>::evaluate_force_contributions_to_stress(
     const Core::LinAlg::Matrix<3, 1, T>& Gamma, const unsigned int gp)
 {
   // compute material stresses by multiplying strains with constitutive matrix
-  stressN.Multiply(CN, Gamma);
+  stressN.multiply(CN, Gamma);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -78,7 +78,7 @@ void Mat::BeamElastHyperMaterial<T>::evaluate_moment_contributions_to_stress(
     const Core::LinAlg::Matrix<3, 1, T>& Cur, const unsigned int gp)
 {
   // compute material stresses by multiplying curvature with constitutive matrix
-  stressM.Multiply(CM, Cur);
+  stressM.multiply(CM, Cur);
 }
 
 /*-----------------------------------------------------------------------------------------------*

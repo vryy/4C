@@ -291,10 +291,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::calc_nernst
         // elch-specific values at integration point:
         // concentration is evaluated at all GP since some reaction models depend on all
         // concentrations
-        for (int kk = 0; kk < my::numscal_; ++kk) conint[kk] = my::funct_.Dot(my::ephinp_[kk]);
+        for (int kk = 0; kk < my::numscal_; ++kk) conint[kk] = my::funct_.dot(my::ephinp_[kk]);
 
         // el. potential at integration point
-        const double potint = my::funct_.Dot(my::ephinp_[my::numscal_]);
+        const double potint = my::funct_.dot(my::ephinp_[my::numscal_]);
 
         if (c0 < 1e-12)
           FOUR_C_THROW("reference concentration is too small (c0 < 1.0E-12) : %f", c0);

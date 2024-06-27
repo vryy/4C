@@ -377,9 +377,9 @@ namespace XFEM
         {
           double sl_visc_fac = sliplength / (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
           V2 tmp_itraction(true);
-          tmp_itraction.MultiplyTN(projection_matrix, itraction);
+          tmp_itraction.multiply_tn(projection_matrix, itraction);
           // Project this into tangential direction!!!
-          ivel.Update(sl_visc_fac, tmp_itraction, 1.0);
+          ivel.update(sl_visc_fac, tmp_itraction, 1.0);
         }
         itraction.clear();
       }
@@ -394,9 +394,9 @@ namespace XFEM
       {
         // We project in the normal direction
         Core::LinAlg::Matrix<3, 1> tmp_ivel(true);
-        tmp_ivel.MultiplyTN(
+        tmp_ivel.multiply_tn(
             projection_matrix, ivel);  // apply Projection matrix from the right. (u_0 * P^t)
-        ivel.Update(1.0, tmp_ivel, 0.0);
+        ivel.update(1.0, tmp_ivel, 0.0);
       }
     };
 
@@ -443,7 +443,7 @@ namespace XFEM
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
 
         // Gradients @ GaussPoints
-        gradphi.Multiply(esmoothedgradphi, funct);
+        gradphi.multiply(esmoothedgradphi, funct);
       }
       else if (projtosurf_ == Inpar::XFEM::Proj_normal_phi)
       {
@@ -453,7 +453,7 @@ namespace XFEM
             ephi_test, actele, cutter_phinp_col_, cutter_dis_, cutter_nds_phi_, 1);
 
         // Gradients @ GaussPoints
-        gradphi.Multiply(derxy, ephi);
+        gradphi.multiply(derxy, ephi);
       }
       else if (projtosurf_ == Inpar::XFEM::Proj_normal_smoothed_comb)
       {
@@ -464,18 +464,18 @@ namespace XFEM
             gradphinp_smoothed_node_col_, cutter_dis_, cutter_nds_phi_, nsd_);
 
         // Gradients @ GaussPoints
-        gradphi.Multiply(esmoothedgradphi, funct);
+        gradphi.multiply(esmoothedgradphi, funct);
 
-        const double normgradphi = gradphi.Norm2();
+        const double normgradphi = gradphi.norm2();
         if (normgradphi > 1e-9)  // 1e-9 is set to create a reasonable scaling.
-          gradphi.Scale(1.0 / normgradphi);
+          gradphi.scale(1.0 / normgradphi);
         else
-          gradphi.putScalar(0.0);  // This to catch the cases when gradphi \approx 0
+          gradphi.put_scalar(0.0);  // This to catch the cases when gradphi \approx 0
 
         // normal_comb = alpha_n * normal + (1-alpha)*gradphi
         Core::LinAlg::Matrix<nsd, 1> normal_comb(true);
         double alpha_n = 0.3;
-        normal_comb.Update(alpha_n, normal, -(1.0 - alpha_n), gradphi);
+        normal_comb.update(alpha_n, normal, -(1.0 - alpha_n), gradphi);
 
         gradphi = normal_comb;
       }
@@ -485,11 +485,11 @@ namespace XFEM
       }
 
       // Normalize the smoothed gradient
-      const double normgradphi = gradphi.Norm2();
+      const double normgradphi = gradphi.norm2();
       if (normgradphi > 1e-9)  // 1e-9 is set to create a reasonable scaling.
-        gradphi.Scale(1.0 / normgradphi);
+        gradphi.scale(1.0 / normgradphi);
       else
-        gradphi.putScalar(0.0);  // This to catch the cases when gradphi \approx 0
+        gradphi.put_scalar(0.0);  // This to catch the cases when gradphi \approx 0
 
       setup_projection_matrix(projection_matrix, gradphi);
 

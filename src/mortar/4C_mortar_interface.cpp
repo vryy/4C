@@ -301,14 +301,14 @@ void Mortar::Interface::set_shape_function_type()
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const Mortar::Interface& interface)
 {
-  interface.Print(os);
+  interface.print(os);
   return os;
 }
 
 /*----------------------------------------------------------------------*
  |  print interface (public)                                 mwgee 10/07|
  *----------------------------------------------------------------------*/
-void Mortar::Interface::Print(std::ostream& os) const
+void Mortar::Interface::print(std::ostream& os) const
 {
   if (Comm().MyPID() == 0)
   {

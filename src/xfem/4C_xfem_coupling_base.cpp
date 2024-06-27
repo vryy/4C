@@ -490,7 +490,7 @@ void XFEM::CouplingBase::evaluate_dirichlet_function(Core::LinAlg::Matrix<3, 1>&
 {
   std::vector<double> final_values(3, 0.0);
 
-  evaluate_function(final_values, x.A(), cond, time);
+  evaluate_function(final_values, x.data(), cond, time);
 
   ivel(0, 0) = final_values[0];
   ivel(1, 0) = final_values[1];
@@ -510,7 +510,7 @@ void XFEM::CouplingBase::evaluate_neumann_function(Core::LinAlg::Matrix<3, 1>& i
     FOUR_C_THROW("Unknown Neumann condition");
   //---------------------------------------
 
-  evaluate_function(final_values, x.A(), cond, time);
+  evaluate_function(final_values, x.data(), cond, time);
 
   itraction(0, 0) = final_values[0];
   itraction(1, 0) = final_values[1];
@@ -530,7 +530,7 @@ void XFEM::CouplingBase::evaluate_neumann_function(Core::LinAlg::Matrix<6, 1>& i
     FOUR_C_THROW("Unknown Neumann condition");
   //---------------------------------------
 
-  evaluate_function(final_values, x.A(), cond, time);
+  evaluate_function(final_values, x.data(), cond, time);
 
   for (unsigned i = 0; i < 6; ++i) itraction(i, 0) = final_values[i];
 }

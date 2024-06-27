@@ -304,7 +304,7 @@ void Discret::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
   /*----------------------------------- perform matrix multiplications ---*/
 
 
-  int err = Core::LinAlg::multiplyTN(A, R, C);  // A = R^t * C
+  int err = Core::LinAlg::multiply_tn(A, R, C);  // A = R^t * C
   if (err != 0) FOUR_C_THROW("Multiply failed");
   err = Core::LinAlg::multiply(*k_torsion, A, R);  // stiff = A * R
   if (err != 0) FOUR_C_THROW("Multiply failed");

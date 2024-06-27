@@ -70,17 +70,17 @@ void Mat::MicroMaterial::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     Core::LinAlg::Matrix<3, 3> U_enh;
     Core::LinAlg::Matrix<3, 3> temp;
     for (int i = 0; i < 3; ++i) S(i, i) = sqrt(S(i, i));
-    temp.MultiplyNN(Q, S);
-    U_enh.MultiplyNN(temp, VT);
+    temp.multiply_nn(Q, S);
+    U_enh.multiply_nn(temp, VT);
 
     // Second step: determine rotation tensor R from F (F=R*U)
     // -> polar decomposition of displacement based F
     Core::LinAlg::SVD<3, 3>(*(defgrd_enh), Q, S, VT);  // Singular Value Decomposition
     Core::LinAlg::Matrix<3, 3> R;
-    R.MultiplyNN(Q, VT);
+    R.multiply_nn(Q, VT);
 
     // Third step: determine "enhanced" deformation gradient (F_enh=R*U_enh)
-    defgrd_enh->MultiplyNN(R, U_enh);
+    defgrd_enh->multiply_nn(R, U_enh);
   }
 
   // activate microscale material

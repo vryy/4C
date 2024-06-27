@@ -322,8 +322,8 @@ bool Core::Geo::Cut::IntegrationCellCreator::create_tet4_cell(
   Core::LinAlg::Matrix<3, 3> bot_xyze;
   Core::LinAlg::Matrix<3, 1> top_xyz;
 
-  bot->CornerCoordinates(bot_xyze.A());
-  top_point->Coordinates(top_xyz.A());
+  bot->CornerCoordinates(bot_xyze.data());
+  top_point->Coordinates(top_xyz.data());
 
   Teuchos::RCP<Core::Geo::Cut::Position> bot_distance =
       Core::Geo::Cut::Position::Create(bot_xyze, top_xyz, Core::FE::CellType::tri3);
@@ -509,8 +509,8 @@ bool Core::Geo::Cut::IntegrationCellCreator::create_hex8_cell(
     Core::LinAlg::Matrix<3, 4> bot_xyze;
     Core::LinAlg::Matrix<3, 4> top_xyze;
 
-    bot->CornerCoordinates(bot_xyze.A());
-    top->CornerCoordinates(top_xyze.A());
+    bot->CornerCoordinates(bot_xyze.data());
+    top->CornerCoordinates(top_xyze.data());
 
     int distance_counter = 0;
     for (int i = 0; i < 4; ++i)
@@ -699,8 +699,8 @@ bool Core::Geo::Cut::IntegrationCellCreator::create_wedge6_cell(
     Core::LinAlg::Matrix<3, 3> bot_xyze;
     Core::LinAlg::Matrix<3, 3> top_xyze;
 
-    bot->CornerCoordinates(bot_xyze.A());
-    top->CornerCoordinates(top_xyze.A());
+    bot->CornerCoordinates(bot_xyze.data());
+    top->CornerCoordinates(top_xyze.data());
 
     int distance_counter = 0;
     for (int i = 0; i < 3; ++i)
@@ -884,8 +884,8 @@ bool Core::Geo::Cut::IntegrationCellCreator::create_pyramid5_cell(
     Core::LinAlg::Matrix<3, 4> bot_xyze;
     Core::LinAlg::Matrix<3, 1> top_xyze;
 
-    bot->CornerCoordinates(bot_xyze.A());
-    top_point->Coordinates(top_xyze.A());
+    bot->CornerCoordinates(bot_xyze.data());
+    top_point->Coordinates(top_xyze.data());
 
     Teuchos::RCP<Position> bot_distance =
         Core::Geo::Cut::Position::Create(bot_xyze, top_xyze, Core::FE::CellType::quad4);
@@ -1153,7 +1153,7 @@ bool Core::Geo::Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
   {
     Point* p = *i;
     Core::LinAlg::Matrix<3, 1> xyz;
-    p->Coordinates(xyz.A());
+    p->Coordinates(xyz.data());
     element->local_coordinates(xyz, rst);
 
     local_points.push_back(rst);
@@ -1163,7 +1163,7 @@ bool Core::Geo::Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
 
     // create new points
     element->global_coordinates(rst, xyz);
-    projected_points.push_back(mesh.NewPoint(xyz.A(), nullptr, nullptr, 0.0));
+    projected_points.push_back(mesh.NewPoint(xyz.data(), nullptr, nullptr, 0.0));
     // change Benedikt: do not set the position for additionally created points
     /* REMARK:
      * the propagation of the inside/outside position to facets and volume cells
@@ -1191,7 +1191,7 @@ bool Core::Geo::Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
       Core::LinAlg::Matrix<2, 3> deriv;
       Core::LinAlg::Matrix<2, 2> metrictensor;
 
-      double* x = xyze.A();
+      double* x = xyze.data();
 
       int sidepos = -1;
       if (r > 0)
@@ -1215,7 +1215,7 @@ bool Core::Geo::Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
         points.push_back(projected_points[pos - inner_points.begin()]);
 
         const Core::LinAlg::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
-        x = std::copy(rst.A(), rst.A() + 3, x);
+        x = std::copy(rst.data(), rst.data() + 3, x);
       }
 
       if (r < 0)
@@ -1260,7 +1260,7 @@ bool Core::Geo::Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
       Core::LinAlg::Matrix<2, 4> deriv;
       Core::LinAlg::Matrix<2, 2> metrictensor;
 
-      double* x = xyze.A();
+      double* x = xyze.data();
 
       int sidepos = -1;
       if (r > 0)
@@ -1284,7 +1284,7 @@ bool Core::Geo::Cut::IntegrationCellCreator::hex8_horizontal_cut(Mesh& mesh, Ele
         points.push_back(projected_points[pos - inner_points.begin()]);
 
         const Core::LinAlg::Matrix<3, 1>& rst = local_points[pos - inner_points.begin()];
-        x = std::copy(rst.A(), rst.A() + 3, x);
+        x = std::copy(rst.data(), rst.data() + 3, x);
       }
 
       if (r < 0)

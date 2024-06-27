@@ -236,7 +236,7 @@ namespace CrossLinking
     /*!
      \brief Print this Mortar::Node
      */
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
 
     /*!

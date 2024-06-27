@@ -99,10 +99,10 @@ void Discret::ELEMENTS::MembraneScatra<distype>::unpack(const std::vector<char>&
  |  print this element (public)                            sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneScatra<distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::MembraneScatra<distype>::print(std::ostream& os) const
 {
   os << "MembraneScatra ";
-  Membrane<distype>::Print(os);
+  Membrane<distype>::print(os);
 
   return;
 }

@@ -379,7 +379,7 @@ namespace Discret
           if (my::phinp_[k] > 1e-16) conintinv_[k] = 1 / my::phinp_[k];
 
         // calculate gradient of electric potential at GP at t_(n+1) or t_(n+alpha_F)
-        gradpot_.Multiply(derxy, ephinp[my::numscal_]);
+        gradpot_.multiply(derxy, ephinp[my::numscal_]);
 
         // set factor F/RT
         if (do_setfrt) SetFRT();

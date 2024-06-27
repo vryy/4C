@@ -333,10 +333,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::
         // Sum the values over all ranks.
         Core::LinAlg::Matrix<3, 2, double> beam_resultant_global(true);
         Core::LinAlg::Matrix<3, 2, double> solid_resultant_global(true);
-        MPI_Allreduce(beam_resultant.A(), beam_resultant_global.A(),
+        MPI_Allreduce(beam_resultant.data(), beam_resultant_global.data(),
             beam_resultant.numRows() * beam_resultant.numCols(), MPI_DOUBLE, MPI_SUM,
             dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
-        MPI_Allreduce(solid_resultant.A(), solid_resultant_global.A(),
+        MPI_Allreduce(solid_resultant.data(), solid_resultant_global.data(),
             solid_resultant.numRows() * solid_resultant.numCols(), MPI_DOUBLE, MPI_SUM,
             dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
 

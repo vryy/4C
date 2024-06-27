@@ -632,10 +632,10 @@ int Discret::ELEMENTS::Transport::NumVolume() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 05/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::Print(std::ostream& os) const
+void Discret::ELEMENTS::Transport::print(std::ostream& os) const
 {
   os << "Transport element";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
   std::cout << std::endl;
@@ -784,10 +784,10 @@ void Discret::ELEMENTS::TransportBoundary::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::TransportBoundary::print(std::ostream& os) const
 {
   os << "TransportBoundary element";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(Shape()) << std::endl;
   std::cout << std::endl;

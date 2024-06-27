@@ -452,14 +452,14 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
 
       // get Jacobi-Matrix for transformation
       static Core::LinAlg::Matrix<dim, dim> xjm_ele_XiToXYZ;
-      xjm_ele_XiToXYZ.MultiplyNT(deriv3Dele, xyze_adj);
+      xjm_ele_XiToXYZ.multiply_nt(deriv3Dele, xyze_adj);
 
       // inverse of jacobian
       static Core::LinAlg::Matrix<dim, dim> xji_ele_XiToXYZ;
-      xji_ele_XiToXYZ.Invert(xjm_ele_XiToXYZ);
+      xji_ele_XiToXYZ.invert(xjm_ele_XiToXYZ);
 
       // set XYZ-derivates of shapefunctions
-      deriv3Dele_xyz.Multiply(xji_ele_XiToXYZ, deriv3Dele);
+      deriv3Dele_xyz.multiply(xji_ele_XiToXYZ, deriv3Dele);
 
       //----------------------------------------------------
       // compute gradient of phi at node for current element
@@ -468,17 +468,17 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       nodal_grad_tmp.clear();
 
       // get xyz-gradient
-      nodal_grad_tmp.Multiply(deriv3Dele_xyz, ephi_adj);
+      nodal_grad_tmp.multiply(deriv3Dele_xyz, ephi_adj);
 
       //===============================================================================
       // add to vector with smoothed vector
 
-      node_gradphi_smoothed.Update(1.0, nodal_grad_tmp, 1.0);
+      node_gradphi_smoothed.update(1.0, nodal_grad_tmp, 1.0);
 
     }  // end loop over all adjacent elements
 
     // weight sum of nodal_grad_tmp 1/number_of_vectors to get an average value
-    node_gradphi_smoothed.Scale(1.0 / numberOfElements);
+    node_gradphi_smoothed.scale(1.0 / numberOfElements);
   }
   return node_gradphi_smoothed;
 }

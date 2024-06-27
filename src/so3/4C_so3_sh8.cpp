@@ -190,10 +190,10 @@ void Discret::ELEMENTS::SoSh8::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoSh8::print(std::ostream& os) const
 {
   os << "So_sh8 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

@@ -203,10 +203,10 @@ void Discret::ELEMENTS::RedAcinus::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAcinus::Print(std::ostream& os) const
+void Discret::ELEMENTS::RedAcinus::print(std::ostream& os) const
 {
   os << "RedAcinus ";
-  Element::Print(os);
+  Element::print(os);
 
   return;
 }

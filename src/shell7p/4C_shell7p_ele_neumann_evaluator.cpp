@@ -178,7 +178,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
       {
         // no linearization needed for load in material configuration
         loadlin = false;
-        g_metrics_kovariant.MultiplyNN(1.0, shapefunctions.derivatives_, x_refe, 0.0);
+        g_metrics_kovariant.multiply_nn(1.0, shapefunctions.derivatives_, x_refe, 0.0);
       }
       break;
       case config_lastconverged:
@@ -191,7 +191,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
 
         spatial_configuration<distype>(x_curr, x_refe, displacements, 0);
 
-        g_metrics_kovariant.MultiplyNN(1.0, shapefunctions.derivatives_, x_curr, 0.0);
+        g_metrics_kovariant.multiply_nn(1.0, shapefunctions.derivatives_, x_curr, 0.0);
       }
       break;
       case config_spatial:
@@ -202,7 +202,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
 
         spatial_configuration<distype>(x_curr, x_refe, displacements, 0);
 
-        g_metrics_kovariant.MultiplyNN(1.0, shapefunctions.derivatives_, x_curr, 0.0);
+        g_metrics_kovariant.multiply_nn(1.0, shapefunctions.derivatives_, x_curr, 0.0);
       }
       break;
       default:
@@ -219,16 +219,16 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
     g3(2) = g_metrics_kovariant(0, 0) * g_metrics_kovariant(1, 1) -
             g_metrics_kovariant(0, 1) * g_metrics_kovariant(1, 0);
     // compute line increment ds
-    double ds = g3.Norm2();
+    double ds = g3.norm2();
     if (ds <= 1.0e-14) FOUR_C_THROW("Element Area equal 0.0 or negativ detected");
 
     // material/reference coordinates of Gaussian point
     Core::LinAlg::Matrix<num_dim, 1> gauss_point_reference_coordinates;
-    gauss_point_reference_coordinates.MultiplyTN(x_refe, shapefunctions.shapefunctions_);
+    gauss_point_reference_coordinates.multiply_tn(x_refe, shapefunctions.shapefunctions_);
     // current coordinates of Gaussian point
     Core::LinAlg::Matrix<num_dim, 1> gauss_point_current_coordinates;
     if (ltype != neum_live)
-      gauss_point_current_coordinates.MultiplyTN(x_curr, shapefunctions.shapefunctions_);
+      gauss_point_current_coordinates.multiply_tn(x_curr, shapefunctions.shapefunctions_);
 
     // evaluate the spatial function in the reference state
     std::vector<double> function_scale_factors(3, 1.0);
@@ -242,7 +242,7 @@ void Discret::ELEMENTS::Shell::evaluate_neumann(Core::Elements::Element& ele,
             (function_number > 0)
                 ? Global::Problem::Instance()
                       ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(function_number - 1)
-                      .evaluate(gauss_point_reference_coordinates.A(), total_time, dim)
+                      .evaluate(gauss_point_reference_coordinates.data(), total_time, dim)
                 : 1.0;
       }
     }

@@ -21,7 +21,7 @@ void Discret::ELEMENTS::SoHex8::soh8_element_center_refe_coords(
   const Core::FE::CellType distype = Shape();
   Core::LinAlg::Matrix<NUMNOD_SOH8, 1> funct;
   Core::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, distype);
-  centercoord.MultiplyTN(xrefe, funct);
+  centercoord.multiply_tn(xrefe, funct);
   return;
 }
 
@@ -33,7 +33,7 @@ void Discret::ELEMENTS::SoHex8::soh8_gauss_point_refe_coords(
   const static std::vector<Core::LinAlg::Matrix<NUMNOD_SOH8, 1>> shapefcts = soh8_shapefcts();
   Core::LinAlg::Matrix<NUMNOD_SOH8, 1> funct(true);
   funct = shapefcts[gp];
-  gpcoord.MultiplyTN(xrefe, funct);
+  gpcoord.multiply_tn(xrefe, funct);
 
   return;
 }

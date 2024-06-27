@@ -212,9 +212,9 @@ void Core::Geo::Cut::FacetIntegration::is_clockwise(
     // This reference vector is in the correct normal direction
     //-----
     Core::LinAlg::Matrix<3, 1> ref_vec;
-    ref_vec.Update(1.0, facecen, -1.0, elecen);
-    double l2_ref_vec = ref_vec.Norm2();
-    ref_vec.Scale(1.0 / l2_ref_vec);
+    ref_vec.update(1.0, facecen, -1.0, elecen);
+    double l2_ref_vec = ref_vec.norm2();
+    ref_vec.scale(1.0 / l2_ref_vec);
 
     //-----
     // STEP 4: Take dot product with the normal of facet
@@ -223,7 +223,7 @@ void Core::Geo::Cut::FacetIntegration::is_clockwise(
     Core::LinAlg::Matrix<3, 1> norm_fac;
     for (unsigned dim = 0; dim < 3; dim++) norm_fac(dim, 0) = eqn_plane[dim];
 
-    double dotProduct = ref_vec.Dot(norm_fac);
+    double dotProduct = ref_vec.dot(norm_fac);
     if (dotProduct < 0.0) clockwise_ = 1;
   }
   // std::cout<<"clockwise = "<<clockwise_<<"\t"<<"is cut side = "<<iscut<<"\n";
@@ -862,7 +862,7 @@ void Core::Geo::Cut::FacetIntegration::divergence_integration_rule_new(
           midpt(2, 0) += coords[2];
         }
 
-        midpt.Scale(1.0 / (*k).size());
+        midpt.scale(1.0 / (*k).size());
 
         //        bcell->element_center(midpt);
         Core::Geo::Cut::Output::GmshTriSideDump(file, *k);

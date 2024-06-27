@@ -44,7 +44,7 @@ void Mat::ElastHyperEvaluate(const Core::LinAlg::Matrix<3, 3>& defgrd,
   // Evalutate Right Cauchy-Green strain tensor in strain-like Voigt notation
   EvaluateRightCauchyGreenStrainLikeVoigt(glstrain, C_strain);
 
-  // Invert Right Cauchy Green Strain tensor
+  // invert Right Cauchy Green Strain tensor
   Core::LinAlg::Voigt::Strains::inverse_tensor(C_strain, iC_strain);
 
   // Evaluate principle invariants
@@ -84,7 +84,7 @@ void Mat::EvaluateRightCauchyGreenStrainLikeVoigt(
     const Core::LinAlg::Matrix<6, 1>& E_strain, Core::LinAlg::Matrix<6, 1>& C_strain)
 {
   // C = 2*E+I
-  C_strain.Update(2.0, E_strain, 0.0);
+  C_strain.update(2.0, E_strain, 0.0);
 
   // Add Identity
   for (unsigned i = 0; i < 3; ++i) C_strain(i) += 1.0;
@@ -191,30 +191,30 @@ void Mat::ElastHyperAddIsotropicStressCmat(Core::LinAlg::Matrix<6, 1>& S_stress,
   CalculateGammaDelta(gamma, delta, prinv, dPI, ddPII);
 
   // 2nd Piola Kirchhoff stress
-  S_stress.Update(gamma(0), id2, 1.0);
-  S_stress.Update(gamma(1), C_stress, 1.0);
-  S_stress.Update(gamma(2), iC_stress, 1.0);
+  S_stress.update(gamma(0), id2, 1.0);
+  S_stress.update(gamma(1), C_stress, 1.0);
+  S_stress.update(gamma(2), iC_stress, 1.0);
 
   // constitutive tensor
   // contribution: Id \otimes Id
-  cmat.MultiplyNT(delta(0), id2, id2, 1.0);
+  cmat.multiply_nt(delta(0), id2, id2, 1.0);
   // contribution: Id \otimes C + C \otimes Id
-  cmat.MultiplyNT(delta(1), id2, C_stress, 1.0);
-  cmat.MultiplyNT(delta(1), C_stress, id2, 1.0);
+  cmat.multiply_nt(delta(1), id2, C_stress, 1.0);
+  cmat.multiply_nt(delta(1), C_stress, id2, 1.0);
   // contribution: Id \otimes Cinv + Cinv \otimes Id
-  cmat.MultiplyNT(delta(2), id2, iC_stress, 1.0);
-  cmat.MultiplyNT(delta(2), iC_stress, id2, 1.0);
+  cmat.multiply_nt(delta(2), id2, iC_stress, 1.0);
+  cmat.multiply_nt(delta(2), iC_stress, id2, 1.0);
   // contribution: C \otimes C
-  cmat.MultiplyNT(delta(3), C_stress, C_stress, 1.0);
+  cmat.multiply_nt(delta(3), C_stress, C_stress, 1.0);
   // contribution: C \otimes Cinv + Cinv \otimes C
-  cmat.MultiplyNT(delta(4), C_stress, iC_stress, 1.0);
-  cmat.MultiplyNT(delta(4), iC_stress, C_stress, 1.0);
+  cmat.multiply_nt(delta(4), C_stress, iC_stress, 1.0);
+  cmat.multiply_nt(delta(4), iC_stress, C_stress, 1.0);
   // contribution: Cinv \otimes Cinv
-  cmat.MultiplyNT(delta(5), iC_stress, iC_stress, 1.0);
+  cmat.multiply_nt(delta(5), iC_stress, iC_stress, 1.0);
   // contribution: Cinv \odot Cinv
   add_holzapfel_product(cmat, iC_stress, delta(6));
   // contribution: Id4^#
-  cmat.Update(delta(7), id4sharp, 1.0);
+  cmat.update(delta(7), id4sharp, 1.0);
 }
 
 void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
@@ -271,9 +271,9 @@ void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
       }
       modbypr(al, al) += 3.0;
     }
-    modbypr.Scale(detdefgrad13 / 3.0);
+    modbypr.scale(detdefgrad13 / 3.0);
     // determine unmodified coefficients gamma and add them
-    gamma_.MultiplyTN(1.0, modbypr, modgamma, 1.0);
+    gamma_.multiply_tn(1.0, modbypr, modgamma, 1.0);
     // determine unmodified coefficients delta and add them
     //
     // rewrite mod.coeff. as 2-tensor
@@ -286,9 +286,9 @@ void Mat::ElastHyperAddResponseStretches(Core::LinAlg::Matrix<6, 6>& cmat,
     moddeltat(2, 0) = moddeltat(0, 2) = moddelta(5);
     // Psi_{,barlam barlam} barlam_{,lam} barlam_{,lam}
     static Core::LinAlg::Matrix<3, 3> aux(false);
-    aux.MultiplyTN(modbypr, moddeltat);
+    aux.multiply_tn(modbypr, moddeltat);
     static Core::LinAlg::Matrix<3, 3> deltat(false);
-    deltat.MultiplyNN(aux, modbypr);
+    deltat.multiply_nn(aux, modbypr);
     // Psi_{,barlam} barlam_{,lam lam}
     for (int be = 0; be < 3; ++be)
     {
@@ -474,8 +474,8 @@ void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
   // Cof(F) = J*F^(-T)
   static Core::LinAlg::Matrix<3, 3> CoFacF(true);  // Cof(F) in Matrix-Notation
   static Core::LinAlg::Matrix<9, 1> CofF(true);    // Cof(F) in Voigt-Notation
-  CoFacF.Invert(defgrd);
-  CoFacF.Scale(J);
+  CoFacF.invert(defgrd);
+  CoFacF.scale(J);
   // sort in Voigt-Notation and invert!
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(CoFacF, CofF);
 
@@ -495,15 +495,15 @@ void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
   // = 4 d^2\Psi/dI_1dI_1 F \otimes F + 2 \d\Psi/dI_1 *II
   static Core::LinAlg::Matrix<9, 9> FreDFF(true);
   FreDFF.clear();
-  FreDFF.MultiplyNT(4 * ddPII(0), dfgrd, dfgrd, 1.0);
-  FreDFF.Update(2 * dPI(0), ID4, 1.0);
+  FreDFF.multiply_nt(4 * ddPII(0), dfgrd, dfgrd, 1.0);
+  FreDFF.update(2 * dPI(0), ID4, 1.0);
 
   // d^2P/d(cofF)d(cofF)
   // = = 4 d^2\Psi/dI_2dI_2 cof(F) \otimes cof(F) + 2 \d\Psi/dI_2 *II
   static Core::LinAlg::Matrix<9, 9> FreDcFcF(true);
   FreDcFcF.clear();
-  FreDcFcF.MultiplyNT(4 * ddPII(1), CofF, CofF, 1.0);
-  FreDcFcF.Update(2 * dPI(1), ID4, 1.0);
+  FreDcFcF.multiply_nt(4 * ddPII(1), CofF, CofF, 1.0);
+  FreDcFcF.update(2 * dPI(1), ID4, 1.0);
 
   // d^2P/d(detF)d(detF)
   // = 2*d \Psi/dI_3 + 4*I_3*d^2\Psi/dI_3dI_3
@@ -514,19 +514,19 @@ void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
   // = 4*d\Psi/dI_1dI_2 F /otimes CofF
   static Core::LinAlg::Matrix<9, 9> FreDcFF(true);
   FreDcFF.clear();
-  FreDcFF.MultiplyNT(4 * ddPII(5), dfgrd, CofF, 1.0);
+  FreDcFF.multiply_nt(4 * ddPII(5), dfgrd, CofF, 1.0);
 
   // d^2P/d(detF)d(cofF)
   // = 4*J*d^2 \Psi /dI_2 dI_3 \mat{CofF}
   static Core::LinAlg::Matrix<9, 1> FreDcFJ(true);
   FreDcFF.clear();
-  FreDcFJ.Update(4 * J * ddPII(3), CofF, 1.0);
+  FreDcFJ.update(4 * J * ddPII(3), CofF, 1.0);
 
   // d^2P/d(detF) dF = d^2P/dF d(detF)
   // = 4*J*d^2 \Psi /dI_1 dI_3 \mat{F}
   static Core::LinAlg::Matrix<9, 1> FreDFJ(true);
   FreDcFF.clear();
-  FreDFJ.Update(4 * J * ddPII(4), dfgrd, 1.0);
+  FreDFJ.update(4 * J * ddPII(4), dfgrd, 1.0);
 
   // Sort values in Frechet Derivative
 
@@ -562,7 +562,7 @@ void Mat::ElastHyperCheckPolyconvexity(const Core::LinAlg::Matrix<3, 3>& defgrd,
     for (int j = 0; j < 19; j++)
       if (i == j)  // values on diagonal = EigenValues
         if (EWFreD(i, i) <
-            (-1.0e-10 * EWFreD.NormInf()))  // do not test < 0, but reasonable small value
+            (-1.0e-10 * EWFreD.norm_inf()))  // do not test < 0, but reasonable small value
         {
           std::cout << "\nWARNING: Your system is not polyconvex!" << std::endl;
           std::cout << "Polyconvexity fails at: Element-Id: " << eleGID

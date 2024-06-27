@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_
     for (const auto& segment : this->line_to_3D_segments_)
     {
       // Add the left and right boundary point of the segment.
-      for (const auto& segmentation_point : {segment.GetEtaA(), segment.GetEtaB()})
+      for (const auto& segmentation_point : {segment.GetEtadata(), segment.GetEtaB()})
       {
         GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1posref_, X);
         GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1pos_, r);
@@ -271,7 +271,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
   // The base implementation of the force is a simple linear penalty law.
   force = r_solid;
   force -= r_beam;
-  force.Scale(this->Params()->beam_to_solid_volume_meshtying_params()->GetPenaltyParameter());
+  force.scale(this->Params()->beam_to_solid_volume_meshtying_params()->GetPenaltyParameter());
 }
 
 /**

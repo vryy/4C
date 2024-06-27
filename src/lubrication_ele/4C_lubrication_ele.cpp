@@ -228,10 +228,10 @@ int Discret::ELEMENTS::Lubrication::NumVolume() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                             wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Lubrication::Print(std::ostream& os) const
+void Discret::ELEMENTS::Lubrication::print(std::ostream& os) const
 {
   os << "Lubrication element";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(distype_) << std::endl;
 
@@ -346,10 +346,10 @@ void Discret::ELEMENTS::LubricationBoundary::unpack(const std::vector<char>& dat
 /*----------------------------------------------------------------------*
  |  print this element (public)                             wirtz 10/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::LubricationBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::LubricationBoundary::print(std::ostream& os) const
 {
   os << "LubricationBoundary element";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   std::cout << "DiscretizationType:  " << Core::FE::CellTypeToString(Shape()) << std::endl;
   std::cout << std::endl;

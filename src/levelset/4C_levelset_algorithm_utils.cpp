@@ -409,7 +409,7 @@ void ScaTra::LevelSetAlgorithm::apply_contact_point_boundary_condition()
 
               // get velocity at integration point
               Core::LinAlg::Matrix<nsd, 1> velint(true);
-              velint.Multiply(evel, funct);
+              velint.multiply(evel, funct);
 
               // add to averaged velocity vector
               for (int idim = 0; idim < nsd; idim++) averagedvel[idim] += velint(idim, 0);

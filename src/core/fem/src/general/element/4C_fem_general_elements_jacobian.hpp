@@ -47,9 +47,9 @@ namespace Core::Elements
       const Core::LinAlg::Matrix<numdim, 1> rst_c(&rst(0, c), true);
 
       Core::FE::shape_function_deriv1<type>(rst_c, deriv_at_c);
-      jac_at_c.MultiplyNT(deriv_at_c, xcurr);
+      jac_at_c.multiply_nt(deriv_at_c, xcurr);
 
-      const double detJ_at_c = jac_at_c.Determinant();
+      const double detJ_at_c = jac_at_c.determinant();
       if (detJ_at_c < min_detJ) min_detJ = detJ_at_c;
     }
 

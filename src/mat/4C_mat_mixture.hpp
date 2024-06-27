@@ -188,7 +188,7 @@ namespace Mat
      * @param params Container for additional information
      * @param eleGID Global element id
      */
-    void Update(Core::LinAlg::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
+    void update(Core::LinAlg::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
         int eleGID) override;
 
     /// \brief This material law uses the extended update method

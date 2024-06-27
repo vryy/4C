@@ -114,7 +114,7 @@ namespace CONTACT
       void BuildSearchTree(const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const;
 
       //! print some final screen output
-      void Print(const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
+      void print(const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
           const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr,
           const Teuchos::ParameterList& params) const;
 

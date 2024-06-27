@@ -183,7 +183,7 @@ namespace CONTACT
        *  \param[in/out] stream  output stream object
        *
        *  \author hiermeier \date 03/17 */
-      void Print(std::ostream& stream) const
+      void print(std::ostream& stream) const
       {
         stream << "--- UniqueProjInfo ---\n";
         stream << "#GuassPoints: " << gaussPoints_.size()

@@ -131,7 +131,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
 
         // B^T . C^-1
         Core::LinAlg::Matrix<num_dof_per_ele_, 1> BopCinv(true);
-        BopCinv.MultiplyTN(Bop, C_inv_vec);
+        BopCinv.multiply_tn(Bop, C_inv_vec);
 
         // update internal force vector
         if (force.has_value())
@@ -227,7 +227,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroel
 
         // B^T . C^-1
         Core::LinAlg::Matrix<num_dof_per_ele_, 1> BopCinv(true);
-        BopCinv.MultiplyTN(Bop, C_inv_vec);
+        BopCinv.multiply_tn(Bop, C_inv_vec);
 
         UpdateStiffnessMatrixCouplingMultiPhasePressureBased<celltype>(detJ_w, solidpressurederiv,
             BopCinv, shape_functions, spatial_material_mapping.determinant_deformation_gradient_,

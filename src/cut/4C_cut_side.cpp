@@ -1167,7 +1167,7 @@ void Core::Geo::Cut::Side::MakeInternalFacets(
           std::cout << "Point " << (*cit) << "\n";
 
         std::cout << "\n --- Side " << s << " ---\n";
-        s->Print();
+        s->print();
 
         std::cout << "\n\n --- PointCycle ---" << std::endl;
         for (std::vector<Point*>::const_iterator cit = points().begin(); cit != points().end();
@@ -1350,13 +1350,13 @@ Core::Geo::Cut::Element* Core::Geo::Cut::Side::CommonElement(Side* other)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Side::Print()
+void Core::Geo::Cut::Side::print()
 {
   std::cout << "[ ";
   for (std::vector<Edge*>::iterator i = edges_.begin(); i != edges_.end(); ++i)
   {
     Edge* e = *i;
-    e->Print();
+    e->print();
     std::cout << " ; ";
     if (i + 1 != edges_.end()) std::cout << "\n  ";
   }
@@ -1418,7 +1418,7 @@ std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Side& s)
   for (std::vector<Core::Geo::Cut::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
     Core::Geo::Cut::Node* n = *i;
-    n->point()->Print(stream);
+    n->point()->print(stream);
     stream << ",";
   }
   stream << "}";
@@ -1485,14 +1485,14 @@ bool Core::Geo::Cut::Side::HoleOfFacet(Facet& facet, const std::vector<Cycle>& h
   {
     Point* facetpoint = *i;
     Core::LinAlg::Matrix<3, 1> pointcoord;
-    facetpoint->Coordinates(pointcoord.A());
+    facetpoint->Coordinates(pointcoord.data());
     Core::LinAlg::Matrix<3, 1> pointlocalcoord;
     local_coordinates(pointcoord, pointlocalcoord, false);
     facetpointslocalcoord.push_back(pointlocalcoord);
   }
   Core::LinAlg::Matrix<3, 1> holepointcoord;
   Core::LinAlg::Matrix<3, 1> holepointlocalcoord;
-  hole[0]()[0]->Coordinates(holepointcoord.A());
+  hole[0]()[0]->Coordinates(holepointcoord.data());
   local_coordinates(holepointcoord, holepointlocalcoord, false);
   double epsilon = 0;
   while (intersectioninpoint)
@@ -1598,7 +1598,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
    * the side-center might lead to a ray which is almost parallel to the other side */
 
   Core::LinAlg::Matrix<dim, numNodesSide> corner_coords_rst(true);
-  this->local_corner_coordinates(corner_coords_rst.A());
+  this->local_corner_coordinates(corner_coords_rst.data());
 
   /* shrink/perturb the local coordinates around the center point with a given
    * tolerance to obtain points which are next to the corner points however slightly
@@ -1621,7 +1621,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
    *    element, this should be fine) */
   const double TOL = 1e-003;
   const double scalefac = 1.0 - TOL;
-  inner_corner_coords_rst.Scale(scalefac);
+  inner_corner_coords_rst.scale(scalefac);
 
   // 3. transform the element back
   for (unsigned i = 0; i < numNodesSide; ++i)
@@ -1645,10 +1645,10 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
 
   // start with center point
   this->SideCenter(xyz);  // as second point on the ray we define the midpoint of this side
-  ray_dir.Update(1.0, xyz, -1.0, startpoint_xyz, 0.0);
-  ray_point_xyz.Update(1.0, xyz, 0.0);
+  ray_dir.update(1.0, xyz, -1.0, startpoint_xyz, 0.0);
+  ray_point_xyz.update(1.0, xyz, 0.0);
 
-  double cosine = ray_dir.Dot(n) / ray_dir.Norm2();  // n is normalized
+  double cosine = ray_dir.dot(n) / ray_dir.norm2();  // n is normalized
 
 
   // loop corner nodes
@@ -1657,15 +1657,15 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
     // get ray vector (endpoint-startpoint)
     Core::LinAlg::Matrix<dim, 1> rst_inner_corner(&inner_corner_coords_rst(0, i), true);
     PointAt(rst_inner_corner, xyz);
-    ray_dir.Update(1.0, xyz, -1.0, startpoint_xyz, 0.0);
+    ray_dir.update(1.0, xyz, -1.0, startpoint_xyz, 0.0);
 
-    double cosine_tmp = ray_dir.Dot(n) / ray_dir.Norm2();  // n is normalized
+    double cosine_tmp = ray_dir.dot(n) / ray_dir.norm2();  // n is normalized
 
     /* maximize the absolute value of the cosine to choose the ray which
      * is as perpendicular to the side as possible */
     if (fabs(cosine_tmp) > fabs(cosine))
     {
-      ray_point_xyz.Update(1.0, xyz, 0.0);
+      ray_point_xyz.update(1.0, xyz, 0.0);
       cosine = cosine_tmp;
     }
   }
@@ -1719,7 +1719,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
       std::cout << "line_xi " << line_xi << std::endl;
       std::cout << "start-point: " << startpoint_xyz << std::endl;
       std::cout << "side orthogonal ? " << std::endl;
-      other->Print();
+      other->print();
 
       FOUR_C_THROW("is_closer_side along the ray-tracing line failed! ");
 
@@ -1786,7 +1786,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::local_c
   Core::LinAlg::Matrix<dim, 1> rs(true);
   if (pos->Status() == Position::position_valid) pos->local_coordinates(rs);
   // copy the position
-  std::copy(rs.A(), rs.A() + dim, &rsd(0));
+  std::copy(rs.data(), rs.data() + dim, &rsd(0));
   // copy the distance
   switch (dim)
   {
@@ -1852,7 +1852,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
   // successful line-side intersection
   if (ci(xyze_surface, xyze_line))
   {
-    std::copy(xsi.A(), xsi.A() + dim, &rs(0));
+    std::copy(xsi.data(), xsi.data() + dim, &rs(0));
     line_xi = xsi(dim);
 
     return true;

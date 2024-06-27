@@ -240,17 +240,17 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   // calcualte the direction vector of the edge element
   Core::LinAlg::Matrix<probdim, 1> dedge(&xyze_lineElement_(0, 0), false);
   const Core::LinAlg::Matrix<probdim, 1> e_endpoint(&xyze_lineElement_(0, 1), true);
-  dedge.Update(-1.0, e_endpoint, 1.0);
-  const double e_nrm2 = dedge.Norm2();
+  dedge.update(-1.0, e_endpoint, 1.0);
+  const double e_nrm2 = dedge.norm2();
   if (e_nrm2 == 0.0)
     FOUR_C_THROW("The 1-st edge length is zero!");
   else
-    dedge.Scale(1.0 / e_nrm2);
+    dedge.scale(1.0 / e_nrm2);
 
   // calculate the inner product and check the angle between the normal and
   // the edge
 
-  const double inner_product = dedge.Dot(normal_center);
+  const double inner_product = dedge.dot(normal_center);
   /* If the angle between the normal and the edge is smaller than 89 degrees
    * ( cos( 89 degrees ) = 0.017472406... ), the vectors are definitely not parallel,
    * otherwise it's possible and we do another test. Note, that both vectors have
@@ -311,7 +311,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     // keep the largest up-coming tolerance
     if (i == 0 or tolerance < pos_tolerance) tolerance = pos_tolerance;
 
-    if (e_corner_distance(i).Norm2() < pos_tolerance)
+    if (e_corner_distance(i).norm2() < pos_tolerance)
     {
       // the edge end point seems to lie on the side edge, and the end-point is
       // also within the side limits
@@ -346,12 +346,13 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   {
     for (unsigned i = 0; i < num_cut_points_; ++i)
     {
-      xsi_side_.Update(side_rs_corner_intersect[0]);
+      xsi_side_.update(side_rs_corner_intersect[0]);
       if (not find_local_coordinate_of_edge_end_point(
               xsi_edge_(0), side_xyz_corner_intersect[i], tolerance))
         FOUR_C_THROW("We couldn't find the correct edge end-point!");
       if (num_cut_points_ > 1)
-        edge_r_corner_intersect.push_back(Core::LinAlg::Matrix<dimedge, 1>(xsi_edge_.A(), false));
+        edge_r_corner_intersect.push_back(
+            Core::LinAlg::Matrix<dimedge, 1>(xsi_edge_.data(), false));
 
       // safety
       if (not(LineWithinLimits() and SurfaceWithinLimits())) FOUR_C_THROW("Something went wrong!");
@@ -398,16 +399,16 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   Core::LinAlg::Matrix<probdim, 1> dsedge(&xyze_surfaceElement_(0, 0), false);
 
   const Core::LinAlg::Matrix<probdim, 1> e_endpoint(&xyze_lineElement_(0, 1), true);
-  deedge.Update(-1.0, e_endpoint, 1.0);
-  const double e_nrm2 = deedge.Norm2();
+  deedge.update(-1.0, e_endpoint, 1.0);
+  const double e_nrm2 = deedge.norm2();
   if (e_nrm2 == 0.0) FOUR_C_THROW("The 1-st edge length is zero!");
 
   const Core::LinAlg::Matrix<probdim, 1> s_endpoint(&xyze_surfaceElement_(0, 1), true);
-  dsedge.Update(-1.0, s_endpoint, 1.0);
-  const double s_nrm2 = dsedge.Norm2();
+  dsedge.update(-1.0, s_endpoint, 1.0);
+  const double s_nrm2 = dsedge.norm2();
   if (s_nrm2 == 0.0) FOUR_C_THROW("The 2-nd edge length is zero!");
 
-  const double inner_product = deedge.Dot(dsedge);
+  const double inner_product = deedge.dot(dsedge);
   /* If the angle between the two lines is larger than 1 degree ( cos( 1 degree ) = 0.99866695... ),
    * the two edges are definitely not parallel, otherwise it's possible and
    * we take a closer look. */
@@ -438,11 +439,11 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     pos = r_endpoints[i];
 
     Core::FE::shape_function_1D(lineFunct, pos, edgetype);
-    dist.MultiplyNN(xyze_lineElement_, lineFunct);
+    dist.multiply_nn(xyze_lineElement_, lineFunct);
 
-    dist.Update(1.0, xyz, -1.0);
+    dist.update(1.0, xyz, -1.0);
 
-    if (dist.Norm2() < tolerance) return true;
+    if (dist.norm2() < tolerance) return true;
   }
   return false;
 }
@@ -509,7 +510,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
                 lineendpoint_location_kernel[lp], lineendpoint_touched_edges[lp], true);
         lineendpoint_within_surfacelimits(lp) = SurfaceWithinLimits();
         // copy xsi_ in the lp column of lineendpoint_xsi
-        std::copy(xsi_.A(), xsi_.A() + (dimside + dimedge), &lineendpoint_xsi(0, lp));
+        std::copy(xsi_.data(), xsi_.data() + (dimside + dimedge), &lineendpoint_xsi(0, lp));
         break;
       }  // end: case (Core::FE::CellType::tri3) and 1-D elements
          // --------------------------------------------------------------------
@@ -572,7 +573,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
           lineendpoint_tol(lp) = tri_tol(tri);
           lineendpoint_within_surfacelimits(lp) = tri_location_kernel[tri].WithinSide();
 
-          std::copy(xsi_.A(), xsi_.A() + (dimside + dimedge), &lineendpoint_xsi(0, lp));
+          std::copy(xsi_.data(), xsi_.data() + (dimside + dimedge), &lineendpoint_xsi(0, lp));
         }
         // it is outside for sure
         else
@@ -653,7 +654,7 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
       if (lineendpoint_in_surface(lp))
       {
         Core::LinAlg::Matrix<probdim, 1> x;
-        id_to_node[lp]->point()->Coordinates(x.A());
+        id_to_node[lp]->point()->Coordinates(x.data());
         insert_cut(id_to_node[lp], cuts);
 
 #if CUT_CREATION_INFO
@@ -757,11 +758,11 @@ Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, dimsid
             if (debug)
             {
               for (PointSet::iterator i = cut_points.begin(); i != cut_points.end(); ++i)
-                (*i)->Print(std::cout);
-              get_edge().BeginNode()->point()->Print(std::cout);
-              get_edge().EndNode()->point()->Print(std::cout);
-              e->BeginNode()->point()->Print(std::cout);
-              e->EndNode()->point()->Print(std::cout);
+                (*i)->print(std::cout);
+              get_edge().BeginNode()->point()->print(std::cout);
+              get_edge().EndNode()->point()->print(std::cout);
+              e->BeginNode()->point()->print(std::cout);
+              e->EndNode()->point()->print(std::cout);
             }
             FOUR_C_THROW("Two Edges have more than two cutpoint, sounds strange!");
           }
@@ -984,7 +985,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           FinalPoint();
 
           Point* p = Point::NewPoint(
-              get_mesh(), x_.A(), xsi_(dimside, 0), get_edge_ptr(), get_side_ptr(), itol);
+              get_mesh(), x_.data(), xsi_(dimside, 0), get_edge_ptr(), get_side_ptr(), itol);
 
           cuts.insert(p);
           return true;
@@ -1029,7 +1030,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           {
             istatus_ = intersect_single_cut_point;
             final_points.push_back(Core::LinAlg::Matrix<3, 1>(FinalPoint()));
-            edge_coords.push_back(Core::LinAlg::Matrix<dimedge, 1>(xsi_edge_.A()));
+            edge_coords.push_back(Core::LinAlg::Matrix<dimedge, 1>(xsi_edge_.data()));
             // we found cut point
             cut_point_count++;
           }
@@ -1044,7 +1045,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
                 // possible reference implementation
                 istatus_ = intersect_single_cut_point;
                 final_points.push_back(Core::LinAlg::Matrix<3, 1>(FinalPoint()));
-                edge_coords.push_back(Core::LinAlg::Matrix<dimedge, 1>(xsi_edge_.A()));
+                edge_coords.push_back(Core::LinAlg::Matrix<dimedge, 1>(xsi_edge_.data()));
                 // we found cut point
                 cut_point_count++;
               }
@@ -1068,7 +1069,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         case 1:
         {
           // intersection
-          Point* p = Point::NewPoint(get_mesh(), final_points[0].A(), edge_coords[0](0, 0),
+          Point* p = Point::NewPoint(get_mesh(), final_points[0].data(), edge_coords[0](0, 0),
               get_edge_ptr(), get_side_ptr(), itol);
           cuts.insert(p);
           // update status, in case of the other triangle returning different one
@@ -1080,9 +1081,9 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         {
           // first check if this point is not on the split between triangles (diagonal)
           Core::LinAlg::Matrix<3, 1> diff = final_points[0];
-          diff.Update(-1, final_points[1], 1);
+          diff.update(-1, final_points[1], 1);
           // this case is unsupported
-          if (diff.Norm2() > TOPOLOGICAL_TOLERANCE)
+          if (diff.norm2() > TOPOLOGICAL_TOLERANCE)
           {
             std::stringstream err_msg;
             err_msg << " Go two intersection points during intersection of triangulated quad4.  "
@@ -1105,7 +1106,7 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           }
           else
           {
-            Point* p = Point::NewPoint(get_mesh(), final_points[0].A(), edge_coords[0](0, 0),
+            Point* p = Point::NewPoint(get_mesh(), final_points[0].data(), edge_coords[0](0, 0),
                 get_edge_ptr(), get_side_ptr(), itol);
             cuts.insert(p);
             return true;
@@ -1199,8 +1200,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         conv = intersect_single_cut_point;
         FinalPoint();
 
-        Point* p =
-            Point::NewPoint(GetMesh(), x_.A(), xsi_(dimside, 0), GetEdgePtr(), GetSidePtr(), itol);
+        Point* p = Point::NewPoint(
+            GetMesh(), x_.data(), xsi_(dimside, 0), GetEdgePtr(), GetSidePtr(), itol);
 
 #if CUT_CREATION_INFO
         std::stringstream msg;
@@ -1264,20 +1265,20 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   Core::LinAlg::Matrix<3, 1> actpoint;
   for (unsigned nid = 0; nid < numNodesSide; nid++)
   {
-    (get_side().Nodes()[nid])->Coordinates(actpoint.A());
+    (get_side().Nodes()[nid])->Coordinates(actpoint.data());
     surfpoints.push_back(actpoint);
   }
   // find shortest edge on the surface!
   int smallestedge;
   {
     Core::LinAlg::Matrix<3, 1> d1, d2, d3;
-    d1.Update(1.0, surfpoints[1], -1.0, surfpoints[2]);
-    d2.Update(1.0, surfpoints[2], -1.0, surfpoints[0]);
-    d3.Update(1.0, surfpoints[0], -1.0, surfpoints[1]);
+    d1.update(1.0, surfpoints[1], -1.0, surfpoints[2]);
+    d2.update(1.0, surfpoints[2], -1.0, surfpoints[0]);
+    d3.update(1.0, surfpoints[0], -1.0, surfpoints[1]);
     std::vector<double> lengths;
-    lengths.push_back(d1.Norm2());
-    lengths.push_back(d2.Norm2());
-    lengths.push_back(d3.Norm2());
+    lengths.push_back(d1.norm2());
+    lengths.push_back(d2.norm2());
+    lengths.push_back(d3.norm2());
     if (lengths[0] < lengths[1] && lengths[0] < lengths[2])  // 0 is smallest
       smallestedge = 0;
     else if (lengths[1] < lengths[2] && lengths[1] < lengths[0])  // 1 is smallest
@@ -1288,16 +1289,16 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
 
   Core::LinAlg::Matrix<3, 1> v1(true);
   Core::LinAlg::Matrix<3, 1> v2(true);
-  v1.Update(1.0, surfpoints[(smallestedge + 1) % 3], -1.0, surfpoints[smallestedge]);
-  v2.Update(1.0, surfpoints[(smallestedge + 2) % 3], -1.0, surfpoints[smallestedge]);
+  v1.update(1.0, surfpoints[(smallestedge + 1) % 3], -1.0, surfpoints[smallestedge]);
+  v2.update(1.0, surfpoints[(smallestedge + 2) % 3], -1.0, surfpoints[smallestedge]);
 
   for (unsigned nid = 0; nid < numNodesEdge; nid++)
   {
-    (get_edge().Nodes()[nid])->Coordinates(actpoint.A());
+    (get_edge().Nodes()[nid])->Coordinates(actpoint.data());
     linepoints.push_back(actpoint);
   }
   Core::LinAlg::Matrix<3, 1> v3(true);
-  v3.Update(1.0, linepoints[1], -1.0, linepoints[0]);
+  v3.update(1.0, linepoints[1], -1.0, linepoints[0]);
 
   bool overlap = false;  // we have an overlap of the refined bounding boxes?
 
@@ -1335,10 +1336,10 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         continue;
       double alpha = surfstep * dmax_steps;
       double alphap = (surfstep + act_steps) * dmax_steps;
-      p1.Update(1.0, surfpoints[smallestedge], alpha, v1);
-      p2.Update(1.0, surfpoints[smallestedge], alphap, v1);
-      p3.Update(1.0, surfpoints[smallestedge], alpha, v2);
-      p4.Update(1.0, surfpoints[smallestedge], alphap, v2);
+      p1.update(1.0, surfpoints[smallestedge], alpha, v1);
+      p2.update(1.0, surfpoints[smallestedge], alphap, v1);
+      p3.update(1.0, surfpoints[smallestedge], alpha, v2);
+      p4.update(1.0, surfpoints[smallestedge], alphap, v2);
       Teuchos::RCP<BoundingBox> sbb = Teuchos::rcp(BoundingBox::Create());
       sbb->AddPoint(p1);
       sbb->AddPoint(p2);
@@ -1351,8 +1352,8 @@ bool Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
           continue;
         double lalpha = linestep * dmax_steps;
         double lalphap = (linestep + act_steps) * dmax_steps;
-        lp1.Update(1.0, linepoints[0], lalpha, v3);
-        lp2.Update(1.0, linepoints[0], lalphap, v3);
+        lp1.update(1.0, linepoints[0], lalpha, v3);
+        lp2.update(1.0, linepoints[0], lalphap, v3);
         Teuchos::RCP<BoundingBox> ebb = Teuchos::rcp(BoundingBox::Create());
         ebb->AddPoint(lp1);
         ebb->AddPoint(lp2);
@@ -1423,7 +1424,7 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
   {
     bool signeddistance = true;
     int other_point_index = (tri_id == 0) ? 3 : 1;
-    Core::LinAlg::Matrix<3, 1> point(xyze_surfaceElement_.A() + other_point_index * 3, true);
+    Core::LinAlg::Matrix<3, 1> point(xyze_surfaceElement_.data() + other_point_index * 3, true);
     Core::LinAlg::Matrix<3, 1> xsi;
     Core::LinAlg::Matrix<3, 3> xyze_triElement;
     get_triangle(xyze_triElement, tri_id);
@@ -1481,15 +1482,15 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
       int other_point_index = (tri_id == 0) ? 3 : 1;
       Point* out_of_plane = GetSidePtr()->Nodes()[other_point_index]->point();
       Core::LinAlg::Matrix<3, 1> coord;
-      out_of_plane->Coordinates(coord.A());
+      out_of_plane->Coordinates(coord.data());
 
       for (std::vector<Node*>::const_iterator it = GetSidePtr()->Nodes().begin();
            it != GetSidePtr()->Nodes().end(); ++it)
       {
         Point* p = (*it)->point();
         Core::LinAlg::Matrix<3, 1> distc;
-        p->Coordinates(distc.A());
-        distc.Update(-1, coord, 1);
+        p->Coordinates(distc.data());
+        distc.update(-1, coord, 1);
       }
 
       std::cout << "Point of the quad4 with Id = " << out_of_plane->Id()

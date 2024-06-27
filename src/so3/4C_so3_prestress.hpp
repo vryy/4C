@@ -81,7 +81,7 @@ namespace Discret
       inline void MatrixtoStorage(const int gp, const Core::LinAlg::Matrix<3, 3>& Mat,
           Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
-        for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.A()[i];
+        for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.data()[i];
         return;
       }
 
@@ -89,7 +89,7 @@ namespace Discret
       inline void MatrixtoStorage(const int gp, const Core::LinAlg::Matrix<4, 3>& Mat,
           Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
-        for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.A()[i];
+        for (int i = 0; i < gpMat.numCols(); ++i) gpMat(gp, i) = Mat.data()[i];
         return;
       }
 
@@ -97,7 +97,7 @@ namespace Discret
       inline void StoragetoMatrix(const int gp, Core::LinAlg::Matrix<3, 3>& Mat,
           const Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
-        for (int i = 0; i < gpMat.numCols(); ++i) Mat.A()[i] = gpMat(gp, i);
+        for (int i = 0; i < gpMat.numCols(); ++i) Mat.data()[i] = gpMat(gp, i);
         return;
       }
 
@@ -105,7 +105,7 @@ namespace Discret
       inline void StoragetoMatrix(const int gp, Core::LinAlg::Matrix<4, 3>& Mat,
           const Core::LinAlg::SerialDenseMatrix& gpMat) const
       {
-        for (int i = 0; i < gpMat.numCols(); ++i) Mat.A()[i] = gpMat(gp, i);
+        for (int i = 0; i < gpMat.numCols(); ++i) Mat.data()[i] = gpMat(gp, i);
         return;
       }
 

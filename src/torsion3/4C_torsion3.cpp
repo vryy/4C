@@ -108,7 +108,7 @@ Core::Elements::Element* Discret::ELEMENTS::Torsion3::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 02/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Torsion3::Print(std::ostream& os) const { return; }
+void Discret::ELEMENTS::Torsion3::print(std::ostream& os) const { return; }
 
 
 /*----------------------------------------------------------------------*

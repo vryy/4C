@@ -163,7 +163,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
   const int kineticmodel = scatra_parameter_boundary->KineticModel();
   const int numelectrons = scatra_parameter_boundary->NumElectrons();
   const double kr = scatra_parameter_boundary->charge_transfer_constant();
-  const double alphaa = scatra_parameter_boundary->AlphaA();
+  const double alphaa = scatra_parameter_boundary->Alphadata();
   const double alphac = scatra_parameter_boundary->AlphaC();
   const double resistance = scatra_parameter_boundary->Resistance();
   const double itemaxmimplicitBV = scatra_parameter_boundary->ItemaximplicitBV();
@@ -175,12 +175,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 
   // evaluate dof values at current integration point on present and opposite side of scatra-scatra
   // interface
-  const double eslavephiint = funct_slave.Dot(eslavephinp[0]);
-  const double eslavepotint = funct_slave.Dot(eslavephinp[1]);
-  const double emasterphiint = funct_master.Dot(emasterphinp[0]);
-  const double emasterpotint = funct_master.Dot(emasterphinp[1]);
-  const double eslavetempint = funct_slave.Dot(eslavetempnp);
-  const double emastertempint = funct_master.Dot(emastertempnp);
+  const double eslavephiint = funct_slave.dot(eslavephinp[0]);
+  const double eslavepotint = funct_slave.dot(eslavephinp[1]);
+  const double emasterphiint = funct_master.dot(emasterphinp[0]);
+  const double emasterpotint = funct_master.dot(emasterphinp[1]);
+  const double eslavetempint = funct_slave.dot(eslavetempnp);
+  const double emastertempint = funct_master.dot(emastertempnp);
 
   const double etempint = 0.5 * (eslavetempint + emastertempint);
 
@@ -541,8 +541,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::
     {
       // evaluate time derivative of potential values at current integration point on slave- and
       // master-side of scatra-scatra interface
-      const double eslavepotdtintnp = funct_slave.Dot(eslavephidtnp[1]);
-      const double emasterpotdtintnp = funct_master.Dot(emasterphidtnp[1]);
+      const double eslavepotdtintnp = funct_slave.dot(eslavephidtnp[1]);
+      const double emasterpotdtintnp = funct_master.dot(emasterphidtnp[1]);
 
       // core residual term associated with capacitive mass flux density
       const double jC =
@@ -624,7 +624,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
     if (differentiationtype == ScaTra::DifferentiationType::disp)
     {
       static Core::LinAlg::Matrix<nen_, nsd_> xyze_transposed;
-      xyze_transposed.UpdateT(my::xyze_);
+      xyze_transposed.update_t(my::xyze_);
       Core::FE::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
           my::derxy_, my::deriv_, xyze_transposed, normal);
       my::evaluate_spatial_derivative_of_area_integration_factor(intpoints, gpid, dsqrtdetg_dd);
@@ -636,10 +636,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
 
     // evaluate dof values at current integration point on present and opposite side of
     // scatra-scatra interface
-    const double eslavephiint = my::funct_.Dot(my::ephinp_[0]);
-    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
-    const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
-    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
+    const double eslavephiint = my::funct_.dot(my::ephinp_[0]);
+    const double eslavepotint = my::funct_.dot(my::ephinp_[1]);
+    const double emasterphiint = my::funct_.dot(emasterphinp[0]);
+    const double emasterpotint = my::funct_.dot(emasterphinp[1]);
 
     // compute matrix and vector contributions according to kinetic
     // model for current scatra-scatra interface coupling condition
@@ -656,7 +656,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
         const auto conditiontype = my::scatraparamsboundary_->ConditionType();
         const int numelectrons = my::scatraparamsboundary_->NumElectrons();
         const double faraday = myelch::elchparams_->Faraday();
-        const double alphaa = my::scatraparamsboundary_->AlphaA();
+        const double alphaa = my::scatraparamsboundary_->Alphadata();
         const double alphac = my::scatraparamsboundary_->AlphaC();
         const double kr = my::scatraparamsboundary_->charge_transfer_constant();
 
@@ -878,8 +878,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
       {
         // evaluate time derivative of potential values at current integration point on slave- and
         // master-side of scatra-scatra interface
-        const double eslavepotdtintnp = my::funct_.Dot(eslavephidtnp[1]);
-        const double emasterpotdtintnp = my::funct_.Dot(emasterphidtnp[1]);
+        const double eslavepotdtintnp = my::funct_.dot(eslavephidtnp[1]);
+        const double emasterpotdtintnp = my::funct_.dot(emasterphidtnp[1]);
 
         // core residual term associated with capacitive mass flux density
         const double jC =
@@ -1140,7 +1140,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
   const int kineticmodel = my::scatraparamsboundary_->KineticModel();
   const int numelectrons = my::scatraparamsboundary_->NumElectrons();
   const double kr = my::scatraparamsboundary_->charge_transfer_constant();
-  const double alphaa = my::scatraparamsboundary_->AlphaA();
+  const double alphaa = my::scatraparamsboundary_->Alphadata();
   const double alphac = my::scatraparamsboundary_->AlphaC();
   const double resistance = my::scatraparamsboundary_->Resistance();
   const double itemaxmimplicitBV = my::scatraparamsboundary_->ItemaximplicitBV();
@@ -1188,12 +1188,12 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype,
           emastertempnp, discretization, la, "imastertemp", my::scatraparams_->NdsThermo());
     }
 
-    const double eslavephiint = my::funct_.Dot(my::ephinp_[0]);
-    const double eslavepotint = my::funct_.Dot(my::ephinp_[1]);
-    const double emasterphiint = my::funct_.Dot(emasterphinp[0]);
-    const double emasterpotint = my::funct_.Dot(emasterphinp[1]);
-    const double eslavetempint = my::funct_.Dot(eslavetempnp);
-    const double emastertempint = my::funct_.Dot(emastertempnp);
+    const double eslavephiint = my::funct_.dot(my::ephinp_[0]);
+    const double eslavepotint = my::funct_.dot(my::ephinp_[1]);
+    const double emasterphiint = my::funct_.dot(emasterphinp[0]);
+    const double emasterpotint = my::funct_.dot(emasterphinp[1]);
+    const double eslavetempint = my::funct_.dot(eslavetempnp);
+    const double emastertempint = my::funct_.dot(emastertempnp);
 
     const double etempint = 0.5 * (eslavetempint + emastertempint);
 

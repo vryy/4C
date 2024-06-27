@@ -169,7 +169,7 @@ int Core::Geo::Cut::Pyramid5IntegrationCell::CubatureDegree(Core::FE::CellType e
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::IntegrationCell::Print(std::ostream& stream) const
+void Core::Geo::Cut::IntegrationCell::print(std::ostream& stream) const
 {
   stream << "--- integration cell ( address: " << std::setw(10) << this << " )\n";
   stream << "pos = " << Point::point_position2_string(Position()) << " "
@@ -177,7 +177,7 @@ void Core::Geo::Cut::IntegrationCell::Print(std::ostream& stream) const
          << "volume = " << Volume() << "\n";
   for (unsigned i = 0; i < points_.size(); ++i)
   {
-    (points_)[i]->Print(stream);
+    (points_)[i]->print(stream);
     stream << "\n";
   }
 }

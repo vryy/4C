@@ -145,7 +145,7 @@ namespace Core::Geo
       /*!
        \brief Print the corner points of boundingbox on the screen
        */
-      void Print();
+      void print();
 
       /*!
        \brief get min of box in certain dim
@@ -177,7 +177,7 @@ namespace Core::Geo
       /*!
        \brief print box
       */
-      void Print(std::ostream& out) const;
+      void print(std::ostream& out) const;
 
       /*!
        \brief Write output

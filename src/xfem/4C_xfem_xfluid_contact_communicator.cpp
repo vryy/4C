@@ -161,7 +161,7 @@ double XFEM::XFluidContactComm::Get_FSI_Traction(Mortar::Element* ele,
   Core::Geo::Cut::VolumeCell* volumecell = nullptr;
   static Core::LinAlg::Matrix<3, 1> elenormal(true);
   static Core::LinAlg::Matrix<3, 1> x(false);
-  Core::LinAlg::Matrix<2, 1> new_xsi(xsi_boundary.A(), false);
+  Core::LinAlg::Matrix<2, 1> new_xsi(xsi_boundary.data(), false);
   double distance = 0.0;
   if (!get_volumecell(sele, new_xsi, sidehandle, nds, eleid, volumecell, elenormal, x,
           FSI_integrated, distance))
@@ -195,7 +195,7 @@ double XFEM::XFluidContactComm::Get_FSI_Traction(Mortar::Element* ele,
 
   // To get the actual element normal we take the normal from the Contact, as this is the actual
   // one!
-  elenormal.Update(-1, normal, 0.0);
+  elenormal.update(-1, normal, 0.0);
 
   if (mc_[mcidx_]->get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided)
     get_penalty_param(fluidele, volumecell, ele_xyze, elenormal, penalty_fac, vel_m);
@@ -211,7 +211,7 @@ double XFEM::XFluidContactComm::Get_FSI_Traction(Mortar::Element* ele,
   static double porosity = -1;
   if (isporo_)
   {
-    Core::LinAlg::Matrix<3, 1> xsi3(new_xsi.A(), true);
+    Core::LinAlg::Matrix<3, 1> xsi3(new_xsi.data(), true);
     double J = 0;
     porosity =
         Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(mc_[mcidx_])->CalcPorosity(sele, xsi3, J);
@@ -386,12 +386,12 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
 
       // evaluate the derivatives of shape functions
       Core::FE::shape_function_deriv1<Core::FE::CellType::hex8>(fluidele_xsi, deriv);
-      xjm.MultiplyNT(deriv, xyze);
-      // double det = xji.Invert(xjm); //if we need this at some point
-      xji.Invert(xjm);
+      xjm.multiply_nt(deriv, xyze);
+      // double det = xji.invert(xjm); //if we need this at some point
+      xji.invert(xjm);
 
       // compute global first derivates
-      derxy.Multiply(xji, deriv);
+      derxy.multiply(xji, deriv);
 
       static Core::LinAlg::Matrix<3, 8> vel;
       static Core::LinAlg::Matrix<8, 1> pres;
@@ -403,9 +403,9 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
           vel(dof, n) = velpres[n * 4 + dof];
         }
       }
-      pres_m = pres.Dot(funct);
-      vel_m.Multiply(1., vel, funct, 0.);
-      vderxy_m.MultiplyNT(vel, derxy);
+      pres_m = pres.dot(funct);
+      vel_m.multiply(1., vel, funct, 0.);
+      vderxy_m.multiply_nt(vel, derxy);
     }
     else
       FOUR_C_THROW("fluidele is not hex8!");
@@ -428,8 +428,8 @@ void XFEM::XFluidContactComm::get_states(const int fluidele_id, const std::vecto
     const int numnodes = Core::FE::num_nodes<Core::FE::CellType::quad4>;
     static Core::LinAlg::Matrix<numnodes, 1> funct(false);
     Core::FE::shape_function_2D(funct, selexsi(0), selexsi(1), Core::FE::CellType::quad4);
-    vel_s.Multiply(vels, funct);
-    if (isporo_) velpf_s.Multiply(velpfs, funct);
+    vel_s.multiply(vels, funct);
+    if (isporo_) velpf_s.multiply(velpfs, funct);
   }
   else
     FOUR_C_THROW("Your Slave Element is not a quad4?!");
@@ -676,7 +676,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::ELEMENTS::StructuralSurfac
     sidehandle->Coordinates(xyze_m);
     Core::LinAlg::Matrix<3, numnodes> xyze(xyze_m.values(), true);
     Core::FE::shape_function_2D(funct, xsi(0), xsi(1), Core::FE::CellType::quad4);
-    x.Multiply(xyze, funct);
+    x.multiply(xyze, funct);
   }
   else
     FOUR_C_THROW("GetFacet: Your solid face is not a quad4, please add your element type here!");
@@ -696,9 +696,9 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::ELEMENTS::StructuralSurfac
     {
       found_side = ss;
       tmpxsi = tmpxsi_tmp;
-      Core::LinAlg::Matrix<2, 1> tmp2xsi(tmpxsi.A(), true);
+      Core::LinAlg::Matrix<2, 1> tmp2xsi(tmpxsi.data(), true);
       s->Normal(tmp2xsi, elenormal, true);
-      elenormal.Scale(-1.0);          // flip direction
+      elenormal.scale(-1.0);          // flip direction
       if (fabs(tmpxsi(2, 0)) < 1e-1)  // do not search for better canidates anymore
         break;
     }
@@ -712,9 +712,9 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::ELEMENTS::StructuralSurfac
       {
         found_side = ss;
         tmpxsi = tmpxsi_tmp;
-        Core::LinAlg::Matrix<2, 1> tmp2xsi(tmpxsi.A(), true);
+        Core::LinAlg::Matrix<2, 1> tmp2xsi(tmpxsi.data(), true);
         s->Normal(tmp2xsi, elenormal, true);
-        elenormal.Scale(-1.0);          // flip direction
+        elenormal.scale(-1.0);          // flip direction
         if (fabs(tmpxsi(2, 0)) < 1e-1)  // do not search for better canidates anymore
           break;
       }
@@ -742,7 +742,7 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::ELEMENTS::StructuralSurfac
       // Find Closest Point on physical boundary ...
       side = findnext_physical_side(x, subsides[found_side], sidehandle, xsi, distance);
       side->Normal(xsi, elenormal, true);
-      elenormal.Scale(-1.0);  // flip direction
+      elenormal.scale(-1.0);  // flip direction
       sele = dynamic_cast<Discret::ELEMENTS::StructuralSurface*>(
           condition_manager_->get_side(side->Id()));
       if (!sele) FOUR_C_THROW("Couldn't Identify new sele %d", side->Id());
@@ -817,9 +817,9 @@ bool XFEM::XFluidContactComm::get_volumecell(Discret::ELEMENTS::StructuralSurfac
 
             // Compute local coords and take first possible facet ...
             Core::LinAlg::Matrix<3, 3> xyzf;
-            triangulation[tri][0]->Coordinates(xyzf.A());
-            triangulation[tri][1]->Coordinates(xyzf.A() + 3);
-            triangulation[tri][2]->Coordinates(xyzf.A() + 6);
+            triangulation[tri][0]->Coordinates(xyzf.data());
+            triangulation[tri][1]->Coordinates(xyzf.data() + 3);
+            triangulation[tri][2]->Coordinates(xyzf.data() + 6);
 
             Teuchos::RCP<Core::Geo::Cut::Position> pos =
                 Core::Geo::Cut::PositionFactory::build_position<3, Core::FE::CellType::tri3>(
@@ -951,7 +951,7 @@ Core::Geo::Cut::Side* XFEM::XFluidContactComm::findnext_physical_side(Core::LinA
     if (distance > tmpdistance)
     {
       distance = tmpdistance;
-      newx.Update(1.0, tmpx, 0.0);
+      newx.update(1.0, tmpx, 0.0);
       newSide = *psit;
     }
   }
@@ -968,7 +968,7 @@ Core::Geo::Cut::Side* XFEM::XFluidContactComm::findnext_physical_side(Core::LinA
   }
 
   // Update global position...
-  x.Update(1.0, newx, 0.0);
+  x.update(1.0, newx, 0.0);
 
   // compute again surface local coords ...
   sidehandle = cutwizard_->GetCutSide(newSide->Id());
@@ -976,7 +976,7 @@ Core::Geo::Cut::Side* XFEM::XFluidContactComm::findnext_physical_side(Core::LinA
   {
     std::cout << "The Side pointer is " << newSide << std::endl;
     std::cout << "Couldn't get Sidehandle for side " << newSide->Id() << std::endl;
-    // newSide->Print();
+    // newSide->print();
     FOUR_C_THROW("Couldn't get Sidehandle for side %f", newSide->Id());
   }
 
@@ -1016,13 +1016,13 @@ double XFEM::XFluidContactComm::distanceto_side(Core::LinAlg::Matrix<3, 1>& x,
       // evaluate shape functions
       Core::FE::shape_function<Core::FE::CellType::line2>(rst, funct);
       static Core::LinAlg::Matrix<3, 1> posx;
-      posx.Multiply(xyzl, funct);
-      posx.Update(-1, x, 1);
-      double tmpdistance = posx.Norm2();
+      posx.multiply(xyzl, funct);
+      posx.update(-1, x, 1);
+      double tmpdistance = posx.norm2();
       if (distance > tmpdistance)
       {
         distance = tmpdistance;
-        closest_x.Multiply(xyzl, funct);
+        closest_x.multiply(xyzl, funct);
       }
     }
   }
@@ -1031,13 +1031,13 @@ double XFEM::XFluidContactComm::distanceto_side(Core::LinAlg::Matrix<3, 1>& x,
   {
     Core::Geo::Cut::Node* n = *nit;
     Core::LinAlg::Matrix<3, 1> xyzn;
-    n->Coordinates(xyzn.A());
-    xyzn.Update(-1, x, 1);
-    double tmpdistance = xyzn.Norm2();
+    n->Coordinates(xyzn.data());
+    xyzn.update(-1, x, 1);
+    double tmpdistance = xyzn.norm2();
     if (distance > tmpdistance)
     {
       distance = tmpdistance;
-      n->Coordinates(closest_x.A());
+      n->Coordinates(closest_x.data());
     }
   }
   return distance;
@@ -1062,7 +1062,7 @@ void XFEM::XFluidContactComm::update_physical_sides(Core::Geo::Cut::Side* side,
       Core::LinAlg::Matrix<3, 1> normal;
       Core::LinAlg::Matrix<2, 1> center(true);
       neibs[sid]->Normal(center, normal, false);
-      double norm = normal.Norm2();
+      double norm = normal.norm2();
       if (norm > 1e-10)
         physical_sides.insert(neibs[sid]);
       else
@@ -1123,8 +1123,8 @@ std::vector<Core::Geo::Cut::Side*> XFEM::XFluidContactComm::get_new_neighboring_
         {
           std::cout << "==| Rejected side " << s->Id() << "( " << side->Id()
                     << ") as there are only " << common_nodes << " common nodes! |==" << std::endl;
-          s->Print();
-          side->Print();
+          s->print();
+          side->print();
         }
       }
     }
@@ -1242,7 +1242,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
               Teuchos::rcp(new Core::Geo::Cut::Tri3BoundaryCell(
                   tcoords, facet, facet->Triangulation()[triangle]));
           tmp_bc->Normal(Core::LinAlg::Matrix<2, 1>(true), normal_bc);
-          if (normal_bc.Dot(normal_side) < 0.0)
+          if (normal_bc.dot(normal_side) < 0.0)
             bcs.push_back(tmp_bc);
           else
           {
@@ -1269,7 +1269,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
         Teuchos::RCP<Core::Geo::Cut::Tri3BoundaryCell> tmp_bc =
             Teuchos::rcp(new Core::Geo::Cut::Tri3BoundaryCell(tcoords, facet, facet->Points()));
         tmp_bc->Normal(Core::LinAlg::Matrix<2, 1>(true), normal_bc);
-        if (normal_bc.Dot(normal_side) < 0.0)
+        if (normal_bc.dot(normal_side) < 0.0)
           bcs.push_back(tmp_bc);
         else
         {
@@ -1293,7 +1293,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
         std::cout << "==| Ignore facet |==" << std::endl;
         std::cout << "facet->GetSplitCells().size(): " << facet->GetSplitCells().size()
                   << std::endl;
-        facet->Print(std::cout);
+        facet->print(std::cout);
         if (!parallel_) FOUR_C_THROW("Ignore Facet");
       }
     }
@@ -1314,7 +1314,7 @@ void XFEM::XFluidContactComm::get_cut_side_integration_points(
         Teuchos::RCP<Core::Geo::Cut::Tri3BoundaryCell> tmp_bc =
             Teuchos::rcp(new Core::Geo::Cut::Tri3BoundaryCell(tcoords, nullptr, points));
         tmp_bc->Normal(Core::LinAlg::Matrix<2, 1>(true), normal_bc);
-        if (normal_bc.Dot(normal_side) < 0.0)
+        if (normal_bc.dot(normal_side) < 0.0)
           bcs.push_back(tmp_bc);
         else
         {

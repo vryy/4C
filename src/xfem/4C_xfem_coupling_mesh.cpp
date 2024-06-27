@@ -899,9 +899,9 @@ void XFEM::MeshCouplingBC::evaluate_implementation(std::vector<double>& final_va
   Core::LinAlg::Matrix<3, 1> x_new(true);
   Core::LinAlg::Matrix<3, 1> rotated(true);
 
-  rotated.Multiply(rot, diff);
+  rotated.multiply(rot, diff);
 
-  x_new.Update(1.0, rotated, -1.0, diff);
+  x_new.update(1.0, rotated, -1.0, diff);
 
 
   for (int dof = 0; dof < numdof; ++dof)
@@ -1112,7 +1112,7 @@ void XFEM::MeshCouplingNeumann::update_configuration_map_gp(
   if (inflow_stab_)
   {
     // Configuration of Penalty Terms
-    double veln = normal.Dot(vel_m);  // as the normal is the structural body, inflow is positive
+    double veln = normal.dot(vel_m);  // as the normal is the structural body, inflow is positive
     if (veln < 0)
     {
       configuration_map_[Inpar::XFEM::F_Pen_Row] = std::pair<bool, double>(true, -density_m * veln);
@@ -1286,10 +1286,10 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(Core::LinAlg::Ma
 
       double sl_visc_fac = sliplength / (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       Core::LinAlg::Matrix<3, 1> tmp_itraction(true);
-      tmp_itraction.MultiplyTN(proj_matrix, itraction);
+      tmp_itraction.multiply_tn(proj_matrix, itraction);
       // Project this into tangential direction!!!
 
-      ivel.Update(sl_visc_fac, tmp_itraction, 1.0);
+      ivel.update(sl_visc_fac, tmp_itraction, 1.0);
 
       itraction.clear();
     }
@@ -1298,8 +1298,8 @@ void XFEM::MeshCouplingNavierSlip::evaluate_coupling_conditions(Core::LinAlg::Ma
   if (force_tangvel_map_.find(cond->Id())->second)
   {
     Core::LinAlg::Matrix<3, 1> tmp_ivel(true);
-    tmp_ivel.MultiplyTN(proj_matrix, ivel);  // apply Projection matrix from the right. (u_0 * P^t)
-    ivel.Update(1.0, tmp_ivel, 0.0);
+    tmp_ivel.multiply_tn(proj_matrix, ivel);  // apply Projection matrix from the right. (u_0 * P^t)
+    ivel.update(1.0, tmp_ivel, 0.0);
   }
 
 // Safety checks
@@ -1371,7 +1371,7 @@ void XFEM::MeshCouplingNavierSlip::GetSlipCoefficient(
   if (tmp_pair.second)  // Is slip length constant?
     slipcoeff = tmp_pair.first;
   else  // Otherwise, evaluate function at gausspoint
-    evaluate_scalar_function(slipcoeff, x.A(), tmp_pair.first, cond, time_);
+    evaluate_scalar_function(slipcoeff, x.data(), tmp_pair.first, cond, time_);
 }
 
 void XFEM::MeshCouplingNavierSlip::create_robin_id_map(
@@ -1689,7 +1689,7 @@ void XFEM::MeshCouplingFSI::GetSlipCoefficient(
   if (tmp_pair.second)  // Is slip length constant?
     slipcoeff = tmp_pair.first;
   else  // Otherwise, evaluate function at gausspoint
-    evaluate_scalar_function(slipcoeff, x.A(), tmp_pair.first, cond, time_);
+    evaluate_scalar_function(slipcoeff, x.data(), tmp_pair.first, cond, time_);
 }
 
 /*--------------------------------------------------------------------------*
@@ -2223,8 +2223,8 @@ void XFEM::MeshCouplingFSI::update_configuration_map_gp_contact(
   static const int MIN_h = 0;  // distance from contact zone at which full-slip is prescribed
   static const double scaling = 1. / (MAX_h - MIN_h);
 
-  Core::LinAlg::Matrix<2, 1> xsi(rst_slave.A(), true);  // 3-->2
-  bool pure_fsi = true;                                 // do we integrate only fsi
+  Core::LinAlg::Matrix<2, 1> xsi(rst_slave.data(), true);  // 3-->2
+  bool pure_fsi = true;                                    // do we integrate only fsi
   double gap =
       MAX_h * h_scaling_;  // initialize with large value as this should be the default value ...
   pure_fsi = xf_c_comm_->Get_Contact_State(

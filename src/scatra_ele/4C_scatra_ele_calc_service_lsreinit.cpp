@@ -154,7 +154,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correcti
 
   // get gradient of initial phi at element center
   Core::LinAlg::Matrix<nsd_, 1> gradphizero(true);
-  gradphizero.Multiply(my::derxy_, ephizero_[0]);
+  gradphizero.multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
   const double charelelength = calc_char_ele_length_reinit(vol, gradphizero);
@@ -171,18 +171,18 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correcti
 
     // initial phi at Gauss point
     double phizero = 0.0;
-    phizero = my::funct_.Dot(ephizero_[0]);
+    phizero = my::funct_.dot(ephizero_[0]);
     // and corresponding gradient
     gradphizero.clear();
-    gradphizero.Multiply(my::derxy_, ephizero_[0]);
-    double norm_gradphizero = gradphizero.Norm2();
+    gradphizero.multiply(my::derxy_, ephizero_[0]);
+    double norm_gradphizero = gradphizero.norm2();
 
     // derivative of sign function at Gauss point
     double deriv_sign = 0.0;
     deriv_sign_function(deriv_sign, charelelength, phizero);
 
     // scalar at integration point at time step n+1
-    const double phinp = my::funct_.Dot(my::ephinp_[0]);
+    const double phinp = my::funct_.dot(my::ephinp_[0]);
     Teuchos::rcp_dynamic_cast<
         Discret::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
@@ -250,7 +250,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalt
 
   // get gradient of initial phi at element center
   Core::LinAlg::Matrix<nsd_, 1> gradphizero(true);
-  gradphizero.Multiply(my::derxy_, ephizero_[0]);
+  gradphizero.multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
   const double charelelength = calc_char_ele_length_reinit(vol, gradphizero);
@@ -267,11 +267,11 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalt
 
     // initial phi at Gauss point
     double phizero = 0.0;
-    phizero = my::funct_.Dot(ephizero_[0]);
+    phizero = my::funct_.dot(ephizero_[0]);
     // and corresponding gradient
     gradphizero.clear();
-    gradphizero.Multiply(my::derxy_, ephizero_[0]);
-    double norm_gradphizero = gradphizero.Norm2();
+    gradphizero.multiply(my::derxy_, ephizero_[0]);
+    double norm_gradphizero = gradphizero.norm2();
 
     // derivative of sign function at Gauss point
     double deriv_sign = 0.0;
@@ -279,20 +279,20 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalt
 
     // current phi at Gauss point
     double phinp = 0.0;
-    phinp = my::funct_.Dot(my::ephinp_[0]);
+    phinp = my::funct_.dot(my::ephinp_[0]);
 
     // get sign function
     double signphi = 0.0;
     // gradient of current scalar
     Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
-    gradphi.Multiply(my::derxy_, my::ephinp_[0]);
+    gradphi.multiply(my::derxy_, my::ephinp_[0]);
     // get norm
-    const double gradphi_norm = gradphi.Norm2();
+    const double gradphi_norm = gradphi.norm2();
     sign_function(signphi, charelelength, phizero, gradphizero, phinp, gradphi);
 
     // get velocity at element center
     Core::LinAlg::Matrix<nsd_, 1> convelint(true);
-    if (gradphi_norm > 1e-8) convelint.Update(signphi / gradphi_norm, gradphi);
+    if (gradphi_norm > 1e-8) convelint.update(signphi / gradphi_norm, gradphi);
     // convective term
     //    double conv_phi = convelint.Dot(gradphi);
 
@@ -358,7 +358,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_ve
 
   // get gradient of initial phi at element center
   Core::LinAlg::Matrix<nsd_, 1> gradphizero(true);
-  gradphizero.Multiply(my::derxy_, ephizero_[0]);
+  gradphizero.multiply(my::derxy_, ephizero_[0]);
 
   // get characteristic element length
   const double charelelength = calc_char_ele_length_reinit(vol, gradphizero);
@@ -375,19 +375,19 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_ve
 
     // initial phi at Gauss point
     double phizero = 0.0;
-    phizero = my::funct_.Dot(ephizero_[0]);
+    phizero = my::funct_.dot(ephizero_[0]);
     // and corresponding gradient
     gradphizero.clear();
-    gradphizero.Multiply(my::derxy_, ephizero_[0]);
+    gradphizero.multiply(my::derxy_, ephizero_[0]);
 
     // current phi at Gauss point
     double phinp = 0.0;
-    phinp = my::funct_.Dot(my::ephinp_[0]);
+    phinp = my::funct_.dot(my::ephinp_[0]);
     // gradient of current scalar
     Core::LinAlg::Matrix<nsd_, 1> gradphi(true);
-    gradphi.Multiply(my::derxy_, my::ephinp_[0]);
+    gradphi.multiply(my::derxy_, my::ephinp_[0]);
     // get norm
-    const double gradphi_norm = gradphi.Norm2();
+    const double gradphi_norm = gradphi.norm2();
 
     // TODO: remove
     //    if (std::abs(my::ephinp_[0](0,0)-my::ephinp_[0](1,0))>1.0e-10 or
@@ -407,7 +407,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_ve
       double signphi = 0.0;
       sign_function(signphi, charelelength, phizero, gradphizero, phinp, gradphi);
 
-      if (gradphi_norm > 1e-8) convelint.Update(signphi / gradphi_norm, gradphi);
+      if (gradphi_norm > 1e-8) convelint.update(signphi / gradphi_norm, gradphi);
     }
 
     //------------------------------------------------

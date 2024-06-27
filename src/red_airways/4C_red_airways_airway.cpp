@@ -226,10 +226,10 @@ void Discret::ELEMENTS::RedAirway::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirway::Print(std::ostream& os) const
+void Discret::ELEMENTS::RedAirway::print(std::ostream& os) const
 {
   os << "RedAirway ";
-  Element::Print(os);
+  Element::print(os);
 }
 
 

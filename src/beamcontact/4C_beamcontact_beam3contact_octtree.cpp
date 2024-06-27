@@ -670,9 +670,9 @@ void Beam3ContactOctTree::create_aabb(Core::LinAlg::SerialDenseMatrix& coord, co
 
   // extrude bounding box in axial direction
   if (additiveextrusion_)
-    dir.Scale(1.0 + extrusionvalue);
+    dir.scale(1.0 + extrusionvalue);
   else  // multiplicative extrusion
-    dir.Scale(extrusionvalue);
+    dir.scale(extrusionvalue);
 
   // extrude coords
   for (int dof = 0; dof < coord.numRows(); dof++)
@@ -775,11 +775,11 @@ void Beam3ContactOctTree::create_cobb(Core::LinAlg::SerialDenseMatrix& coord, co
   if (additiveextrusion_)
   {
     Core::LinAlg::Matrix<3, 1> additivedir(dir);
-    additivedir.Scale(extrusionvalue / dir.Norm2());
+    additivedir.scale(extrusionvalue / dir.norm2());
     dir += additivedir;
   }
   else  // multiplicative extrusion
-    dir.Scale(extrusionvalue);
+    dir.scale(extrusionvalue);
 
   Core::LinAlg::Matrix<3, 1> midpoint;
   for (int i = 0; i < (int)midpoint.numRows(); i++) midpoint(i) = 0.5 * (coord(i, 0) + coord(i, 1));
@@ -1163,7 +1163,7 @@ void Beam3ContactOctTree::locate_box(std::vector<std::vector<double>>& allbboxes
         boundingbox_ == Beam3ContactOctTree::spherical)
     {
       octcenter = Teuchos::rcp(new Core::LinAlg::Matrix<3, 1>);
-      for (int i = 0; i < (int)octcenter->M(); i++)
+      for (int i = 0; i < (int)octcenter->m(); i++)
         (*octcenter)(i) = 0.5 * (suboctlimits[oct](2 * i) + suboctlimits[oct](2 * i + 1));
     }
 
@@ -1296,7 +1296,7 @@ Core::LinAlg::Matrix<6, 1> Beam3ContactOctTree::get_root_box()
   lim(3) = lim(1);
   lim(5) = lim(1);
   // safety factor
-  lim.Scale(1.5);
+  lim.scale(1.5);
 
   return lim;
 }
@@ -1399,8 +1399,8 @@ bool Beam3ContactOctTree::cobb_is_in_this_octant(Core::LinAlg::Matrix<3, 1>& oct
 
     dir = bboxendpoint;
     dir -= octcenter;
-    double dist = dir.Norm2();
-    dir.Scale(1.0 / dist);
+    double dist = dir.norm2();
+    dir.scale(1.0 / dist);
 
     // find shortest distance to face planes
     Core::LinAlg::Matrix<3, 1> lambda;
@@ -1420,7 +1420,7 @@ bool Beam3ContactOctTree::cobb_is_in_this_octant(Core::LinAlg::Matrix<3, 1>& oct
       lambda(k) = 0.5 * (newedgelength(k) * normal) / (dir(k));
     }
     // closest intersection point with face plane
-    double lambda_min = lambda.MinValue();
+    double lambda_min = lambda.min_value();
 
     // only one of the endpoint must lie in the octant
     if (lambda_min + boxradius >= dist) return true;
@@ -1431,9 +1431,9 @@ bool Beam3ContactOctTree::cobb_is_in_this_octant(Core::LinAlg::Matrix<3, 1>& oct
   Core::LinAlg::Matrix<3, 1> bboxorient;
   for (int k = 0; k < (int)bboxorient.numRows(); k++)
     bboxorient(k) = bboxcoords[6 * shift + k + 3] - bboxcoords[6 * shift + k];
-  double bboxlength = bboxorient.Norm2();
+  double bboxlength = bboxorient.norm2();
   //    std::cout<<"bboxlentgth = "<<bboxlength<<std::endl;
-  bboxorient.Scale(1.0 / bboxorient.Norm2());
+  bboxorient.scale(1.0 / bboxorient.norm2());
   // component-wise check if the intersection point of the line lies outside or inside the octant
   // (using an outward-facing normal)
   for (int k = 0; k < (int)bboxorient.numRows(); k++)
@@ -1461,7 +1461,7 @@ bool Beam3ContactOctTree::cobb_is_in_this_octant(Core::LinAlg::Matrix<3, 1>& oct
       for (int l = 0; l < (int)dist.numRows(); l++)
         dist(l) = bboxcoords[6 * shift + l] + lambda_k * bboxorient(l) - octcenter(l);
       // bbox is in octant if one intersection point lies on the octant surface.
-      if (dist.Norm2() <= 0.5 * newedgelength(k) * sqrt(3.0) + boxradius)
+      if (dist.norm2() <= 0.5 * newedgelength(k) * sqrt(3.0) + boxradius)
       {
         //        if((int)(*numshifts_)[lid]>0)
         //        {
@@ -1950,7 +1950,7 @@ void Beam3ContactOctTree::undo_effect_of_periodic_boundary_condition(
     Core::LinAlg::SerialDenseMatrix& coord, std::vector<int>& cut, int& numshifts)
 {
   if (coord.numRows() != 3 || coord.numCols() != 2)
-    FOUR_C_THROW("coord must have the dimension M()==3, N()==2!");
+    FOUR_C_THROW("coord must have the dimension m()==3, n()==2!");
   if ((int)cut.size() != 3) FOUR_C_THROW("cut is of wrong size %i!", (int)cut.size());
   // By definition, we shift the second position!
   for (int dof = 0; dof < coord.numRows(); dof++)

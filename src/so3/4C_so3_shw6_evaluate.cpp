@@ -429,10 +429,10 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     **         [ x_,t  y_,t  z_,t ]
     */
     Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> jac;
-    jac.Multiply(derivs[gp], xrefe);
+    jac.multiply(derivs[gp], xrefe);
 
     // compute determinant of Jacobian by Sarrus' rule
-    double detJ = jac.Determinant();
+    double detJ = jac.determinant();
     if (abs(detJ) < 1E-16)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
@@ -445,7 +445,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     ** Used to transform the global displacements into parametric space
     */
     Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> jac_cur;
-    jac_cur.Multiply(derivs[gp], xcurr);
+    jac_cur.multiply(derivs[gp], xcurr);
 
     // need gp-locations for ANS interpolation
     const double r = intpoints.qxg[gp][0];
@@ -491,7 +491,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> TinvT;
     soshw6_evaluate_t(jac, TinvT);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_WEG6> bop;
-    bop.Multiply(TinvT, bop_loc);
+    bop.multiply(TinvT, bop_loc);
 
     // local GL strain vector lstrain={Err,Ess,Ett,2*Ers,2*Est,2*Ert}
     // but with modified ANS strains Ett, Est and Ert
@@ -571,7 +571,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
 
     // transformation of local glstrains 'back' to global(material) space
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(true);
-    glstrain.Multiply(TinvT, lstrain);
+    glstrain.multiply(TinvT, lstrain);
 
     // EAS technology: "enhance the strains"  ----------------------------- EAS
     if (eastype_ == soshw6_easpoisthick)
@@ -579,10 +579,10 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
       Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
-          soshw6_easpoisthick>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).values());
+          soshw6_easpoisthick>(M.data(), detJ0 / detJ, T0invT.data(), M_GP->at(gp).values());
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soshw6_easpoisthick, 1>(
-          1.0, glstrain.A(), 1.0, M.A(), (*alpha).values());
+          1.0, glstrain.data(), 1.0, M.data(), (*alpha).values());
     }  // ------------------------------------------------------------------ EAS
 
     // return gp GL strains (only possible option) if necessary
@@ -620,9 +620,9 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> N_XYZ;
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], derivs[gp]);
+    N_XYZ.multiply(invJ_[gp], derivs[gp]);
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr, N_XYZ);
+    defgrd.multiply_tt(xcurr, N_XYZ);
     //
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
@@ -659,9 +659,9 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w, bop, stress, 1.0);
+      force->multiply_tn(detJ_w, bop, stress, 1.0);
     }
-    if (split_res) force_str->MultiplyTN(detJ_w, bop, stress, 1.0);
+    if (split_res) force_str->multiply_tn(detJ_w, bop, stress, 1.0);
 
     // update stiffness matrix
     if (stiffmatrix != nullptr)
@@ -669,8 +669,8 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_WEG6> cb;
-      cb.Multiply(cmat, bop);  // temporary C . B
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
+      cb.multiply(cmat, bop);  // temporary C . B
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       // here also the ANS interpolation comes into play
@@ -703,10 +703,10 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
                             (*deriv_sp)[spA](zdir, inod) * (*deriv_sp)[spA](xdir, jnod));
           // transformation of local(parameter) space 'back' to global(material) space
           Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> G_ij_glob;
-          G_ij_glob.Multiply(TinvT, G_ij);
+          G_ij_glob.multiply(TinvT, G_ij);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
-          double Gij = detJ_w * stress.Dot(G_ij_glob);
+          double Gij = detJ_w * stress.dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
           (*stiffmatrix)(NUMDIM_WEG6 * inod + 0, NUMDIM_WEG6 * jnod + 0) += Gij;
@@ -720,17 +720,17 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
       {
         // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, soshw6_easpoisthick> cM;  // temporary c . M
-        cM.Multiply(cmat, M);
-        Core::LinAlg::DenseFunctions::multiplyTN<double, soshw6_easpoisthick, Mat::NUM_STRESS_3D,
-            soshw6_easpoisthick>(1.0, Kaa.values(), detJ_w, M.A(), cM.A());
+        cM.multiply(cmat, M);
+        Core::LinAlg::DenseFunctions::multiply_tn<double, soshw6_easpoisthick, Mat::NUM_STRESS_3D,
+            soshw6_easpoisthick>(1.0, Kaa.values(), detJ_w, M.data(), cM.data());
 
         // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
-        Core::LinAlg::DenseFunctions::multiplyTN<double, soshw6_easpoisthick, Mat::NUM_STRESS_3D,
-            NUMDOF_WEG6>(1.0, Kda.values(), detJ_w, M.A(), cb.A());
+        Core::LinAlg::DenseFunctions::multiply_tn<double, soshw6_easpoisthick, Mat::NUM_STRESS_3D,
+            NUMDOF_WEG6>(1.0, Kda.values(), detJ_w, M.data(), cb.data());
 
         // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
-        Core::LinAlg::DenseFunctions::multiplyTN<double, soshw6_easpoisthick, Mat::NUM_STRESS_3D,
-            1>(1.0, feas.values(), detJ_w, M.A(), stress.A());
+        Core::LinAlg::DenseFunctions::multiply_tn<double, soshw6_easpoisthick, Mat::NUM_STRESS_3D,
+            1>(1.0, feas.values(), detJ_w, M.data(), stress.data());
       }  // ------------------------------------------------------------------ EAS
     }
 
@@ -777,16 +777,16 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
 
       Core::LinAlg::SerialDenseMatrix KdaTKaa(
           NUMDOF_WEG6, soshw6_easpoisthick);  // temporary Kda^T.Kaa^{-1}
-      Core::LinAlg::DenseFunctions::multiplyTN<double, NUMDOF_WEG6, soshw6_easpoisthick,
+      Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_WEG6, soshw6_easpoisthick,
           soshw6_easpoisthick>(KdaTKaa, Kda, Kaa);
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
       Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_WEG6, soshw6_easpoisthick, NUMDOF_WEG6>(
-          1.0, stiffmatrix->A(), -1.0, KdaTKaa.values(), Kda.values());
+          1.0, stiffmatrix->data(), -1.0, KdaTKaa.values(), Kda.values());
 
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
       Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_WEG6, soshw6_easpoisthick, 1>(
-          1.0, force->A(), -1.0, KdaTKaa.values(), feas.values());
+          1.0, force->data(), -1.0, KdaTKaa.values(), feas.values());
 
       // store current EAS data in history
       for (int i = 0; i < soshw6_easpoisthick; ++i)
@@ -871,9 +871,9 @@ void Discret::ELEMENTS::SoShw6::soshw6_anssetup(
   for (int sp = 0; sp < num_sp; ++sp)
   {
     // compute Jacobian matrix at all sampling points
-    jac_sps[sp].Multiply(df_sp[sp], xrefe);
+    jac_sps[sp].multiply(df_sp[sp], xrefe);
     // compute CURRENT Jacobian matrix at all sampling points
-    jac_cur_sps[sp].Multiply(df_sp[sp], xcurr);
+    jac_cur_sps[sp].multiply(df_sp[sp], xcurr);
   }
 
   /*
@@ -890,7 +890,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_anssetup(
     **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
     ** Used to transform the global displacements into parametric space
     */
-    jac_cur.Multiply(df_sp[sp], xcurr);
+    jac_cur.multiply(df_sp[sp], xcurr);
 
     // fill up B-operator
     for (int inode = 0; inode < NUMNOD_WEG6; ++inode)
@@ -973,7 +973,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_evaluate_t(
       solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
   int err2 = solve_for_inverseT.Factor();
-  int err = solve_for_inverseT.Invert();
+  int err = solve_for_inverseT.invert();
   if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
 }
@@ -1023,10 +1023,10 @@ void Discret::ELEMENTS::SoShw6::soshw6_eassetup(
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> jac0;
-  jac0.Multiply(df0, xrefe);
+  jac0.multiply(df0, xrefe);
 
   // compute determinant of Jacobian at origin by Sarrus' rule
-  detJ0 = jac0.Determinant();
+  detJ0 = jac0.determinant();
 
   // get T-matrix at element origin
   soshw6_evaluate_t(jac0, T0invT);
@@ -1123,9 +1123,9 @@ void Discret::ELEMENTS::SoShw6::soshw6_cauchy(
   // F^mod = RU^mod
   Core::LinAlg::SerialDenseMatrix defgrd_consistent(NUMDIM_WEG6, NUMDIM_WEG6);
   Core::LinAlg::multiply(defgrd_consistent, rot, U_mod);
-  defgrd.SetView(defgrd_consistent.A());
+  defgrd.set_view(defgrd_consistent.data());
 #endif
-  double detF = defgrd.Determinant();
+  double detF = defgrd.determinant();
 
   Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> pkstress;
   pkstress(0, 0) = stress(0);
@@ -1140,8 +1140,8 @@ void Discret::ELEMENTS::SoShw6::soshw6_cauchy(
 
   Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> cauchystress;
   Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> temp;
-  temp.Multiply(1.0 / detF, defgrd, pkstress);
-  cauchystress.MultiplyNT(temp, defgrd);
+  temp.multiply(1.0 / detF, defgrd, pkstress);
+  cauchystress.multiply_nt(temp, defgrd);
 
   (*elestress)(gp, 0) = cauchystress(0, 0);
   (*elestress)(gp, 1) = cauchystress(1, 1);

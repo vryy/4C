@@ -49,7 +49,7 @@ void writeArray(const T& mat, std::string name = "unnamed")
   std::cerr << header.str();
   for (int i = 0; i < mat.numRows() * mat.numCols(); ++i)
   {
-    std::cerr.write(reinterpret_cast<const char*>(&(mat.A()[i])), sizeof(double));
+    std::cerr.write(reinterpret_cast<const char*>(&(mat.data()[i])), sizeof(double));
   }
 }
 
@@ -158,7 +158,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
       //      Core::LinAlg::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* matptr = nullptr;
-      //      if (elemat1.IsInitialized()) matptr = &elemat1;
+      //      if (elemat1.is_initialized()) matptr = &elemat1;
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -296,7 +296,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
           {
             prestress_->StoragetoMatrix(gp, deltaF, gpdefgrd);
             prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
-            Fnew.Multiply(deltaF, Fhist);
+            Fnew.multiply(deltaF, Fhist);
             prestress_->MatrixtoStorage(gp, Fnew, prestress_->FHistory());
           }
 
@@ -409,10 +409,10 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
           prestress_->StoragetoMatrix(gp, N_xyz, prestress_->JHistory());
 
           // build multiplicative incremental defgrd
-          // defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
+          // defgrd.multiply('T','N',1.0,xdisp,N_xyz,0.0);
           if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
           {
-            defgrd.MultiplyTN(xdisp, N_xyz);
+            defgrd.multiply_tn(xdisp, N_xyz);
           }
           defgrd(0, 0) += 1.0;
           defgrd(1, 1) += 1.0;
@@ -424,7 +424,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
 
           // build total defgrd = delta F * F_old
           Core::LinAlg::Matrix<3, 3> Fnew;
-          Fnew.Multiply(defgrd, Fhist);
+          Fnew.multiply(defgrd, Fhist);
           defgrd = Fnew;
         }
         else
@@ -432,7 +432,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
           // in kinematically linear analysis the deformation gradient is equal to identity
           if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
           {
-            defgrd.MultiplyTN(xdisp, nxyz);
+            defgrd.multiply_tn(xdisp, nxyz);
           }
           defgrd(0, 0) += 1.0;
           defgrd(1, 1) += 1.0;
@@ -442,7 +442,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
         // Right Cauchy-Green tensor = F^T * F
         // size is 3x3
         Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> cauchygreen;
-        cauchygreen.MultiplyTN(defgrd, defgrd);
+        cauchygreen.multiply_tn(defgrd, defgrd);
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -560,7 +560,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
           // inelastic deformation gradient)
           if (SolidMaterial()->UsesExtendedUpdate())
           {
-            SolidMaterial()->Update(defgrd, gp, params, Id());
+            SolidMaterial()->update(defgrd, gp, params, Id());
           }
         }
       }
@@ -789,7 +789,7 @@ int Discret::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
 
   // compute determinant of Jacobian once outside Gauss point loop since it is constant
   // jac.Determinant() delivers six times the reference volume of the tet
-  const double detJ = jac.Determinant() * (1.0 / 6.0);
+  const double detJ = jac.determinant() * (1.0 / 6.0);
 
   if (detJ == 0.0)
     FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
@@ -822,7 +822,7 @@ int Discret::ELEMENTS::SoTet4::evaluate_neumann(Teuchos::ParameterList& params,
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOTET4; ++nodid)
@@ -866,7 +866,7 @@ void Discret::ELEMENTS::SoTet4::init_jacobian_mapping()
   for (int row = 0; row < 3; row++)
     for (int col = 0; col < 4; col++) jac(row + 1, col) = xrefe(col, row);
   // volume of the element
-  V_ = jac.Determinant() / 6.0;
+  V_ = jac.determinant() / 6.0;
   if (V_ <= 0.0) FOUR_C_THROW("Element volume %10.5e <= 0.0 (Id: %i)", V_, Id());
 
   // nxyz_.resize(NUMGPT_SOTET4);
@@ -875,7 +875,7 @@ void Discret::ELEMENTS::SoTet4::init_jacobian_mapping()
   Core::LinAlg::Matrix<NUMCOORD_SOTET4 - 1, NUMCOORD_SOTET4> tmp;
   for (int gp = 0; gp < NUMGPT_SOTET4; ++gp)
   {
-    tmp.MultiplyTN(xrefe, derivs[gp]);
+    tmp.multiply_tn(xrefe, derivs[gp]);
     for (int i = 0; i < 4; i++) jac(0, i) = 1;
     for (int row = 0; row < 3; row++)
       for (int col = 0; col < 4; col++) jac(row + 1, col) = tmp(row, col);
@@ -898,7 +898,7 @@ void Discret::ELEMENTS::SoTet4::init_jacobian_mapping()
     if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of Jacobian failed");
 
     // nxyz_[gp] = N_xsi_k*partials
-    nxyz_.Multiply(derivs[gp], partials);
+    nxyz_.multiply(derivs[gp], partials);
     /* structure of N_XYZ:
     **             [   dN_1     dN_1     dN_1   ]
     **             [  ------   ------   ------  ]
@@ -1065,7 +1065,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
     // Right Cauchy-Green tensor = F^T * F
     // size is 3x3
     Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -1091,7 +1091,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
       }
 
       // build the linearised strain epsilon = B_L . d
-      glstrain.Multiply(bop, nodaldisp);
+      glstrain.multiply(bop, nodaldisp);
     }
 
     // return gp strains (only in case of stress/strain output)
@@ -1122,12 +1122,12 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
 
         // Inverse of deformation gradient (make a copy here otherwise defgrd is destroyed).
         Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> invdefgrd;
-        invdefgrd.Invert(defgrd);
+        invdefgrd.invert(defgrd);
 
         Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> temp;
         Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> euler_almansi;
-        temp.Multiply(gl, invdefgrd);
-        euler_almansi.MultiplyTN(invdefgrd, temp);
+        temp.multiply(gl, invdefgrd);
+        euler_almansi.multiply_tn(invdefgrd, temp);
 
         (*elestrain)(gp, 0) = euler_almansi(0, 0);
         (*elestrain)(gp, 1) = euler_almansi(1, 1);
@@ -1256,7 +1256,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
       Core::LinAlg::Matrix<NUMNOD_SOTET4, 1> funct(true);
       funct = shapefcts[gp];
       Core::LinAlg::Matrix<NUMDIM_SOTET4, 1> point(true);
-      point.MultiplyTN(xrefe, funct);
+      point.multiply_tn(xrefe, funct);
       params.set("gp_coords_ref", point);
     }
 
@@ -1276,7 +1276,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
       case Inpar::STR::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
-        double detF = defgrd.Determinant();
+        double detF = defgrd.determinant();
 
         Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> pkstress;
         pkstress(0, 0) = stress(0);
@@ -1291,8 +1291,8 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
 
         Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> temp;
         Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> cauchystress;
-        temp.Multiply(1.0 / detF, defgrd, pkstress);
-        cauchystress.MultiplyNT(temp, defgrd);
+        temp.multiply(1.0 / detF, defgrd, pkstress);
+        cauchystress.multiply_nt(temp, defgrd);
 
         (*elestress)(gp, 0) = cauchystress(0, 0);
         (*elestress)(gp, 1) = cauchystress(1, 1);
@@ -1315,7 +1315,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
     if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) * detJ * w(gp)
-      force->MultiplyTN(detJ_w, bop, stress, 1.0);
+      force->multiply_tn(detJ_w, bop, stress, 1.0);
     }
 
     // update of stiffness matrix
@@ -1325,9 +1325,9 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       // size is 6x12
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOTET4> cb;
-      cb.Multiply(cmat, bop);  // temporary C . B
+      cb.multiply(cmat, bop);  // temporary C . B
       // size is 12x12
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
       if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
       {
@@ -1335,7 +1335,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
         // auxiliary integrated stress
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> sfac(stress);
         // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-        sfac.Scale(detJ_w);
+        sfac.scale(detJ_w);
         // intermediate Sm.B_L
         double SmB_L[NUMDIM_SOTET4];
         // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)
@@ -1468,7 +1468,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
         // Right Cauchy-Green tensor = F^T * F
         // size is 3x3
         Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> cauchygreen;
-        cauchygreen.MultiplyTN(defgrd, defgrd);
+        cauchygreen.multiply_tn(defgrd, defgrd);
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -1494,7 +1494,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
           }
 
           // build the linearised strain epsilon = B_L . d
-          glstrain.Multiply(bop, nodaldisp);
+          glstrain.multiply(bop, nodaldisp);
         }
 
         // evaluate derivative of mass w.r.t. to right cauchy green tensor
@@ -1503,9 +1503,9 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
 
         // multiply by 2.0 to get derivative w.r.t green lagrange strains and multiply by time
         // integration factor
-        linmass_disp.Scale(2.0 * timintfac_dis);
-        linmass_vel.Scale(2.0 * timintfac_vel);
-        linmass.Update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
+        linmass_disp.scale(2.0 * timintfac_dis);
+        linmass_vel.scale(2.0 * timintfac_vel);
+        linmass.update(1.0, linmass_disp, 1.0, linmass_vel, 0.0);
 
         // evaluate accelerations at time n+1 at gauss point
         Core::LinAlg::Matrix<NUMDIM_SOTET4, 1> myacc(true);
@@ -1518,7 +1518,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
           // integrate linearisation of mass matrix
           //(B^T . d\rho/d disp . a) * detJ * w(gp)
           Core::LinAlg::Matrix<1, NUMDOF_SOTET4> cb;
-          cb.MultiplyTN(linmass_disp, bop);
+          cb.multiply_tn(linmass_disp, bop);
           for (int inod = 0; inod < NUMNOD_SOTET4; ++inod)
           {
             double factor = detJ * gpweights4gp[gp] * shapefcts4gp[gp](inod);
@@ -1759,7 +1759,7 @@ void Discret::ELEMENTS::SoTet4::def_gradient(const std::vector<double>& disp,
     Core::LinAlg::Matrix<3, 3> defgrd(true);
     if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
     {
-      defgrd.MultiplyTN(xdisp, N_xyz);
+      defgrd.multiply_tn(xdisp, N_xyz);
     }
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
@@ -1794,7 +1794,7 @@ void Discret::ELEMENTS::SoTet4::compute_deformation_gradient(
     // build multiplicative incremental defgrd
     Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> Finc;
 
-    Finc.MultiplyNN(xdisp, N_xyz);
+    Finc.multiply_nn(xdisp, N_xyz);
 
     // build multiplicative incremental defgrd
     Finc(0, 0) += 1.0;
@@ -1806,12 +1806,12 @@ void Discret::ELEMENTS::SoTet4::compute_deformation_gradient(
     prestress_->StoragetoMatrix(gp, Fhist, prestress_->FHistory());
 
     // build total defgrd = delta F * F_old
-    defgrd.Multiply(Finc, Fhist);
+    defgrd.multiply(Finc, Fhist);
   }
   else
   {
     // (material) deformation gradient F = d xcurr / d xrefe = I + xdisp * N_XYZ^T
-    defgrd.MultiplyNN(xdisp, nxyz_);
+    defgrd.multiply_nn(xdisp, nxyz_);
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
@@ -1844,16 +1844,16 @@ void Discret::ELEMENTS::SoTet4::update_jacobian_mapping(
     // build multiplicative incremental defgrd
     if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
     {
-      defgrd.MultiplyTN(xdisp, nxyzhist);
+      defgrd.multiply_tn(xdisp, nxyzhist);
     }
     defgrd(0, 0) += 1.0;
     defgrd(1, 1) += 1.0;
     defgrd(2, 2) += 1.0;
     // make inverse of this defgrd
-    defgrd.Invert();
+    defgrd.invert();
 
     // push-forward of nxyz
-    nxyznew.Multiply(nxyzhist, defgrd);
+    nxyznew.multiply(nxyzhist, defgrd);
     // store new reference configuration
     prestress.MatrixtoStorage(gp, nxyznew, prestress.JHistory());
 
@@ -1923,8 +1923,8 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
         prestress_->StoragetoMatrix(gp, N_xyz, prestress_->JHistory());
 
         // build multiplicative incremental defgrd
-        // defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
-        defgrd.MultiplyTN(xdisp, N_xyz);
+        // defgrd.multiply('T','N',1.0,xdisp,N_xyz,0.0);
+        defgrd.multiply_tn(xdisp, N_xyz);
         defgrd(0, 0) += 1.0;
         defgrd(1, 1) += 1.0;
         defgrd(2, 2) += 1.0;
@@ -1935,12 +1935,12 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
 
         // build total defgrd = delta F * F_old
         Core::LinAlg::Matrix<3, 3> Fnew;
-        Fnew.Multiply(defgrd, Fhist);
+        Fnew.multiply(defgrd, Fhist);
         defgrd = Fnew;
       }
       else
       {
-        defgrd.MultiplyTN(xdisp, nxyz);
+        defgrd.multiply_tn(xdisp, nxyz);
         defgrd(0, 0) += 1;
         defgrd(1, 1) += 1;
         defgrd(2, 2) += 1;
@@ -1949,7 +1949,7 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
       // Right Cauchy-Green tensor = F^T * F
       // size is 3x3
       Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> cauchygreen;
-      cauchygreen.MultiplyTN(defgrd, defgrd);
+      cauchygreen.multiply_tn(defgrd, defgrd);
 
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -1969,7 +1969,7 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
       // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
       // Cauchy stress
-      const double detF = defgrd.Determinant();
+      const double detF = defgrd.determinant();
 
       Core::LinAlg::Matrix<3, 3> pkstress;
       pkstress(0, 0) = stress(0);
@@ -1984,8 +1984,8 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
 
       Core::LinAlg::Matrix<3, 3> temp(true);
       Core::LinAlg::Matrix<3, 3> cauchystress(true);
-      temp.Multiply(1.0 / detF, defgrd, pkstress);
-      cauchystress.MultiplyNT(temp, defgrd);
+      temp.multiply(1.0 / detF, defgrd, pkstress);
+      cauchystress.multiply_nt(temp, defgrd);
 
       // evaluate eigenproblem based on stress of previous step
       Core::LinAlg::Matrix<3, 3> lambda(true);
@@ -2000,8 +2000,8 @@ void Discret::ELEMENTS::SoTet4::so_tet4_remodel(std::vector<int>& lm,  // locati
       else if (mat->MaterialType() == Core::Materials::m_elasthyper)
       {
         // we only have fibers at element center, thus we interpolate stress and defgrd
-        avg_stress.Update(1.0 / NUMGPT_SOTET4, cauchystress, 1.0);
-        avg_defgrd.Update(1.0 / NUMGPT_SOTET4, defgrd, 1.0);
+        avg_stress.update(1.0 / NUMGPT_SOTET4, cauchystress, 1.0);
+        avg_defgrd.update(1.0 / NUMGPT_SOTET4, defgrd, 1.0);
       }
       else
         FOUR_C_THROW("material not implemented for remodeling");
@@ -2071,11 +2071,11 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
 
   static Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> N_XYZ(true);
   static Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> invJ(true);
-  invJ.Multiply(1.0, deriv, xrefe, 0.0);
-  invJ.Invert();
-  N_XYZ.Multiply(1.0, invJ, deriv, 0.0);
+  invJ.multiply(1.0, deriv, xrefe, 0.0);
+  invJ.invert();
+  N_XYZ.multiply(1.0, invJ, deriv, 0.0);
   static Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> defgrd(true);
-  defgrd.MultiplyTT(1.0, xcurr, N_XYZ, 0.0);
+  defgrd.multiply_tt(1.0, xcurr, N_XYZ, 0.0);
 
   // linearization of deformation gradient F w.r.t. displacements
   static Core::LinAlg::Matrix<9, NUMDOF_SOTET4> d_F_dd(true);
@@ -2111,7 +2111,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
   {
     d_cauchyndir_dd->reshape(NUMDOF_SOTET4, 1);
     Core::LinAlg::Matrix<NUMDOF_SOTET4, 1> d_cauchyndir_dd_mat(d_cauchyndir_dd->values(), true);
-    d_cauchyndir_dd_mat.MultiplyTN(1.0, d_F_dd, d_cauchyndir_dF, 0.0);
+    d_cauchyndir_dd_mat.multiply_tn(1.0, d_F_dd, d_cauchyndir_dF, 0.0);
   }
 
   if (d2_cauchyndir_dd_dn)
@@ -2119,7 +2119,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
     d2_cauchyndir_dd_dn->reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
     Core::LinAlg::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_dn_mat(
         d2_cauchyndir_dd_dn->values(), true);
-    d2_cauchyndir_dd_dn_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF_dn, 0.0);
+    d2_cauchyndir_dd_dn_mat.multiply_tn(1.0, d_F_dd, d2_cauchyndir_dF_dn, 0.0);
   }
 
   if (d2_cauchyndir_dd_ddir)
@@ -2127,7 +2127,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
     d2_cauchyndir_dd_ddir->reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
     Core::LinAlg::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_ddir_mat(
         d2_cauchyndir_dd_ddir->values(), true);
-    d2_cauchyndir_dd_ddir_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF_ddir, 0.0);
+    d2_cauchyndir_dd_ddir_mat.multiply_tn(1.0, d_F_dd, d2_cauchyndir_dF_ddir, 0.0);
   }
 
   if (d2_cauchyndir_dd2)
@@ -2136,8 +2136,8 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
     Core::LinAlg::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> d2_cauchyndir_dd2_mat(
         d2_cauchyndir_dd2->values(), true);
     static Core::LinAlg::Matrix<9, NUMDOF_SOTET4> d2_cauchyndir_dd2_d_F_dd(true);
-    d2_cauchyndir_dd2_d_F_dd.Multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
-    d2_cauchyndir_dd2_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dd2_d_F_dd, 0.0);
+    d2_cauchyndir_dd2_d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
+    d2_cauchyndir_dd2_mat.multiply_tn(1.0, d_F_dd, d2_cauchyndir_dd2_d_F_dd, 0.0);
   }
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
@@ -2156,9 +2156,9 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
     static Core::LinAlg::Matrix<NUMDIM_SOTET4,
         Core::FE::DisTypeToNumDeriv2<Core::FE::CellType::tet4>::numderiv2>
         xXFsec(true);
-    xXF.Update(1.0, xcurr, 0.0);
-    xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
-    xXFsec.MultiplyTT(1.0, xXF, deriv2, 0.0);
+    xXF.update(1.0, xcurr, 0.0);
+    xXF.multiply_nt(-1.0, xrefe, defgrd, 1.0);
+    xXFsec.multiply_tt(1.0, xXF, deriv2, 0.0);
 
     for (int a = 0; a < NUMDIM_SOTET4; ++a)
     {
@@ -2176,7 +2176,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
 
   if (d_cauchyndir_dxi)
   {
-    d_cauchyndir_dxi->MultiplyTN(1.0, d_F_dxi, d_cauchyndir_dF, 0.0);
+    d_cauchyndir_dxi->multiply_tn(1.0, d_F_dxi, d_cauchyndir_dF, 0.0);
   }
 
   if (d2_cauchyndir_dd_dxi)
@@ -2191,12 +2191,12 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
     static Core::LinAlg::Matrix<NUMNOD_SOTET4,
         Core::FE::DisTypeToNumDeriv2<Core::FE::CellType::tet4>::numderiv2>
         N_XYZ_Xsec(true);
-    Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
-    N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);
+    Xsec.multiply(1.0, deriv2, xrefe, 0.0);
+    N_XYZ_Xsec.multiply_tt(1.0, N_XYZ, Xsec, 0.0);
 
     static Core::LinAlg::Matrix<9, NUMDOF_SOTET4> d2_cauchyndir_dF2_d_F_dd(true);
-    d2_cauchyndir_dF2_d_F_dd.Multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
-    d2_cauchyndir_dd_dxi_mat.MultiplyTN(1.0, d2_cauchyndir_dF2_d_F_dd, d_F_dxi, 0.0);
+    d2_cauchyndir_dF2_d_F_dd.multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
+    d2_cauchyndir_dd_dxi_mat.multiply_tn(1.0, d2_cauchyndir_dF2_d_F_dd, d_F_dxi, 0.0);
 
     static Core::LinAlg::Matrix<9, NUMDIM_SOTET4 * NUMDOF_SOTET4> d2_F_dxi_dd(true);
     d2_F_dxi_dd.clear();
@@ -2240,7 +2240,7 @@ void Discret::ELEMENTS::SoTet4::get_cauchy_n_dir_and_derivatives_at_xi(
   {
     static Core::LinAlg::Matrix<9, 1> d_F_dc(true);
     SolidMaterial()->evaluate_linearization_od(defgrd, *concentration, &d_F_dc);
-    *d_cauchyndir_dc = d_cauchyndir_dF.Dot(d_F_dc);
+    *d_cauchyndir_dc = d_cauchyndir_dF.dot(d_F_dc);
   }
 }
 

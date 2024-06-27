@@ -138,7 +138,7 @@ namespace Core::Nodes
     /*!
     \brief Print this node
     */
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     /*! \brief Query names of node data to be visualized using BINIO
      *

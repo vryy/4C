@@ -81,7 +81,7 @@ void Core::FE::ComputeMetricTensorForSurface(const Core::LinAlg::SerialDenseMatr
   */
   Core::LinAlg::SerialDenseMatrix dxyzdrs(2, 3);
 
-  Core::LinAlg::multiplyNT(dxyzdrs, deriv, xyze);
+  Core::LinAlg::multiply_nt(dxyzdrs, deriv, xyze);
 
   /*
   |
@@ -97,7 +97,7 @@ void Core::FE::ComputeMetricTensorForSurface(const Core::LinAlg::SerialDenseMatr
   |
   | the calculation of g21 is redundant since g21=g12
   */
-  Core::LinAlg::multiplyNT(metrictensor, dxyzdrs, dxyzdrs);
+  Core::LinAlg::multiply_nt(metrictensor, dxyzdrs, dxyzdrs);
 
   /*
                             +--------------+

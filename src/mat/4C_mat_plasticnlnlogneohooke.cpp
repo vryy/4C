@@ -414,7 +414,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   const double visc = params_->visc_;            // viscosity
   const double eps = params_->rate_dependency_;  // rate dependency
 
-  const double detF = defgrd->Determinant();
+  const double detF = defgrd->determinant();
 
   const double dt = params.get<double>("delta time");
   // check, if errors are tolerated or should throw a FOUR_C_THROW
@@ -426,7 +426,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   double dy_d_dgamma = 0.0;
 
   Core::LinAlg::Matrix<3, 3> invdefgrd(*defgrd);
-  invdefgrd.Invert();
+  invdefgrd.invert();
 
   // matrices for temporary stuff
   Core::LinAlg::Matrix<3, 3> tmp1;
@@ -450,7 +450,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   // linear elasticity tensor in principal directions
   Core::LinAlg::Matrix<3, 3> D_ep_principal(Idev);
-  D_ep_principal.Scale(2.0 * G);
+  D_ep_principal.scale(2.0 * G);
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++) D_ep_principal(i, j) += kappa;
 
@@ -458,8 +458,8 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   // elastic left Cauchy-Green deformation tensor (LCG) at trial state
   // Be_trial = b_{e,n+1}^{trial} = F_{n+1} C_{p,n}^{-1} F_{n+1}
   Core::LinAlg::Matrix<3, 3> Be_trial;
-  tmp1.Multiply(*defgrd, invplrcglast_.at(gp));
-  Be_trial.MultiplyNT(tmp1, *defgrd);
+  tmp1.multiply(*defgrd, invplrcglast_.at(gp));
+  Be_trial.multiply_nt(tmp1, *defgrd);
 
   // elastic LCG at final state
   Core::LinAlg::Matrix<3, 3> Be;
@@ -497,7 +497,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   std::vector<Core::LinAlg::Matrix<3, 1>> material_principal_directions;
   material_principal_directions.resize(3);
   for (int i = 0; i < 3; i++)
-    material_principal_directions.at(i).Multiply(invdefgrd, spatial_principal_directions.at(i));
+    material_principal_directions.at(i).multiply(invdefgrd, spatial_principal_directions.at(i));
 
   // deviatoric Kirchhoff stress at trial state
   // tau^{trial} = 2 * G * log(sqrt(lambda^2)) - 2/3 * G * log(detF)
@@ -538,8 +538,8 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   if (f_trial <= 0.0)  // ----------------------------------- elastic step
   {
     // trial state variables are final variables
-    dev_KH.Update(dev_KH_trial);
-    Be.Update(Be_trial);
+    dev_KH.update(dev_KH_trial);
+    Be.update(Be_trial);
 
     // plastic increment is zero
     Dgamma = 0.0;
@@ -561,11 +561,11 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     }
     // flow vector (7.77) in de Souza Neta
     Core::LinAlg::Matrix<3, 1> flow_vector(dev_KH_trial);
-    flow_vector.Scale(1.0 / (sqrt(2.0 / 3.0) * abs_dev_KH_trial));
+    flow_vector.scale(1.0 / (sqrt(2.0 / 3.0) * abs_dev_KH_trial));
 
     // stress return mapping (7.89) in de Souza Neto
     double fac_dev_KH = 1.0 - 2.0 * G * Dgamma / (std::sqrt(2.0 / 3.0) * abs_dev_KH_trial);
-    dev_KH.Update(fac_dev_KH, dev_KH_trial, 0.0);
+    dev_KH.update(fac_dev_KH, dev_KH_trial, 0.0);
 
     // strain return mapping
     // b_{e,n+1} = sum_i^3 ( lambda_{n+1}^2 . n \otimes n )
@@ -573,18 +573,18 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     Be.clear();
     for (int i = 0; i < 3; i++)
     {
-      tmp1.MultiplyNT(spatial_principal_directions.at(i), spatial_principal_directions.at(i));
-      Be.Update((lambda_trial_square(i) / exp(2.0 * flow_vector(i) * Dgamma)), tmp1, 1.0);
+      tmp1.multiply_nt(spatial_principal_directions.at(i), spatial_principal_directions.at(i));
+      Be.update((lambda_trial_square(i) / exp(2.0 * flow_vector(i) * Dgamma)), tmp1, 1.0);
     }
 
     // update tangent modulus
     dy_d_dgamma = gamma_and_derivative.second;
     double fac_D_ep_1 = -4.0 * G * G * Dgamma / (sqrt(2.0 / 3.0) * abs_dev_KH_trial);
-    D_ep_principal.Update(fac_D_ep_1, Idev, 1.0);
-    tmp1.MultiplyNT(flow_vector, flow_vector);
+    D_ep_principal.update(fac_D_ep_1, Idev, 1.0);
+    tmp1.multiply_nt(flow_vector, flow_vector);
     double fac_D_ep_2 =
         4.0 * G * G * (sqrt(2.0 / 3.0) * Dgamma / abs_dev_KH_trial - 1.0 / (3.0 * G + dy_d_dgamma));
-    D_ep_principal.Update(fac_D_ep_2, tmp1, 1.0);
+    D_ep_principal.update(fac_D_ep_2, tmp1, 1.0);
   }
 
   // -------------------------------------------------- output PK2 stress
@@ -595,8 +595,8 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   Core::LinAlg::Matrix<3, 3> PK2(true);
   for (int i = 0; i < 3; i++)
   {
-    tmp1.MultiplyNT(material_principal_directions.at(i), material_principal_directions.at(i));
-    PK2.Update((dev_KH(i) + pressure), tmp1, 1.0);
+    tmp1.multiply_nt(material_principal_directions.at(i), material_principal_directions.at(i));
+    PK2.update((dev_KH(i) + pressure), tmp1, 1.0);
   }
 
   // output stress in Voigt notation
@@ -613,7 +613,7 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
   for (int a = 0; a < 3; a++)
   {
     // - sum_1^3 (2 * tau N_aaaa)
-    tmp1.MultiplyNT(
+    tmp1.multiply_nt(
         material_principal_directions.at(a), material_principal_directions.at(a));  // N_{aa}
     add_elasticity_tensor_product(*cmat, -2.0 * (dev_KH(a) + pressure), tmp1, tmp1, 1.0);
 
@@ -621,9 +621,9 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     {
       // c_ab N_aabb
       // result of return mapping of deviatoric component c_ab
-      tmp1.MultiplyNT(
+      tmp1.multiply_nt(
           material_principal_directions.at(a), material_principal_directions.at(a));  // N_{aa}
-      tmp2.MultiplyNT(
+      tmp2.multiply_nt(
           material_principal_directions.at(b), material_principal_directions.at(b));  // N_{bb}
       add_elasticity_tensor_product(*cmat, D_ep_principal(a, b), tmp1, tmp2, 1.0);
 
@@ -639,9 +639,9 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
                    //                (d^2 Psi)/(d ln lambda_a * d ln lambda_b)]
                    // - tau_bb, cf. (6.91)
                 0.5 * (D_ep_principal(b, b) - D_ep_principal(a, b)) - (dev_KH(b) + pressure);
-        tmp1.MultiplyNT(
+        tmp1.multiply_nt(
             material_principal_directions.at(a), material_principal_directions.at(b));  // N_{ab}
-        tmp2.MultiplyNT(
+        tmp2.multiply_nt(
             material_principal_directions.at(b), material_principal_directions.at(a));  // N_{ba}
         add_elasticity_tensor_product(*cmat, fac, tmp1, tmp1, 1.0);                     // N_{abab}
         add_elasticity_tensor_product(*cmat, fac, tmp1, tmp2, 1.0);                     // N_{abba}
@@ -652,8 +652,8 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
 
   // --------------------------------------------- update plastic history
   // plastic inverse of right Cauchy-Green deformation tensor (RCG)
-  tmp1.Multiply(invdefgrd, Be);
-  invplrcgcurr_.at(gp).MultiplyNT(tmp1, invdefgrd);
+  tmp1.multiply(invdefgrd, Be);
+  invplrcgcurr_.at(gp).multiply_nt(tmp1, invdefgrd);
 
   // accumulated plastic strain
   accplstraincurr_.at(gp) = accplstrainlast_.at(gp) + Dgamma;
@@ -723,7 +723,7 @@ bool Mat::PlasticNlnLogNeoHooke::EvaluateOutputData(
   {
     for (std::size_t gp = 0; gp < invplrcgcurr_.size(); ++gp)
     {
-      const double* values = invplrcgcurr_.at(gp).A();
+      const double* values = invplrcgcurr_.at(gp).data();
       for (std::size_t i = 0; i < 6; ++i)
       {
         data(gp, i) = values[i];

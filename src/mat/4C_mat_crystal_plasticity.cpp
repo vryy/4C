@@ -341,8 +341,8 @@ void Mat::CrystalPlasticity::setup(int numgp, Input::LineDefinition* linedef)
     Core::LinAlg::Matrix<3, 1> unrotated_slip_normal = slip_plane_normal_[i];
     Core::LinAlg::Matrix<3, 1> unrotated_slip_direction = slip_direction_[i];
 
-    slip_plane_normal_[i].MultiplyNN(lattice_orientation_, unrotated_slip_normal);
-    slip_direction_[i].MultiplyNN(lattice_orientation_, unrotated_slip_direction);
+    slip_plane_normal_[i].multiply_nn(lattice_orientation_, unrotated_slip_normal);
+    slip_direction_[i].multiply_nn(lattice_orientation_, unrotated_slip_direction);
   }
   if (is_twinning_)
   {
@@ -351,8 +351,8 @@ void Mat::CrystalPlasticity::setup(int numgp, Input::LineDefinition* linedef)
       Core::LinAlg::Matrix<3, 1> unrotated_twin_normal = twin_plane_normal_[i];
       Core::LinAlg::Matrix<3, 1> unrotated_twin_direction = twin_direction_[i];
 
-      twin_plane_normal_[i].MultiplyNN(lattice_orientation_, unrotated_twin_normal);
-      twin_direction_[i].MultiplyNN(lattice_orientation_, unrotated_twin_direction);
+      twin_plane_normal_[i].multiply_nn(lattice_orientation_, unrotated_twin_normal);
+      twin_direction_[i].multiply_nn(lattice_orientation_, unrotated_twin_direction);
     }
   }
 
@@ -1073,31 +1073,31 @@ void Mat::CrystalPlasticity::SetupLatticeVectors()
   for (int i = 0; i < slip_system_count_; i++)
   {
     tmp_scale = slip_direction_[i];
-    tmp_scale.Scale(lattice_constant_);
-    slip_burgers_mag_[i] = tmp_scale.Norm2();
+    tmp_scale.scale(lattice_constant_);
+    slip_burgers_mag_[i] = tmp_scale.norm2();
   }
   if (is_twinning_)
   {
     for (int i = 0; i < twin_system_count_; i++)
     {
       tmp_scale = twin_direction_[i];
-      tmp_scale.Scale(lattice_constant_);
-      twin_burgers_mag_[i] = tmp_scale.Norm2();
+      tmp_scale.scale(lattice_constant_);
+      twin_burgers_mag_[i] = tmp_scale.norm2();
     }
   }
 
   // normalize slip/twinning plane normals and directions
   for (int i = 0; i < slip_system_count_; i++)
   {
-    slip_plane_normal_[i].Scale(1.0 / slip_plane_normal_[i].Norm2());
-    slip_direction_[i].Scale(1.0 / slip_direction_[i].Norm2());
+    slip_plane_normal_[i].scale(1.0 / slip_plane_normal_[i].norm2());
+    slip_direction_[i].scale(1.0 / slip_direction_[i].norm2());
   }
   if (is_twinning_)
   {
     for (int i = 0; i < twin_system_count_; i++)
     {
-      twin_plane_normal_[i].Scale(1.0 / twin_plane_normal_[i].Norm2());
-      twin_direction_[i].Scale(1.0 / twin_direction_[i].Norm2());
+      twin_plane_normal_[i].scale(1.0 / twin_plane_normal_[i].norm2());
+      twin_direction_[i].scale(1.0 / twin_direction_[i].norm2());
     }
   }
   return;
@@ -1171,7 +1171,7 @@ bool Mat::CrystalPlasticity::CheckParallel(
     const Core::LinAlg::Matrix<3, 1>& vector_1, const Core::LinAlg::Matrix<3, 1>& vector_2)
 {
   Core::LinAlg::Matrix<1, 1> parallel_test;
-  parallel_test.MultiplyTN(vector_1, vector_2);
+  parallel_test.multiply_tn(vector_1, vector_2);
   if (parallel_test(0, 0) - 1.0 < 1.0e-8)
     return true;
   else
@@ -1186,7 +1186,7 @@ bool Mat::CrystalPlasticity::CheckOrthogonal(
     const Core::LinAlg::Matrix<3, 1>& vector_1, const Core::LinAlg::Matrix<3, 1>& vector_2)
 {
   Core::LinAlg::Matrix<1, 1> ortho_test;
-  ortho_test.MultiplyTN(vector_1, vector_2);
+  ortho_test.multiply_tn(vector_1, vector_2);
   if (ortho_test(0, 0) < 1.0e-8)
     return true;
   else
@@ -1494,30 +1494,30 @@ void Mat::CrystalPlasticity::SetupFlowRule(Core::LinAlg::Matrix<3, 3> deform_gra
   // slip system contributions
   for (int i = 0; i < slip_system_count_; i++)
   {
-    temp_mat.MultiplyNT(delta_gamma_trial[i], slip_direction_[i], slip_plane_normal_[i]);
-    plastic_velocity_grad_trial.Update(plastic_velocity_grad_trial, temp_mat);
+    temp_mat.multiply_nt(delta_gamma_trial[i], slip_direction_[i], slip_plane_normal_[i]);
+    plastic_velocity_grad_trial.update(plastic_velocity_grad_trial, temp_mat);
   }
   if (is_twinning_)
   {
     // twinning system contributions
     for (int i = slip_system_count_; i < def_system_count_; i++)
     {
-      temp_mat.MultiplyNT(delta_gamma_trial[i], twin_direction_[i - slip_system_count_],
+      temp_mat.multiply_nt(delta_gamma_trial[i], twin_direction_[i - slip_system_count_],
           twin_plane_normal_[i - slip_system_count_]);
-      plastic_velocity_grad_trial.Update(plastic_velocity_grad_trial, temp_mat);
+      plastic_velocity_grad_trial.update(plastic_velocity_grad_trial, temp_mat);
     }
   }
 
   // take unimodular part of I + L_p to ensure plastic incompressibility
   Core::LinAlg::Matrix<3, 3> unimod_identity_plus_plastic_velocity_grad_trial(true);
 
-  unimod_identity_plus_plastic_velocity_grad_trial.Update(
+  unimod_identity_plus_plastic_velocity_grad_trial.update(
       Core::LinAlg::IdentityMatrix<3>(), plastic_velocity_grad_trial);
-  unimod_identity_plus_plastic_velocity_grad_trial.Scale(
-      std::pow(unimod_identity_plus_plastic_velocity_grad_trial.Determinant(), -1.0 / 3.0));
+  unimod_identity_plus_plastic_velocity_grad_trial.scale(
+      std::pow(unimod_identity_plus_plastic_velocity_grad_trial.determinant(), -1.0 / 3.0));
 
   // determine trial plastic deformation gradient
-  plastic_deform_grad_trial.MultiplyNN(
+  plastic_deform_grad_trial.multiply_nn(
       unimod_identity_plus_plastic_velocity_grad_trial, (*plastic_deform_grad_last_)[gp_]);
 
   // determine trial stress
@@ -1525,31 +1525,31 @@ void Mat::CrystalPlasticity::SetupFlowRule(Core::LinAlg::Matrix<3, 3> deform_gra
   // determine trial elastic deformation gradient
   // get the inverse FP^{-1}
   Core::LinAlg::Matrix<3, 3> inv_plastic_deform_grad_trial;
-  inv_plastic_deform_grad_trial.Invert(plastic_deform_grad_trial);
+  inv_plastic_deform_grad_trial.invert(plastic_deform_grad_trial);
   Core::LinAlg::Matrix<3, 3> elastic_deform_grad_trial;
-  elastic_deform_grad_trial.MultiplyNN(deform_grad, inv_plastic_deform_grad_trial);
+  elastic_deform_grad_trial.multiply_nn(deform_grad, inv_plastic_deform_grad_trial);
 
   // calculate the Jacobi-determinant J = det(FE_{n+1}) and the logarithm of it
-  double jacobi_det_trial = elastic_deform_grad_trial.Determinant();
+  double jacobi_det_trial = elastic_deform_grad_trial.determinant();
   double ln_jacobi_det_trial = std::log(jacobi_det_trial);
 
   // set up elastic right cauchy green and its inverse
   Core::LinAlg::Matrix<3, 3> elastic_right_cauchy_green;
-  elastic_right_cauchy_green.MultiplyTN(elastic_deform_grad_trial, elastic_deform_grad_trial);
+  elastic_right_cauchy_green.multiply_tn(elastic_deform_grad_trial, elastic_deform_grad_trial);
   Core::LinAlg::Matrix<3, 3> inv_elastic_right_cauchy_green;
-  inv_elastic_right_cauchy_green.Invert(elastic_right_cauchy_green);
+  inv_elastic_right_cauchy_green.invert(elastic_right_cauchy_green);
 
   // 2nd Piola-Kirchhoff stress
   // S = lambda * ln_jacobi_det_trial * inv_elastic_right_cauchy_green + mu * (identity3
   // - inv_elastic_right_cauchy_green)
 
-  second_pk_stress_trial.Update(lambda_ * ln_jacobi_det_trial, inv_elastic_right_cauchy_green, 1.0);
-  second_pk_stress_trial.Update(mue_, Core::LinAlg::IdentityMatrix<3>(), 1.0);
-  second_pk_stress_trial.Update(-mue_, inv_elastic_right_cauchy_green, 1.0);
+  second_pk_stress_trial.update(lambda_ * ln_jacobi_det_trial, inv_elastic_right_cauchy_green, 1.0);
+  second_pk_stress_trial.update(mue_, Core::LinAlg::IdentityMatrix<3>(), 1.0);
+  second_pk_stress_trial.update(-mue_, inv_elastic_right_cauchy_green, 1.0);
 
   // Mandel stress
   Core::LinAlg::Matrix<3, 3> mandel_stress_trial;
-  mandel_stress_trial.MultiplyNN(elastic_right_cauchy_green, second_pk_stress_trial);
+  mandel_stress_trial.multiply_nn(elastic_right_cauchy_green, second_pk_stress_trial);
 
   // determine current slip systems strengths
   //--------------------------------------------------------------------------
@@ -1602,9 +1602,9 @@ void Mat::CrystalPlasticity::SetupFlowRule(Core::LinAlg::Matrix<3, 3> deform_gra
 
     Core::LinAlg::Matrix<3, 1> TempVec(true);
 
-    TempVec.MultiplyNN(mandel_stress_trial, slip_plane_normal_[i]);
+    TempVec.multiply_nn(mandel_stress_trial, slip_plane_normal_[i]);
 
-    resolved_shear_stress.MultiplyTN(slip_direction_[i], TempVec);
+    resolved_shear_stress.multiply_tn(slip_direction_[i], TempVec);
     // shear rate as determined from the flow rule
     double gamma_dot = 0.0;
 
@@ -1673,9 +1673,9 @@ void Mat::CrystalPlasticity::SetupFlowRule(Core::LinAlg::Matrix<3, 3> deform_gra
 
       Core::LinAlg::Matrix<3, 1> TempVec(true);
 
-      TempVec.MultiplyNN(mandel_stress_trial, twin_plane_normal_[i - slip_system_count_]);
+      TempVec.multiply_nn(mandel_stress_trial, twin_plane_normal_[i - slip_system_count_]);
 
-      resolved_shear_stress.MultiplyTN(twin_direction_[i - slip_system_count_], TempVec);
+      resolved_shear_stress.multiply_tn(twin_direction_[i - slip_system_count_], TempVec);
 
       // shear rate as determined from the twinning rule
       double gamma_dot = 0.0;

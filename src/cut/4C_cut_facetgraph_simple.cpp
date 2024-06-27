@@ -166,8 +166,8 @@ void Core::Geo::Cut::SimpleFacetGraph2D::CreateVolumeCells(
         // debug output
         std::cout << "=====================================================" << std::endl;
         std::cout << "SimpleFacetGraph_2D::FindFacet failed! ( line = " << __LINE__ << " )\n";
-        line_points[0]->Print(std::cout);
-        line_points[1]->Print(std::cout);
+        line_points[0]->print(std::cout);
+        line_points[1]->print(std::cout);
         std::cout << "=====================================================" << std::endl;
 
         FOUR_C_THROW("Could not find the correct line facet!");

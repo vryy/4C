@@ -906,7 +906,7 @@ template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
 double ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::get_frt() const
 {
   // evaluate local temperature value
-  const double temperature = my::funct_slave_.Dot(etempnp_slave_);
+  const double temperature = my::funct_slave_.dot(etempnp_slave_);
 
   // safety check
   if (temperature <= 0.) FOUR_C_THROW("Temperature is non-positive!");

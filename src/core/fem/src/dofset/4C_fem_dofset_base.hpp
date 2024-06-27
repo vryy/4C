@@ -47,7 +47,7 @@ namespace Core::DOFSets
     //! @name Utility Methods
 
     /// Print this class
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_

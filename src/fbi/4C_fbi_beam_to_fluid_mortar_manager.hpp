@@ -211,7 +211,7 @@ namespace BEAMINTERACTION
     }
 
     /**
-     * \brief Invert the scaling vector \ref global_kappa_ vector with accounting for non active
+     * \brief invert the scaling vector \ref global_kappa_ vector with accounting for non active
      * Lagrange multipliers.
      *
      * @return Inverted global_kappa_ vector.

@@ -123,7 +123,7 @@ namespace Discret::ELEMENTS
       return static_cast<Discret::ELEMENTS::Shell7p*>(parent);
     }
 
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     [[nodiscard]] Core::Elements::ElementType& ElementType() const override
     {

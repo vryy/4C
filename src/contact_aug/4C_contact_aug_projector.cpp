@@ -150,9 +150,9 @@ template <class DebugPolicy, unsigned probdim, Core::FE::CellType ref_type,
     Core::FE::CellType tar_type>
 void CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::setup()
 {
-  ref_val_.putScalar(0.0);
-  x_ref_.putScalar(0.0);
-  n_ref_.putScalar(0.0);
+  ref_val_.put_scalar(0.0);
+  x_ref_.put_scalar(0.0);
+  n_ref_.put_scalar(0.0);
   iter_ = 0;
 }
 
@@ -202,12 +202,12 @@ bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
 
   Core::LinAlg::Matrix<TAR_DIM, 1> txi_center(false);
   Core::FE::getLocalCenterPosition<TAR_DIM>(tar_type, txi_center);
-  std::copy(txi_center.A(), txi_center.A() + TAR_DIM, txi.A());
+  std::copy(txi_center.data(), txi_center.data() + TAR_DIM, txi.data());
 
   rhs_gp(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha);
-  DebugPolicy::write_vector(std::cout, probdim, rhs_.A(), "Rhs");
+  DebugPolicy::write_vector(std::cout, probdim, rhs_.data(), "Rhs");
 
-  const double ref_rhs_nrm2 = std::max(1.0, rhs_.Norm2());
+  const double ref_rhs_nrm2 = std::max(1.0, rhs_.norm2());
   double dx_nrm2 = 0.0;
   double rhs_nrm2 = 0.0;
   bool is_parallel_proj = false;
@@ -216,7 +216,7 @@ bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
   {
     l_mat_gp(lmat_, tar_deriv1_, target_ele, tar_coords_, target_xi, n_ref_);
 
-    rhs_.Scale(-1.0);
+    rhs_.scale(-1.0);
     const double det = Core::LinAlg::gaussElimination<true, probdim>(lmat_, rhs_, dx_);
 
     // safety check
@@ -224,7 +224,7 @@ bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
     {
       is_parallel_proj = true;
       std::cout << "WARNING: GPProjection parallel to master element:\n"
-                << "Determinant:           " << det << "\n"
+                << "determinant:           " << det << "\n"
                 << "Reference element GID: " << ref_ele.Id() << "\n"
                 << "Target element GID:    " << target_ele.Id() << "\n"
                 << "GP will be skipped for this master element!" << std::endl;
@@ -235,24 +235,24 @@ bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
     for (unsigned i = 0; i < TAR_DIM; ++i) txi(i, 0) += dx_(i, 0);
     alpha += dx_(probdim - 1, 0);
 
-    DebugPolicy::write_vector(std::cout, TAR_DIM, txi.A(), "txi");
+    DebugPolicy::write_vector(std::cout, TAR_DIM, txi.data(), "txi");
 
     // new right-hand side
     if (not rhs_gp(rhs_, x_ref_, n_ref_, target_ele, tar_coords_, target_xi, alpha))
     {
-      DebugPolicy::write_vector(std::cout, probdim, rhs_.A(), "Rhs (failed)");
+      DebugPolicy::write_vector(std::cout, probdim, rhs_.data(), "Rhs (failed)");
       //      std::cout << "shape_function evaluation failed @ [" << txi(0,0) << ", " <<
       //          txi(1,0) << "]" << std::endl;
       iter_ = MORTARMAXITER;
       break;
     }
-    DebugPolicy::write_vector(std::cout, probdim, rhs_.A(), "Rhs");
+    DebugPolicy::write_vector(std::cout, probdim, rhs_.data(), "Rhs");
 
-    rhs_nrm2 = rhs_.Norm2();
+    rhs_nrm2 = rhs_.norm2();
 
     if (rhs_nrm2 <= MORTARCONVTOL * ref_rhs_nrm2)
     {
-      dx_nrm2 = dx_.Norm2();
+      dx_nrm2 = dx_.norm2();
 
       rel_sol_tolerance_ = alpha * alpha;
       for (unsigned i = 0; i < TAR_DIM; ++i) rel_sol_tolerance_ += txi(i, 0) * txi(i, 0);
@@ -267,7 +267,7 @@ bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::operator
   // Newton iteration unconverged
   if (iter_ == MORTARMAXITER or is_parallel_proj)
   {
-    std::fill(txi.A(), txi.A() + TAR_DIM, 1.0e12);
+    std::fill(txi.data(), txi.data() + TAR_DIM, 1.0e12);
 
     return false;
   }
@@ -310,7 +310,7 @@ bool CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::get_glob
   Core::LinAlg::Matrix<numnodes, 1> val(true);
   const bool status = shape_function<type>(ele, mat_xi, val);
 
-  pos.Multiply(coords, val);
+  pos.multiply(coords, val);
   return status;
 }
 
@@ -325,7 +325,7 @@ void CONTACT::Aug::Projector<DebugPolicy, probdim, ref_type, tar_type>::l_mat_gp
     const Core::LinAlg::Matrix<probdim, 1>& n_ref) const
 {
   const Core::LinAlg::Matrix<TAR_DIM, 1> txi(tar_xi, true);
-  std::fill(lmat.A(), lmat.A() + 2 * probdim, 0.0);
+  std::fill(lmat.data(), lmat.data() + 2 * probdim, 0.0);
 
   shape_function_deriv1<tar_type>(tar_ele, txi, tar_deriv1);
 

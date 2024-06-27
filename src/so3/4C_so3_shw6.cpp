@@ -188,10 +188,10 @@ void Discret::ELEMENTS::SoShw6::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoShw6::print(std::ostream& os) const
 {
   os << "So_shw6 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }

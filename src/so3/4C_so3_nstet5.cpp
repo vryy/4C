@@ -348,7 +348,7 @@ void Discret::ELEMENTS::NStet5::so_nstet5_expol(
   expol(1, 0) = 1.0;
   expol(2, 0) = 1.0;
   expol(3, 0) = 1.0;
-  nodalstresses.Multiply(expol, stresses);
+  nodalstresses.multiply(expol, stresses);
   return;
 }
 
@@ -356,10 +356,10 @@ void Discret::ELEMENTS::NStet5::so_nstet5_expol(
 /*----------------------------------------------------------------------*
  |  print this element (public)                                gee 03/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::NStet5::Print(std::ostream& os) const
+void Discret::ELEMENTS::NStet5::print(std::ostream& os) const
 {
   os << "NStet5 ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

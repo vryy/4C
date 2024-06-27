@@ -126,7 +126,7 @@ namespace CONTACT
      \brief Print this element
 
      */
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     //! @name Evaluation methods
 
@@ -211,7 +211,7 @@ namespace CONTACT
     inline void DJacDXi(double* djacdxi, double* xi, Core::LinAlg::Matrix<elenumnode, 3>& secderiv)
     {
       Core::LinAlg::SerialDenseMatrix sdm_secderiv(
-          Teuchos::View, secderiv.A(), elenumnode, elenumnode, 3);
+          Teuchos::View, secderiv.data(), elenumnode, elenumnode, 3);
       DJacDXi(djacdxi, xi, sdm_secderiv);
     }
 

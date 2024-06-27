@@ -112,8 +112,8 @@ void MIXTURE::MapMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
 
     // add stress contribution to global stress
     double constituent_density = params_->initial_reference_density_ * massfracs[i];
-    S_stress.Update(constituent_density, cstress, 1.0);
-    cmat.Update(constituent_density, ccmat, 1.0);
+    S_stress.update(constituent_density, cstress, 1.0);
+    cmat.update(constituent_density, ccmat, 1.0);
   }
 }
 

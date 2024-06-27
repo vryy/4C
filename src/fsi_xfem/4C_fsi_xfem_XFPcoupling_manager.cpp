@@ -116,7 +116,7 @@ void XFEM::XfpCouplingManager::SetCouplingStates()
       CouplingCommManager::full_to_partial);
   insert_vector(0, poro_->structure_field()->Velnp(), 0, mcfpi_pf_ps_->IVelnp(),
       CouplingCommManager::full_to_partial);
-  //  poro_->structure_field()->Velnp()->Print(std::cout);
+  //  poro_->structure_field()->Velnp()->print(std::cout);
 
   //  insert_vector(1,poro_->fluid_field()->GridVel(),0,mcfpi_ps_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);
   //  insert_vector(1,poro_->fluid_field()->GridVel(),0,mcfpi_pf_ps_->IVelnp(),Coupling_Comm_Manager::full_to_partial);

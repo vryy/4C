@@ -163,7 +163,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::get_rhs_int(
 )
 {
   //... + all advanced reaction terms
-  rhsint = my::bodyforce_[k].Dot(my::funct_) + densnp * rea_manager()->GetReaBodyForce(k);
+  rhsint = my::bodyforce_[k].dot(my::funct_) + densnp * rea_manager()->GetReaBodyForce(k);
 
   return;
 }

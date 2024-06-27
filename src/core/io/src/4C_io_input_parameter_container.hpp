@@ -78,7 +78,7 @@ namespace Core::IO
     /*!
      * \brief Print this container.
      */
-    virtual void Print(std::ostream& os) const;
+    virtual void print(std::ostream& os) const;
 
 
     /*!

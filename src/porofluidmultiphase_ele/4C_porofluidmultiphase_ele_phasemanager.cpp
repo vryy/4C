@@ -736,7 +736,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::EvaluateGPState(
   multiphasemat.evaluate_second_deriv_of_saturation_wrt_pressure(*dummyderiv, pressure);
   for (int i = 0; i < numfluidphases; i++)
   {
-    Core::LinAlg::multiplyTN(deriv, *pressurederiv_, (*dummyderiv)[i]);
+    Core::LinAlg::multiply_tn(deriv, *pressurederiv_, (*dummyderiv)[i]);
     Core::LinAlg::multiply((*saturationderivderiv_)[i], deriv, *pressurederiv_);
   }
 

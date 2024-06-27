@@ -102,10 +102,10 @@ void Discret::ELEMENTS::Vele3Line::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Line::Print(std::ostream& os) const
+void Discret::ELEMENTS::Vele3Line::print(std::ostream& os) const
 {
   os << "Vele3Line ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

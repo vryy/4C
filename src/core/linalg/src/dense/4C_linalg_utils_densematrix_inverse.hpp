@@ -145,9 +145,9 @@ namespace Core::LinAlg
   void Inverse(Core::LinAlg::Matrix<dim, dim, T>& A)
   {
     T det = Determinant(A);
-    if (det == 0.0) FOUR_C_THROW("Determinant of %dx%d matrix is exactly zero", dim, dim);
+    if (det == 0.0) FOUR_C_THROW("determinant of %dx%d matrix is exactly zero", dim, dim);
     InverseReorderMatrixEntries(A);
-    A.Scale(1. / det);
+    A.scale(1. / det);
   }
 
   /*!
@@ -168,7 +168,7 @@ namespace Core::LinAlg
     T det = Determinant(A);
     if (std::abs(det) < eps) return false;
     InverseReorderMatrixEntries(A);
-    A.Scale(1. / det);
+    A.scale(1. / det);
     return true;
   }
 
@@ -212,8 +212,8 @@ namespace Core::LinAlg
     T det = Determinant(A);
     if (std::abs(det) < eps) return false;
     InverseReorderMatrixEntries(A);
-    A.Scale(1. / det);
-    x.Multiply(A, b);
+    A.scale(1. / det);
+    x.multiply(A, b);
     return true;
   }
 
@@ -338,7 +338,7 @@ namespace Core::LinAlg
   }
 
   /*!
-   \brief Invert a symmetric dim*dim square matrix (positive definite)
+   \brief invert a symmetric dim*dim square matrix (positive definite)
    farah 07/14
    \param A (in/out): Matrix to be inverted
    */
@@ -391,7 +391,7 @@ namespace Core::LinAlg
   }
 
   /*!
-   \brief Invert a symmetric dim*dim square matrix
+   \brief invert a symmetric dim*dim square matrix
 
    \param A (in/out): Matrix to be inverted
    \param dim (in) :  Dimension of matrix

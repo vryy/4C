@@ -346,7 +346,7 @@ namespace CONTACT
 
     \param[in] os Output stream used for printing
     */
-    void Print(std::ostream& os) const final;
+    void print(std::ostream& os) const final;
 
     //! @name Access methods
 

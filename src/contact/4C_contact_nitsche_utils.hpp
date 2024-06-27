@@ -174,31 +174,31 @@ namespace Mortar
    public:
     const VectorType& RhsVec() { return rhs_; }
     double* Rhs(int dof) override { return &rhs_(dof); }
-    double* Rhs() override { return rhs_.A(); }
-    double* K(int col) override { return k_[col].A(); }
+    double* Rhs() override { return rhs_.data(); }
+    double* K(int col) override { return k_[col].data(); }
     double* K(int col, int dof) override { return &k_[col](dof); }
 
     double* RhsT(int dof) override { return &tsi_data_.rhs_t_(dof); }
-    double* RhsT() override { return tsi_data_.rhs_t_.A(); }
-    double* Ktt(int col) override { return tsi_data_.k_tt_[col].A(); }
-    double* Ktd(int col) override { return tsi_data_.k_td_[col].A(); }
-    double* Kdt(int col) override { return tsi_data_.k_dt_[col].A(); }
+    double* RhsT() override { return tsi_data_.rhs_t_.data(); }
+    double* Ktt(int col) override { return tsi_data_.k_tt_[col].data(); }
+    double* Ktd(int col) override { return tsi_data_.k_td_[col].data(); }
+    double* Kdt(int col) override { return tsi_data_.k_dt_[col].data(); }
 
     double* RhsP(int dof) override { return &poro_data_.rhs_p_(dof); }
-    double* Kpp(int col) override { return poro_data_.k_pp_[col].A(); }
-    double* Kpd(int col) override { return poro_data_.k_pd_[col].A(); }
-    double* Kdp(int col) override { return poro_data_.k_dp_[col].A(); }
+    double* Kpp(int col) override { return poro_data_.k_pp_[col].data(); }
+    double* Kpd(int col) override { return poro_data_.k_pd_[col].data(); }
+    double* Kdp(int col) override { return poro_data_.k_dp_[col].data(); }
 
     double* RhsS(int dof) override { return &ssi_data_.rhs_s_(dof); }
-    double* Kss(int col) override { return ssi_data_.k_ss_[col].A(); }
-    double* Ksd(int col) override { return ssi_data_.k_sd_[col].A(); }
-    double* Kds(int col) override { return ssi_data_.k_ds_[col].A(); }
+    double* Kss(int col) override { return ssi_data_.k_ss_[col].data(); }
+    double* Ksd(int col) override { return ssi_data_.k_sd_[col].data(); }
+    double* Kds(int col) override { return ssi_data_.k_ds_[col].data(); }
 
     double* RhsE(int dof) override { return &ssi_elch_data_.rhs_e_(dof); }
-    double* Kee(int col) override { return ssi_elch_data_.k_ee_[col].A(); }
-    double* Ked(int col) override { return ssi_elch_data_.k_ed_[col].A(); }
+    double* Kee(int col) override { return ssi_elch_data_.k_ee_[col].data(); }
+    double* Ked(int col) override { return ssi_elch_data_.k_ed_[col].data(); }
     double* Ked(int col, int dof) override { return &ssi_elch_data_.k_ed_[col](dof); }
-    double* Kde(int col) override { return ssi_elch_data_.k_de_[col].A(); }
+    double* Kde(int col) override { return ssi_elch_data_.k_de_[col].data(); }
 
     void AssembleRHS(Mortar::Element* mele, CONTACT::VecBlockType row,
         Teuchos::RCP<Epetra_FEVector> fc) const override;

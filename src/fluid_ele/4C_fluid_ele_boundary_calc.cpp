@@ -425,7 +425,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
     Core::LinAlg::Matrix<(nsd_), 1> coordgp(0.0);
 
     // determine coordinates of current Gauss point
-    coordgp.Multiply(xyze_, funct_);
+    coordgp.multiply(xyze_, funct_);
 
     // we need a 3D position vector for function evaluation!
     double coordgp3D[3];
@@ -660,13 +660,13 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
         xyze_, intpoints, gpid, &myknots, &weights, IsNurbs<distype>::isnurbs);
 
     // normal vector scaled by special factor in case of nurbs
-    if (IsNurbs<distype>::isnurbs) unitnormal_.Scale(normalfac);
+    if (IsNurbs<distype>::isnurbs) unitnormal_.scale(normalfac);
 
     // compute velocity vector and normal velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
     double normvel = 0.0;
-    velint_.Multiply(evelaf, funct_);
-    normvel = velint_.Dot(unitnormal_);
+    velint_.multiply(evelaf, funct_);
+    normvel = velint_.dot(unitnormal_);
 
     // check normal velocity -> further computation only required for
     // negative normal velocity, that is, inflow at this Neumann boundary
@@ -716,7 +716,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
 
         // dyadic product of unit normal vector and velocity vector
         Core::LinAlg::Matrix<nsd_, nsd_> n_x_u(true);
-        n_x_u.MultiplyNT(velint_, unitnormal_);
+        n_x_u.multiply_nt(velint_, unitnormal_);
 
         /*
                 /                        \
@@ -753,7 +753,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
 
       // compute rhs contribution
       Core::LinAlg::Matrix<nsd_, 1> vrhs(velint_, false);
-      vrhs.Scale(rhsfac);
+      vrhs.scale(rhsfac);
 
       for (int vi = 0; vi < bdrynen_; ++vi)  // loop over rows
       {
@@ -885,7 +885,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
     }
   }
   // compute normalized normal vector
-  norm_elem.Scale(1 / norm_elem.Norm2());
+  norm_elem.scale(1 / norm_elem.norm2());
 
   // get local node coordinates of the element
   // function gives back a matrix with the local node coordinates of the element (nsd_,bdrynen_)
@@ -913,13 +913,13 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
     // Addionally, compute metric tensor
     Core::FE::ComputeMetricTensorForBoundaryEle<distype>(xyze_, deriv_, metrictensor, drs_);
 
-    dxyzdrs.MultiplyNT(deriv_, xyze_);
+    dxyzdrs.multiply_nt(deriv_, xyze_);
 
     // calculate mean curvature H at node.
     double H = 0.0;
     Core::LinAlg::Matrix<bdrynsd_, nsd_> dn123drs(0.0);
 
-    dn123drs.MultiplyNT(deriv_, norm_elem);
+    dn123drs.multiply_nt(deriv_, norm_elem);
 
     // Acc. to Bronstein ..."mittlere Kruemmung":
     // calculation of the mean curvature for a surface element
@@ -1077,7 +1077,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_surface_tension(
 
     // Compute dxyzdrs
     Core::LinAlg::Matrix<bdrynsd_, nsd_> dxyzdrs(true);
-    dxyzdrs.MultiplyNT(deriv_, xyze_);
+    dxyzdrs.multiply_nt(deriv_, xyze_);
 
     if (bdrynsd_ == 2)
     {
@@ -1379,7 +1379,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
       Core::LinAlg::Matrix<(nsd_), 1> coordgp(true);
 
       // determine coordinates of current Gauss point
-      coordgp.Multiply(xyze_, funct_);
+      coordgp.multiply(xyze_, funct_);
 
       // Compute elment center of gravity
       xyzGe(i) += intpoints.IP().qwgt[gpid] * coordgp(i) * drs_;
@@ -1484,10 +1484,10 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
         xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     // compute flowrate at gauss point
-    velint_.Multiply(evelnp, funct_);
+    velint_.multiply(evelnp, funct_);
 
     // flowrate = uint o normal
-    const double flowrate = velint_.Dot(unitnormal_);
+    const double flowrate = velint_.dot(unitnormal_);
 
     // store flowrate at first dof of each node
     // use negative value so that inflow is positiv
@@ -1628,7 +1628,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
 
     // dxyzdrs vector -> normal which is not normalized
     Core::LinAlg::Matrix<bdrynsd_, nsd_> dxyzdrs(0.0);
-    dxyzdrs.MultiplyNT(deriv_, xyze_);
+    dxyzdrs.multiply_nt(deriv_, xyze_);
     normal(0, 0) = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
     normal(1, 0) = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
     normal(2, 0) = dxyzdrs(0, 0) * dxyzdrs(1, 1) - dxyzdrs(0, 1) * dxyzdrs(1, 0);
@@ -1966,7 +1966,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
     const Mat::NewtonianFluid* actmat = static_cast<const Mat::NewtonianFluid*>(material.get());
 
     // varying density
-    if (fldpara_->PhysicalType() == Inpar::FLUID::varying_density) densaf_ = funct_.Dot(escaaf);
+    if (fldpara_->PhysicalType() == Inpar::FLUID::varying_density) densaf_ = funct_.dot(escaaf);
     // Boussinesq approximation: Calculation of delta rho
     else if (fldpara_->PhysicalType() == Inpar::FLUID::boussinesq)
       FOUR_C_THROW("Boussinesq approximation not yet supported for boundary terms!");
@@ -1996,7 +1996,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
     const Mat::Sutherland* actmat = static_cast<const Mat::Sutherland*>(material.get());
 
     // compute temperature at n+alpha_F or n+1
-    const double tempaf = funct_.Dot(escaaf);
+    const double tempaf = funct_.dot(escaaf);
 
     // compute density at n+alpha_F or n+1 based on temperature
     // and thermodynamic pressure
@@ -2011,7 +2011,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
         static_cast<const Mat::LinearDensityViscosity*>(material.get());
 
     // compute pressure at n+alpha_F or n+1
-    const double preaf = funct_.Dot(epreaf);
+    const double preaf = funct_.dot(epreaf);
 
     // compute density at n+alpha_F or n+1 based on pressure
     densaf_ = actmat->ComputeDensity(preaf);
@@ -2025,7 +2025,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
         static_cast<const Mat::MurnaghanTaitFluid*>(material.get());
 
     // compute pressure at n+alpha_F or n+1
-    const double preaf = funct_.Dot(epreaf);
+    const double preaf = funct_.dot(epreaf);
 
     // compute density at n+alpha_F or n+1 based on pressure
     densaf_ = actmat->ComputeDensity(preaf);

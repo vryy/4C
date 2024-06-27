@@ -96,7 +96,7 @@ namespace Core::Geo
 
         void TestFacets();
 
-        void Print() const;
+        void print() const;
 
         plain_int_set& at(int p) { return graph_[p]; }
 
@@ -178,7 +178,7 @@ namespace Core::Geo
 
         void Assign(Graph& cycle) { cycle_.Swap(cycle); }
 
-        void Print() const;
+        void print() const;
 
         void Split(Graph& used, plain_int_set& free, Graph& connection,
             const std::vector<int>& split_trace, Graph& c1, Graph& c2, Graph& datagraph)
@@ -231,7 +231,7 @@ namespace Core::Geo
         void AddPoints(Graph& graph, Graph& used, Graph& cycle, plain_int_set& free,
             const std::vector<std::pair<Point*, Point*>>& all_lines);
 
-        void Print() const;
+        void print() const;
 
         unsigned size() const { return cycles_.size(); }
 

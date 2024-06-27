@@ -40,8 +40,8 @@ namespace Core::UTILS
       const Core::LinAlg::Matrix<N, 1, ScalarType>& residuum,
       Core::LinAlg::Matrix<N, N, ScalarType>&& jacobian)
   {
-    jacobian.Invert();
-    x.MultiplyNN(-1, jacobian, residuum, 1.0);
+    jacobian.invert();
+    x.multiply_nn(-1, jacobian, residuum, 1.0);
   }
   /// @}
 

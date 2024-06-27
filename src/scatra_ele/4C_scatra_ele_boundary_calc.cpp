@@ -528,7 +528,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_neumann
 
     // determine global coordinates of current Gauss point
     Core::LinAlg::Matrix<nsd_, 1> coordgp;  // coordinate has always to be given in 3D!
-    coordgp.MultiplyNN(xyze_, funct_);
+    coordgp.multiply_nn(xyze_, funct_);
 
     int functnum = -1;
     const double* coordgpref = &coordgp(0);  // needed for function evaluation
@@ -684,10 +684,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
       const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
       // get velocity at integration point
-      velint_.Multiply(econvel, funct_);
+      velint_.multiply(econvel, funct_);
 
       // normal velocity
-      const double normvel = velint_.Dot(normal_);
+      const double normvel = velint_.dot(normal_);
 
       if (normvel < -0.0001)
       {
@@ -722,7 +722,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::neumann_inflow(
         }
 
         // scalar at integration point
-        const double phi = funct_.Dot(ephinp[k]);
+        const double phi = funct_.dot(ephinp[k]);
 
         // rhs
         const double vrhs = rhsfac * phi;
@@ -812,13 +812,13 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_convective_flux
       const double fac = eval_shape_func_and_int_fac(intpoints, iquad, &normal_);
 
       // get velocity at integration point
-      velint_.Multiply(evelnp, funct_);
+      velint_.multiply(evelnp, funct_);
 
       // normal velocity (note: normal_ is already a unit(!) normal)
-      const double normvel = velint_.Dot(normal_);
+      const double normvel = velint_.dot(normal_);
 
       // scalar at integration point
-      const double phi = funct_.Dot(ephinp[k]);
+      const double phi = funct_.dot(ephinp[k]);
 
       const double val = phi * normvel * fac;
       integralflux[k] += val;
@@ -900,7 +900,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::convective_heat
       }
 
       // scalar at integration point
-      const double phi = funct_.Dot(ephinp[k]);
+      const double phi = funct_.dot(ephinp[k]);
 
       // rhs
       const double vrhs = rhsfac * (phi - surtemp);
@@ -930,7 +930,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
 
   // compute derivatives of spatial coordinates w.r.t. reference coordinates
   static Core::LinAlg::Matrix<nsd_ele_, nsd_> dxyz_drs;
-  dxyz_drs.MultiplyNT(deriv_, xyze_);
+  dxyz_drs.multiply_nt(deriv_, xyze_);
 
   // compute basic components of shape derivatives
   const double xr(dxyz_drs(0, 0)), xs(dxyz_drs(1, 0)), yr(dxyz_drs(0, 1)), ys(dxyz_drs(1, 1)),
@@ -976,7 +976,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::eval_shape_fu
   // for nurbs elements the normal vector must be scaled with a special orientation factor!!
   if (Core::FE::Nurbs::IsNurbs(distype))
   {
-    if (normalvec != nullptr) normal_.Scale(normalfac_);
+    if (normalvec != nullptr) normal_.scale(normalfac_);
   }
 
   // return the integration factor
@@ -1025,12 +1025,12 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     dist2(i) = xyze(i, 2) - xyze(i, 0);
   }
 
-  normal.CrossProduct(dist1, dist2);
+  normal.cross_product(dist1, dist2);
 
-  const double length = normal.Norm2();
+  const double length = normal.norm2();
   if (length < 1.0e-16) FOUR_C_THROW("Zero length for element normal");
 
-  normal.Scale(1.0 / length);
+  normal.scale(1.0 / length);
 
   return normal;
 }  // ScaTraEleBoundaryCalc<distype>::get_const_normal
@@ -1049,10 +1049,10 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
   normal(0) = xyze(1, 1) - xyze(1, 0);
   normal(1) = (-1.0) * (xyze(0, 1) - xyze(0, 0));
 
-  const double length = normal.Norm2();
+  const double length = normal.norm2();
   if (length < 1.0e-16) FOUR_C_THROW("Zero length for element normal");
 
-  normal.Scale(1.0 / length);
+  normal.scale(1.0 / length);
 
   return normal;
 }  // ScaTraEleBoundaryCalc<distype>::get_const_normal
@@ -1076,8 +1076,8 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     parent_ele_v2(dim, 0) = nodes_parent_ele(dim, 0) - nodes_parent_ele(dim, 2);
   }
 
-  normal_parent_ele.CrossProduct(parent_ele_v1, parent_ele_v2);
-  normal.CrossProduct(normal_parent_ele, boundary_ele);
+  normal_parent_ele.cross_product(parent_ele_v1, parent_ele_v2);
+  normal.cross_product(normal_parent_ele, boundary_ele);
 
   // compute inward vector and check if its scalar product with the normal vector is negative.
   // Otherwise, change the sign of the normal vector
@@ -1093,7 +1093,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
 
       // if the distance of the parent element to one boundary node is zero, it cannot be a
       // non-boundary node
-      if (distance.Norm2() < 1.0e-10)
+      if (distance.norm2() < 1.0e-10)
       {
         is_boundary_node = true;
         break;
@@ -1101,16 +1101,16 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::get_const_normal(
     }
     if (!is_boundary_node)
     {
-      inward_vector.Update(1.0, distance, 0.0);
+      inward_vector.update(1.0, distance, 0.0);
       break;
     }
   }
-  if (inward_vector.Dot(normal) >= 0.0) normal.Scale(-1.0);
+  if (inward_vector.dot(normal) >= 0.0) normal.scale(-1.0);
 
-  const double length = normal.Norm2();
+  const double length = normal.norm2();
   if (length < 1.0e-16) FOUR_C_THROW("Zero length for element normal");
 
-  normal.Scale(1.0 / length);
+  normal.scale(1.0 / length);
 
   return normal;
 }  // ScaTraEleBoundaryCalc<distype>::get_const_normal
@@ -1201,8 +1201,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::
   {
     // evaluate dof values at current integration point on slave and master sides of scatra-scatra
     // interface
-    const double slavephiint = funct_slave.Dot(eslavephinp[k]);
-    const double masterphiint = funct_master.Dot(emasterphinp[k]);
+    const double slavephiint = funct_slave.dot(eslavephinp[k]);
+    const double masterphiint = funct_master.dot(emasterphinp[k]);
 
     // compute matrix and vector contributions according to kinetic model for current scatra-scatra
     // interface coupling condition
@@ -1294,15 +1294,15 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_pse
     static Core::LinAlg::Matrix<1, 1> normal_stress_comp_gp;
     static Core::LinAlg::Matrix<nsd_, nsd_> current_gp_stresses;
     static Core::LinAlg::Matrix<nsd_, 1> tmp;
-    current_gp_stresses(0, 0) = funct_slave.Dot(eslavestress_vector[0]);
-    current_gp_stresses(1, 1) = funct_slave.Dot(eslavestress_vector[1]);
-    current_gp_stresses(2, 2) = funct_slave.Dot(eslavestress_vector[2]);
-    current_gp_stresses(0, 1) = current_gp_stresses(1, 0) = funct_slave.Dot(eslavestress_vector[3]);
-    current_gp_stresses(1, 2) = current_gp_stresses(2, 1) = funct_slave.Dot(eslavestress_vector[4]);
-    current_gp_stresses(0, 2) = current_gp_stresses(2, 0) = funct_slave.Dot(eslavestress_vector[5]);
+    current_gp_stresses(0, 0) = funct_slave.dot(eslavestress_vector[0]);
+    current_gp_stresses(1, 1) = funct_slave.dot(eslavestress_vector[1]);
+    current_gp_stresses(2, 2) = funct_slave.dot(eslavestress_vector[2]);
+    current_gp_stresses(0, 1) = current_gp_stresses(1, 0) = funct_slave.dot(eslavestress_vector[3]);
+    current_gp_stresses(1, 2) = current_gp_stresses(2, 1) = funct_slave.dot(eslavestress_vector[4]);
+    current_gp_stresses(0, 2) = current_gp_stresses(2, 0) = funct_slave.dot(eslavestress_vector[5]);
 
-    tmp.MultiplyNN(1.0, current_gp_stresses, gp_normal, 0.0);
-    normal_stress_comp_gp.MultiplyTN(1.0, gp_normal, tmp, 0.0);
+    tmp.multiply_nn(1.0, current_gp_stresses, gp_normal, 0.0);
+    normal_stress_comp_gp.multiply_tn(1.0, gp_normal, tmp, 0.0);
 
     // if tensile stress, i.e. normal stress component > 0 return 0.0, otherwise return 1.0
     return normal_stress_comp_gp(0) > 0.0 ? 0.0 : 1.0;
@@ -1373,15 +1373,15 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calculate_det_f_of_p
   Core::FE::shape_function_deriv1<parentdistype>(parent_xi, deriv_parent);
 
   static Core::LinAlg::Matrix<probdim, probdim> inv_detF;
-  inv_detF.Multiply(deriv_parent, xrefe);
-  inv_detF.Invert();
+  inv_detF.multiply(deriv_parent, xrefe);
+  inv_detF.invert();
 
   static Core::LinAlg::Matrix<probdim, parent_ele_num_nodes> N_XYZ;
-  xcurr.Update(1.0, xrefe, 1.0, xdisp);
-  N_XYZ.Multiply(inv_detF, deriv_parent);
-  defgrd.MultiplyTT(xcurr, N_XYZ);
+  xcurr.update(1.0, xrefe, 1.0, xdisp);
+  N_XYZ.multiply(inv_detF, deriv_parent);
+  defgrd.multiply_tt(xcurr, N_XYZ);
 
-  return defgrd.Determinant();
+  return defgrd.determinant();
 }
 
 /*----------------------------------------------------------------------*
@@ -1445,8 +1445,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_s2_i_c
     {
       // evaluate dof values at current integration point on slave and master sides of scatra-scatra
       // interface
-      const double slavephiint = funct_.Dot(ephinp_[k]);
-      const double masterphiint = funct_.Dot(emasterphinp[k]);
+      const double slavephiint = funct_.dot(ephinp_[k]);
+      const double masterphiint = funct_.dot(emasterphinp[k]);
 
       // compute matrix contributions according to kinetic model for current scatra-scatra interface
       // coupling condition
@@ -1699,7 +1699,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::calc_robin_boun
         const double fac_3 = prefac * intfac * refconcfac;
 
         // evaluate current scalar at current integration point
-        const double phinp_gp = funct_.Dot(ephinp[k]);
+        const double phinp_gp = funct_.dot(ephinp[k]);
 
         // build RHS and matrix
         {
@@ -1841,7 +1841,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_surfac
             FOUR_C_THROW("evaluate_surface_permeability: Requested scheme not yet implemented");
 
           // scalar at integration point
-          const double phi = funct_.Dot(ephinp[k]);
+          const double phi = funct_.dot(ephinp[k]);
 
           // permeabilty scaling factor (depending on the norm of the wss) at integration point
           const double facWSS = ws_sinfluence(ewss, wss_onoff, coeffs);
@@ -1997,13 +1997,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::evaluate_kedem_
           FOUR_C_THROW("Kedem-Katchalsky: Requested time integration scheme not yet implemented");
 
         // scalar at integration point
-        const double phi = funct_.Dot(ephinp[k]);
+        const double phi = funct_.dot(ephinp[k]);
 
         // pressure at integration point
-        const double p = funct_.Dot(epressure);
+        const double p = funct_.dot(epressure);
 
         // mean concentration at integration point
-        const double phibar_gp = funct_.Dot(ephibar[k]);
+        const double phibar_gp = funct_.dot(ephibar[k]);
 
         // mean concentration at integration point
         const double facWSS = ws_sinfluence(ewss, wss_onoff, coeffs);
@@ -2360,8 +2360,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
       // Jacobian matrix and determinant of parent element (including check)
-      pxjm.MultiplyNT(pderiv, pxyze);
-      const double det = pxji.Invert(pxjm);
+      pxjm.multiply_nt(pderiv, pxyze);
+      const double det = pxji.invert(pxjm);
       if (det < 1E-16)
         FOUR_C_THROW(
             "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
@@ -2370,7 +2370,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
       const double fac = pintpoints.IP().qwgt[iquad] * det;
 
       // compute global derivatives
-      pderxy.Multiply(pxji, pderiv);
+      pderxy.multiply(pxji, pderiv);
 
       //--------------------------------------------------------------------
       // loop over scalars (not yet implemented for more than one scalar)
@@ -2392,7 +2392,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
           FOUR_C_THROW("Material type is not supported");
 
         // gradient of current scalar value
-        gradphi.Multiply(pderxy, ephinp[k]);
+        gradphi.multiply(pderxy, ephinp[k]);
 
         // integration factor for left-hand side
         const double lhsfac = scatraparamstimint_->TimeFac() * fac;
@@ -2507,8 +2507,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // Jacobian matrix and determinant of parent element (including check)
-    pxjm.MultiplyNT(pderiv, pxyze);
-    const double det = pxji.Invert(pxjm);
+    pxjm.multiply_nt(pderiv, pxyze);
+    const double det = pxji.invert(pxjm);
     if (det < 1E-16)
       FOUR_C_THROW(
           "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
@@ -2519,13 +2519,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
         bxyze, bderiv, bmetrictensor, drs, &bnormal);
 
     // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-    if (Core::FE::Nurbs::IsNurbs(distype)) bnormal.Scale(normalfac_);
+    if (Core::FE::Nurbs::IsNurbs(distype)) bnormal.scale(normalfac_);
 
     // compute integration factor
     const double fac = bintpoints.IP().qwgt[iquad] * drs;
 
     // compute global derivatives
-    pderxy.Multiply(pxji, pderiv);
+    pderxy.multiply(pxji, pderiv);
 
     //--------------------------------------------------------------------
     // check whether integration-point coordinates evaluated from
@@ -2545,7 +2545,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     diff = check;
     diff -= coordgp;
 
-    const double norm = diff.Norm2();
+    const double norm = diff.norm2();
 
     if (norm > 1e-9)
     {
@@ -2598,7 +2598,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
         FOUR_C_THROW("Material type is not supported");
 
       // get scalar value at integration point
-      const double phi = pfunct.Dot(ephinp[k]);
+      const double phi = pfunct.dot(ephinp[k]);
 
       // integration factor for left-hand side
       const double lhsfac = scatraparamstimint_->TimeFac() * fac;
@@ -2678,16 +2678,16 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
         const double alpha = nitsche_stab_para * diffus_[k] / h;
 
         // get velocity at integration point
-        velint.Multiply(econvel, pfunct);
+        velint.multiply(econvel, pfunct);
 
         // normal velocity
-        const double normvel = velint.Dot(bnormal);
+        const double normvel = velint.dot(bnormal);
 
         // gradient of current scalar value
-        gradphi.Multiply(pderxy, ephinp[k]);
+        gradphi.multiply(pderxy, ephinp[k]);
 
         // gradient of current scalar value in normal direction
-        const double gradphi_norm = bnormal.Dot(gradphi);
+        const double gradphi_norm = bnormal.dot(gradphi);
 
         //--------------------------------------------------------------------
         //  matrix and vector additions due to Nitsche formulation
@@ -2790,7 +2790,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::weak_dirichlet(
     Core::LinAlg::FixedSizeSerialDenseSolver<pnsd * pnen, pnsd * pnen> solver;
 
     solver.SetMatrix(inv_s_q);
-    solver.Invert();
+    solver.invert();
 
     // computation of matrix-matrix and matrix vector products, local assembly
     for (int vi = 0; vi < pnen; ++vi)
@@ -3018,8 +3018,8 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
     Core::FE::shape_function_deriv1<pdistype>(pxsi, pderiv);
 
     // Jacobian matrix and determinant of parent element (including check)
-    pxjm.MultiplyNT(pderiv, pxyze);
-    const double det = pxji.Invert(pxjm);
+    pxjm.multiply_nt(pderiv, pxyze);
+    const double det = pxji.invert(pxjm);
     if (det < 1E-16)
       FOUR_C_THROW(
           "GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", pele->Id(), det);
@@ -3030,13 +3030,13 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
         bxyze, bderiv, bmetrictensor, drs, &bnormal);
 
     // for nurbs elements the normal vector must be scaled with a special orientation factor!!
-    if (Core::FE::Nurbs::IsNurbs(distype)) bnormal.Scale(normalfac_);
+    if (Core::FE::Nurbs::IsNurbs(distype)) bnormal.scale(normalfac_);
 
     // compute integration factor
     const double fac_surface = bintpoints.IP().qwgt[iquad] * drs;
 
     // compute global derivatives
-    pderxy.Multiply(pxji, pderiv);
+    pderxy.multiply(pxji, pderiv);
 
     //--------------------------------------------------------------------
     // loop over scalars (not yet implemented for more than one scalar)
@@ -3049,7 +3049,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
 
       Core::LinAlg::Matrix<1, pnen> derxy_normal;
       derxy_normal.clear();
-      derxy_normal.MultiplyTN(bnormal, pderxy);
+      derxy_normal.multiply_tn(bnormal, pderxy);
 
       for (int vi = 0; vi < pnen; ++vi)
       {
@@ -3071,10 +3071,10 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
 
       // update grad_dist_n
       Core::LinAlg::Matrix<pnsd, 1> grad_dist_n(true);
-      grad_dist_n.Multiply(pderxy, ephin[dofindex]);
+      grad_dist_n.multiply(pderxy, ephin[dofindex]);
 
       Core::LinAlg::Matrix<1, 1> grad_dist_n_normal(true);
-      grad_dist_n_normal.MultiplyTN(bnormal, grad_dist_n);
+      grad_dist_n_normal.multiply_tn(bnormal, grad_dist_n);
 
       for (int vi = 0; vi < pnen; ++vi)
       {
@@ -3090,11 +3090,11 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype,
       //                    |              i          |
       // update grad_dist_n
       Core::LinAlg::Matrix<pnsd, 1> grad_dist_npi(true);
-      grad_dist_npi.Multiply(pderxy, ephinp[dofindex]);
+      grad_dist_npi.multiply(pderxy, ephinp[dofindex]);
 
       Core::LinAlg::Matrix<1, 1> grad_dist_npi_normal;
       grad_dist_npi_normal.clear();
-      grad_dist_npi_normal.MultiplyTN(bnormal, grad_dist_npi);
+      grad_dist_npi_normal.multiply_tn(bnormal, grad_dist_npi);
 
       double Grad_Dpsi_normal = grad_dist_npi_normal(0, 0) - grad_dist_n_normal(0, 0);
 

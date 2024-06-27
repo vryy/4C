@@ -163,10 +163,10 @@ void Discret::ELEMENTS::StructuralSurface::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::Print(std::ostream& os) const
+void Discret::ELEMENTS::StructuralSurface::print(std::ostream& os) const
 {
   os << "StructuralSurface ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

@@ -210,8 +210,8 @@ void Mat::StructPoroReaction::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   StructPoro::evaluate(defgrd, glstrain, params, stress, cmat, gp, eleGID);
 
   // scale stresses and cmat
-  stress->Scale((1.0 - refporosity_) / (1.0 - params_->init_porosity_));
-  cmat->Scale((1.0 - refporosity_) / (1.0 - params_->init_porosity_));
+  stress->scale((1.0 - refporosity_) / (1.0 - params_->init_porosity_));
+  cmat->scale((1.0 - refporosity_) / (1.0 - params_->init_porosity_));
 }
 
 /*----------------------------------------------------------------------*/

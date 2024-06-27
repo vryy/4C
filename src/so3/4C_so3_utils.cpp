@@ -50,17 +50,17 @@ void Discret::ELEMENTS::UTILS::CalcR(const Core::Elements::Element* ele,
   Core::LinAlg::Matrix<nsd, nsd> jac;
   Core::LinAlg::Matrix<nsd, nsd> defgrd;
   Core::LinAlg::Matrix<nsd, nen> deriv_xyz;
-  jac.Multiply(deriv, xrefe);
-  jac.Invert();
-  deriv_xyz.Multiply(jac, deriv);
-  defgrd.MultiplyTT(xcurr, deriv_xyz);
+  jac.multiply(deriv, xrefe);
+  jac.invert();
+  deriv_xyz.multiply(jac, deriv);
+  defgrd.multiply_tt(xcurr, deriv_xyz);
 
   // Calculate rotcurr from defgrd
   Core::LinAlg::Matrix<nsd, nsd> Q(true);
   Core::LinAlg::Matrix<nsd, nsd> S(true);
   Core::LinAlg::Matrix<nsd, nsd> VT(true);
   Core::LinAlg::SVD<nsd, nsd>(defgrd, Q, S, VT);
-  R.MultiplyNN(Q, VT);
+  R.multiply_nn(Q, VT);
 }
 
 template <Core::FE::CellType distype>
@@ -103,8 +103,8 @@ void Discret::ELEMENTS::UTILS::compute_deformation_gradient(
   Core::FE::shape_function_deriv1<distype>(xsi, N_rst);
 
   static Core::LinAlg::Matrix<probdim, probdim> inv_detFJ;
-  inv_detFJ.Multiply(N_rst, xrefe);
-  inv_detFJ.Invert();
+  inv_detFJ.multiply(N_rst, xrefe);
+  inv_detFJ.invert();
 
   ComputeDeformationGradientStandard<distype, probdim>(defgrd, xcurr, N_rst, inv_detFJ);
 }
@@ -164,11 +164,11 @@ void Discret::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
 
   // get derivatives wrt to last spatial configuration
   Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>> N_xyz;
-  N_xyz.Multiply(invJdef, derivs);
+  N_xyz.multiply(invJdef, derivs);
 
   // build multiplicative incremental defgrd
   Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>> Finc;
-  Finc.MultiplyTT(xdisp, N_xyz);
+  Finc.multiply_tt(xdisp, N_xyz);
   for (auto i = 0; i < Core::FE::dim<distype>; ++i)
   {
     defgrd(i, i) += 1.0;
@@ -179,7 +179,7 @@ void Discret::ELEMENTS::UTILS::ComputeDeformationGradientMulf(
   mulfHistory->StoragetoMatrix(gp, Fhist, mulfHistory->FHistory());
 
   // build total defgrd = delta F * F_old
-  defgrd.Multiply(Finc, Fhist);
+  defgrd.multiply(Finc, Fhist);
 }
 
 template <Core::FE::CellType distype, int probdim>
@@ -190,9 +190,9 @@ void Discret::ELEMENTS::UTILS::ComputeDeformationGradientStandard(
     const Core::LinAlg::Matrix<probdim, probdim>& inverseJacobian)
 {
   Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>> N_XYZ(false);
-  N_XYZ.Multiply(inverseJacobian, derivs);
+  N_XYZ.multiply(inverseJacobian, derivs);
 
-  defgrd.MultiplyTT(xcurr, N_XYZ);
+  defgrd.multiply_tt(xcurr, N_XYZ);
 }
 
 template <Core::FE::CellType distype, int probdim>
@@ -222,7 +222,7 @@ void Discret::ELEMENTS::UTILS::EvaluateCurrentNodalCoordinates(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xdisp,
     Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, probdim>& xcurr)
 {
-  xcurr.Update(1.0, xrefe, 1.0, xdisp);
+  xcurr.update(1.0, xrefe, 1.0, xdisp);
 }
 
 template <Core::FE::CellType distype>
@@ -231,8 +231,8 @@ void Discret::ELEMENTS::UTILS::EvaluateInverseJacobian(
     const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
     Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& inverseJacobian)
 {
-  inverseJacobian.Multiply(1.0, derivs, xrefe, 0.0);
-  inverseJacobian.Invert();
+  inverseJacobian.multiply(1.0, derivs, xrefe, 0.0);
+  inverseJacobian.invert();
 }
 
 void Discret::ELEMENTS::UTILS::ThrowErrorFDMaterialTangent(

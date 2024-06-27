@@ -30,7 +30,7 @@ namespace
   [[nodiscard]] Core::LinAlg::Matrix<3, 3> EvaluateC(const Core::LinAlg::Matrix<3, 3>& F)
   {
     Core::LinAlg::Matrix<3, 3> C(false);
-    C.MultiplyTN(F, F);
+    C.multiply_tn(F, F);
     return C;
   }
 }  // namespace
@@ -192,7 +192,7 @@ Core::LinAlg::Matrix<1, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate
     int gp, int eleGID) const
 {
   Core::LinAlg::Matrix<1, 6> dLambdafDC(false);
-  dLambdafDC.UpdateT(anisotropy_extension_.get_structural_tensor_stress(gp, 0));
+  dLambdafDC.update_t(anisotropy_extension_.get_structural_tensor_stress(gp, 0));
   return dLambdafDC;
 }
 
@@ -202,7 +202,7 @@ Core::LinAlg::Matrix<6, 1> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate
   Core::LinAlg::Matrix<6, 1> S_stress(false);
   const double fiber_pk2 = remodel_fiber_[gp].evaluate_current_fiber_p_k2_stress();
 
-  S_stress.Update(fiber_pk2, anisotropy_extension_.get_structural_tensor_stress(gp, 0));
+  S_stress.update(fiber_pk2, anisotropy_extension_.get_structural_tensor_stress(gp, 0));
 
   return S_stress;
 }
@@ -214,14 +214,14 @@ Core::LinAlg::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate
       remodel_fiber_[gp].evaluate_d_current_fiber_p_k2_stress_d_lambdafsq();
 
   Core::LinAlg::Matrix<6, 6> cmat(false);
-  cmat.MultiplyNT(2.0 * dPK2dlambdafsq, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
+  cmat.multiply_nt(2.0 * dPK2dlambdafsq, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
       anisotropy_extension_.get_structural_tensor_stress(gp, 0));
 
   // additional linearization from implicit integration
   if (params_->growth_enabled_)
   {
     const double dpk2dlambdar = remodel_fiber_[gp].evaluate_d_current_fiber_p_k2_stress_d_lambdar();
-    cmat.MultiplyNN(2.0 * dpk2dlambdar, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
+    cmat.multiply_nn(2.0 * dpk2dlambdar, anisotropy_extension_.get_structural_tensor_stress(gp, 0),
         dlambdard_c_[gp], 1.0);
   }
 
@@ -256,8 +256,8 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::integrate_local_evolution_equa
                 .evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(
                     dt);
 
-        dgrowthC.Update(dRgrowthDLambdafsq, evaluate_d_lambdafsq_dc(gp, eleGID));
-        dremodelC.Update(dRremodelDLambdafsq, evaluate_d_lambdafsq_dc(gp, eleGID));
+        dgrowthC.update(dRgrowthDLambdafsq, evaluate_d_lambdafsq_dc(gp, eleGID));
+        dremodelC.update(dRremodelDLambdafsq, evaluate_d_lambdafsq_dc(gp, eleGID));
 
         for (std::size_t i = 0; i < 6; ++i)
         {
@@ -268,7 +268,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::integrate_local_evolution_equa
         return dRdC;
       });
 
-  K.Invert();
+  K.invert();
   Core::LinAlg::Matrix<1, 2> dgrowthscalardR(false);
   Core::LinAlg::Matrix<1, 2> dlambdardR(false);
 
@@ -278,8 +278,8 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::integrate_local_evolution_equa
     dlambdardR(i) = K(1, i);
   }
 
-  dgrowthscalard_c_[gp].Multiply(-1.0, dgrowthscalardR, dRdC);
-  dlambdard_c_[gp].Multiply(-1.0, dlambdardR, dRdC);
+  dgrowthscalard_c_[gp].multiply(-1.0, dgrowthscalardR, dRdC);
+  dlambdard_c_[gp].multiply(-1.0, dlambdardR, dRdC);
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
@@ -295,8 +295,8 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate(const Core::LinAlg::M
 
   if (params_->growth_enabled_) integrate_local_evolution_equations(dt, gp, eleGID);
 
-  S_stress.Update(evaluate_current_p_k2(gp, eleGID));
-  cmat.Update(evaluate_current_cmat(gp, eleGID));
+  S_stress.update(evaluate_current_p_k2(gp, eleGID));
+  cmat.update(evaluate_current_cmat(gp, eleGID));
 }
 
 void MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_elastic_part(
@@ -361,6 +361,6 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::update_homeostatic_values(
 double MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_lambdaf(
     const Core::LinAlg::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
-  return std::sqrt(C.Dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
+  return std::sqrt(C.dot(anisotropy_extension_.get_structural_tensor(gp, 0)));
 }
 FOUR_C_NAMESPACE_CLOSE

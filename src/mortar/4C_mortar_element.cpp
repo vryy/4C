@@ -155,7 +155,7 @@ Core::Elements::Element* Mortar::Element::Clone() const
  *----------------------------------------------------------------------*/
 std::ostream& operator<<(std::ostream& os, const Mortar::Element& element)
 {
-  element.Print(os);
+  element.print(os);
   return os;
 }
 
@@ -163,10 +163,10 @@ std::ostream& operator<<(std::ostream& os, const Mortar::Element& element)
 /*----------------------------------------------------------------------*
  |  print element (public)                                   mwgee 10/07|
  *----------------------------------------------------------------------*/
-void Mortar::Element::Print(std::ostream& os) const
+void Mortar::Element::print(std::ostream& os) const
 {
   os << "Mortar Element ";
-  Core::Elements::Element::Print(os);
+  Core::Elements::Element::print(os);
   if (isslave_)
     os << " Slave  ";
   else

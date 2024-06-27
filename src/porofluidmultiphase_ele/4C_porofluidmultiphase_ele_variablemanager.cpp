@@ -176,7 +176,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd, nen>::Evaluate
   for (int k = 0; k < this->numdofpernode_; ++k)
   {
     // calculate scalar at t_(n+1) or t_(n+alpha_F)
-    phinp_[k] = funct.Dot(ephinp_[k]);
+    phinp_[k] = funct.dot(ephinp_[k]);
   }
 
   // done
@@ -202,7 +202,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhiGradPhi<nsd, nen>::E
   for (int k = 0; k < this->numdofpernode_; ++k)
   {
     // spatial gradient of current scalar value
-    gradphi_[k].Multiply(derxy, this->ephinp_[k]);
+    gradphi_[k].multiply(derxy, this->ephinp_[k]);
   }
 
   // call base class
@@ -258,9 +258,9 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd, nen>::Evalu
   for (int k = 0; k < this->varmanager_->NumDofPerNode(); ++k)
   {
     // history data (or acceleration)
-    hist_[k] = funct.Dot(ehist_[k]);
+    hist_[k] = funct.dot(ehist_[k]);
     // calculate time derivative of scalar at t_(n+1)
-    phidtnp_[k] = funct.Dot(ephidtnp_[k]);
+    phidtnp_[k] = funct.dot(ephidtnp_[k]);
   }
 
   // call wrapped class
@@ -339,16 +339,16 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd, nen>::Evalu
 {
   // velocity divergence required for conservative form
   Core::LinAlg::Matrix<nsd, nsd> vderxy;
-  vderxy.MultiplyNT(econvelnp_, derxy);
+  vderxy.multiply_nt(econvelnp_, derxy);
   divconvelint_ = 0.0;
   // compute vel x,x  + vel y,y +  vel z,z at integration point
   for (int j = 0; j < nsd; ++j) divconvelint_ += vderxy(j, j);
 
   // convective velocity
-  convelint_.Multiply(econvelnp_, funct);
+  convelint_.multiply(econvelnp_, funct);
 
   // gauss point displacements
-  dispint_.Multiply(edispnp_, funct);
+  dispint_.multiply(edispnp_, funct);
 
   // call wrapped class
   this->varmanager_->EvaluateGPVariables(funct, derxy);
@@ -408,8 +408,8 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd, nen>::Evalu
     gradscalarnp_.resize(escalarnp_.size());
     for (unsigned k = 0; k < escalarnp_.size(); ++k)
     {
-      scalarnp_[k] = funct.Dot(escalarnp_[k]);
-      gradscalarnp_[k].Multiply(derxy, escalarnp_[k]);
+      scalarnp_[k] = funct.dot(escalarnp_[k]);
+      gradscalarnp_[k].multiply(derxy, escalarnp_[k]);
     }
   }
 
@@ -457,12 +457,12 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
     // we evaluate the volume fraction pressure if at least one volfrac value is bigger than
     // minvolfrac
     ele_has_valid_volfrac_press_[k] =
-        ephin[k + numfluidphases].MaxValue() > volfracpressmat.MinVolFrac();
+        ephin[k + numfluidphases].max_value() > volfracpressmat.MinVolFrac();
 
     // and we evaluate the volume fraction species if all volfrac values are bigger than
     // minvolfrac
     ele_has_valid_volfrac_spec_[k] =
-        ephin[k + numfluidphases].MinValue() > volfracpressmat.MinVolFrac();
+        ephin[k + numfluidphases].min_value() > volfracpressmat.MinVolFrac();
   }
 
   return;

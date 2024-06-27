@@ -122,9 +122,9 @@ namespace Wear
         if (sqrt(norm) < WEARCONV) converged = true;
 
         // solve equation
-        if (abs(xjm.Determinant()) < WEARSING) FOUR_C_THROW("*** WARNING: jacobi singular ***");
+        if (abs(xjm.determinant()) < WEARSING) FOUR_C_THROW("*** WARNING: jacobi singular ***");
 
-        double xjm_invert = xjm.Invert();
+        double xjm_invert = xjm.invert();
         if (abs(xjm_invert) < WEARSING) FOUR_C_THROW("Singular Jacobian for advection map");
 
         double deltae[3];

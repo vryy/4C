@@ -127,7 +127,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_sutherland(
   if (my::scatraparatimint_->IsGenAlpha())
   {
     // compute density at n+alpha_M
-    const double tempam = my::funct_.Dot(ephiam_[0]);
+    const double tempam = my::funct_.dot(ephiam_[0]);
     densam = actmat->ComputeDensity(tempam, thermpressam_);
 
     if (not my::scatraparatimint_->IsIncremental())
@@ -242,11 +242,11 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::get_rhs_int(
   {
     if (k == my::numscal_ - 1)
     {
-      rhsint = my::bodyforce_[k].Dot(my::funct_) / shc_;
+      rhsint = my::bodyforce_[k].dot(my::funct_) / shc_;
       rhsint += thermpressdt_ / shc_;
     }
     else
-      rhsint = my::bodyforce_[k].Dot(my::funct_);
+      rhsint = my::bodyforce_[k].dot(my::funct_);
   }
 
   return;
@@ -264,7 +264,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_mat_conv_add_cons(
     const double vdiv, const double densnp, const double visc)
 {
   // convective term using current scalar value
-  const double cons_conv_phi = convelint.Dot(gradphi);
+  const double cons_conv_phi = convelint.dot(gradphi);
 
   const double consfac = timefacfac * (densnp * vdiv + densgradfac_[k] * cons_conv_phi);
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -296,7 +296,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(d
   {
     // addition to convective term due to subgrid-scale velocity
     // (not included in residual)
-    double sgconv_phi = sgvelint.Dot(gradphi);
+    double sgconv_phi = sgvelint.dot(gradphi);
     conv_phi += sgconv_phi;
 
     // addition to convective term for conservative form
@@ -314,7 +314,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(d
   {
     // addition to convective term due to subgrid-scale velocity
     // (not included in residual)
-    double sgconv_phi = sgvelint.Dot(gradphi);
+    double sgconv_phi = sgvelint.dot(gradphi);
     conv_phi += sgconv_phi;
 
     // addition to convective term for conservative form

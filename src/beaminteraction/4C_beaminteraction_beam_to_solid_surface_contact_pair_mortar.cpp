@@ -101,8 +101,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
       beam_shape_times_normal_times_lambda_shape_gp(true);
   Core::LinAlg::Matrix<surface::n_dof_, mortar::n_dof_, scalar_type>
       surface_shape_times_normal_times_lambda_shape_gp(true);
-  beam_shape_times_normal_times_lambda_shape_.PutScalar(0.0);
-  surface_shape_times_normal_times_lambda_shape_.PutScalar(0.0);
+  beam_shape_times_normal_times_lambda_shape_.put_scalar(0.0);
+  surface_shape_times_normal_times_lambda_shape_.put_scalar(0.0);
 
   // Integrate over segments
   for (const auto& segment : this->line_to_3D_segments_)
@@ -132,7 +132,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
       // Evaluate the gap function
       r_rel = r_beam;
       r_rel -= r_surface;
-      gap = r_rel.Dot(surface_normal) - beam_cross_section_radius;
+      gap = r_rel.dot(surface_normal) - beam_cross_section_radius;
 
       // Get the shape function matrices
       GEOMETRYPAIR::EvaluateShapeFunctionMatrix<mortar_trial>(N_lambda_trial, eta);
@@ -143,27 +143,27 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
           N_surface, xi, this->face_element_->GetFaceElementData().shape_function_data_);
 
       // Weighted gap
-      constraint_vector.UpdateT(gauss_factor * gap, N_lambda_trial, 1.0);
+      constraint_vector.update_t(gauss_factor * gap, N_lambda_trial, 1.0);
 
       // Force contributions
-      normal_times_lambda_shape.Multiply(surface_normal, N_lambda);
+      normal_times_lambda_shape.multiply(surface_normal, N_lambda);
 
-      beam_shape_times_normal_times_lambda_shape_gp.MultiplyTN(N_beam, normal_times_lambda_shape);
-      beam_shape_times_normal_times_lambda_shape_gp.Scale(1.0 * gauss_factor);
+      beam_shape_times_normal_times_lambda_shape_gp.multiply_tn(N_beam, normal_times_lambda_shape);
+      beam_shape_times_normal_times_lambda_shape_gp.scale(1.0 * gauss_factor);
       beam_shape_times_normal_times_lambda_shape_ += beam_shape_times_normal_times_lambda_shape_gp;
 
-      surface_shape_times_normal_times_lambda_shape_gp.MultiplyTN(
+      surface_shape_times_normal_times_lambda_shape_gp.multiply_tn(
           N_surface, normal_times_lambda_shape);
-      surface_shape_times_normal_times_lambda_shape_gp.Scale(-1.0 * gauss_factor);
+      surface_shape_times_normal_times_lambda_shape_gp.scale(-1.0 * gauss_factor);
       surface_shape_times_normal_times_lambda_shape_ +=
           surface_shape_times_normal_times_lambda_shape_gp;
 
       // Scaling vector
       Core::LinAlg::Matrix<mortar_trial::spatial_dim_, 1, double> ones(true);
-      ones.PutScalar(1.0);
+      ones.put_scalar(1.0);
       Core::LinAlg::Matrix<mortar_trial::n_dof_, 1, scalar_type> N_lambda_trial_flat(true);
-      N_lambda_trial_flat.MultiplyTN(N_lambda_trial, ones);
-      N_lambda_trial_flat.Scale(gauss_factor);
+      N_lambda_trial_flat.multiply_tn(N_lambda_trial, ones);
+      N_lambda_trial_flat.scale(gauss_factor);
       kappa += N_lambda_trial_flat;
     }
   }
@@ -233,14 +233,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
   // Assemble into global coupling vector
   const auto constraint_vector_double = Core::FADUtils::CastToDouble(constraint_vector);
   global_constraint.SumIntoGlobalValues(
-      lambda_gid_pos.size(), lambda_gid_pos.data(), constraint_vector_double.A());
+      lambda_gid_pos.size(), lambda_gid_pos.data(), constraint_vector_double.data());
 
   // Assemble into global kappa vector
   auto kappa_double = Core::FADUtils::CastToDouble(kappa);
-  global_kappa.SumIntoGlobalValues(lambda_gid_pos.size(), lambda_gid_pos.data(), kappa_double.A());
-  kappa_double.PutScalar(1.0);
+  global_kappa.SumIntoGlobalValues(
+      lambda_gid_pos.size(), lambda_gid_pos.data(), kappa_double.data());
+  kappa_double.put_scalar(1.0);
   global_lambda_active.SumIntoGlobalValues(
-      lambda_gid_pos.size(), lambda_gid_pos.data(), kappa_double.A());
+      lambda_gid_pos.size(), lambda_gid_pos.data(), kappa_double.data());
 }
 
 /**
@@ -273,9 +274,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
 
   // Multiply with the matrices evaluated in evaluate_and_assemble_mortar_contributions
   auto force_beam = Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type>(true);
-  force_beam.Multiply(beam_shape_times_normal_times_lambda_shape_, lambda_pos);
+  force_beam.multiply(beam_shape_times_normal_times_lambda_shape_, lambda_pos);
   auto force_surface = Core::LinAlg::Matrix<surface::n_dof_, 1, scalar_type>(true);
-  force_surface.Multiply(surface_shape_times_normal_times_lambda_shape_, lambda_pos);
+  force_surface.multiply(surface_shape_times_normal_times_lambda_shape_, lambda_pos);
 
   // Assemble the terms to the global stiffness matrix
   Core::LinAlg::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;

@@ -154,7 +154,7 @@ namespace Discret
           Core::LinAlg::Matrix<nsd_, 1>& ivelint  ///< interface velocity at coupling slave side
       ) const
       {
-        ivelint.Multiply(slave_vel_, slave_funct_);
+        ivelint.multiply(slave_vel_, slave_funct_);
       }
 
       /*----------------------------------------------------------------------*
@@ -165,7 +165,7 @@ namespace Discret
           Core::LinAlg::Matrix<nsd_, 1>& ivelintn  ///< interface velocity at coupling slave side
       ) const
       {
-        ivelintn.Multiply(slave_veln_, slave_funct_);
+        ivelintn.multiply(slave_veln_, slave_funct_);
       }
 
       /*----------------------------------------------------------------------*
@@ -177,7 +177,7 @@ namespace Discret
       ) const
       {
         // pressure at current gauss-point
-        ipres = slave_funct_.Dot(slave_pres_);
+        ipres = slave_funct_.dot(slave_pres_);
       }
 
       /*----------------------------------------------------------------------*
@@ -189,7 +189,7 @@ namespace Discret
       ) const
       {
         // pressure at current gauss-point
-        ipresn = slave_funct_.Dot(slave_presn_);
+        ipresn = slave_funct_.dot(slave_presn_);
       }
 
       /*----------------------------------------------------------------------*
@@ -307,7 +307,7 @@ namespace Discret
                                                        ///< or prescribed DBC at Gaussian point
       ) const
       {
-        ivelint_jump.Multiply(interface_velnp_jump_, slave_funct_);
+        ivelint_jump.multiply(interface_velnp_jump_, slave_funct_);
       }
 
       /*----------------------------------------------------------------------*
@@ -320,7 +320,7 @@ namespace Discret
                                                         ///< or prescribed DBC at Gaussian point
       ) const
       {
-        ivelintn_jump.Multiply(interface_veln_jump_, slave_funct_);
+        ivelintn_jump.multiply(interface_veln_jump_, slave_funct_);
       }
 
 
@@ -374,17 +374,17 @@ namespace Discret
         Core::LinAlg::Matrix<nsd_, nsd_> slave_xjm(true);
         Core::LinAlg::Matrix<nsd_, nsd_> slave_xji(true);
 
-        slave_xjm.MultiplyNT(slave_deriv_, slave_xyze_);
-        slave_xji.Invert(slave_xjm);
+        slave_xjm.multiply_nt(slave_deriv_, slave_xyze_);
+        slave_xji.invert(slave_xjm);
 
         // compute global first derivates
-        slave_derxy_.Multiply(slave_xji, slave_deriv_);
+        slave_derxy_.multiply(slave_xji, slave_deriv_);
 
         // get velocity derivatives at integration point
         // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-        slave_vderxy_.MultiplyNT(slave_vel_, slave_derxy_);
+        slave_vderxy_.multiply_nt(slave_vel_, slave_derxy_);
         // previous time step
-        slave_vderxyn_.MultiplyNT(slave_veln_, slave_derxy_);
+        slave_vderxyn_.multiply_nt(slave_veln_, slave_derxy_);
 
         return;
       }
@@ -480,9 +480,9 @@ namespace Discret
           Core::FE::shape_function_2D_deriv2(
               proj_deriv2_, proj_sol_(0), proj_sol_(1), slave_distype);
 
-          proj_x_.Multiply(slave_xyze_, proj_funct_);
-          proj_derxy_.MultiplyNT(slave_xyze_, proj_deriv_);
-          proj_derxy2_.MultiplyNT(slave_xyze_, proj_deriv2_);
+          proj_x_.multiply(slave_xyze_, proj_funct_);
+          proj_derxy_.multiply_nt(slave_xyze_, proj_deriv_);
+          proj_derxy2_.multiply_nt(slave_xyze_, proj_deriv2_);
 
           proj_dx_drdr_times_dx_ds_(0) =
               proj_derxy2_(1, 0) * proj_derxy_(2, 1) - proj_derxy_(1, 1) * proj_derxy2_(2, 0);
@@ -541,21 +541,21 @@ namespace Discret
                 proj_x_(i) - proj_sol_(2) * proj_dx_dr_times_dx_ds_(i) - x_gp_lin(i);
           }
 
-          proj_sysmat_.Invert();
+          proj_sysmat_.invert();
 
           // solve Newton iteration
-          proj_incr_.Multiply(
+          proj_incr_.multiply(
               -1.0, proj_sysmat_, proj_residuum_);  // incr = -Systemmatrix^-1 * residuum
 
           // update solution
-          proj_sol_.Update(1.0, proj_incr_, 1.0);
+          proj_sol_.update(1.0, proj_incr_, 1.0);
 
           // check 1) absolute criterion for local coordinates (between [-1,1]^2)
           //       2) absolute criterion for distance (-> 0)
           //       3) absolute criterion for whole residuum
           if (proj_incr_(2) < absTOLdist &&
               sqrt(proj_incr_(0) * proj_incr_(0) + proj_incr_(1) * proj_incr_(1)) < absTolIncr &&
-              proj_residuum_.Norm2() < absTolRes)
+              proj_residuum_.norm2() < absTolRes)
           {
             converged = true;
           }
@@ -571,12 +571,12 @@ namespace Discret
                     << " \tabsTOL: " << absTolIncr << std::endl;
           std::cout << "absolute criterion for distance " << proj_incr_(2)
                     << " \tabsTOL: " << absTOLdist << std::endl;
-          std::cout << "relative criterion whole residuum " << proj_residuum_.Norm2()
+          std::cout << "relative criterion whole residuum " << proj_residuum_.norm2()
                     << " \tabsTOL: " << absTolRes << std::endl;
 
 
-          std::cout << "sysmat.Invert" << proj_sysmat_ << std::endl;
-          std::cout << "sol-norm " << proj_sol_.Norm2() << std::endl;
+          std::cout << "sysmat.invert" << proj_sysmat_ << std::endl;
+          std::cout << "sol-norm " << proj_sol_.norm2() << std::endl;
           std::cout << "sol " << proj_sol_ << std::endl;
           std::cout << "x_gp_lin" << x_gp_lin << std::endl;
           std::cout << "side " << slave_xyze_ << std::endl;
@@ -588,7 +588,7 @@ namespace Discret
         Core::FE::shape_function_2D(slave_funct_, proj_sol_(0), proj_sol_(1), slave_distype);
 
         // get projected gauss point
-        x_side.Multiply(slave_xyze_, slave_funct_);
+        x_side.multiply(slave_xyze_, slave_funct_);
 
         // set local coordinates w.r.t side
         xi_side(0) = proj_sol_(0);

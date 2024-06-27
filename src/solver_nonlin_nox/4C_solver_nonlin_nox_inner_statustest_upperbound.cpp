@@ -99,7 +99,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound:
       steplength *= reduction_fac_;
       linesearch_mutable->SetStepLength(steplength);
 
-      // adapt the stepmaxval_ variable accordingly to get correct output from Print()
+      // adapt the stepmaxval_ variable accordingly to get correct output from print()
       stepmaxval_ *= reduction_fac_;
 
       status_ = status_converged;
@@ -130,7 +130,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::Nln::Inner::StatusTest::UpperBound::Print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::Inner::StatusTest::UpperBound::print(std::ostream& stream, int indent) const
 {
   std::string indent_string;
   indent_string.assign(indent, ' ');

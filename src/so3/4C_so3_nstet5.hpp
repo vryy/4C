@@ -316,7 +316,7 @@ namespace Discret
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       NStet5Type& ElementType() const override { return NStet5Type::Instance(); }
 
@@ -466,7 +466,7 @@ namespace Discret
           const Core::LinAlg::Matrix<4, 3>& xdisp, const Core::LinAlg::Matrix<4, 3>& nxyz)
       {
         Core::LinAlg::Matrix<3, 3> F(false);
-        F.MultiplyTN(xdisp, nxyz);
+        F.multiply_tn(xdisp, nxyz);
         F(0, 0) += 1.0;
         F(1, 1) += 1.0;
         F(2, 2) += 1.0;

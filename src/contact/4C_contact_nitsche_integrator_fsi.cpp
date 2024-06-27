@@ -48,11 +48,11 @@ void CONTACT::IntegratorNitscheFsi::IntegrateDerivEle3D(Mortar::Element& sele,
   // do quick orientation check
   Core::LinAlg::Matrix<3, 1> sn, mn;
   double center[2] = {0., 0.};
-  sele.compute_unit_normal_at_xi(center, sn.A());
+  sele.compute_unit_normal_at_xi(center, sn.data());
   for (auto mit = meles.begin(); mit != meles.end(); ++mit)
   {
-    (*mit)->compute_unit_normal_at_xi(center, mn.A());
-    if (sn.Dot(mn) > -1e-1)
+    (*mit)->compute_unit_normal_at_xi(center, mn.data());
+    if (sn.dot(mn) > -1e-1)
     {
       meles.erase(mit);
       --mit;
@@ -270,7 +270,7 @@ double CONTACT::UTILS::SolidCauchyAtXi(CONTACT::Element* cele,
 
   Core::LinAlg::Matrix<3, 1> pxsi(true);
   Core::LinAlg::Matrix<3, 3> trafo;
-  CONTACT::UTILS::so_ele_gp<Core::FE::CellType::hex8, 3>(*cele, 1., xsi.A(), pxsi, trafo);
+  CONTACT::UTILS::so_ele_gp<Core::FE::CellType::hex8, 3>(*cele, 1., xsi.data(), pxsi, trafo);
 
   double sigma_nt;
 

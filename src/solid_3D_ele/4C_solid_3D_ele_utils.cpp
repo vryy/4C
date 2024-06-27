@@ -23,10 +23,10 @@ void STR::UTILS::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
   Core::LinAlg::Voigt::Stresses::vector_to_matrix(pk2, S_matrix);
 
   Core::LinAlg::Matrix<3, 3> FS;
-  FS.MultiplyNN(defgrd, S_matrix);
+  FS.multiply_nn(defgrd, S_matrix);
 
   Core::LinAlg::Matrix<3, 3> cauchy_matrix;
-  cauchy_matrix.MultiplyNT(1.0 / defgrd.Determinant(), FS, defgrd, 0.0);
+  cauchy_matrix.multiply_nt(1.0 / defgrd.determinant(), FS, defgrd, 0.0);
 
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(cauchy_matrix, cauchy);
 }
@@ -35,16 +35,16 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_euler_almansi(
     const Core::LinAlg::Matrix<6, 1>& gl, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   Core::LinAlg::Matrix<3, 3> invdefgrd(defgrd);
-  invdefgrd.Invert();
+  invdefgrd.invert();
 
   Core::LinAlg::Matrix<3, 3> E_matrix;
   Core::LinAlg::Voigt::Strains::vector_to_matrix(gl, E_matrix);
 
   Core::LinAlg::Matrix<3, 3> iFTE;
-  iFTE.MultiplyTN(invdefgrd, E_matrix);
+  iFTE.multiply_tn(invdefgrd, E_matrix);
 
   Core::LinAlg::Matrix<3, 3> ea_matrix;
-  ea_matrix.MultiplyNN(iFTE, invdefgrd);
+  ea_matrix.multiply_nn(iFTE, invdefgrd);
 
   Core::LinAlg::Matrix<6, 1> ea;
   Core::LinAlg::Voigt::Strains::matrix_to_vector(ea_matrix, ea);
@@ -68,8 +68,8 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_log_strain(
   // create logarithmic strain matrix
   Core::LinAlg::Matrix<3, 3> log_strain_matrix(true);
   Core::LinAlg::Matrix<3, 3> VH(false);
-  VH.MultiplyNN(pr_dir, pr_log_strain);
-  log_strain_matrix.MultiplyNT(VH, pr_dir);
+  VH.multiply_nn(pr_dir, pr_log_strain);
+  log_strain_matrix.multiply_nt(VH, pr_dir);
 
   // convert to strain-like voigt notation
   Core::LinAlg::Matrix<6, 1> log_strain_voigt(true);

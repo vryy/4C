@@ -98,12 +98,12 @@ void Core::FE::ShapeValues<distype>::evaluate(
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
 
     Core::FE::shape_function_deriv1<distype>(xsi, deriv);
-    xjm.MultiplyNT(deriv, xyze);
-    jfac(q) = xji.Invert(xjm) * quadrature_->Weight(q);
+    xjm.multiply_nt(deriv, xyze);
+    jfac(q) = xji.invert(xjm) * quadrature_->Weight(q);
 
     Core::LinAlg::Matrix<nen_, 1> myfunct(funct.values() + q * nen_, true);
     Core::LinAlg::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
-    mypoint.MultiplyNN(xyze, myfunct);
+    mypoint.multiply_nn(xyze, myfunct);
 
     // compute global first derivates
     for (unsigned int n = 0; n < nen_; ++n)
@@ -137,7 +137,7 @@ void Core::FE::ShapeValues<distype>::evaluate(
     // Core::FE::shape_function<Core::FE::DisTypeToFaceShapeType<distype>::shape>(xsi,myfunct);
     Core::FE::shape_function<distype>(xsi, myfunct);
     Core::LinAlg::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
-    mypoint.MultiplyNN(xyze, myfunct);
+    mypoint.multiply_nn(xyze, myfunct);
   }
 }
 
@@ -227,7 +227,7 @@ void Core::FE::ShapeValuesFace<distype>::EvaluateFace(
     Core::LinAlg::Matrix<nfn_, 1> myfunct;
     Core::FE::shape_function<Core::FE::DisTypeToFaceShapeType<distype>::shape>(xsi, myfunct);
     Core::LinAlg::Matrix<nsd_, 1> mypoint(nodexyzreal.values() + i * nsd_, true);
-    mypoint.MultiplyNN(xyze, myfunct);
+    mypoint.multiply_nn(xyze, myfunct);
   }
 
   // evaluate geometry
@@ -245,7 +245,7 @@ void Core::FE::ShapeValuesFace<distype>::EvaluateFace(
 
     Core::LinAlg::Matrix<nfn_, 1> myfunct(funct.values() + q * nfn_, true);
     Core::LinAlg::Matrix<nsd_, 1> mypoint(xyzreal.values() + q * nsd_, true);
-    mypoint.MultiplyNN(xyze, myfunct);
+    mypoint.multiply_nn(xyze, myfunct);
   }
 
   adjust_face_orientation(ele, face);

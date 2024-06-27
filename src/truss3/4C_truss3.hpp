@@ -140,7 +140,7 @@ namespace Discret
       //! Return the current length of the truss from @p curr_nodal_coords
       double CurrLength(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords) const
       {
-        return curr_nodal_coords.Norm2() * M_SQRT1_2;
+        return curr_nodal_coords.norm2() * M_SQRT1_2;
       }
 
       //! Return the squared value of the current length of the truss from @p curr_nodal_coords
@@ -153,7 +153,7 @@ namespace Discret
       //! curr_nodal_coords
       double dCurrLengthdu(const Core::LinAlg::Matrix<6, 1>& curr_nodal_coords, const int col) const
       {
-        return curr_nodal_coords(col) / curr_nodal_coords.Norm2() * M_SQRT1_2;
+        return curr_nodal_coords(col) / curr_nodal_coords.norm2() * M_SQRT1_2;
       }
 
       std::vector<Teuchos::RCP<Core::Elements::Element>> Lines() override;

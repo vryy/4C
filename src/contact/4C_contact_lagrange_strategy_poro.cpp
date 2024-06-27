@@ -109,7 +109,7 @@ void CONTACT::LagrangeStrategyPoro::setup_no_penetration_condition()
    *  1. do not condense out the lagrange multiplier for the porofluid meshtying condition in
    *  this constellation (master/slave) and solve the saddlepoint system
    *
-   *  2. Invert the M Matrix to condense out the Lagrange multiplier
+   *  2. invert the M Matrix to condense out the Lagrange multiplier
    *  - which is only applicable with adequate costs for small problems as the M Matrix is not at
    * all diagonal, except for matching meshes - for matching meshes it doesn't hurt to chose the
    * poro side as the slave side. Being applicable only for small problems this alternative is too

@@ -40,7 +40,7 @@ namespace CONTACT
       /// @name get-functions for the Constitutive Law parameters of a broken rational function
       //@{
       /// Get the scaling factor
-      double GetA() { return a_; };
+      double Getdata() { return a_; };
       /// Get the asymptote
       double GetB() { return b_; };
       /// get the y intercept
@@ -79,7 +79,7 @@ namespace CONTACT
       }
 
       /// Get scaling factor of the broken rational function
-      double GetA() { return params_->GetA(); }
+      double Getdata() { return params_->Getdata(); }
       /// Get asymptote of the broken rational function
       double GetB() { return params_->GetB(); }
       /// Get Y intercept of the broken rational function

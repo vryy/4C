@@ -501,7 +501,7 @@ double MyocardMinimal::GetIonicCurrents(const int k, int gp) const
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void MyocardMinimal::Update(const double phi, const double dt)
+void MyocardMinimal::update(const double phi, const double dt)
 {
   // update initial values for next time step
   v0_ = v_;

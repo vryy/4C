@@ -675,7 +675,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const Core::FE::Discretization> dis
         const std::vector<double>* axisvecptr = ldaxismap[label];
         if (axisvecptr->size() != 3) FOUR_C_THROW("axis vector has not length 3");
         Core::LinAlg::Matrix<3, 1> axisvec(axisvecptr->data(), false);
-        if (axisvec.Norm2() > 1.0e-9) axis_for_moment = true;  // axis has been set
+        if (axisvec.norm2() > 1.0e-9) axis_for_moment = true;  // axis has been set
       }
 
       // get pointer to its nodal Ids
@@ -732,7 +732,7 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const Core::FE::Discretization> dis
         Core::LinAlg::Matrix<3, 1> actmoments(true);
         // get vector of point to center point
         Core::LinAlg::Matrix<3, 1> distances;
-        distances.Update(1.0, x, -1.0, centerCoord);
+        distances.update(1.0, x, -1.0, centerCoord);
 
         // ALE case: take displacements into account
         if (alefluid)
@@ -757,16 +757,16 @@ void FLD::UTILS::LiftDrag(const Teuchos::RCP<const Core::FE::Discretization> dis
           const std::vector<double>* axisvecptr = ldaxismap[label];
           Core::LinAlg::Matrix<3, 1> axisvec(axisvecptr->data(), false);
           double norm = 0.0;
-          if (axisvec.Norm2() != 0.0)
+          if (axisvec.norm2() != 0.0)
           {
-            norm = axisvec.Norm2();
+            norm = axisvec.norm2();
             // normed axis vector
-            axisvec.Scale(1.0 / norm);
+            axisvec.scale(1.0 / norm);
           }
           else
             FOUR_C_THROW("norm==0.0!");
           // projection of moment on given axis
-          double mdir = actmoment_gc.Dot(axisvec);
+          double mdir = actmoment_gc.dot(axisvec);
 
           actmoments(2, 0) = mdir;
         }

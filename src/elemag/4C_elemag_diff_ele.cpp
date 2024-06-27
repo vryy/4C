@@ -164,10 +164,10 @@ Core::Elements::Element* Discret::ELEMENTS::ElemagDiff::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                         berardocco 03/19|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagDiff::Print(std::ostream& os) const
+void Discret::ELEMENTS::ElemagDiff::print(std::ostream& os) const
 {
   os << "ElemagDiff ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 
@@ -324,10 +324,10 @@ void Discret::ELEMENTS::ElemagDiffBoundary::unpack(const std::vector<char>& data
 /*----------------------------------------------------------------------*
  |  print this element (public)                        berardocco 03/19 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagDiffBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::ElemagDiffBoundary::print(std::ostream& os) const
 {
   os << "ElemagDiffBoundary ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 
@@ -625,10 +625,10 @@ void Discret::ELEMENTS::ElemagDiffIntFace::PatchLocationVector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                        berardocco 03/19 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagDiffIntFace::Print(std::ostream& os) const
+void Discret::ELEMENTS::ElemagDiffIntFace::print(std::ostream& os) const
 {
   os << "ElemagDiffIntFace ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

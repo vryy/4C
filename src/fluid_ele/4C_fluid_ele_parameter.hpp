@@ -165,7 +165,7 @@ namespace Discret
       };
       double Alpha() const { return alpha_; };
       bool CalcN() const { return CalcN_; };
-      double N() const { return N_; };
+      double n() const { return N_; };
       enum Inpar::FLUID::RefVelocity RefVel() const { return refvel_; };
       enum Inpar::FLUID::RefLength RefLength() const { return reflength_; };
       double CNu() const { return c_nu_; };

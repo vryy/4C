@@ -26,10 +26,10 @@ namespace
   {
     Core::LinAlg::Matrix<3, 3> fiber1fiber2T(false);
 
-    fiber1fiber2T.MultiplyNT(fiber1, fiber2);
+    fiber1fiber2T.multiply_nt(fiber1, fiber2);
 
-    structuralTensor.Update(0.5, fiber1fiber2T);
-    structuralTensor.UpdateT(0.5, fiber1fiber2T, 1.0);
+    structuralTensor.update(0.5, fiber1fiber2T);
+    structuralTensor.update_t(0.5, fiber1fiber2T, 1.0);
   }
 
   class CoupAnisoExpoShearElementFibersTest
@@ -64,7 +64,7 @@ namespace
       Core::LinAlg::Voigt::Stresses::matrix_to_vector(eleTensors_, eleTensors_stress_);
 
       // setup scalar product
-      eleScalarProducts_ = eleFibers_[GetFiberIds()[0]].Dot(eleFibers_[GetFiberIds()[1]]);
+      eleScalarProducts_ = eleFibers_[GetFiberIds()[0]].dot(eleFibers_[GetFiberIds()[1]]);
 
       setup_anisotropy_extension(GetFiberIds());
     }

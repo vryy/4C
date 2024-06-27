@@ -835,13 +835,13 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // convective velocities
   if (fldintfacepara.PhysicalType() == Inpar::FLUID::incompressible)
   {
-    peconvvelaf_.Update(1.0, pevelaf_, 0.0);
-    neconvvelaf_.Update(1.0, nevelaf_, 0.0);
+    peconvvelaf_.update(1.0, pevelaf_, 0.0);
+    neconvvelaf_.update(1.0, nevelaf_, 0.0);
 
     if (pele->IsAle())
     {
-      peconvvelaf_.Update(-1.0, pegridv_, 1.0);
-      neconvvelaf_.Update(-1.0, negridv_, 1.0);
+      peconvvelaf_.update(-1.0, pegridv_, 1.0);
+      neconvvelaf_.update(-1.0, negridv_, 1.0);
     }
   }
   // set element advective field for Oseen problems
@@ -901,7 +901,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   if (fldintfacepara.PhysicalType() != Inpar::FLUID::stokes)
   {
     // get the L_inf-norm of the parent's element velocity for stabilization
-    max_vel_L2_norm = std::max(peconvvelaf_.NormInf(), neconvvelaf_.NormInf());
+    max_vel_L2_norm = std::max(peconvvelaf_.norm_inf(), neconvvelaf_.norm_inf());
   }
 
 
@@ -979,7 +979,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     // face to the local coordinate system of the face w.r.t slave face
     Core::FE::shape_function<distype>(face_xi_points_master_linalg, funct_);
 
-    face_xi_points_slave_linalg.Multiply(local_slave_coordiantes_trafo, funct_);
+    face_xi_points_slave_linalg.multiply(local_slave_coordiantes_trafo, funct_);
 
     for (int idim = 0; idim < facensd_; idim++)
     {
@@ -1072,8 +1072,8 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     eval_vel_pres_and_derivs_at_int_point(use2ndderiv, pele->IsAle());
 
     //-----------------------------------------------------
-    vderxyaf_diff_.Update(1.0, nvderxyaf_, -1.0, pvderxyaf_, 0.0);
-    vderxynp_diff_.Update(1.0, nvderxynp_, -1.0, pvderxynp_, 0.0);
+    vderxyaf_diff_.update(1.0, nvderxyaf_, -1.0, pvderxyaf_, 0.0);
+    vderxynp_diff_.update(1.0, nvderxynp_, -1.0, pvderxynp_, 0.0);
 
     //-----------------------------------------------------
     // determine different integration factors
@@ -1094,9 +1094,9 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
     if (EOS_pres or EOS_vel)
     {
-      pderiv_dyad_pderiv_.MultiplyTN(pderxy_, pderxy_);
-      pderiv_dyad_nderiv_.MultiplyTN(pderxy_, nderxy_);
-      nderiv_dyad_nderiv_.MultiplyTN(nderxy_, nderxy_);
+      pderiv_dyad_pderiv_.multiply_tn(pderxy_, pderxy_);
+      pderiv_dyad_nderiv_.multiply_tn(pderxy_, nderxy_);
+      nderiv_dyad_nderiv_.multiply_tn(nderxy_, nderxy_);
     }
 
     //-----------------------------------------------------
@@ -1110,9 +1110,9 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       const double tau_timefacfac_pre = tau_pre_1st_final_ * timefacfac_pre;
       const double tau_timefacfac_rhs = tau_pre_1st_final_ * timefacfac_rhs;
 
-      pderiv_dyad_pderiv_tau_timefacfacpre_.Update(tau_timefacfac_pre, pderiv_dyad_pderiv_, 0.0);
-      pderiv_dyad_nderiv_tau_timefacfacpre_.Update(tau_timefacfac_pre, pderiv_dyad_nderiv_, 0.0);
-      nderiv_dyad_nderiv_tau_timefacfacpre_.Update(tau_timefacfac_pre, nderiv_dyad_nderiv_, 0.0);
+      pderiv_dyad_pderiv_tau_timefacfacpre_.update(tau_timefacfac_pre, pderiv_dyad_pderiv_, 0.0);
+      pderiv_dyad_nderiv_tau_timefacfacpre_.update(tau_timefacfac_pre, pderiv_dyad_nderiv_, 0.0);
+      nderiv_dyad_nderiv_tau_timefacfacpre_.update(tau_timefacfac_pre, nderiv_dyad_nderiv_, 0.0);
 
       // assemble pressure (EOS) stabilization terms for fluid
       pressure_eos(tau_timefacfac_pre, tau_timefacfac_rhs);
@@ -1133,12 +1133,12 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       const double tau_timefacfac = tau_vel_1st_final_ * timefacfac;
       const double tau_timefacfac_rhs = tau_vel_1st_final_ * timefacfac_rhs;
 
-      pderiv_dyad_pderiv_tau_timefacfac_.Update(tau_timefacfac, pderiv_dyad_pderiv_, 0.0);
-      pderiv_dyad_nderiv_tau_timefacfac_.Update(tau_timefacfac, pderiv_dyad_nderiv_, 0.0);
-      nderiv_dyad_nderiv_tau_timefacfac_.Update(tau_timefacfac, nderiv_dyad_nderiv_, 0.0);
+      pderiv_dyad_pderiv_tau_timefacfac_.update(tau_timefacfac, pderiv_dyad_pderiv_, 0.0);
+      pderiv_dyad_nderiv_tau_timefacfac_.update(tau_timefacfac, pderiv_dyad_nderiv_, 0.0);
+      nderiv_dyad_nderiv_tau_timefacfac_.update(tau_timefacfac, nderiv_dyad_nderiv_, 0.0);
 
       Core::LinAlg::Matrix<nsd_, nsd_> vderxyaf_diff_scaled(false);
-      vderxyaf_diff_scaled.Update(tau_timefacfac_rhs, vderxyaf_diff_, 0.0);
+      vderxyaf_diff_scaled.update(tau_timefacfac_rhs, vderxyaf_diff_, 0.0);
 
       //-----------------------------------------------------
       // assemble velocity (EOS) stabilization terms for fluid
@@ -1240,7 +1240,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       FOUR_C_THROW("unknown assembly pattern for given number of epetra block matrices");
   }
 
-  // elemat.Print(cout);
+  // elemat.print(cout);
 
   return 0;
 }
@@ -1681,7 +1681,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     }
   }
 
-  const double pdet = pxji_.Invert(pxjm_);
+  const double pdet = pxji_.invert(pxjm_);
 
   // check for degenerated elements
   if (pdet < 0.0)
@@ -1704,7 +1704,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     }
   }
 
-  const double ndet = nxji_.Invert(nxjm_);
+  const double ndet = nxji_.invert(nxjm_);
 
 
   // check for degenerated elements
@@ -1818,10 +1818,10 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::
 
   // pressure derivatives at integration point
   // parent element
-  pprederxy_.MultiplyNN(pderxy_, peprenp_);
+  pprederxy_.multiply_nn(pderxy_, peprenp_);
 
   // neighbor element
-  nprederxy_.MultiplyNN(nderxy_, neprenp_);
+  nprederxy_.multiply_nn(nderxy_, neprenp_);
 
 
   //-----------------------------------------------------
@@ -2034,7 +2034,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   }
 
   Core::LinAlg::Matrix<nsd_, 1> x_gp(true);
-  x_gp.Multiply(xyze_, funct_);
+  x_gp.multiply(xyze_, funct_);
 
   //---------------
   // compute local coordinates with respect to slave element
@@ -2107,7 +2107,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     }
   }
 
-  const double pdet = pxji_.Invert(pxjm_);
+  const double pdet = pxji_.invert(pxjm_);
 
   // check for degenerated elements
   if (pdet < 0.0)
@@ -2130,7 +2130,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     }
   }
 
-  const double ndet = nxji_.Invert(nxjm_);
+  const double ndet = nxji_.invert(nxjm_);
 
 
   // check for degenerated elements
@@ -2214,12 +2214,12 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     case Inpar::FLUID::tempdepwater:
     case Inpar::FLUID::boussinesq:
     {
-      convvelint_.Update(velintaf_);
+      convvelint_.update(velintaf_);
       break;
     }
     case Inpar::FLUID::oseen:
     {
-      convvelint_.Multiply(peconvvelaf_, pfunct_);
+      convvelint_.multiply(peconvvelaf_, pfunct_);
       break;
     }
     case Inpar::FLUID::stokes:
@@ -2242,7 +2242,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // as we want the normal convective velocity!
   if (isale)
   {
-    convvelint_.Update(-1.0, gridvelint_, 1.0);
+    convvelint_.update(-1.0, gridvelint_, 1.0);
   }
 }
 
@@ -2264,7 +2264,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // vector of shape function (2nd) derivatives in reference coordinate system, parent element,
   // scaled with normals
   Core::LinAlg::Matrix<numderiv2_p, piel> pderxy2_n_scaled(true);
-  pderxy2_n_scaled.Update(1.0, pderxy2_, 0.0);
+  pderxy2_n_scaled.update(1.0, pderxy2_, 0.0);
 
   for (int ui = 0; ui < piel; ++ui)
   {
@@ -2284,7 +2284,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   //! vector of shape function (2nd) derivatives in global coordinate system, neighbor element,
   //! scaled with normals
   Core::LinAlg::Matrix<numderiv2_p, niel> nderxy2_n_scaled(true);
-  nderxy2_n_scaled.Update(1.0, nderxy2_, 0.0);
+  nderxy2_n_scaled.update(1.0, nderxy2_, 0.0);
 
 
   for (int ui = 0; ui < niel; ++ui)
@@ -2579,8 +2579,8 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::p
 
   // grad(p_neighbor) - grad(p_parent)
   Core::LinAlg::Matrix<nsd_, 1> prederxy_jump(false);
-  prederxy_jump.Update(1.0, nprederxy_, -1.0, pprederxy_);
-  prederxy_jump.Scale(tau_timefacfacrhs);
+  prederxy_jump.update(1.0, nprederxy_, -1.0, pprederxy_);
+  prederxy_jump.scale(tau_timefacfacrhs);
 
 
   for (int ui = 0; ui < piel; ++ui)
@@ -2615,14 +2615,14 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::p
 
   // q_master (p_slave-p_master)
   Core::LinAlg::Matrix<piel, 1> pderxy_times_prederxy_jump(false);
-  pderxy_times_prederxy_jump.MultiplyTN(pderxy_, prederxy_jump);
+  pderxy_times_prederxy_jump.multiply_tn(pderxy_, prederxy_jump);
 
   for (int vi = 0; vi < piel; ++vi)
     elevector_m_(vi * numdofpernode_ + nsd_, 0) += pderxy_times_prederxy_jump(vi);
 
   // -q_slave (p_slave-p_master)
   Core::LinAlg::Matrix<niel, 1> nderxy_times_prederxy_jump(false);
-  nderxy_times_prederxy_jump.MultiplyTN(nderxy_, prederxy_jump);
+  nderxy_times_prederxy_jump.multiply_tn(nderxy_, prederxy_jump);
 
   for (int vi = 0; vi < niel; ++vi)
     elevector_s_(vi * numdofpernode_ + nsd_, 0) -= nderxy_times_prederxy_jump(vi);
@@ -2733,7 +2733,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::d
 
 
   Core::LinAlg::Matrix<nsd_, piel> pderxy_times_vderxyaf_diff(false);
-  pderxy_times_vderxyaf_diff.Multiply(vderxyaf_diff_scaled, pderxy_);
+  pderxy_times_vderxyaf_diff.multiply(vderxyaf_diff_scaled, pderxy_);
 
   // master row
   for (int vi = 0; vi < piel; ++vi)
@@ -2741,7 +2741,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::d
       elevector_m_(vi * numdofpernode_ + idim, 0) += pderxy_times_vderxyaf_diff(idim, vi);
 
   Core::LinAlg::Matrix<nsd_, niel> nderxy_times_vderxyaf_diff(false);
-  nderxy_times_vderxyaf_diff.Multiply(vderxyaf_diff_scaled, nderxy_);
+  nderxy_times_vderxyaf_diff.multiply(vderxyaf_diff_scaled, nderxy_);
 
   // slave row
   for (int vi = 0; vi < niel; ++vi)
@@ -2774,8 +2774,8 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::d
            //
    */
 
-  pderxy_tau_timefacfac_.Update(tau_timefacfac_div, pderxy_, 0.0);
-  nderxy_tau_timefacfac_.Update(tau_timefacfac_div, nderxy_, 0.0);
+  pderxy_tau_timefacfac_.update(tau_timefacfac_div, pderxy_, 0.0);
+  nderxy_tau_timefacfac_.update(tau_timefacfac_div, nderxy_, 0.0);
 
   // v_parent * u_parent
 
@@ -3617,7 +3617,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // the final velocity scaling used in the for the streamline/crosswind CIP and related higher
   // order GP terms
-  const double stream_cross_vel = require_cross_stab ? max_vel_L2_norm : fabs(convvelint_.Dot(n_));
+  const double stream_cross_vel = require_cross_stab ? max_vel_L2_norm : fabs(convvelint_.dot(n_));
 
 
   // dimensionless factors

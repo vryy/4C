@@ -42,9 +42,9 @@ void Discret::ELEMENTS::SoSh8p8::eas_update_incrementally(Core::LinAlg::SerialDe
     FOUR_C_THROW("Missing EAS history-data");
 
   // feas^{k+1} := feas^k + k_ad^k . Ddisp^k + k_ap^k . Dpres^k
-  Core::LinAlg::DenseFunctions::multiplyNN<double, NUMEAS_T, NUMDISP_, 1>(
+  Core::LinAlg::DenseFunctions::multiply_nn<double, NUMEAS_T, NUMDISP_, 1>(
       1.0, oldfeas->values(), 1.0, oldKad->values(), dispi.values());
-  Core::LinAlg::DenseFunctions::multiplyNN<double, NUMEAS_T, NUMPRES_, 1>(
+  Core::LinAlg::DenseFunctions::multiply_nn<double, NUMEAS_T, NUMPRES_, 1>(
       1.0, oldfeas->values(), 1.0, oldKap->values(), presi.values());
 
   // alpha^{k+1} := alpha^k + Dalpha^k
@@ -117,7 +117,7 @@ void Discret::ELEMENTS::SoSh8p8::eas_constraint_and_tangent(
 {
   // derivative of assumed right stretch tensor w.r.t. EAS parameters
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMEAS_T> rgtstrbyalpha;
-  Core::LinAlg::DenseFunctions::multiplyNN<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
+  Core::LinAlg::DenseFunctions::multiply_nn<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
       NUMEAS_T>(rgtstrbyalpha.values(), 2.0, rcgbyrgtstr.values(), M->values());
 
   // derivative of pseudo identity with respect to EAS parameters
@@ -176,35 +176,35 @@ void Discret::ELEMENTS::SoSh8p8::eas_constraint_and_tangent(
 
   // temporary c . M
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMEAS_T> cM;
-  Core::LinAlg::DenseFunctions::multiplyNN<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
+  Core::LinAlg::DenseFunctions::multiply_nn<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
       NUMEAS_T>(cM.values(), cmat.values(), M->values());
   // temporary ( fv . fv^T + Wm ) . M_F
   Core::LinAlg::Matrix<NUMDFGR_, NUMEAS_T> ffwmf;
-  ffwmf.MultiplyNN(WmT, defgradbyalpha);
+  ffwmf.multiply_nn(WmT, defgradbyalpha);
   // temporary M_F^T . fv
   Core::LinAlg::Matrix<NUMEAS_T, 1> mff;
-  mff.MultiplyTN(defgradbyalpha, tinvdefgrad);
+  mff.multiply_tn(defgradbyalpha, tinvdefgrad);
   // temporary integration factor
   const double fac = effpressure * detdefgrad * detJ_w;
 
   // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)
   //                     - (M_F^T . ( fv . fv^T + Wm ) . M_F) * (H . p) * detF * detJ * w
-  Core::LinAlg::DenseFunctions::multiplyTN<double, NUMEAS_T, Mat::NUM_STRESS_3D, NUMEAS_T>(
+  Core::LinAlg::DenseFunctions::multiply_tn<double, NUMEAS_T, Mat::NUM_STRESS_3D, NUMEAS_T>(
       1.0, Kaa->values(), detJ_w, M->values(), cM.values());
-  Core::LinAlg::DenseFunctions::multiplyTN<double, NUMEAS_T, NUMDFGR_, NUMEAS_T>(
+  Core::LinAlg::DenseFunctions::multiply_tn<double, NUMEAS_T, NUMDFGR_, NUMEAS_T>(
       1.0, Kaa->values(), -fac, defgradbyalpha.values(), ffwmf.values());
   // integrate Kad: Kad += (M^T . cmat . B) * detJ * w(gp)
   //                     - (M_F^T . ( fv . fv^T + Wm ) . B_F) * (H . p) * detF * detJ * w
-  Core::LinAlg::DenseFunctions::multiplyTN<double, NUMEAS_T, Mat::NUM_STRESS_3D, NUMDISP_>(
+  Core::LinAlg::DenseFunctions::multiply_tn<double, NUMEAS_T, Mat::NUM_STRESS_3D, NUMDISP_>(
       1.0, Kad->values(), detJ_w, M->values(), cb.values());
-  Core::LinAlg::DenseFunctions::multiplyTN<double, NUMEAS_T, NUMDFGR_, NUMDISP_>(
+  Core::LinAlg::DenseFunctions::multiply_tn<double, NUMEAS_T, NUMDFGR_, NUMDISP_>(
       1.0, Kad->values(), -fac, ffwmf.values(), defgradbydisp.values());
   // integrate Kap: Kap += - (M_F^T . fv . H)  * detF * detJ * w
-  Core::LinAlg::DenseFunctions::multiplyNT<double, NUMEAS_T, 1, NUMPRES_>(
+  Core::LinAlg::DenseFunctions::multiply_nt<double, NUMEAS_T, 1, NUMPRES_>(
       1.0, Kap->values(), -detdefgrad * detJ_w, mff.values(), prshfct.values());
   // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
   //                       - (M_F^T . fv) * (H . p)  * detF * detJ * w
-  Core::LinAlg::DenseFunctions::multiplyTN<double, NUMEAS_T, Mat::NUM_STRESS_3D, 1>(
+  Core::LinAlg::DenseFunctions::multiply_tn<double, NUMEAS_T, Mat::NUM_STRESS_3D, 1>(
       1.0, feas->values(), detJ_w, M->values(), stress.values());
   Core::LinAlg::DenseFunctions::update<double, NUMEAS_T, 1>(
       1.0, feas->values(), -fac, mff.values());
@@ -239,37 +239,37 @@ void Discret::ELEMENTS::SoSh8p8::eas_condensation(
 
   // temporary Kda.Kaa^{-1}
   Core::LinAlg::Matrix<NUMDISP_, NUMEAS_T> KdaKaa(false);
-  Core::LinAlg::DenseFunctions::multiplyTN<double, NUMDISP_, NUMEAS_T, NUMEAS_T>(
+  Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDISP_, NUMEAS_T, NUMEAS_T>(
       KdaKaa.values(), Kad->values(), Kaa->values());
   // temporary Kpa.Kaa^{-1}
   Core::LinAlg::Matrix<NUMPRES_, NUMEAS_T> KpaKaa(false);
-  Core::LinAlg::DenseFunctions::multiplyTN<double, NUMPRES_, NUMEAS_T, NUMEAS_T>(
+  Core::LinAlg::DenseFunctions::multiply_tn<double, NUMPRES_, NUMEAS_T, NUMEAS_T>(
       KpaKaa.values(), Kap->values(), Kaa->values());
 
   // EAS stiffness matrix is: Kdd - Kda . Kaa^-1 . Kad
   if (stiffmatrix != nullptr)
-    Core::LinAlg::DenseFunctions::multiplyNN<double, NUMDISP_, NUMEAS_T, NUMDISP_>(
+    Core::LinAlg::DenseFunctions::multiply_nn<double, NUMDISP_, NUMEAS_T, NUMDISP_>(
         1.0, stiffmatrix->values(), -1.0, KdaKaa.values(), Kad->values());
   // EAS stiffness matrix is: Kdp - Kda . Kaa^-1 . Kap
   if (gradmatrix != nullptr)
-    Core::LinAlg::DenseFunctions::multiplyNN<double, NUMDISP_, NUMEAS_T, NUMPRES_>(
+    Core::LinAlg::DenseFunctions::multiply_nn<double, NUMDISP_, NUMEAS_T, NUMPRES_>(
         1.0, gradmatrix->values(), -1.0, KdaKaa.values(), Kap->values());
   // EAS stiffness matrix is: Kpd - Kpa . Kaa^-1 . Kad
   if (dargmatrix != nullptr)
-    Core::LinAlg::DenseFunctions::multiplyNN<double, NUMPRES_, NUMEAS_T, NUMDISP_>(
+    Core::LinAlg::DenseFunctions::multiply_nn<double, NUMPRES_, NUMEAS_T, NUMDISP_>(
         1.0, dargmatrix->values(), -1.0, KpaKaa.values(), Kad->values());
   // EAS stiffness matrix is: Kpp - Kpa . Kaa^-1 . Kap
   if (stabmatrix != nullptr)
-    Core::LinAlg::DenseFunctions::multiplyNN<double, NUMPRES_, NUMEAS_T, NUMPRES_>(
+    Core::LinAlg::DenseFunctions::multiply_nn<double, NUMPRES_, NUMEAS_T, NUMPRES_>(
         1.0, stabmatrix->values(), -1.0, KpaKaa.values(), Kap->values());
 
   // EAS internal force is: fint - Kda^T . Kaa^-1 . feas
   if (force != nullptr)
-    Core::LinAlg::DenseFunctions::multiplyNN<double, NUMDISP_, NUMEAS_T, 1>(
+    Core::LinAlg::DenseFunctions::multiply_nn<double, NUMDISP_, NUMEAS_T, 1>(
         1.0, force->values(), -1.0, KdaKaa.values(), feas->values());
   // EAS incompressibility is: fint - Kpa^T . Kaa^-1 . feas
   if (incomp != nullptr)
-    Core::LinAlg::DenseFunctions::multiplyNN<double, NUMPRES_, NUMEAS_T, 1>(
+    Core::LinAlg::DenseFunctions::multiply_nn<double, NUMPRES_, NUMEAS_T, 1>(
         1.0, incomp->values(), -1.0, KpaKaa.values(), feas->values());
 
   // store current EAS data in history

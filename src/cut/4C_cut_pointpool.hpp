@@ -108,7 +108,7 @@ namespace Core::Geo
       void ResetOutsidePoints();
 
       /// print the tree at a given level
-      void Print(int level, std::ostream& stream);
+      void print(int level, std::ostream& stream);
 
       /// Get Points
       const RCPPointSet& GetPoints() { return points_; }
@@ -201,7 +201,7 @@ namespace Core::Geo
         if (tolerance == 0.0)
         {
           Core::LinAlg::Matrix<3, 1> px(x);
-          return (px.NormInf() * POSITIONTOL);
+          return (px.norm_inf() * POSITIONTOL);
         }
         else
           return tolerance;
@@ -232,7 +232,7 @@ namespace Core::Geo
       void ResetOutsidePoints() { tree_.ResetOutsidePoints(); }
 
       /// print the OctTree
-      void Print(std::ostream& stream) { tree_.Print(0, stream); }
+      void print(std::ostream& stream) { tree_.print(0, stream); }
 
       /// Get Points
       const RCPPointSet& GetPoints() { return tree_.GetPoints(); }

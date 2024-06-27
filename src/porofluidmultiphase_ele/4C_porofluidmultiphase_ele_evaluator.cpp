@@ -848,7 +848,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_ma
 
   static Core::LinAlg::Matrix<nen, 1> conv;
   // convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-  conv.MultiplyTN(derxy, *variablemanager.ConVelnp());
+  conv.multiply_tn(derxy, *variablemanager.ConVelnp());
 
   for (int vi = 0; vi < nen; ++vi)
   {
@@ -998,7 +998,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd,
   Core::LinAlg::SerialDenseMatrix& mymat = *elemat[0];
 
   static Core::LinAlg::Matrix<nsd, nsd> gridvelderiv(true);
-  gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()), deriv);
+  gridvelderiv.multiply_nt(*(variablemanager.EConVelnp()), deriv);
 
   // OD mesh - div vel term
   EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(mymat, funct, deriv, derxy, xjm, gridvelderiv,
@@ -1223,7 +1223,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
 
     // compute the pressure gradient from the phi gradients
     for (int idof = 0; idof < numfluidphases; ++idof)
-      gradpres.Update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
+      gradpres.update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
 
     double abspressgrad = 0.0;
     for (int i = 0; i < nsd; i++) abspressgrad += gradpres(i) * gradpres(i);
@@ -1234,8 +1234,8 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
     phasemanager.PermeabilityTensor(curphase, permeabilitytensor);
 
     static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
-    diffflux.Multiply(permeabilitytensor, derxy);
-    diffflux.Scale(
+    diffflux.multiply(permeabilitytensor, derxy);
+    diffflux.scale(
         phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
 
     // helper variable for linearization
@@ -1243,12 +1243,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
 
     if (not phasemanager.has_constant_rel_permeability(curphase))
     {
-      diffflux_relpermeability.Multiply(permeabilitytensor, gradpres);
-      diffflux_relpermeability.Scale(phasemanager.rel_permeability_deriv(curphase) /
+      diffflux_relpermeability.multiply(permeabilitytensor, gradpres);
+      diffflux_relpermeability.scale(phasemanager.rel_permeability_deriv(curphase) /
                                      phasemanager.DynViscosity(curphase, abspressgrad));
     }
     else
-      diffflux_relpermeability.putScalar(0.0);
+      diffflux_relpermeability.put_scalar(0.0);
 
     //----------------------------------------------------------------
     // diffusive term and linearization of relative permeability w.r.t. dof
@@ -1284,15 +1284,15 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
     {
       // derivative of abspressgrad w.r.t. pressure gradient
       static Core::LinAlg::Matrix<nsd, 1> dabspressgraddpresgradp(true);
-      dabspressgraddpresgradp.putScalar(0.0);
+      dabspressgraddpresgradp.put_scalar(0.0);
       // avoid division by zero
       if (abspressgrad > 1.0e-12)
         for (int i = 0; i < nsd; i++) dabspressgraddpresgradp(i) = gradpres(i) / abspressgrad;
 
       static Core::LinAlg::Matrix<nsd, 1> diffflux2(true);
-      diffflux2.Multiply(permeabilitytensor, gradpres);
+      diffflux2.multiply(permeabilitytensor, gradpres);
       // d (1/visc) / d abspressgrad = -1.0 * visc^(-2) * d visc / d abspressgrad
-      diffflux2.Scale(-1.0 * phasemanager.RelPermeability(curphase) /
+      diffflux2.scale(-1.0 * phasemanager.RelPermeability(curphase) /
                       phasemanager.DynViscosity(curphase, abspressgrad) /
                       phasemanager.DynViscosity(curphase, abspressgrad) *
                       phasemanager.DynViscosityDeriv(curphase, abspressgrad));
@@ -1349,7 +1349,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ve
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
-    gradpres.Update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
+    gradpres.update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
 
   double abspressgrad = 0.0;
   for (int i = 0; i < nsd; i++) abspressgrad += gradpres(i) * gradpres(i);
@@ -1358,11 +1358,11 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ve
   // diffusion tensor
   static Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
   phasemanager.PermeabilityTensor(curphase, difftensor);
-  difftensor.Scale(
+  difftensor.scale(
       phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
 
   static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
-  diffflux.Multiply(difftensor, gradpres);
+  diffflux.multiply(difftensor, gradpres);
 
   for (int vi = 0; vi < nen; ++vi)
   {
@@ -1404,7 +1404,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
-    gradpres.Update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
+    gradpres.update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
 
   double abspressgrad = 0.0;
   for (int i = 0; i < nsd; i++) abspressgrad += gradpres(i) * gradpres(i);
@@ -1413,13 +1413,13 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
   // diffusion tensor
   static Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
   phasemanager.PermeabilityTensor(curphase, difftensor);
-  difftensor.Scale(
+  difftensor.scale(
       phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
 
   // TODO: anisotropic difftensor and
   //       non-constant viscosity (because of pressure gradient, probably not really necessary)
   static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
-  diffflux.Multiply(difftensor, gradpres);
+  diffflux.multiply(difftensor, gradpres);
 
   // diffusive pre-factor for linearization
   const double v = difftensor(0, 0) * timefacfac / det;
@@ -1431,11 +1431,11 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
   // gradient of phi w.r.t. reference coordinates
   std::vector<Core::LinAlg::Matrix<nsd, 1>> refgradphi(numfluidphases,
       Core::LinAlg::Matrix<nsd, 1>(true));  // static Core::LinAlg::Matrix<nsd,1> refgradphi;
-  for (int idof = 0; idof < numfluidphases; ++idof) refgradphi[idof].Multiply(xjm, gradphi[idof]);
+  for (int idof = 0; idof < numfluidphases; ++idof) refgradphi[idof].multiply(xjm, gradphi[idof]);
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
-    refgradpres.Update(phasemanager.PressureDeriv(curphase, idof), refgradphi[idof], 1.0);
+    refgradpres.update(phasemanager.PressureDeriv(curphase, idof), refgradphi[idof], 1.0);
 
   // OD mesh - diffusive term
   EvaluatorBase<nsd, nen>::calc_diff_od_mesh(mymat, deriv, derxy, xjm, diffflux, refgradpres,
@@ -3164,7 +3164,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
 
   // compute the pressure gradient from the phi gradients
   for (int idof = 0; idof < numfluidphases; ++idof)
-    gradpres.Update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
+    gradpres.update(phasemanager.PressureDeriv(curphase, idof), gradphi[idof], 1.0);
 
   double abspressgrad = 0.0;
   for (int i = 0; i < nsd; i++) abspressgrad += gradpres(i) * gradpres(i);
@@ -3173,12 +3173,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
   // diffusion tensor
   Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
   phasemanager.PermeabilityTensor(curphase, difftensor);
-  difftensor.Scale(
+  difftensor.scale(
       phasemanager.RelPermeability(curphase) / phasemanager.DynViscosity(curphase, abspressgrad));
 
   // diffusive flux
   static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
-  diffflux.Multiply(-1.0, difftensor, gradpres);
+  diffflux.multiply(-1.0, difftensor, gradpres);
 
   // Compute element vectors. For L2-Projection
   for (int node_i = 0; node_i < nen; node_i++)
@@ -3287,15 +3287,15 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
         Core::LinAlg::Matrix<nsd, 1> pressure_gradient(true);
         pressure_gradient.clear();
         for (int i = 0; i < numfluidphases; ++i)
-          pressure_gradient.Update(phasemanager.PressureDeriv(curphase, i), gradient_phi[i], 1.0);
+          pressure_gradient.update(phasemanager.PressureDeriv(curphase, i), gradient_phi[i], 1.0);
 
         Core::LinAlg::Matrix<nsd, nsd> diffusion_tensor(true);
         phasemanager.PermeabilityTensor(curphase, diffusion_tensor);
-        diffusion_tensor.Scale(phasemanager.RelPermeability(curphase) /
-                               phasemanager.DynViscosity(curphase, pressure_gradient.Norm2()));
+        diffusion_tensor.scale(phasemanager.RelPermeability(curphase) /
+                               phasemanager.DynViscosity(curphase, pressure_gradient.norm2()));
 
         static Core::LinAlg::Matrix<nsd, 1> diffusive_velocity(true);
-        diffusive_velocity.Multiply(
+        diffusive_velocity.multiply(
             -1.0 / phase_volume_fraction, diffusion_tensor, pressure_gradient);
 
         phase_velocity(nsd * curphase + j) += diffusive_velocity(j) + structure_velocity(j);
@@ -3330,11 +3330,11 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
 
         Core::LinAlg::Matrix<nsd, nsd> diffusion_tensor(true);
         phasemanager.permeability_tensor_vol_frac_pressure(i_volfrac_pressure, diffusion_tensor);
-        diffusion_tensor.Scale(1.0 / phasemanager.dyn_viscosity_vol_frac_pressure(
-                                         i_volfrac_pressure, pressure_gradient.Norm2()));
+        diffusion_tensor.scale(1.0 / phasemanager.dyn_viscosity_vol_frac_pressure(
+                                         i_volfrac_pressure, pressure_gradient.norm2()));
 
         static Core::LinAlg::Matrix<nsd, 1> diffusive_velocity(true);
-        diffusive_velocity.Multiply(
+        diffusive_velocity.multiply(
             -1.0 / phase_volume_fraction, diffusion_tensor, pressure_gradient);
 
         phase_velocity(nsd * curphase + j) += diffusive_velocity(j) + structure_velocity(j);
@@ -3734,7 +3734,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
   const double sumaddvolfrac = phasemanager.SumAddVolFrac();
 
   Core::LinAlg::Matrix<nsd, nsd> gridvelderiv(true);
-  gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()), deriv);
+  gridvelderiv.multiply_nt(*(variablemanager.EConVelnp()), deriv);
 
   // OD mesh - div vel term
   EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(mymat, funct, deriv, derxy, xjm, gridvelderiv,
@@ -4275,7 +4275,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
 
     // shapederivatives see fluid_ele_calc_poro.cpp
     Core::LinAlg::Matrix<nsd, nsd> gridvelderiv(true);
-    gridvelderiv.MultiplyNT(*(variablemanager.EConVelnp()), deriv);
+    gridvelderiv.multiply_nt(*(variablemanager.EConVelnp()), deriv);
 
     if (nsd == 3)
     {
@@ -4421,7 +4421,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
       phasemanager.DiffTensorVolFrac(ivolfrac - numfluidphases, difftensor);
 
       static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
-      diffflux.Multiply(difftensor, derxy);
+      diffflux.multiply(difftensor, derxy);
 
       // diffusive term
       for (int vi = 0; vi < nen; ++vi)
@@ -4472,7 +4472,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
     phasemanager.DiffTensorVolFrac(ivolfrac - numfluidphases, difftensor);
 
     static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
-    diffflux.Multiply(difftensor, gradphi[ivolfrac]);
+    diffflux.multiply(difftensor, gradphi[ivolfrac]);
 
     for (int vi = 0; vi < nen; ++vi)
     {
@@ -4518,14 +4518,14 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
     phasemanager.DiffTensorVolFrac(ivolfrac - numfluidphases, difftensor);
 
     static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
-    diffflux.Multiply(difftensor, gradphi[ivolfrac]);
+    diffflux.multiply(difftensor, gradphi[ivolfrac]);
 
     // TODO: anisotropic difftensor
     const double v = difftensor(0, 0) * timefacfac / det;
 
     // gradient of phi w.r.t. reference coordinates
     Core::LinAlg::Matrix<nsd, 1> refgradphi(true);
-    refgradphi.Multiply(xjm, gradphi[ivolfrac]);
+    refgradphi.multiply(xjm, gradphi[ivolfrac]);
 
     // OD mesh - diffusive term
     EvaluatorBase<nsd, nen>::calc_diff_od_mesh(mymat, deriv, derxy, xjm, diffflux, refgradphi,
@@ -4797,7 +4797,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
               difftensoraddflux(i, i) = phasemanager.ScalarDiff(ivolfrac - numfluidphases, iscal);
 
             static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
-            diffflux.Multiply(difftensoraddflux, gradscalarnp[iscal]);
+            diffflux.multiply(difftensoraddflux, gradscalarnp[iscal]);
 
             for (int vi = 0; vi < nen; ++vi)
             {
@@ -4926,14 +4926,14 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
           if (phasemanager.ScalarToPhase(iscal).species_type ==
               Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
           {
-            difftensoraddflux.Scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
+            difftensoraddflux.scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
                                     (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()));
           }
           // chemotaxis: scale with volfrac * S * porosity
           else if (phasemanager.ScalarToPhase(iscal).species_type ==
                    Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
           {
-            difftensoraddflux.Scale(
+            difftensoraddflux.scale(
                 phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
                 phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID));
           }
@@ -4941,7 +4941,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
             FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
           static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
-          diffflux.Multiply(difftensoraddflux, gradscalarnp[iscal]);
+          diffflux.multiply(difftensoraddflux, gradscalarnp[iscal]);
           for (int vi = 0; vi < nen; ++vi)
           {
             const int fvi = vi * numdofpernode + ivolfrac;
@@ -5003,7 +5003,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
           if (phasemanager.ScalarToPhase(iscal).species_type ==
               Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
           {
-            diffflux.Multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) *
+            diffflux.multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) *
                                   (1 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()),
                 difftensoraddflux, gradscalarnp[iscal]);
           }
@@ -5011,7 +5011,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
           else if (phasemanager.ScalarToPhase(iscal).species_type ==
                    Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
           {
-            diffflux.Multiply(
+            diffflux.multiply(
                 phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
                     phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID),
                 difftensoraddflux, gradscalarnp[iscal]);
@@ -5042,7 +5042,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
 
           // gradient of phi w.r.t. reference coordinates
           Core::LinAlg::Matrix<nsd, 1> refgradscalarnp(true);
-          refgradscalarnp.Multiply(xjm, gradscalarnp[iscal]);
+          refgradscalarnp.multiply(xjm, gradscalarnp[iscal]);
 
           // 1)
           // -----------------------------------------------------------------------------------------------------------------------------------------
@@ -5066,7 +5066,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
             if (phasemanager.ScalarToPhase(iscal).species_type ==
                 Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
             {
-              diffflux2.Multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) * (-1.0) *
+              diffflux2.multiply(phasemanager.VolFrac(ivolfrac - numfluidphases) * (-1.0) *
                                      phasemanager.JacobianDefGrad() *
                                      phasemanager.porosity_deriv_wrt_jacobian_def_grad(),
                   difftensoraddflux, gradscalarnp[iscal]);
@@ -5075,7 +5075,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
             else if (phasemanager.ScalarToPhase(iscal).species_type ==
                      Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
             {
-              diffflux2.Multiply(
+              diffflux2.multiply(
                   phasemanager.VolFrac(ivolfrac - numfluidphases) *
                       phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID) *
                       phasemanager.JacobianDefGrad() *
@@ -5148,19 +5148,19 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
           // haptotaxis: scale with volfrac * (1 - porosity - sumaddvolfrac)
           if (phasemanager.ScalarToPhase(iscal).species_type ==
               Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid)
-            difftensoraddflux.Scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
+            difftensoraddflux.scale(phasemanager.VolFrac(ivolfrac - numfluidphases) *
                                     (1.0 - phasemanager.Porosity() - phasemanager.SumAddVolFrac()));
           // chemotaxis: scale with volfrac * S * porosity
           else if (phasemanager.ScalarToPhase(iscal).species_type ==
                    Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid)
-            difftensoraddflux.Scale(
+            difftensoraddflux.scale(
                 phasemanager.VolFrac(ivolfrac - numfluidphases) * phasemanager.Porosity() *
                 phasemanager.Saturation(phasemanager.ScalarToPhase(iscal).phaseID));
           else
             FOUR_C_THROW("AddScalarDependentFlux only possible for species in fluid or solid!");
 
           static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
-          diffflux.Multiply(difftensoraddflux, derxy);
+          diffflux.multiply(difftensoraddflux, derxy);
 
           // diffusive term
           for (int vi = 0; vi < nen; ++vi)
@@ -5188,11 +5188,11 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
             // corrrectly scale difftensor
             // d diff / d omega = D_0*(-1.0)*w_half/(w_half+w)^2
             //                    value from above * (-1.0)/(w_half+w)
-            difftensoraddflux.Scale(
+            difftensoraddflux.scale(
                 -1.0 / (phasemanager.OmegaHalf(ivolfrac - numfluidphases, iscal) + scalars[iscal]));
 
             static Core::LinAlg::Matrix<nsd, 1> diffflux2(true);
-            diffflux2.Multiply(difftensoraddflux, gradscalarnp[iscal]);
+            diffflux2.multiply(difftensoraddflux, gradscalarnp[iscal]);
 
             for (int vi = 0; vi < nen; ++vi)
             {
@@ -5252,12 +5252,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
         Core::LinAlg::Matrix<nsd, nsd> permeabilitytensorvolfracpress(true);
         phasemanager.permeability_tensor_vol_frac_pressure(
             ivolfracpress - numfluidphases - numvolfrac, permeabilitytensorvolfracpress);
-        permeabilitytensorvolfracpress.Scale(
+        permeabilitytensorvolfracpress.scale(
             1.0 / phasemanager.dyn_viscosity_vol_frac_pressure(
                       ivolfracpress - numfluidphases - numvolfrac, -1.0));  // TODO: change -1.0
 
         static Core::LinAlg::Matrix<nsd, nen> diffflux(true);
-        diffflux.Multiply(permeabilitytensorvolfracpress, derxy);
+        diffflux.multiply(permeabilitytensorvolfracpress, derxy);
 
         // diffusive term
         for (int vi = 0; vi < nen; ++vi)
@@ -5324,12 +5324,12 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
       Core::LinAlg::Matrix<nsd, nsd> permeabilitytensorvolfracpress(true);
       phasemanager.permeability_tensor_vol_frac_pressure(
           ivolfracpress - numfluidphases - numvolfrac, permeabilitytensorvolfracpress);
-      permeabilitytensorvolfracpress.Scale(
+      permeabilitytensorvolfracpress.scale(
           1.0 / phasemanager.dyn_viscosity_vol_frac_pressure(
                     ivolfracpress - numfluidphases - numvolfrac, -1.0));
 
       static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
-      diffflux.Multiply(permeabilitytensorvolfracpress, gradphi[ivolfracpress]);
+      diffflux.multiply(permeabilitytensorvolfracpress, gradphi[ivolfracpress]);
 
       for (int vi = 0; vi < nen; ++vi)
       {
@@ -5381,19 +5381,19 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
       Core::LinAlg::Matrix<nsd, nsd> permeabilitytensorvolfracpress(true);
       phasemanager.permeability_tensor_vol_frac_pressure(
           ivolfracpress - numfluidphases - numvolfrac, permeabilitytensorvolfracpress);
-      permeabilitytensorvolfracpress.Scale(
+      permeabilitytensorvolfracpress.scale(
           1.0 / phasemanager.dyn_viscosity_vol_frac_pressure(
                     ivolfracpress - numfluidphases - numvolfrac, -1.0));
 
       static Core::LinAlg::Matrix<nsd, 1> diffflux(true);
-      diffflux.Multiply(permeabilitytensorvolfracpress, gradphi[ivolfracpress]);
+      diffflux.multiply(permeabilitytensorvolfracpress, gradphi[ivolfracpress]);
 
       // TODO: anisotropic difftensor
       const double v = permeabilitytensorvolfracpress(0, 0) * timefacfac / det;
 
       // gradient of phi w.r.t. reference coordinates
       Core::LinAlg::Matrix<nsd, 1> refgradphi(true);
-      refgradphi.Multiply(xjm, gradphi[ivolfracpress]);
+      refgradphi.multiply(xjm, gradphi[ivolfracpress]);
 
       // OD mesh - diffusive term
       EvaluatorBase<nsd, nen>::calc_diff_od_mesh(mymat, deriv, derxy, xjm, diffflux, refgradphi,

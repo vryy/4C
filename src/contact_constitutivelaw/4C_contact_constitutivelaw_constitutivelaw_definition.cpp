@@ -99,7 +99,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const Global::Problem& proble
 }
 
 
-std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::Print(
+std::ostream& CONTACT::CONSTITUTIVELAW::LawDefinition::print(
     std::ostream& stream, const Core::FE::Discretization* dis)
 {
   // a string holding the comment indicating symbols for DAT input file

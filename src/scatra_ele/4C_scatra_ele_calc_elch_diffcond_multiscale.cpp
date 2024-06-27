@@ -75,8 +75,8 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   // initialize vector with macro-scale state variables
   std::vector<double> phinp(3, 0.0);
   phinp[0] = my::scatravarmanager_->Phinp(0);
-  phinp[1] = my::funct_.Dot(my::ephinp_[1]);
-  phinp[2] = my::funct_.Dot(my::ephinp_[2]);
+  phinp[1] = my::funct_.dot(my::ephinp_[1]);
+  phinp[2] = my::funct_.dot(my::ephinp_[2]);
 
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints(
       ScaTra::DisTypeToOptGaussRule<distype>::rule);
@@ -89,7 +89,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
 
   // calculate gradient of electric potential inside electrode
   Core::LinAlg::Matrix<nsd_, 1> gradpot_ed(true);
-  gradpot_ed.Multiply(my::derxy_, my::ephinp_[2]);
+  gradpot_ed.multiply(my::derxy_, my::ephinp_[2]);
 
   // evaluate and assemble macro-scale matrix and vector contributions:
   //

@@ -363,7 +363,7 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::is_all_projected_corners_in
     Point* pt = *it;
 
     Core::LinAlg::Matrix<3, 1> coo;
-    pt->Coordinates(coo.A());
+    pt->Coordinates(coo.data());
 
     Core::LinAlg::Matrix<3, 1> xyz_proj(coo), rst_proj;
 

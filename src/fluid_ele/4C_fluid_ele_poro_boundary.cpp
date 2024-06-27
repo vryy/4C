@@ -46,10 +46,10 @@ Core::Elements::Element* Discret::ELEMENTS::FluidPoroBoundary::Clone() const
   return newelement;
 }
 
-void Discret::ELEMENTS::FluidPoroBoundary::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidPoroBoundary::print(std::ostream& os) const
 {
   os << "FluidPoroBoundary ";
-  Element::Print(os);
+  Element::print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

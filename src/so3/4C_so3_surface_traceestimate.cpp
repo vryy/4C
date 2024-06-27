@@ -88,15 +88,15 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
 
   Core::LinAlg::Matrix<dim_image, dim_image> vol_red, surf_red;
 
-  tmp.Multiply(vol, proj);
-  vol_red.MultiplyTN(proj, tmp);
-  tmp.Multiply(surf, proj);
-  surf_red.MultiplyTN(proj, tmp);
+  tmp.multiply(vol, proj);
+  vol_red.multiply_tn(proj, tmp);
+  tmp.multiply(surf, proj);
+  surf_red.multiply_tn(proj, tmp);
 
   Core::LinAlg::SerialDenseMatrix vol_red_sd(
-      Teuchos::View, vol_red.A(), dim_image, dim_image, dim_image);
+      Teuchos::View, vol_red.data(), dim_image, dim_image, dim_image);
   Core::LinAlg::SerialDenseMatrix surf_red_sd(
-      Teuchos::View, surf_red.A(), dim_image, dim_image, dim_image);
+      Teuchos::View, surf_red.data(), dim_image, dim_image, dim_image);
 
   return Core::LinAlg::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
@@ -129,8 +129,8 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
     Teuchos::ParameterList params;
     Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->Material())
         ->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->Id());
-    bc.MultiplyTN(bop, cmat);
-    vol.Multiply(ip.IP().qwgt[gp] * jac, bc, bop, 1.);
+    bc.multiply_tn(bop, cmat);
+    vol.multiply(ip.IP().qwgt[gp] * jac, bc, bop, 1.);
   }
 
   return;
@@ -217,23 +217,23 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
           deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
 
     surface_integration(detA, n, xrefe_surf, deriv_surf);
-    n_v.Scale(normalfac);
-    n_v.Scale(1. / n_v.Norm2());
-    nn.MultiplyNT(n_v, n_v);
+    n_v.scale(normalfac);
+    n_v.scale(1. / n_v.norm2());
+    nn.multiply_nt(n_v, n_v);
 
     Core::LinAlg::Matrix<6, 6> cn;
     Mat::add_symmetric_holzapfel_product(cn, rcg, nn, .25);
 
     Core::LinAlg::Matrix<6, 6> tmp1, tmp2;
-    tmp1.Multiply(cmat, id4);
-    tmp2.Multiply(tmp1, cn);
-    tmp1.Multiply(tmp2, id4);
-    tmp2.Multiply(tmp1, cmat);
+    tmp1.multiply(cmat, id4);
+    tmp2.multiply(tmp1, cn);
+    tmp1.multiply(tmp2, id4);
+    tmp2.multiply(tmp1, cmat);
 
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> tmp3;
-    tmp3.MultiplyTN(bop, tmp2);
+    tmp3.multiply_tn(bop, tmp2);
 
-    surf.Multiply(detA * ip.IP().qwgt[gp], tmp3, bop, 1.);
+    surf.multiply(detA * ip.IP().qwgt[gp], tmp3, bop, 1.);
   }
 
   return;
@@ -271,12 +271,12 @@ void Discret::ELEMENTS::StructuralSurface::strains(
     Core::FE::shape_function_deriv1<dt_vol>(xi, deriv);
 
   Core::LinAlg::Matrix<dim, dim> invJ;
-  invJ.Multiply(deriv, xrefe);
-  jac = invJ.Invert();
-  N_XYZ.Multiply(invJ, deriv);
-  defgrd.MultiplyTT(xcurr, N_XYZ);
+  invJ.multiply(deriv, xrefe);
+  jac = invJ.invert();
+  N_XYZ.multiply(invJ, deriv);
+  defgrd.multiply_tt(xcurr, N_XYZ);
 
-  rcg.MultiplyTN(defgrd, defgrd);
+  rcg.multiply_tn(defgrd, defgrd);
   glstrain(0) = 0.5 * (rcg(0, 0) - 1.0);
   glstrain(1) = 0.5 * (rcg(1, 1) - 1.0);
   glstrain(2) = 0.5 * (rcg(2, 2) - 1.0);
@@ -325,7 +325,7 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector(
   Core::LinAlg::Matrix<3, 1> c;
   for (int r = 0; r < (int)xcurr.numRows(); ++r)
     for (int d = 0; d < (int)xcurr.numCols(); ++d) c(d) += xcurr(r, d);
-  c.Scale(1. / xcurr.numRows());
+  c.scale(1. / xcurr.numRows());
 
   Core::LinAlg::Matrix<dim, 1> r[3];
   for (int i = 0; i < 3; ++i) r[i](i) = 1.;
@@ -344,12 +344,12 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector(
     {
       Core::LinAlg::Matrix<3, 1> x;
       for (int d = 0; d < 3; ++d) x(d) = xcurr(j, d);
-      x.Update(-1., c, 1.);
+      x.update(-1., c, 1.);
       Core::LinAlg::Matrix<3, 1> cross;
-      cross.CrossProduct(r[i], x);
+      cross.cross_product(r[i], x);
       for (int k = 0; k < 3; ++k) basis[i + 3](j * 3 + k) = cross(k);
     }
-  for (int i = 0; i < 6; ++i) basis[i].Scale(1. / basis[i].Norm2());
+  for (int i = 0; i < 6; ++i) basis[i].scale(1. / basis[i].norm2());
 
   // build the remaining basis vectors by generalized cross products
   for (int i = 6; i < dim * num_node; ++i)
@@ -370,9 +370,9 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector(
         basis[i](j + off) = Core::LinAlg::DeterminantLU(det) * sign;
         sign *= -1.;
       }
-      if (basis[i].Norm2() > 1.e-6)
+      if (basis[i].norm2() > 1.e-6)
       {
-        basis[i].Scale(1. / basis[i].Norm2());
+        basis[i].scale(1. / basis[i].norm2());
         new_basis_found = true;
       }
     }
@@ -384,9 +384,9 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector(
   for (int i = 0; i < dim * num_node; ++i)
   {
     const Core::LinAlg::Matrix<dim * num_node, 1> tmp(basis[i]);
-    for (int j = 0; j < i; ++j) basis[i].Update(-tmp.Dot(basis[j]), basis[j], 1.);
+    for (int j = 0; j < i; ++j) basis[i].update(-tmp.dot(basis[j]), basis[j], 1.);
 
-    basis[i].Scale(1. / basis[i].Norm2());
+    basis[i].scale(1. / basis[i].norm2());
   }
 
   // hand out the projection matrix, i.e. the ONB not containing rigid body modes
@@ -456,15 +456,15 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
 
   Core::LinAlg::Matrix<dim_image, dim_image> vol_red, surf_red;
 
-  tmp.Multiply(vol, proj);
-  vol_red.MultiplyTN(proj, tmp);
-  tmp.Multiply(surf, proj);
-  surf_red.MultiplyTN(proj, tmp);
+  tmp.multiply(vol, proj);
+  vol_red.multiply_tn(proj, tmp);
+  tmp.multiply(surf, proj);
+  surf_red.multiply_tn(proj, tmp);
 
   Core::LinAlg::SerialDenseMatrix vol_red_sd(
-      Teuchos::View, vol_red.A(), dim_image, dim_image, dim_image);
+      Teuchos::View, vol_red.data(), dim_image, dim_image, dim_image);
   Core::LinAlg::SerialDenseMatrix surf_red_sd(
-      Teuchos::View, surf_red.A(), dim_image, dim_image, dim_image);
+      Teuchos::View, surf_red.data(), dim_image, dim_image, dim_image);
 
   return Core::LinAlg::GeneralizedEigen(surf_red_sd, vol_red_sd);
 }
@@ -499,13 +499,13 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
     strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
     Core::LinAlg::Matrix<3, 3> iC;
-    iC.MultiplyTN(defgrd, defgrd);
-    iC.Invert();
+    iC.multiply_tn(defgrd, defgrd);
+    iC.invert();
 
-    iC_N_XYZ.Multiply(iC, N_XYZ);
-    iC_N_XYZ.Scale(k0);
+    iC_N_XYZ.multiply(iC, N_XYZ);
+    iC_N_XYZ.scale(k0);
 
-    vol.MultiplyTN(ip.IP().qwgt[gp] * jac, N_XYZ, iC_N_XYZ, 1.);
+    vol.multiply_tn(ip.IP().qwgt[gp] * jac, N_XYZ, iC_N_XYZ, 1.);
   }
 }
 
@@ -548,7 +548,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
   {
     Core::FE::shape_function_2D_deriv1(deriv_surf, ip.IP().qxg[gp][0], ip.IP().qxg[gp][1], Shape());
     surface_integration(detA, n, xrefe_surf, deriv_surf);
-    n_v.Scale(1. / n_v.Norm2());
+    n_v.scale(1. / n_v.norm2());
 
     Core::FE::CollectedGaussPoints intpoints =
         Core::FE::CollectedGaussPoints(1);  // reserve just for 1 entry ...
@@ -567,14 +567,14 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
     strains<dt_vol>(xrefe, xcurr, xi, jac, defgrd, glstrain, rcg, bop, N_XYZ);
 
     Core::LinAlg::Matrix<3, 3> iC;
-    iC.MultiplyTN(defgrd, defgrd);
-    iC.Invert();
-    iCn.Multiply(iC, n_v);
+    iC.multiply_tn(defgrd, defgrd);
+    iC.invert();
+    iCn.multiply(iC, n_v);
 
-    iCn_N_XYZ.MultiplyTN(iCn, N_XYZ);
-    iCn_N_XYZ.Scale(k0);
+    iCn_N_XYZ.multiply_tn(iCn, N_XYZ);
+    iCn_N_XYZ.scale(k0);
 
-    surf.MultiplyTN(detA * ip.IP().qwgt[gp], iCn_N_XYZ, iCn_N_XYZ, 1.);
+    surf.multiply_tn(detA * ip.IP().qwgt[gp], iCn_N_XYZ, iCn_N_XYZ, 1.);
   }
 }
 
@@ -603,7 +603,7 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector_scalar(
       basis[i](j) = Core::LinAlg::DeterminantLU(det) * sign;
       sign *= -1.;
     }
-    basis[i].Scale(1. / basis[i].Norm2());
+    basis[i].scale(1. / basis[i].norm2());
   }
 
   // hand out the projection matrix, i.e. the ONB not containing rigid body modes

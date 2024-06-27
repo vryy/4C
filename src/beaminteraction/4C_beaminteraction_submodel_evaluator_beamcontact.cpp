@@ -563,7 +563,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::write_output_runtime_beam_
       for (unsigned int ipointpair = 0; ipointpair < num_active_point_pairs; ++ipointpair)
       {
         Core::LinAlg::Matrix<3, 1, double> normal_vector;
-        normal_vector.Update(1.0, coordinates_ele1_this_pair[ipointpair], -1.0,
+        normal_vector.update(1.0, coordinates_ele1_this_pair[ipointpair], -1.0,
             coordinates_ele2_this_pair[ipointpair]);
 
         // contact point on first element
@@ -1068,7 +1068,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::print_all_beam_contact_ele
   out << "\n\nCurrent BeamContactElementPairs: ";
   std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>::const_iterator iter;
   for (iter = contact_elepairs_.begin(); iter != contact_elepairs_.end(); ++iter)
-    (*iter)->Print(out);
+    (*iter)->print(out);
 }
 
 /*----------------------------------------------------------------------------*

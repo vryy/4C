@@ -110,7 +110,7 @@ void Mat::Elastic::StructuralTensorStrategyBase::DyadicProduct(
 void Mat::Elastic::StructuralTensorStrategyBase::DyadicProduct(
     const Core::LinAlg::Matrix<3, 1>& M, Core::LinAlg::Matrix<3, 3>& result)
 {
-  result.MultiplyNT(M, M);
+  result.multiply_nt(M, M);
 }
 
 void Mat::Elastic::StructuralTensorStrategyStandard::setup_structural_tensor(
@@ -172,7 +172,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
         case Mat::Elastic::PAR::distr_type_vonmisesfisher:
         {
           double c = c1 / (sinh(c1) * 4.0 * M_PI);
-          double arg = aux_fiber_vector.Dot(x);
+          double arg = aux_fiber_vector.dot(x);
           rho(i, j) = c * exp(c1 * arg);
           break;
         }
@@ -216,16 +216,16 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
     // x1-x2 plane projection of fiber_vector
     Core::LinAlg::Matrix<3, 1> fiber_vector_proj(fiber_vector);
     fiber_vector_proj(2) = 0.0;
-    double norm = fiber_vector_proj.Norm2();
-    if (norm > 1e-12) fiber_vector_proj.Scale(1.0 / norm);
+    double norm = fiber_vector_proj.norm2();
+    if (norm > 1e-12) fiber_vector_proj.scale(1.0 / norm);
 
     // angles phi and theta for desired mean fiber direction
     double phi_0 = -1.0;
     if (norm < 1e-12)
       phi_0 = 0.0;
     else
-      phi_0 = acos(e1.Dot(fiber_vector_proj));    //< azimuth (measured from e1)
-    double theta_0 = acos(e3.Dot(fiber_vector));  //< elevation (measured from e3)
+      phi_0 = acos(e1.dot(fiber_vector_proj));    //< azimuth (measured from e1)
+    double theta_0 = acos(e3.dot(fiber_vector));  //< elevation (measured from e3)
 
     // rotation angles
     double alpha = -(theta_0 - theta_aux);  //< rotation around x1-axis
@@ -246,7 +246,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
     rotation2(1, 0) = -sin(beta);
 
     Core::LinAlg::Matrix<3, 3> rotation(true);
-    rotation.Multiply(rotation2, rotation1);
+    rotation.multiply(rotation2, rotation1);
 
     Core::LinAlg::Matrix<3, 3> tensor3x3;
     tensor3x3(0, 0) = structural_tensor_stress(0);
@@ -260,9 +260,9 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
     tensor3x3(2, 1) = tensor3x3(1, 2);
 
     Core::LinAlg::Matrix<3, 3> temp(true);
-    temp.MultiplyNN(rotation, tensor3x3);
+    temp.multiply_nn(rotation, tensor3x3);
     tensor3x3.clear();
-    tensor3x3.MultiplyNT(temp, rotation);
+    tensor3x3.multiply_nt(temp, rotation);
 
     structural_tensor_stress(0) = tensor3x3(0, 0);
     structural_tensor_stress(1) = tensor3x3(1, 1);
@@ -282,7 +282,7 @@ void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structu
   // to the integration error.
   double trace =
       structural_tensor_stress(0) + structural_tensor_stress(1) + structural_tensor_stress(2);
-  structural_tensor_stress.Scale(1.0 / trace);
+  structural_tensor_stress.scale(1.0 / trace);
 }
 
 void Mat::Elastic::StructuralTensorStrategyByDistributionFunction::setup_structural_tensor(
@@ -307,7 +307,7 @@ void Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic::setup
   Identity(1) = 1.0;
   Identity(2) = 1.0;
 
-  structural_tensor_stress.Update(c1, Identity, (1.0 - 3.0 * c1));
+  structural_tensor_stress.update(c1, Identity, (1.0 - 3.0 * c1));
 }
 
 void Mat::Elastic::StructuralTensorStrategyDispersedTransverselyIsotropic::setup_structural_tensor(

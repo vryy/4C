@@ -55,7 +55,7 @@ void Core::Geo::MeshFree::BoundingBox::init(const Teuchos::ParameterList& binnin
 
   // get bounding box specified in the input file
   // fixme: like this or by eight nodes of element in discret
-  box_.PutScalar(1.0e12);
+  box_.put_scalar(1.0e12);
   std::istringstream xaabbstream(
       Teuchos::getNumericStringParameter(binning_params, "DOMAINBOUNDINGBOX"));
   for (int col = 0; col < 2; ++col)
@@ -241,7 +241,7 @@ bool Core::Geo::MeshFree::BoundingBox::Shift3D(
 
   // x = X + d
   Core::LinAlg::Matrix<3, 1> x(X);
-  x.Update(1.0, d, 1.0);
+  x.update(1.0, d, 1.0);
 
   Core::LinAlg::Matrix<3, 1> x_ud(true);
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
@@ -255,7 +255,7 @@ bool Core::Geo::MeshFree::BoundingBox::Shift3D(
   transform_from_undeformed_bounding_box_system_to_global(x_ud, x);
 
   // d = x - X
-  d.Update(1.0, x, -1.0, X);
+  d.update(1.0, x, -1.0, X);
 
   return shifted;
 }
@@ -349,7 +349,7 @@ void Core::Geo::MeshFree::BoundingBox::UnShift3D(Core::LinAlg::Matrix<3, 1>& d,
 
   // x = X + d
   Core::LinAlg::Matrix<3, 1> x(X);
-  x.Update(1.0, d, 1.0);
+  x.update(1.0, d, 1.0);
 
   Core::LinAlg::Matrix<3, 1> x_ud(true), ref_ud(true);
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
@@ -362,7 +362,7 @@ void Core::Geo::MeshFree::BoundingBox::UnShift3D(Core::LinAlg::Matrix<3, 1>& d,
   transform_from_undeformed_bounding_box_system_to_global(x_ud, x);
 
   // d = x - X
-  d.Update(1.0, x, -1.0, X);
+  d.update(1.0, x, -1.0, X);
 }
 
 /*----------------------------------------------------------------------------*
@@ -385,7 +385,7 @@ bool Core::Geo::MeshFree::BoundingBox::check_if_shift_between_points(Core::LinAl
 
   // x = X + d
   Core::LinAlg::Matrix<3, 1> x(X);
-  x.Update(1.0, d, 1.0);
+  x.update(1.0, d, 1.0);
 
   Core::LinAlg::Matrix<3, 1> x_ud(true), ref_ud(true);
   transform_from_global_to_undeformed_bounding_box_system(x, x_ud);
@@ -398,7 +398,7 @@ bool Core::Geo::MeshFree::BoundingBox::check_if_shift_between_points(Core::LinAl
   transform_from_undeformed_bounding_box_system_to_global(x_ud, x);
 
   // d = x - X
-  d.Update(1.0, x, -1.0, X);
+  d.update(1.0, x, -1.0, X);
 
   return (shift_in_dim[0] or shift_in_dim[1] or shift_in_dim[2]);
 }
@@ -580,7 +580,7 @@ bool Core::Geo::MeshFree::BoundingBox::Within(const Core::LinAlg::SerialDenseMat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::MeshFree::BoundingBox::Print()
+void Core::Geo::MeshFree::BoundingBox::print()
 {
   if (empty_)
   {
@@ -858,11 +858,11 @@ bool Core::Geo::MeshFree::BoundingBox::transform_from_global_to_undeformed_bound
     }
 
     // safety check
-    if (abs(xjm.Determinant()) < 1e-15)
+    if (abs(xjm.determinant()) < 1e-15)
     {
       std::cout << "WARNING !!! jacobi determinant singular! In DeformedToUndeformed(...)"
                 << std::endl;
-      std::cout << "JAC= " << xjm.Determinant() << std::endl;
+      std::cout << "JAC= " << xjm.determinant() << std::endl;
       std::cout << "CONVERGED= " << converged << std::endl;
       FOUR_C_THROW("*** WARNING: jacobi singular ***");
       converged = false;
@@ -870,7 +870,7 @@ bool Core::Geo::MeshFree::BoundingBox::transform_from_global_to_undeformed_bound
     }
 
     // solve equation
-    double xjm_invert = xjm.Invert();
+    double xjm_invert = xjm.invert();
     if (abs(xjm_invert) < 1e-15) FOUR_C_THROW("ERROR: Singular Jacobian");
 
     // compute increment

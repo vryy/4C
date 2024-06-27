@@ -181,10 +181,10 @@ void Discret::ELEMENTS::RedAirBloodScatra::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 05/13|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirBloodScatra::Print(std::ostream& os) const
+void Discret::ELEMENTS::RedAirBloodScatra::print(std::ostream& os) const
 {
   os << "RedAirBloodScatra ";
-  Element::Print(os);
+  Element::print(os);
 
   return;
 }

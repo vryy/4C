@@ -99,10 +99,10 @@ void Discret::ELEMENTS::Bele3Line::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3Line::Print(std::ostream& os) const
+void Discret::ELEMENTS::Bele3Line::print(std::ostream& os) const
 {
   os << "Bele3_" << numdofpernode_ << "Line ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

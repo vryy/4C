@@ -531,7 +531,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
     }
   }
   // The integration is made by computing the matrix product
-  Core::LinAlg::multiplyNT(massMat, massPart, massPartW);
+  Core::LinAlg::multiply_nt(massMat, massPart, massPartW);
   {
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
@@ -578,7 +578,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
 
 
       // The integration is made by computing the matrix product
-      Core::LinAlg::multiplyNT(massMat, massPart, massPartW);
+      Core::LinAlg::multiply_nt(massMat, massPart, massPartW);
       {
         using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
         using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
@@ -666,7 +666,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_electric
     }
   }
   // The integration is made by computing the matrix product
-  Core::LinAlg::multiplyNT(massMat, massPart, massPartW);
+  Core::LinAlg::multiply_nt(massMat, massPart, massPartW);
   {
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
@@ -1018,7 +1018,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest
       }
     }
     // The integration is made by computing the matrix product
-    Core::LinAlg::multiplyNT(massMat, massPart, massPartW);
+    Core::LinAlg::multiply_nt(massMat, massPart, massPartW);
     {
       using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
       using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
@@ -1069,7 +1069,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest
       }
     }
     // The integration is made by computing the matrix product
-    Core::LinAlg::multiplyNT(massMat, massPart, massPartW);
+    Core::LinAlg::multiply_nt(massMat, massPart, massPartW);
     {
       using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
       using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
@@ -1312,7 +1312,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(co
   for (int d = 0; d < v.numRows(); ++d)
     v[d] = Global::Problem::Instance()
                ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-               .evaluate(xyz.A(), t, d % numComp);
+               .evaluate(xyz.data(), t, d % numComp);
 
   return;
 }
@@ -1344,7 +1344,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
   {
     std::vector<double> deriv = Global::Problem::Instance()
                                     ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                                    .evaluate_spatial_derivative(xyz.A(), t, d % numComp);
+                                    .evaluate_spatial_derivative(xyz.data(), t, d % numComp);
     for (unsigned int d_der = 0; d_der < nsd_; ++d_der) v(d, d_der) = deriv[d_der];
   }
 
@@ -1378,10 +1378,10 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
   for (int d = 0; d < v.numRows(); ++d)
     v[d] = (Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                   .evaluate(xyz.A(), t + (0.5 * dt), d % numComp) -
+                   .evaluate(xyz.data(), t + (0.5 * dt), d % numComp) -
                Global::Problem::Instance()
                    ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(start_func - 1)
-                   .evaluate(xyz.A(), t - (0.5 * dt), d % numComp)) /
+                   .evaluate(xyz.data(), t - (0.5 * dt), d % numComp)) /
            dt;
 
   return;
@@ -1518,7 +1518,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
             ele->elenodeTrace2d_[f * (nsd_ - 1) * shapesface_->nfdofs_ + shapesface_->nfdofs_ * d +
                                  i];
 
-    Core::LinAlg::multiplyTN(temptrace, transformatrix, facetrace);
+    Core::LinAlg::multiply_tn(temptrace, transformatrix, facetrace);
 
     // EVALUATE SHAPE POLYNOMIALS IN NODE
     // Now that we have an ordered coordinates vector we can easily compute the
@@ -1668,7 +1668,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_an
   // The source has to be checked for bdf
   local_solver_->ComputeSource(params, tempVec2, xVec);
 
-  Core::LinAlg::multiplyTN(tempMat, local_solver_->Bmat, local_solver_->invAmat);  // FA^{-1}
+  Core::LinAlg::multiply_tn(tempMat, local_solver_->Bmat, local_solver_->invAmat);  // FA^{-1}
 
   tempMat2 += local_solver_->Emat;
   tempMat2 += local_solver_->Gmat;
@@ -1770,12 +1770,12 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_an
   //  y = [(E + G) - FA^{-1}B]^{-1}^(E - I_s)
   Core::LinAlg::multiply(yVec, tempMat2, xVec);
 
-  Core::LinAlg::multiplyTN(0.0, elevec, -1.0, local_solver_->Hmat, yVec);  //  = -Jy
+  Core::LinAlg::multiply_tn(0.0, elevec, -1.0, local_solver_->Hmat, yVec);  //  = -Jy
 
   Core::LinAlg::multiply(xVec, local_solver_->Bmat, yVec);     //  = By
   Core::LinAlg::multiply(yVec, local_solver_->invAmat, xVec);  //  = A^{-1} By
 
-  Core::LinAlg::multiplyTN(1.0, elevec, 1.0, local_solver_->Cmat, yVec);  //  = Ix - Jy
+  Core::LinAlg::multiply_tn(1.0, elevec, 1.0, local_solver_->Cmat, yVec);  //  = Ix - Jy
 
   return;
 }  // update_interior_variables_and_compute_residual
@@ -1843,7 +1843,7 @@ params.getPtr<Teuchos::RCP<Core::Conditions::Condition>>("condition"); const std
       }
     }
     // The integration is made by computing the matrix product
-Core::LinAlg::multiplyNT(    tempMassMat,  tempMat,  tempMatW);
+Core::LinAlg::multiply_nt(    tempMassMat,  tempMat,  tempMatW);
     {
       using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
@@ -2026,7 +2026,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_interio
   // to have the matrix multiplication to obtain directly the correct matrices
   // but it would mean to compute three time sthe same value for each shape
   // function instead of computing it only omnce and then directly copying it.
-  Core::LinAlg::multiplyNT(tmpMat, massPart, massPartW);
+  Core::LinAlg::multiply_nt(tmpMat, massPart, massPartW);
   double alpha;
   if (mu < 0.1)
     alpha = 0.5 * (1 + std::log(dt) / std::log(mu));
@@ -2154,7 +2154,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual
   }
 
   Core::LinAlg::SerialDenseMatrix tempMat1(intdofs, intdofs);
-  Core::LinAlg::multiplyTN(tempMat1, Bmat, invAmat);  // F A^{-1}
+  Core::LinAlg::multiply_tn(tempMat1, Bmat, invAmat);  // F A^{-1}
 
   Core::LinAlg::SerialDenseMatrix tempMat2(intdofs, intdofs);
 
@@ -2174,12 +2174,12 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual
   }
   // tempMat2 = ((E + G) - F A^{-1} B)^{-1}
 
-  Core::LinAlg::multiply(tempVec2, tempMat2, tempVec1);         // y
-  Core::LinAlg::multiplyTN(0.0, elevec, -1.0, Hmat, tempVec2);  //  -Jy
+  Core::LinAlg::multiply(tempVec2, tempMat2, tempVec1);          // y
+  Core::LinAlg::multiply_tn(0.0, elevec, -1.0, Hmat, tempVec2);  //  -Jy
 
-  Core::LinAlg::multiply(tempVec1, Bmat, tempVec2);            // By
-  Core::LinAlg::multiply(tempVec2, invAmat, tempVec1);         //  x = A^{-1} By
-  Core::LinAlg::multiplyTN(1.0, elevec, 1.0, Cmat, tempVec2);  //  Ix - Jy
+  Core::LinAlg::multiply(tempVec1, Bmat, tempVec2);             // By
+  Core::LinAlg::multiply(tempVec2, invAmat, tempVec1);          //  x = A^{-1} By
+  Core::LinAlg::multiply_tn(1.0, elevec, 1.0, Cmat, tempVec2);  //  Ix - Jy
 
   return;
 }  // ComputeResidual
@@ -2273,8 +2273,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatr
   {
     Core::LinAlg::SerialDenseMatrix tempMat1(ndofs_ * nsd_, shapesface_->nfdofs_ * (nsd_ - 1));
     Core::LinAlg::SerialDenseMatrix tempMat2(ndofs_ * nsd_, shapesface_->nfdofs_ * (nsd_ - 1));
-    Core::LinAlg::multiplyNT(tempMat1, tempC, transformatrix);
-    Core::LinAlg::multiplyNT(tempMat2, tempH, transformatrix);
+    Core::LinAlg::multiply_nt(tempMat1, tempC, transformatrix);
+    Core::LinAlg::multiply_nt(tempMat2, tempH, transformatrix);
 
     for (unsigned int i = 0; i < ndofs_ * nsd_; ++i)
       for (unsigned int j = 0; j < shapesface_->nfdofs_ * (nsd_ - 1); ++j)
@@ -2365,7 +2365,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPa
   // int 	Multiply (char TransA, char TransB, double ScalarAB, Matrix &A, Matrix &B, double
   // ScalarThis) this = ScalarThis*this + ScalarAB*A*B
   Core::LinAlg::SerialDenseMatrix tempMat1(intdofs, intdofs);
-  Core::LinAlg::multiplyTN(tempMat1, Bmat, invAmat);  // =  F A^{-1}
+  Core::LinAlg::multiply_tn(tempMat1, Bmat, invAmat);  // =  F A^{-1}
 
   Core::LinAlg::SerialDenseMatrix tempMat2(intdofs, intdofs);
 
@@ -2399,7 +2399,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPa
   tempMat1.shape(intdofs, onfdofs);
   Core::LinAlg::multiply(
       tempMat1, tempMat2, tempMat3);  //  Y = [(E+G) - F A^{-1} B]^{-1}(H - F A^{-1} C)
-  Core::LinAlg::multiplyTN(1.0, eleMat, -1.0, Hmat, tempMat1);  // = L - J Y
+  Core::LinAlg::multiply_tn(1.0, eleMat, -1.0, Hmat, tempMat1);  // = L - J Y
 
   tempMat2.shape(intdofs, onfdofs);
   tempMat2 = Cmat;
@@ -2408,7 +2408,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPa
   tempMat3.shape(intdofs, onfdofs);
   Core::LinAlg::multiply(tempMat3, invAmat, tempMat2);  // = X = A^{-1} ( C - B Y )
 
-  Core::LinAlg::multiplyTN(1.0, eleMat, -1.0, Cmat, tempMat3);  // = K = L - I X - J y
+  Core::LinAlg::multiply_tn(1.0, eleMat, -1.0, Cmat, tempMat3);  // = K = L - I X - J y
 
   return;
 }  // CondenseLocalPart

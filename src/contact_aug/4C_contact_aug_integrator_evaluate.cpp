@@ -173,7 +173,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype,
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     Node& cnode = static_cast<Node&>(*snodes[i]);
-    Deriv2ndMap& dd_a = cnode.AugData().GetDeriv2nd_A();
+    Deriv2ndMap& dd_a = cnode.AugData().GetDeriv2nd_data();
 
     const double tmp = wgt * lmval(i, 0);
 
@@ -266,8 +266,8 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_nor
 
   // unify the gauss point normal
   Core::LinAlg::Matrix<probdim, 1> unit_gp_normal(gpn, true);
-  const double length_n_inv = 1.0 / unit_gp_normal.Norm2();
-  unit_gp_normal.Scale(length_n_inv);
+  const double length_n_inv = 1.0 / unit_gp_normal.norm2();
+  unit_gp_normal.scale(length_n_inv);
 }
 
 /*----------------------------------------------------------------------------*
@@ -324,8 +324,8 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_nor
 
   // unify the gauss point normal
   Core::LinAlg::Matrix<probdim, 1> unit_gp_normal(gpn, true);
-  const double length_n_inv = 1.0 / unit_gp_normal.Norm2();
-  unit_gp_normal.Scale(length_n_inv);
+  const double length_n_inv = 1.0 / unit_gp_normal.norm2();
+  unit_gp_normal.scale(length_n_inv);
 
   // calculate the 1-st derivative of the unified smooth gauss point normal
   IntPolicy::deriv1st_unit_slave_element_normal(
@@ -353,7 +353,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::gp_aug
   for (unsigned it = 0; it < my::SLAVENUMNODE; ++it)
   {
     Node* cnode = static_cast<Node*>(snodes[it]);
-    double& augA = cnode->AugData().GetAugA();
+    double& augA = cnode->AugData().GetAugdata();
 
     augA += lmval(it, 0) * jac * wgt;
   }
@@ -378,7 +378,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::get_de
   for (unsigned i = 0; i < my::SLAVENUMNODE; ++i)
   {
     CONTACT::Node* cnode = static_cast<CONTACT::Node*>(snodes[i]);
-    Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_A();
+    Deriv1stMap& augALinMap = cnode->AugData().GetDeriv1st_data();
 
     double val = wgt * lmval(i);
 

@@ -340,7 +340,7 @@ namespace CONTACT
 
     \param[in] os Output stream used for printing
     */
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     /*!
     \brief Print current active set to screen for debugging purposes

@@ -145,8 +145,8 @@ void Mat::Elastic::CoupAnisoPow::add_stress_aniso_principal(const Core::LinAlg::
               4.0 * k * d2 * d1 * (d1 - 1.0) * pow_I4_d1m2 * pow(1.0 - pow_I4_d1, d2 - 1.0);
     }
   }
-  stress.Update(gamma, structural_tensor_, 1.0);
-  cmat.MultiplyNT(delta, structural_tensor_, structural_tensor_, 1.0);
+  stress.update(gamma, structural_tensor_, 1.0);
+  cmat.multiply_nt(delta, structural_tensor_, structural_tensor_, 1.0);
 }
 
 void Mat::Elastic::CoupAnisoPow::GetFiberVecs(
@@ -181,10 +181,10 @@ void Mat::Elastic::CoupAnisoPow::SetFiberVecs(const double newgamma,
   // pull back in reference configuration
   Core::LinAlg::Matrix<3, 1> a_0(true);
   Core::LinAlg::Matrix<3, 3> idefgrd(true);
-  idefgrd.Invert(defgrd);
+  idefgrd.invert(defgrd);
 
-  a_0.Multiply(idefgrd, ca);
-  a_.Update(1. / a_0.Norm2(), a_0);
+  a_0.multiply(idefgrd, ca);
+  a_.update(1. / a_0.norm2(), a_0);
 
   params_->structural_tensor_strategy()->setup_structural_tensor(a_, structural_tensor_);
 }

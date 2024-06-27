@@ -96,7 +96,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the current positions on beam and fluid.
       GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);

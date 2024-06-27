@@ -233,8 +233,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
              i_curve_segment++)
         {
           // Get the position, displacement and lambda value at the current point.
-          xi = segment.GetEtaA() +
-               i_curve_segment * (segment.GetEtaB() - segment.GetEtaA()) / (double)mortar_segments;
+          xi = segment.GetEtadata() + i_curve_segment * (segment.GetEtaB() - segment.GetEtadata()) /
+                                          (double)mortar_segments;
           GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, r);
           GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, X);
           u = r;
@@ -281,10 +281,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
     Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
 {
   // Initialize the local mortar matrices.
-  local_D.PutScalar(0.0);
-  local_M.PutScalar(0.0);
-  local_kappa.PutScalar(0.0);
-  local_constraint.PutScalar(0.0);
+  local_D.put_scalar(0.0);
+  local_M.put_scalar(0.0);
+  local_kappa.put_scalar(0.0);
+  local_constraint.put_scalar(0.0);
 
   // Initialize variables for shape function values.
   Core::LinAlg::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
@@ -319,7 +319,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>:
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the shape function matrices.
       N_mortar.clear();
@@ -389,7 +389,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam, solid,
     const Core::LinAlg::Matrix<3, 1, double>& r_solid,
     Core::LinAlg::Matrix<3, 1, double>& force) const
 {
-  force.PutScalar(0.0);
+  force.put_scalar(0.0);
 }
 
 

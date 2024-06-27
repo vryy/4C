@@ -232,7 +232,7 @@ namespace Discret
       int num_dof_per_element() const override { return 0; }
 
       //! \brief Print this element
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       Core::Elements::ElementType& ElementType() const override { return ThermoType::Instance(); }
 
@@ -524,7 +524,7 @@ namespace Discret
       int num_dof_per_element() const override { return 0; }
 
       //! \brief Print this element
-      void Print(std::ostream& os) const override;
+      void print(std::ostream& os) const override;
 
       Core::Elements::ElementType& ElementType() const override
       {

@@ -47,7 +47,7 @@ namespace
       eleFibers_[1](2) = 0.068965517241379;
       for (std::size_t i = 0; i < 2; ++i)
       {
-        eleTensors_[i].MultiplyNT(eleFibers_[i], eleFibers_[i]);
+        eleTensors_[i].multiply_nt(eleFibers_[i], eleFibers_[i]);
         Core::LinAlg::Voigt::Stresses::matrix_to_vector(eleTensors_[i], eleTensors_stress_[i]);
       }
 

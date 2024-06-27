@@ -125,7 +125,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
   // Calculate the force between the two beams.
   force = r[1];
   force -= r[0];
-  force.Scale(penalty_parameter_pos_);
+  force.scale(penalty_parameter_pos_);
 
   for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
   {
@@ -137,7 +137,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
 
     // The force vector is in R3, we need to calculate the equivalent nodal forces on the
     // element dof. This is done with the virtual work equation $F \delta r = f \delta q$.
-    force_element[i_beam].PutScalar(0.0);
+    force_element[i_beam].put_scalar(0.0);
     for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
         force_element[i_beam](i_dof) +=
@@ -145,8 +145,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
 
     // Add the coupling force to the global force vector.
     if (force_vector != Teuchos::null)
-      force_vector->SumIntoGlobalValues(gid_pos[i_beam].numRows(), gid_pos[i_beam].A(),
-          Core::FADUtils::CastToDouble(force_element[i_beam]).A());
+      force_vector->SumIntoGlobalValues(gid_pos[i_beam].numRows(), gid_pos[i_beam].data(),
+          Core::FADUtils::CastToDouble(force_element[i_beam]).data());
   }
 
   // Evaluate and assemble the coupling stiffness terms.
@@ -235,7 +235,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_r
       for (unsigned int i_dim_0 = 0; i_dim_0 < 3; i_dim_0++)
         for (unsigned int i_dim_1 = 0; i_dim_1 < 3; i_dim_1++)
           I_tilde_full(i_dim_0, i_node * 3 + i_dim_1) = I_tilde[i_node](i_dim_0, i_dim_1);
-    T_times_I_tilde_full[i_beam].Multiply(T, I_tilde_full);
+    T_times_I_tilde_full[i_beam].multiply(T, I_tilde_full);
   }
 
   // Get the relative rotation vector between the two cross sections.
@@ -269,8 +269,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_r
     }
 
     if (force_vector != Teuchos::null)
-      force_vector->SumIntoGlobalValues(gid_rot[i_beam].numRows(), gid_rot[i_beam].A(),
-          Core::FADUtils::CastToDouble(moment_nodal_load[i_beam]).A());
+      force_vector->SumIntoGlobalValues(gid_rot[i_beam].numRows(), gid_rot[i_beam].data(),
+          Core::FADUtils::CastToDouble(moment_nodal_load[i_beam]).data());
   }
 
   // Evaluate and assemble the coupling stiffness terms.
@@ -287,7 +287,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_r
       for (unsigned int j_beam = 0; j_beam < 2; j_beam++)
       {
         Core::LinAlg::Matrix<n_dof_rot_, n_dof_rot_, double> moment_stiff_temp;
-        moment_stiff_temp.Multiply(
+        moment_stiff_temp.multiply(
             d_moment_nodal_load_d_psi[i_beam][j_beam], T_times_I_tilde_full[j_beam]);
 
         for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
@@ -303,7 +303,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_r
  *
  */
 template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::Print(std::ostream& out) const
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::print(std::ostream& out) const
 {
   check_init_setup();
 

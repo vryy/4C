@@ -40,7 +40,7 @@ Core::VolMortar::Cell::Cell(int id, int nvertices, const Core::LinAlg::SerialDen
       for (int col = 0; col < 4; col++) jac(row + 1, col) = coords_(row, col);
 
     // volume of the element
-    vol_ = jac.Determinant() / 6.0;
+    vol_ = jac.determinant() / 6.0;
     if (vol_ <= 0.0) FOUR_C_THROW("Element volume %10.5e <= 0.0", vol_);
   }
   else
@@ -78,8 +78,8 @@ double Core::VolMortar::Cell::CalcJac(const double* xi)
   Core::LinAlg::Matrix<3, 3> invJ;
   invJ.clear();
 
-  invJ.Multiply(derivs, xrefe);
-  jac = invJ.Invert();
+  invJ.multiply(derivs, xrefe);
+  jac = invJ.invert();
   if (jac <= 0.0) FOUR_C_THROW("Element Jacobian mapping %10.5e <= 0.0", jac);
 
   return jac;
@@ -144,7 +144,7 @@ void Core::VolMortar::Cell::LocalToGlobal(double* local, double* global)
 /*---------------------------------------------------------------------*
  | output                                                  farah 03/14 |
  *---------------------------------------------------------------------*/
-void Core::VolMortar::Cell::Print()
+void Core::VolMortar::Cell::print()
 {
   for (int i = 0; i < 4; ++i)
     std::cout << "coords= " << coords_(0, i) << " " << coords_(1, i) << " " << coords_(2, i)

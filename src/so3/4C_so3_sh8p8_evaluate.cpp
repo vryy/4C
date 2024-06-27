@@ -693,24 +693,24 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     {
       // (transposed) spatial-to-parametric Jacobian j = (x_{,xi})^T
       Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> jac;
-      jac.Multiply(derivs[gp], xcurr);
-      const double detj = jac.Determinant();
+      jac.multiply(derivs[gp], xcurr);
+      const double detj = jac.determinant();
       wdetJ = detj * gpweights[gp];
     }
     else
     {
       // (transposed) material-to-parametric Jacobian J = (X_{,xi})^T
       Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> Jac;
-      Jac.Multiply(derivs[gp], xrefe);
-      const double detJ = Jac.Determinant();
+      Jac.multiply(derivs[gp], xrefe);
+      const double detJ = Jac.determinant();
       wdetJ = detJ * gpweights[gp];
     }
 
-    stabA[gp].PutScalar(1.0);
+    stabA[gp].put_scalar(1.0);
 
-    stabAA.MultiplyTN(wdetJ, stabA[gp], stabA[gp], 1.0);
-    stabHA.MultiplyNT(wdetJ, shapefcts[gp], stabA[gp], 1.0);
-    stabHH.MultiplyNT(wdetJ, shapefcts[gp], shapefcts[gp], 1.0);
+    stabAA.multiply_tn(wdetJ, stabA[gp], stabA[gp], 1.0);
+    stabHA.multiply_nt(wdetJ, shapefcts[gp], stabA[gp], 1.0);
+    stabHH.multiply_nt(wdetJ, shapefcts[gp], shapefcts[gp], 1.0);
   }
 
   // stabilisation matrix
@@ -719,9 +719,9 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     // shear modulus
     const double shearmod = shear_mod();
     // (-Cem) = -1./shearmod*( Mem - Eem'*inv(Dem)*Eem );
-    stabmatrix->Update(stabHH);
-    stabmatrix->MultiplyNT(-1.0 / stabAA(0, 0), stabHA, stabHA, 1.0);
-    stabmatrix->Scale(-1.0 / shearmod);
+    stabmatrix->update(stabHH);
+    stabmatrix->multiply_nt(-1.0 / stabAA(0, 0), stabHA, stabHA, 1.0);
+    stabmatrix->scale(-1.0 / shearmod);
   }
 
   // extra matrices to deal with linearisation of stabilisation
@@ -752,10 +752,10 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     **         [ x_,t  y_,t  z_,t ]
     */
     Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> jac;
-    jac.Multiply(derivs[gp], xrefe);
+    jac.multiply(derivs[gp], xrefe);
 
     // compute determinant of Jacobian by Sarrus' rule
-    double detJ = jac.Determinant();
+    double detJ = jac.determinant();
     if (fabs(detJ) <= 1e-10)
       FOUR_C_THROW("JACOBIAN DETERMINANT CLOSE TO ZERO");
     else if (detJ < 0.0)
@@ -771,10 +771,10 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     ** Used to transform the global displacements into parametric space
     */
     Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> jac_cur;
-    jac_cur.Multiply(derivs[gp], xcurr);
+    jac_cur.multiply(derivs[gp], xcurr);
 
     // compute determinant of Jacobian by Sarrus' rule
-    double detJ_cur = jac_cur.Determinant();
+    double detJ_cur = jac_cur.determinant();
     if (detJ_cur == 0.0)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ_cur < 0.0)
@@ -880,7 +880,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> TinvT;
     sosh8_evaluate_t(jac, TinvT);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDISP_> bop;
-    bop.Multiply(TinvT, bop_loc);
+    bop.multiply(TinvT, bop_loc);
 
     // local GL strain vector lstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     // but with modified ANS strains E33, E23 and E13
@@ -1043,7 +1043,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
 
     // push local/natural/parametric glstrains forward to global/material space
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain;
-    glstrain.Multiply(TinvT, lstrain);
+    glstrain.multiply(TinvT, lstrain);
 
     // EAS technology: "enhance the strains"
     if (eastype_ == soh8_easnone)
@@ -1109,7 +1109,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     // end of call material law
 
     // linearly interpolated pressure at Gauss point
-    const double pressure = (shapefcts[gp]).Dot(pres);
+    const double pressure = (shapefcts[gp]).dot(pres);
 
     // return Gauss point stresses if necessary
     if (iostress != Inpar::STR::stress_none)
@@ -1118,9 +1118,9 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     // effective shape function of scalar pressure field at current Gauss point
     Core::LinAlg::Matrix<NUMPRES_, 1> prshfct(true);
     if ((stab_ == stab_nonaffine) or (stab_ == stab_spatial))
-      prshfct.MultiplyNT(1.0 / stabAA(0, 0), stabHA, stabA[gp]);
+      prshfct.multiply_nt(1.0 / stabAA(0, 0), stabHA, stabA[gp]);
     else if ((stab_ == stab_affine) or (stab_ == stab_spatialaffine) or (stab_ == stab_puredisp))
-      prshfct.Update(shapefcts[gp]);
+      prshfct.update(shapefcts[gp]);
     else
       FOUR_C_THROW("Cannot handle requested stabilisation type %d", stab_);
 
@@ -1131,7 +1131,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
       // fint := fint
       //      + (B^T . sigma) * detJ * w(gp)
       //      + (-G) . ep   // will be done _after_ Gauss point loop
-      force->MultiplyTN(detJ_w, bop, stress_tensor, 1.0);
+      force->multiply_tn(detJ_w, bop, stress_tensor, 1.0);
     }
 
     // incompressiblity equation
@@ -1140,7 +1140,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
       // pint := pint
       //       - He . (Fdet - 1.0) * detJ * wp(gp)
       //       + (-Ce) . ep   // will be done _after_ Gauss point loop
-      incomp->Update(-(detdefgrad - 1.0) * detJ_w, prshfct, 1.0);
+      incomp->update(-(detdefgrad - 1.0) * detJ_w, prshfct, 1.0);
     }
 
     // update of stiffness matrix
@@ -1149,8 +1149,8 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDISP_> cb;
-      cb.Multiply(cmat, bop);  // temporary C . B
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
+      cb.multiply(cmat, bop);  // temporary C . B
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu
       // here also the ANS interpolation comes into play
@@ -1263,7 +1263,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
 
           // transformation of local(parameter) space 'back' to global(material) space
           Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> G_ij_glob;
-          G_ij_glob.Multiply(TinvT, G_ij);
+          G_ij_glob.multiply(TinvT, G_ij);
 
           // store B_{aBd,k}
           if (lin_ > lin_sixth)
@@ -1271,7 +1271,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
               (*bopbydisp)(istr, NUMNOD_ * inod + jnod) = G_ij_glob(istr);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
-          double Gij = detJ_w * stress_tensor.Dot(G_ij_glob);
+          double Gij = detJ_w * stress_tensor.dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
           (*stiffmatrix)(NUMDIM_ * inod + 0, NUMDIM_ * jnod + 0) += Gij;
@@ -1290,7 +1290,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
       // Ke = Keu + Kg - Kp;
       {
         // effective pressure at Gauss point
-        const double effpressure = prshfct.Dot(pres);  // pN*ep'
+        const double effpressure = prshfct.dot(pres);  // pN*ep'
         // Voigt 9-vector of transposed & inverted deformation gradient fvT := F^{-T}
         Core::LinAlg::Matrix<NUMDFGR_, 1> tinvdefgrad_vct;
         matrix2_tensor_to_vector9_voigt_inconsistent(tinvdefgrad_vct, invdefgrad, true);
@@ -1299,11 +1299,11 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
         Core::LinAlg::Matrix<NUMDFGR_, NUMDFGR_> WmT;
         inv_vector9_voigt_diff_by_itself(WmT, invdefgrad, true);
         // WmT := WmT + fvT*fvT'
-        WmT.MultiplyNT(1.0, tinvdefgrad_vct, tinvdefgrad_vct, 1.0);
+        WmT.multiply_nt(1.0, tinvdefgrad_vct, tinvdefgrad_vct, 1.0);
 
         // material derivatives of shape functions
         Core::LinAlg::Matrix<NUMDIM_, NUMNOD_> derivsmat;
-        derivsmat.MultiplyNN(invJ_[gp], derivs[gp]);
+        derivsmat.multiply_nn(invJ_[gp], derivs[gp]);
 
         // linear B-op
         // derivative of displ-based def.grad with respect to nodal displacements
@@ -1326,7 +1326,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
         Core::LinAlg::Matrix<NUMDFGR_, NUMDISP_> defgradbydisp;
         if (ans_ == ans_none)
         {
-          defgradbydisp.Update(boplin);
+          defgradbydisp.update(boplin);
         }
         else
         {
@@ -1353,7 +1353,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
 
             // C^d_{,d} = 2 * Fm^d * Boplin, 6x24
             Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDISP_> rcgDbydisp;
-            rcgDbydisp.MultiplyNN(2.0, defgradDm, boplin);
+            rcgDbydisp.multiply_nn(2.0, defgradDm, boplin);
 
             // U^d_{,d} = (C^d_{,U^d})^{-1} . C^d_{,d}
             {
@@ -1366,13 +1366,13 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
               if (err != 0) FOUR_C_THROW("Failed to solve, error=%d", err);
               if (lin_ >= lin_one)
               {
-                const int err = rcgDbyrgtstrDsolver.Invert();
+                const int err = rcgDbyrgtstrDsolver.invert();
                 if (err != 0) FOUR_C_THROW("Failed to invert, error=%d", err);
               }
             }
 
             // U^{d;-1}_{,d} = U^{d;-1}_{,U} . U^d_{,d}
-            invrgtstrDbydisp.MultiplyNN(invrgtstrDbyrgtstrD, rgtstrDbydisp);
+            invrgtstrDbydisp.multiply_nn(invrgtstrDbyrgtstrD, rgtstrDbydisp);
           }
 
           // derivative of ass. mat. stretch tensor with respect to nodal displacements
@@ -1400,18 +1400,18 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
               if (err != 0) FOUR_C_THROW("Failed to solve, error=%d", err);
               if (lin_ > lin_half)
               {
-                const int err = rcgbyrgtstrsolver.Invert();
+                const int err = rcgbyrgtstrsolver.invert();
                 if (err != 0) FOUR_C_THROW("Failed to invert, error=%d", err);
               }
             }
-            rgtstrbydisp.Scale(2.0);
+            rgtstrbydisp.scale(2.0);
 
             // derivative of def.grad. with respect to k nodal displacements d^k
             {
               // pseudo identity 2-tensor
               // I^{assd}_{CB} = U^{d;-1}_{CD} . U^{ass}_{DB}
               Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> invrgtstrDtimesrgtstr;
-              invrgtstrDtimesrgtstr.MultiplyNN(invrgtstrD, rgtstr);
+              invrgtstrDtimesrgtstr.multiply_nn(invrgtstrD, rgtstr);
 
               // derivative of pseudo identity with respect to displacements
               // I^{assd}_{CB,k} = U^{d;-1}_{CD,k} . U^{ass}_{DB}
@@ -1692,7 +1692,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
                 //               = U^{-1}_{BE} . I_{ED} . U^{d}_{DC}
                 //               = U^{-1}_{BD} . U^{d}_{DC}
                 Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> invdefgradtimesdefgradD;
-                invdefgradtimesdefgradD.MultiplyNN(invdefgrad, defgradD);
+                invdefgradtimesdefgradD.multiply_nn(invdefgrad, defgradD);
 
                 // pseudo inverse disp-based right stretch tensor
                 // U^{assd-1}_{BD} = ( F^{-1}_{Ba} . F^{d}_{aC} ) . U^{d;-1}_{CD}
@@ -1702,7 +1702,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
                 //                 = U^{-1}_{BE} . I_{ED}
                 //                 = U^{-1}_{BD}
                 Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> invdefgradtimesdefgradDtimesinvrgtstrD;
-                invdefgradtimesdefgradDtimesinvrgtstrD.MultiplyNN(
+                invdefgradtimesdefgradDtimesinvrgtstrD.multiply_nn(
                     invdefgradtimesdefgradD, invrgtstrD);
 
                 // contribute stuff containing second derivatives in displacements
@@ -1782,9 +1782,9 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
         {
           // AUX = (WmT + fvT*fvT') * dFv
           Core::LinAlg::Matrix<NUMDFGR_, NUMDISP_> aux;
-          aux.MultiplyNN(WmT, defgradbydisp);
+          aux.multiply_nn(WmT, defgradbydisp);
           // K -= dFv' * AUX * detJ * w(gp)
-          stiffmatrix->MultiplyTN(-effpressure * vol_w, defgradbydisp, aux, 1.0);
+          stiffmatrix->multiply_tn(-effpressure * vol_w, defgradbydisp, aux, 1.0);
         }
 
         // deformation gradient differentiated with respect to displacements
@@ -1792,14 +1792,14 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
         // (dFv'*fvT) = dFv'*fvT
         Core::LinAlg::Matrix<NUMDISP_, 1> defgradbydisptimestinvdefgrad;
         if ((gradmatrix != nullptr) or (dargmatrix != nullptr))
-          defgradbydisptimestinvdefgrad.MultiplyTN(defgradbydisp, tinvdefgrad_vct);
+          defgradbydisptimestinvdefgrad.multiply_tn(defgradbydisp, tinvdefgrad_vct);
 
         // derivative of pressure contribution in internal force with respect to pressure
         // (-G) = -(dFv'*fvT)*pN * Fdet*detJ*wp(i);
         if (gradmatrix != nullptr)
         {
           // contribute to G-op
-          gradmatrix->MultiplyNT(-vol_w, defgradbydisptimestinvdefgrad, prshfct, 1.0);
+          gradmatrix->multiply_nt(-vol_w, defgradbydisptimestinvdefgrad, prshfct, 1.0);
         }
 
         // derivatives of spatially evaluated stabilisation matrix
@@ -1807,18 +1807,18 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
         {
           // Mem_,d . ep
           // (h.p)_,d
-          stabHHbydisp->MultiplyNT(
+          stabHHbydisp->multiply_nt(
               pressure * vol_w, shapefcts[gp], defgradbydisptimestinvdefgrad, 1.0);
           // Eem_,d
           // wT_,d
-          stabHAbydisp->MultiplyNT(
+          stabHAbydisp->multiply_nt(
               stabA[gp](0, 0) * vol_w, shapefcts[gp], defgradbydisptimestinvdefgrad, 1.0);
           // Dem_,d
           // a_,d
-          stabAAbydisp->MultiplyTT(
+          stabAAbydisp->multiply_tt(
               stabA[gp](0, 0) * vol_w, stabA[gp], defgradbydisptimestinvdefgrad, 1.0);
           // J_,d
-          detdefgradbydisp->UpdateT(stabA[gp](0, 0) * vol_w, defgradbydisptimestinvdefgrad, 1.0);
+          detdefgradbydisp->update_t(stabA[gp](0, 0) * vol_w, defgradbydisptimestinvdefgrad, 1.0);
         }
 
       }  // end block
@@ -1858,7 +1858,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     // fint := fint
     //      + (B^T . sigma) * detJ * w(gp)   // already done
     //      + (-G) . ep
-    if (stab_ != stab_puredisp) force->MultiplyNN(1.0, *gradmatrix, pres, 1.0);
+    if (stab_ != stab_puredisp) force->multiply_nn(1.0, *gradmatrix, pres, 1.0);
   }
   // incompressiblity equation
   if ((incomp != nullptr) and (stabmatrix != nullptr))
@@ -1867,7 +1867,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     //       - H . (Fdet - 1.0) * detJ * wp(gp)  // already done
     //       + (-Ce) . ep
     if (stab_ != stab_puredisp)
-      incomp->MultiplyNN(1.0, *stabmatrix, pres, 1.0);
+      incomp->multiply_nn(1.0, *stabmatrix, pres, 1.0);
     else
       incomp->clear();
   }
@@ -1877,7 +1877,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
   if ((dargmatrix != nullptr) and (gradmatrix != nullptr))
   {
     // copy ordinary part from gradmatrix by transposing
-    dargmatrix->UpdateT(*gradmatrix);
+    dargmatrix->update_t(*gradmatrix);
   }
 
   // derivative of incompressibility residual with respect to displacements
@@ -1893,37 +1893,37 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
       const double shearmod = shear_mod();
       // integral pressure
       // (w.p)
-      const double intpressure = stabHA.Dot(pres);
+      const double intpressure = stabHA.dot(pres);
       // (-Cem . ep)_{,d} = -1./shearmod*( (Mem . ep)_{,d} - (Eem.inv(Dem).Eem')_{,d} . ep )
       // which is
       // -1./shearmod * (Mem . ep)_{,d}
       // -1/shearmod * (h . p)_,d
-      dargmatrix->Update(-1.0 / shearmod, *stabHHbydisp, 1.0);
+      dargmatrix->update(-1.0 / shearmod, *stabHHbydisp, 1.0);
       // -1./shearmod * Eem_{,d} . (-inv(Dem).Eem'.ep)
       // +1/shearmod * a^{-1} * (w.p) * w^T_,d
-      dargmatrix->Update(+1.0 / shearmod / stabAA(0, 0) * intpressure, *stabHAbydisp, 1.0);
+      dargmatrix->update(+1.0 / shearmod / stabAA(0, 0) * intpressure, *stabHAbydisp, 1.0);
       // Eem . inv(Dem)_,d = Eem . (-inv(Dem)^{-2}) . Dem_,d
       // -1./shearmod * (Eem_ . inv(Dem)_,d) . (-Eem' . ep)
       // +1/shearmod * (w.p) * (-a^{-2}) * w^T . a_,d
-      dargmatrix->MultiplyNN(
+      dargmatrix->multiply_nn(
           -intpressure / (shearmod * stabAA(0, 0) * stabAA(0, 0)), stabHA, *stabAAbydisp, 1.0);
       // (ep^T . Eem_{,d})^T = Eem_{,d}^T . ep
       // (p^T w^T_,d)
       Core::LinAlg::Matrix<1, NUMDISP_> prestimesstabHAbydisp;
-      prestimesstabHAbydisp.MultiplyTN(pres, *stabHAbydisp);
+      prestimesstabHAbydisp.multiply_tn(pres, *stabHAbydisp);
       // -1./shearmod * (-Eem . inv(Dem)) . (ep^T . Eem_{,d})^T
       // +1/shearmod * a^{-1} * w^T . (p^T . w^T_,d)
-      dargmatrix->MultiplyNN(+1.0 / (shearmod * stabAA(0, 0)), stabHA, prestimesstabHAbydisp, 1.0);
+      dargmatrix->multiply_nn(+1.0 / (shearmod * stabAA(0, 0)), stabHA, prestimesstabHAbydisp, 1.0);
       //
       if (stab_ == stab_spatial)
       {
         if (stiffmatrix != nullptr)
         {
           // -(w.p) * (-a^{-2}) * J_,d . a_,d
-          stiffmatrix->MultiplyTN(
+          stiffmatrix->multiply_tn(
               intpressure / (stabAA(0, 0) * stabAA(0, 0)), *detdefgradbydisp, *stabAAbydisp, 1.0);
           // -a^{-1} * J_,d . w^t_,d
-          stiffmatrix->MultiplyTN(
+          stiffmatrix->multiply_tn(
               -1.0 / stabAA(0, 0), *detdefgradbydisp, prestimesstabHAbydisp, 1.0);
         }
       }
@@ -1935,9 +1935,9 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     if (dargmatrix != nullptr)
     {
       // int((1-J)*A) * ( -a^{-2} * w^T . a_,d )
-      dargmatrix->MultiplyNN(-voldev / (stabAA(0, 0) * stabAA(0, 0)), stabHA, *stabAAbydisp, 1.0);
+      dargmatrix->multiply_nn(-voldev / (stabAA(0, 0) * stabAA(0, 0)), stabHA, *stabAAbydisp, 1.0);
       // int((1-J)*A) * ( a^{-1} * w^T_,d )
-      dargmatrix->Update(voldev / stabAA(0, 0), *stabHAbydisp, 1.0);
+      dargmatrix->update(voldev / stabAA(0, 0), *stabHAbydisp, 1.0);
     }
   }
 
@@ -2003,8 +2003,8 @@ void Discret::ELEMENTS::SoSh8p8::stress(
       {
         // inverted right Cauchy-Green strain tensor
         Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> invcg;
-        invcg.MultiplyTN(defgrd, defgrd);
-        invcg.Invert();
+        invcg.multiply_tn(defgrd, defgrd);
+        invcg.invert();
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> invcgv;
         Core::LinAlg::Voigt::Stresses::matrix_to_vector(invcg, invcgv);
         // store stress
@@ -2024,7 +2024,7 @@ void Discret::ELEMENTS::SoSh8p8::stress(
           Core::LinAlg::Voigt::NotationType::stress, Core::LinAlg::Voigt::NotationType::strain);
       // (deviatoric/isochoric) Cauchy stress vector
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> cauchyv;
-      cauchyv.MultiplyNN(1.0 / detdefgrd, defgraddefgradT, stress);
+      cauchyv.multiply_nn(1.0 / detdefgrd, defgraddefgradT, stress);
 
       // determine total stress
       if (stab_ != stab_puredisp)
@@ -2083,7 +2083,7 @@ void Discret::ELEMENTS::SoSh8p8::strain(
           Core::LinAlg::Voigt::NotationType::strain, Core::LinAlg::Voigt::NotationType::stress);
       // push forward
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> eastrain;
-      eastrain.MultiplyNN(invdefgradTdefgrad, glstrain);
+      eastrain.multiply_nn(invdefgradTdefgrad, glstrain);
       // store
       for (int i = 0; i < NUMDIM_; ++i) (*elestrain)(gp, i) = eastrain(i);
       for (int i = NUMDIM_; i < Mat::NUM_STRESS_3D; ++i) (*elestrain)(gp, i) = 0.5 * eastrain(i);
@@ -2119,11 +2119,11 @@ void Discret::ELEMENTS::SoSh8p8::ass_def_grad(double& detdefgrad,
 {
   // pure displacement-based deformation gradient
   // F = x_{,X} = x_{,xi} . xi_{,X} = x_{,xi} . (X_{,xi})^{-1} = jac^T . Jinv^T
-  defgradD.MultiplyTT(jac, Jinv);
+  defgradD.multiply_tt(jac, Jinv);
 
   // pure displacement-based right Cauchy-Green strain
   Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> cgD;
-  cgD.MultiplyTN(defgradD, defgradD);
+  cgD.multiply_tn(defgradD, defgradD);
 
   // rotation matrix in pure displacement based deformation gradient
   // and pure disp-based material stretch tensor
@@ -2138,8 +2138,8 @@ void Discret::ELEMENTS::SoSh8p8::ass_def_grad(double& detdefgrad,
     // spectral composition of disp-based right stretch tensor
     for (int al = 0; al < NUMDIM_; ++al) lamd(al, al) = sqrt(lamd(al, al));
     Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> aux;
-    aux.MultiplyNN(NdT, lamd);
-    rgtstrD.MultiplyNT(aux, NdT);
+    aux.multiply_nn(NdT, lamd);
+    rgtstrD.multiply_nt(aux, NdT);
 
     // inverse disp-based right stretch tensor
     invrgtstrD.clear();
@@ -2155,7 +2155,7 @@ void Discret::ELEMENTS::SoSh8p8::ass_def_grad(double& detdefgrad,
     }
 
     // rotation matrix
-    rot.MultiplyNN(defgradD, invrgtstrD);
+    rot.multiply_nn(defgradD, invrgtstrD);
 
     // // U_{,C}
     //     // correct, but same speed like solution with Lapack and inaccurate
@@ -2207,8 +2207,8 @@ void Discret::ELEMENTS::SoSh8p8::ass_def_grad(double& detdefgrad,
     for (int al = 0; al < NUMDIM_; ++al) lama(al, al) = sqrt(lama(al, al));
 
     Core::LinAlg::Matrix<NUMDIM_, NUMDIM_> aux;
-    aux.MultiplyNN(NaT, lama);
-    rgtstr.MultiplyNT(aux, NaT);
+    aux.multiply_nn(NaT, lama);
+    rgtstr.multiply_nt(aux, NaT);
 
     invrgtstr.clear();
     detdefgrad = 1.0;
@@ -2224,10 +2224,10 @@ void Discret::ELEMENTS::SoSh8p8::ass_def_grad(double& detdefgrad,
   }
 
   // assumed deformation gradient
-  defgrad.MultiplyNN(rot, rgtstr);
+  defgrad.multiply_nn(rot, rgtstr);
 
   // inverse of assumed deformation gradient
-  invdefgrad.MultiplyNT(invrgtstr, rot);
+  invdefgrad.multiply_nt(invrgtstr, rot);
 
   // done
   return;

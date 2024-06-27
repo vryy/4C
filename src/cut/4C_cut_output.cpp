@@ -639,10 +639,10 @@ void Core::Geo::Cut::Output::GmshLevelSetGradientDump(
                i != facet_triang_tri.end(); i++)
           {
             Point* p1 = *i;
-            p1->Coordinates(cur.A());
-            f_triang_tri_midp.Update(1.0, cur, 1.0);
+            p1->Coordinates(cur.data());
+            f_triang_tri_midp.update(1.0, cur, 1.0);
           }
-          f_triang_tri_midp.Scale(1.0 / facet_triang_tri.size());
+          f_triang_tri_midp.scale(1.0 / facet_triang_tri.size());
 
           std::vector<double> normal = ele->get_level_set_gradient(f_triang_tri_midp);
 
@@ -656,10 +656,10 @@ void Core::Geo::Cut::Output::GmshLevelSetGradientDump(
         for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
         {
           Point* p1 = *i;
-          p1->Coordinates(cur.A());
-          facet_triang_midpoint_coord.Update(1.0, cur, 1.0);
+          p1->Coordinates(cur.data());
+          facet_triang_midpoint_coord.update(1.0, cur, 1.0);
         }
-        facet_triang_midpoint_coord.Scale(1.0 / pts.size());
+        facet_triang_midpoint_coord.scale(1.0 / pts.size());
         normal_triag_midp = ele->get_level_set_gradient(facet_triang_midpoint_coord);
       }
 
@@ -672,7 +672,7 @@ void Core::Geo::Cut::Output::GmshLevelSetGradientDump(
       {
         Core::LinAlg::Matrix<3, 1> cornercoord;
         Point* p1 = *i;
-        p1->Coordinates(cornercoord.A());
+        p1->Coordinates(cornercoord.data());
         std::vector<double> normal = ele->get_level_set_gradient(cornercoord);
 
         GmshVector(file, cornercoord, normal, true, to_local, ele);
@@ -715,10 +715,10 @@ void Core::Geo::Cut::Output::GmshLevelSetValueDump(
                i != facet_triang_tri.end(); i++)
           {
             Point* p1 = *i;
-            p1->Coordinates(cur.A());
-            f_triang_tri_midp.Update(1.0, cur, 1.0);
+            p1->Coordinates(cur.data());
+            f_triang_tri_midp.update(1.0, cur, 1.0);
           }
-          f_triang_tri_midp.Scale(1.0 / facet_triang_tri.size());
+          f_triang_tri_midp.scale(1.0 / facet_triang_tri.size());
 
           double ls_value = ele->get_level_set_value(f_triang_tri_midp);
           GmshScalar(file, f_triang_tri_midp, ls_value, to_local, ele);
@@ -733,10 +733,10 @@ void Core::Geo::Cut::Output::GmshLevelSetValueDump(
         for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
         {
           Point* p1 = *i;
-          p1->Coordinates(cur.A());
-          facet_triang_midpoint_coord.Update(1.0, cur, 1.0);
+          p1->Coordinates(cur.data());
+          facet_triang_midpoint_coord.update(1.0, cur, 1.0);
         }
-        facet_triang_midpoint_coord.Scale(1.0 / pts.size());
+        facet_triang_midpoint_coord.scale(1.0 / pts.size());
       }
 
       double ls_value = ele->get_level_set_value(facet_triang_midpoint_coord);
@@ -937,10 +937,10 @@ void Core::Geo::Cut::Output::GmshEqnPlaneNormalDump(
            i++)
       {
         Point* p1 = *i;
-        p1->Coordinates(cur.A());
-        f_triang_tri_midp.Update(1.0, cur, 1.0);
+        p1->Coordinates(cur.data());
+        f_triang_tri_midp.update(1.0, cur, 1.0);
       }
-      f_triang_tri_midp.Scale(1.0 / facet_triang_tri.size());
+      f_triang_tri_midp.scale(1.0 / facet_triang_tri.size());
 
       GmshVector(file, f_triang_tri_midp, GetEqOfPlane(facet_triang_tri), normalize, to_local, ele);
     }
@@ -952,10 +952,10 @@ void Core::Geo::Cut::Output::GmshEqnPlaneNormalDump(
     for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
     {
       Point* p1 = *i;
-      p1->Coordinates(cur.A());
-      facet_triang_midpoint_coord.Update(1.0, cur, 1.0);
+      p1->Coordinates(cur.data());
+      facet_triang_midpoint_coord.update(1.0, cur, 1.0);
     }
-    facet_triang_midpoint_coord.Scale(1.0 / pts.size());
+    facet_triang_midpoint_coord.scale(1.0 / pts.size());
   }
 
   GmshVector(file, facet_triang_midpoint_coord, eqn_plane, normalize, to_local, ele);
@@ -1012,7 +1012,7 @@ void Core::Geo::Cut::Output::GmshWriteCoords(
   Core::LinAlg::Matrix<3, 1> xyz(true);
 
   if (coord.size() <= 3)
-    std::copy(coord.begin(), coord.end(), xyz.A());
+    std::copy(coord.begin(), coord.end(), xyz.data());
   else
     FOUR_C_THROW("The coord vector dimension is wrong! (coord.size() = %d)", coord.size());
 
@@ -1063,7 +1063,7 @@ void Core::Geo::Cut::Output::GmshWriteCoords(
     std::ofstream& file, Point* point, bool to_local, Element* ele)
 {
   Core::LinAlg::Matrix<3, 1> coord;
-  point->Coordinates(coord.A());
+  point->Coordinates(coord.data());
 
   GmshWriteCoords(file, coord, to_local, ele);
 }
@@ -1111,7 +1111,7 @@ std::vector<double> Core::Geo::Cut::Output::GetEqOfPlane(std::vector<Point*> pts
   {
     Point* p1 = *k;
     Core::LinAlg::Matrix<3, 1> cur;
-    p1->Coordinates(cur.A());
+    p1->Coordinates(cur.data());
 
     std::vector<double> pt(3);
 

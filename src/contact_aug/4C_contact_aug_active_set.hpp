@@ -67,7 +67,7 @@ namespace CONTACT
        *  @param(out) os modified screen/file output stream
        *
        *  @author hiermeier @date 03/18 */
-      void Print(std::ostream& os) const;
+      void print(std::ostream& os) const;
 
      private:
       /// get the global update status

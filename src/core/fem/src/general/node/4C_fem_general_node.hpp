@@ -176,7 +176,7 @@ namespace Core::Nodes
     /*!
     \brief Print this node
     */
-    virtual void Print(std::ostream& os) const;
+    virtual void print(std::ostream& os) const;
 
     //@}
 

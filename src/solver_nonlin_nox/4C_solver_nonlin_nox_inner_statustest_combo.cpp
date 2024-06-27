@@ -160,9 +160,9 @@ NOX::Nln::Inner::StatusTest::Combo& NOX::Nln::Inner::StatusTest::Combo::addStatu
     const int indent = 2;
     utils_.err() << "\n*** WARNING! ***\n";
     utils_.err() << "This combo test currently consists of the following:\n";
-    this->Print(utils_.err(), indent);
+    this->print(utils_.err(), indent);
     utils_.err() << "Unable to add the following test:\n";
-    a->Print(utils_.err(), indent);
+    a->print(utils_.err(), indent);
     utils_.err() << "\n";
   }
 
@@ -199,7 +199,7 @@ NOX::Nln::Inner::StatusTest::Combo::GetTestVector() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::Nln::Inner::StatusTest::Combo::Print(std::ostream& stream, int indent) const
+std::ostream& NOX::Nln::Inner::StatusTest::Combo::print(std::ostream& stream, int indent) const
 {
   stream << std::string(indent, ' ');
   stream << status_;
@@ -207,7 +207,7 @@ std::ostream& NOX::Nln::Inner::StatusTest::Combo::Print(std::ostream& stream, in
   stream << " Combination";
   stream << " -> " << std::endl;
 
-  for (const auto& test : tests_) test->Print(stream, indent + 2);
+  for (const auto& test : tests_) test->print(stream, indent + 2);
 
   return stream;
 }

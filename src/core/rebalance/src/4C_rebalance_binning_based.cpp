@@ -825,6 +825,6 @@ void Core::Rebalance::RebalanceInAccordanceWithReference(
   // create new map
   red_map = Teuchos::rcp(new Epetra_Map(-1, my_red_gids.size(), my_red_gids.data(), 0, comm));
 
-  //  red_map->Print( std::cout );
+  //  red_map->print( std::cout );
 }
 FOUR_C_NAMESPACE_CLOSE

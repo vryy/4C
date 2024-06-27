@@ -170,7 +170,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
     // i.e. det(dx/ds)
     static Core::LinAlg::Matrix<1, nsd_ * nen_> dJ_dmesh(false);
     calc_djd_mesh(dJ_dmesh);
-    const double J = xjm_.Determinant();
+    const double J = xjm_.determinant();
 
     // loop all scalars
     for (int k = 0; k < numscal_; ++k)  // deal with a system of transported scalars
@@ -220,7 +220,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         get_laplacian_strong_form(diff);
-        diff.Scale(diffmanager_->GetIsotropicDiff(k));
+        diff.scale(diffmanager_->GetIsotropicDiff(k));
       }
 
       recompute_scatra_res_for_rhs(scatrares, k, diff, densn[k], densnp[k], rea_phi, rhsint);
@@ -563,7 +563,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_cons_od_mesh(
 
   // shape derivatives associated with divergence operator
   Core::LinAlg::Matrix<nsd_, nsd_> gridvelderiv(true);
-  gridvelderiv.MultiplyNT(evelnp_, deriv_);
+  gridvelderiv.multiply_nt(evelnp_, deriv_);
 
   if (nsd_ == 3)
   {
@@ -654,7 +654,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::apply_shape_derivs_conv
     {
       // gradient of scalar w.r.t. reference coordinates
       static Core::LinAlg::Matrix<nsd_, 1> refgradphi;
-      refgradphi.Multiply(xjm_, gradphi);
+      refgradphi.multiply(xjm_, gradphi);
 
       const double refgradphi_0 = refgradphi(0);
       const double refgradphi_1 = refgradphi(1);
@@ -707,7 +707,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::apply_shape_derivs_conv
     {
       // gradient of scalar w.r.t. reference coordinates
       static Core::LinAlg::Matrix<nsd_, 1> refgradphi;
-      refgradphi.Multiply(xjm_, gradphi);
+      refgradphi.multiply(xjm_, gradphi);
 
       const double refgradphi_0 = refgradphi(0);
       const double refgradphi_1 = refgradphi(1);
@@ -834,7 +834,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_diff_od_mesh(
 
     // gradient of scalar w.r.t. reference coordinates
     static Core::LinAlg::Matrix<nsd_, 1> refgradphi;
-    refgradphi.Multiply(xjm_, gradphi);
+    refgradphi.multiply(xjm_, gradphi);
 
     const double refgradphi_0 = refgradphi(0);
     const double refgradphi_1 = refgradphi(1);
@@ -909,7 +909,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_diff_od_mesh(
 
     // gradient of scalar w.r.t. reference coordinates
     static Core::LinAlg::Matrix<nsd_, 1> refgradphi;
-    refgradphi.Multiply(xjm_, gradphi);
+    refgradphi.multiply(xjm_, gradphi);
 
     const double refgradphi_0 = refgradphi(0);
     const double refgradphi_1 = refgradphi(1);
@@ -1018,7 +1018,7 @@ template <Core::FE::CellType distype, int probdim>
 void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_djd_mesh(
     Core::LinAlg::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
-  const double J = xjm_.Determinant();
+  const double J = xjm_.determinant();
   for (unsigned node = 0; node < nen_; node++)
     for (int dim = 0; dim < static_cast<int>(nsd_); dim++)
       dJ_dmesh(dim + node * nsd_) = J * derxy_(dim, node);

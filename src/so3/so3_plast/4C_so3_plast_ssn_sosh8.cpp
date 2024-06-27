@@ -394,10 +394,10 @@ void Discret::ELEMENTS::SoSh8Plast::unpack(const std::vector<char>& data)
   return;
 }
 
-void Discret::ELEMENTS::SoSh8Plast::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoSh8Plast::print(std::ostream& os) const
 {
   os << "So_sh8Plast ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }
@@ -558,16 +558,16 @@ Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast:
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
   Core::LinAlg::Matrix<nsd_, nsd_> jac0;
-  jac0.MultiplyNN(df0, xrefe);
+  jac0.multiply_nn(df0, xrefe);
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
   Core::LinAlg::Matrix<nsd_, nsd_> iJ0(jac0);
-  iJ0.Invert();
+  iJ0.invert();
 
   // separate "stretch"-part of J-mapping between parameter and global space
   // (G0^ji) = (Jinv0^j_B) (krondelta^BA) (Jinv0_A^i)
   Core::LinAlg::Matrix<nsd_, nsd_> jac0stretch;
-  jac0stretch.MultiplyTN(iJ0, iJ0);
+  jac0stretch.multiply_tn(iJ0, iJ0);
   const double r_stretch = sqrt(jac0stretch(0, 0));
   const double s_stretch = sqrt(jac0stretch(1, 1));
   const double t_stretch = sqrt(jac0stretch(2, 2));
@@ -629,7 +629,7 @@ Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast:
   // thickness-vector in global coord is J times local thickness-vector
   // (X^A) = (J0_i^A)^T . (xi_i)
   Core::LinAlg::Matrix<nsd_, 1> glo_thickvec;
-  glo_thickvec.MultiplyTN(jac0, loc_thickvec);
+  glo_thickvec.multiply_tn(jac0, loc_thickvec);
   // return doubles of thickness-vector
   thickvec_.resize(3);
   thickvec_[0] = glo_thickvec(0);
@@ -664,21 +664,21 @@ Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast:
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   // (J0_i^A) = (X^A_{,i})^T
   Core::LinAlg::Matrix<nsd_, nsd_> jac0(false);
-  jac0.MultiplyNN(df0, xrefe);
+  jac0.multiply_nn(df0, xrefe);
 
   // compute inverse of Jacobian at element origin
   // (Jinv0_A^i) = (X^A_{,i})^{-T}
   Core::LinAlg::Matrix<nsd_, nsd_> iJ0(jac0);
-  iJ0.Invert();
+  iJ0.invert();
 
   // make enforced global thickness direction a unit vector
-  const double thickdirglolength = thickdirglo.Norm2();
-  thickdirglo.Scale(1.0 / thickdirglolength);
+  const double thickdirglolength = thickdirglo.norm2();
+  thickdirglo.scale(1.0 / thickdirglolength);
 
   // pull thickness direction from global to contra-variant local
   // (dxi^i) = (Jinv0_A^i)^T . (dX^A)
   Core::LinAlg::Matrix<nsd_, 1> thickdirlocsharp(false);
-  thickdirlocsharp.MultiplyTN(iJ0, thickdirglo);
+  thickdirlocsharp.multiply_tn(iJ0, thickdirglo);
 
   // identify parametric co-ordinate closest to enforced thickness direction
   int thick_index = -1;
@@ -693,7 +693,7 @@ Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast:
   }
   const double tol = 0.9;  // should be larger than 1/sqrt(2)=0.707
   // check if parametric co-ordinate is clear
-  if (thickdirlocmax < tol * thickdirlocsharp.Norm2())
+  if (thickdirlocmax < tol * thickdirlocsharp.norm2())
     FOUR_C_THROW(
         "could not clearly identify a parametric direction pointing along enforced thickness "
         "direction");
@@ -722,7 +722,7 @@ Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast:
   // thickness-vector in global coord is J times local thickness-vector
   // (X^A) = (J0_i^A)^T . (xi_i)
   Core::LinAlg::Matrix<nsd_, 1> glo_thickvec;
-  glo_thickvec.MultiplyTN(jac0, loc_thickvec);
+  glo_thickvec.multiply_tn(jac0, loc_thickvec);
   // return doubles of thickness-vector
   thickvec_.resize(3);
   thickvec_[0] = glo_thickvec(0);
@@ -790,7 +790,7 @@ void Discret::ELEMENTS::SoSh8Plast::evaluate_t(
   Core::LinAlg::FixedSizeSerialDenseSolver<numstr_, numstr_, 1> solve_for_inverseT;
   solve_for_inverseT.SetMatrix(TinvT);
   int err2 = solve_for_inverseT.Factor();
-  int err = solve_for_inverseT.Invert();
+  int err = solve_for_inverseT.invert();
   if ((err != 0) && (err2 != 0)) FOUR_C_THROW("Inversion of Tinv (Jacobian) failed");
   return;
 }
@@ -890,9 +890,9 @@ void Discret::ELEMENTS::SoSh8Plast::anssetup(
   for (int sp = 0; sp < num_sp; ++sp)
   {
     // compute (REFERENCE) Jacobian matrix at all sampling points
-    jac_sps[sp].Multiply(df_sp[sp], xrefe);
+    jac_sps[sp].multiply(df_sp[sp], xrefe);
     // compute CURRENT Jacobian matrix at all sampling points
-    jac_cur_sps[sp].Multiply(df_sp[sp], xcurr);
+    jac_cur_sps[sp].multiply(df_sp[sp], xcurr);
   }
 
   /*
@@ -909,7 +909,7 @@ void Discret::ELEMENTS::SoSh8Plast::anssetup(
     **         [ xcurr_,t  ycurr_,t  zcurr_,t ]
     ** Used to transform the global displacements into parametric space
     */
-    jac_cur.Multiply(df_sp[sp], xcurr);
+    jac_cur.multiply(df_sp[sp], xcurr);
 
     // fill up B-operator
     for (int inode = 0; inode < nen_; ++inode)
@@ -1027,7 +1027,7 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
      */
     // compute derivatives N_XYZ at gp w.r.t. material coordinates
     // by N_XYZ = J^-1 * N_rst
-    set_deriv_shape_function_xyz().Multiply(inv_j(), deriv_shape_function());  // (6.21)
+    set_deriv_shape_function_xyz().multiply(inv_j(), deriv_shape_function());  // (6.21)
 
     ans_strains(gp, jac_sps, jac_cur_sps);
     if (eastype_ != soh8p_easnone)
@@ -1058,8 +1058,8 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<numstr_, numdofperelement_> cb;
-      cb.Multiply(cmat(), bop());
-      stiffmatrix->MultiplyTN(detJ_w, bop(), cb, 1.0);
+      cb.multiply(cmat(), bop());
+      stiffmatrix->multiply_tn(detJ_w, bop(), cb, 1.0);
 
       // intergrate `geometric' stiffness matrix and add to keu *****************
       // here also the ANS interpolation comes into play
@@ -1107,10 +1107,10 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
 
           // transformation of local(parameter) space 'back' to global(material) space
           Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> G_ij_glob;
-          G_ij_glob.Multiply(tinv_t(), G_ij);
+          G_ij_glob.multiply(tinv_t(), G_ij);
 
           // Scalar Gij results from product of G_ij with stress, scaled with detJ*weights
-          const double Gij = detJ_w * p_k2().Dot(G_ij_glob);
+          const double Gij = detJ_w * p_k2().dot(G_ij_glob);
 
           // add "geometric part" Gij times detJ*weights to stiffness matrix
           (*stiffmatrix)(nsd_ * inod + 0, nsd_ * jnod + 0) += Gij;
@@ -1131,38 +1131,38 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
           case soh8p_eassosh8:
             Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
-                cM.values(), cmat().A(), m_eas().values());
-            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                cM.values(), cmat().data(), m_eas().values());
+            Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
                 1.0, *KaaInv_, detJ_w, m_eas(), cM);
-            Core::LinAlg::DenseFunctions::multiplyTN<double,
+            Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
-                numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.A());
-            Core::LinAlg::DenseFunctions::multiplyTN<double, numdofperelement_, numstr_,
+                numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.data());
+            Core::LinAlg::DenseFunctions::multiply_tn<double, numdofperelement_, numstr_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
-                1.0, Kda.values(), detJ_w, cb.A(), m_eas().values());
-            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                1.0, Kda.values(), detJ_w, cb.data(), m_eas().values());
+            Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_, 1>(
-                1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().A());
+                1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().data());
             break;
           case soh8p_easmild:
             Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
-                cM.values(), cmat().A(), m_eas().values());
-            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                cM.values(), cmat().data(), m_eas().values());
+            Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
                 1.0, *KaaInv_, detJ_w, m_eas(), cM);
-            Core::LinAlg::DenseFunctions::multiplyTN<double,
+            Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
-                numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.A());
-            Core::LinAlg::DenseFunctions::multiplyTN<double, numdofperelement_, numstr_,
+                numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.data());
+            Core::LinAlg::DenseFunctions::multiply_tn<double, numdofperelement_, numstr_,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
-                1.0, Kda.values(), detJ_w, cb.A(), m_eas().values());
-            Core::LinAlg::DenseFunctions::multiplyTN<double,
+                1.0, Kda.values(), detJ_w, cb.data(), m_eas().values());
+            Core::LinAlg::DenseFunctions::multiply_tn<double,
                 PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_, 1>(
-                1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().A());
+                1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().data());
             break;
           case soh8p_easnone:
             break;
@@ -1221,11 +1221,11 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
         if (stiffmatrix != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numdofperelement_>(
-              1., stiffmatrix->A(), -1., kdakaai.values(), Kad_->values());
+              1., stiffmatrix->data(), -1., kdakaai.values(), Kad_->values());
         if (force != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, 1>(
-              1., force->A(), -1., kdakaai.values(), feas_->values());
+              1., force->data(), -1., kdakaai.values(), feas_->values());
         break;
       case soh8p_easmild:
         Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
@@ -1235,11 +1235,11 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
         if (stiffmatrix != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numdofperelement_>(
-              1., stiffmatrix->A(), -1., kdakaai.values(), Kad_->values());
+              1., stiffmatrix->data(), -1., kdakaai.values(), Kad_->values());
         if (force != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
-              1., force->A(), -1., kdakaai.values(), feas_->values());
+              1., force->data(), -1., kdakaai.values(), feas_->values());
         break;
       case soh8p_easnone:
         break;
@@ -1262,8 +1262,8 @@ void Discret::ELEMENTS::SoSh8Plast::calculate_bop(
     const Core::LinAlg::Matrix<nsd_, nsd_>* defgrd, const Core::LinAlg::Matrix<nsd_, nen_>* N_XYZ,
     const int gp)
 {
-  set_jac_refe().Multiply(deriv_shape_function(), xrefe());
-  set_jac_curr().Multiply(deriv_shape_function(), xcurr());
+  set_jac_refe().multiply(deriv_shape_function(), xrefe());
+  set_jac_curr().multiply(deriv_shape_function(), xcurr());
 
   if (gp < 0 || gp > 7) FOUR_C_THROW("invalid gp number");
 
@@ -1326,7 +1326,7 @@ void Discret::ELEMENTS::SoSh8Plast::calculate_bop(
   // transformation from local (parameter) element space to global(material) space
   // with famous 'T'-matrix already used for EAS but now evaluated at each gp
   evaluate_t(jac_refe(), set_tinv_t());
-  set_bop().Multiply(tinv_t(), bop_loc);
+  set_bop().multiply(tinv_t(), bop_loc);
 }
 
 
@@ -1443,7 +1443,7 @@ void Discret::ELEMENTS::SoSh8Plast::ans_strains(const int gp,
 
   // transformation of local glstrains 'back' to global(material) space
   static Core::LinAlg::Matrix<numstr_, 1> glstrain(false);
-  glstrain.Multiply(tinv_t(), lstrain);
+  glstrain.multiply(tinv_t(), lstrain);
 
   for (int i = 0; i < nsd_; ++i) set_rcg()(i, i) = 2. * glstrain(i) + 1.;
   set_rcg()(0, 1) = set_rcg()(1, 0) = glstrain(3);

@@ -74,7 +74,7 @@ class MyocardSanGarny : public MyocardGeneral
   double GetIonicCurrents(const int k) const override;
 
   /// time update for this material
-  void Update(const double phi, const double dt) override;
+  void update(const double phi, const double dt) override;
 
  private:
   MyocardTools tools_;

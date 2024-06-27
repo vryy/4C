@@ -171,9 +171,9 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
   }
 
   // Build prestretch tensor
-  G.MultiplyNT(lamb_pre, cylinderCosy->GetRad(), cylinderCosy->GetRad(), 0.0);
-  G.MultiplyNT(params_->axial_prestretch_, cylinderCosy->GetAxi(), cylinderCosy->GetAxi(), 1.0);
-  G.MultiplyNT(
+  G.multiply_nt(lamb_pre, cylinderCosy->GetRad(), cylinderCosy->GetRad(), 0.0);
+  G.multiply_nt(params_->axial_prestretch_, cylinderCosy->GetAxi(), cylinderCosy->GetAxi(), 1.0);
+  G.multiply_nt(
       params_->circumferential_prestretch_, cylinderCosy->GetCir(), cylinderCosy->GetCir(), 1.0);
 }
 
@@ -216,10 +216,10 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRul
 
   Core::LinAlg::Matrix<6, 1> Smembrane(false);
   membraneEvaluation.evaluate_membrane_stress(Smembrane, params, gp, eleGID);
-  Smembrane.Scale(initial_constituent_reference_density);
+  Smembrane.scale(initial_constituent_reference_density);
 
-  double total_stress = S_stress.Dot(Acir);      // stress of all constituents in circular direction
-  double membrane_stress = Smembrane.Dot(Acir);  // stress of the membrane in circular direction
+  double total_stress = S_stress.dot(Acir);      // stress of all constituents in circular direction
+  double membrane_stress = Smembrane.dot(Acir);  // stress of the membrane in circular direction
 
   // Compute stress as a result of Barlow's formula ("Kesselformel")
   double target_stress = (params_->pressure_ * params_->inner_radius_) /

@@ -46,7 +46,7 @@ void Discret::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, co
     double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master)
 {
   const double kr = scatraeleparamsboundary->charge_transfer_constant();
-  const double alphaa = scatraeleparamsboundary->AlphaA();
+  const double alphaa = scatraeleparamsboundary->Alphadata();
   const double alphac = scatraeleparamsboundary->AlphaC();
 
   const double expterm1 = std::exp(alphaa * frt * eta);
@@ -130,7 +130,7 @@ double Discret::ELEMENTS::CalculateS2IElchGrowthLinearizations(const double j0, 
     const double regfacderiv, const double expterm1, const double expterm2,
     const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
-  const double alphaa = scatraeleparamsboundary->AlphaA();
+  const double alphaa = scatraeleparamsboundary->Alphadata();
   const double alphac = scatraeleparamsboundary->AlphaC();
 
   double dF_dgrowth(0.0), dF_dj_inverse(0.0);
@@ -196,7 +196,7 @@ double Discret::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const 
   double i(0.0);
   const double i0 = j0 * faraday;
 
-  const double alphaa = scatraeleparamsboundary->AlphaA();
+  const double alphaa = scatraeleparamsboundary->Alphadata();
   const double alphac = scatraeleparamsboundary->AlphaC();
 
   // compute Butler-Volmer current density in case of physically reasonable half-cell open-circuit

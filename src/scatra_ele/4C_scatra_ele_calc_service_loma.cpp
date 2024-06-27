@@ -102,7 +102,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyfor
     const double fac = my::eval_shape_func_and_derivs_at_int_point(intpoints, iquad);
 
     // get bodyforce in gausspoint
-    const double rhs = my::bodyforce_[0].Dot(my::funct_);
+    const double rhs = my::bodyforce_[0].dot(my::funct_);
 
     // calculate integrals of domain and bodyforce
     for (unsigned i = 0; i < nen_; i++)
@@ -185,7 +185,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc(
     Core::LinAlg::Matrix<nsd_, 1>& epsilonvel)
 {
   double prefac = 1.0 / 3.0;
-  my::derxy2_.Scale(prefac);
+  my::derxy2_.scale(prefac);
 
   if (nsd_ == 3)
   {
@@ -226,7 +226,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc(
   else
     FOUR_C_THROW("Epsilon(u) is not implemented for the 1D case!");
 
-  my::derxy2_.Scale(1.0 / prefac);
+  my::derxy2_.scale(1.0 / prefac);
 
   return;
 }  // Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc

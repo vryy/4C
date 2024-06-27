@@ -942,7 +942,7 @@ double MyocardInada::GetIonicCurrents(const int k) const
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void MyocardInada::Update(const double phi, const double dt)
+void MyocardInada::update(const double phi, const double dt)
 {
   voi_ += dt;
   // update initial values for next time step

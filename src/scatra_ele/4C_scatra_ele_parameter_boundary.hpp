@@ -57,7 +57,7 @@ namespace Discret
 
       /// Return parameters
       ///@{
-      double AlphaA() const { return alphaa_; }
+      double Alphadata() const { return alphaa_; }
       double AlphaC() const { return alphac_; }
       double Capacitance() const { return capacitance_; }
       double charge_transfer_constant() const { return kr_; }

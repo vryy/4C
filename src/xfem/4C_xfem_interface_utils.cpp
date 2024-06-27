@@ -645,8 +645,8 @@ double XFEM::UTILS::EvalElementVolume(Core::LinAlg::Matrix<3, Core::FE::num_node
     | dr   ds   dt |        | dt   dt   dt |
     +-            -+        +-            -+
   */
-  xjm.MultiplyNT(deriv, xyze);
-  double det = xji.Invert(xjm);
+  xjm.multiply_nt(deriv, xyze);
+  double det = xji.invert(xjm);
 
   if (det < 1E-16) FOUR_C_THROW("GLOBAL ELEMENT ZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", det);
 
@@ -903,8 +903,8 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
   {
     // TODO: Raffaela: which velocity has to be evaluated for these terms in ALE? the convective
     // velocity or the velint?
-    double velnorminf_m = velint_m.NormInf();  // relative convective velocity
-    double velnorminf_s = velint_s.NormInf();
+    double velnorminf_m = velint_m.norm_inf();  // relative convective velocity
+    double velnorminf_s = velint_s.norm_inf();
 
     // take the maximum of viscous & convective contribution or the sum?
     if (mass_conservation_combination == Inpar::XFEM::MassConservationCombination_max)
@@ -953,7 +953,7 @@ void XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
       XFF_ConvStabScaling == Inpar::XFEM::XFF_ConvStabScaling_only_averaged || error_calc)
     return;
 
-  const double veln_normal = velint_m.Dot(normal);
+  const double veln_normal = velint_m.dot(normal);
 
   double NIT_inflow_stab = 0.0;
 
@@ -1022,7 +1022,7 @@ double XFEM::UTILS::Evaluate_Full_Traction(const double &pres_m,
     for (int j = 0; j < 3; ++j)
       traction(i, 0) += visc_m * (vderxy_m(i, j) + vderxy_m(j, i)) * elenormal(j, 0);
 
-  return traction.Dot(elenormal);
+  return traction.dot(elenormal);
 }
 
 double XFEM::UTILS::Evaluate_Full_Traction(const Core::LinAlg::Matrix<3, 1> &intraction,
@@ -1034,7 +1034,7 @@ double XFEM::UTILS::Evaluate_Full_Traction(const Core::LinAlg::Matrix<3, 1> &int
 
   for (int i = 0; i < 3; ++i)
     traction(i, 0) = intraction(i, 0) - penalty_fac * (vel_m(i, 0) - vel_s(i, 0));
-  return traction.Dot(elenormal);
+  return traction.dot(elenormal);
 }
 
 double XFEM::UTILS::Evaluate_Full_Traction(const double &intraction, const double &penalty_fac,
@@ -1044,7 +1044,7 @@ double XFEM::UTILS::Evaluate_Full_Traction(const double &intraction, const doubl
   Core::LinAlg::Matrix<3, 1> traction(true);
 
   for (int i = 0; i < 3; ++i) traction(i, 0) = -penalty_fac * (vel_m(i, 0) - vel_s(i, 0));
-  return intraction + traction.Dot(elenormal);
+  return intraction + traction.dot(elenormal);
 }
 
 void XFEM::UTILS::EvaluteStateatGP(const Core::Elements::Element *sele,
@@ -1074,7 +1074,7 @@ void XFEM::UTILS::EvaluteStateatGP(const Core::Elements::Element *sele,
     const int numnodes = Core::FE::num_nodes<Core::FE::CellType::quad4>;
     static Core::LinAlg::Matrix<numnodes, 1> funct(false);
     Core::FE::shape_function_2D(funct, selexsi(0), selexsi(1), Core::FE::CellType::quad4);
-    vel_s.Multiply(vels, funct);
+    vel_s.multiply(vels, funct);
   }
   else
     FOUR_C_THROW("Your Slave Element is not a quad4?");

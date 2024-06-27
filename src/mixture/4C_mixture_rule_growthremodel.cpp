@@ -156,10 +156,10 @@ void MIXTURE::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3
     const Core::LinAlg::Matrix<1, 6> dGrowthScalarDC =
         constituent.get_d_growth_scalar_d_cg(gp, eleGID);
 
-    S_stress.Update(current_ref_constituent_density, cstress, 1.0);
-    cmat.Update(current_ref_constituent_density, ccmat, 1.0);
+    S_stress.update(current_ref_constituent_density, cstress, 1.0);
+    cmat.update(current_ref_constituent_density, ccmat, 1.0);
 
-    cmat.MultiplyNN(2.0 * params_->initial_reference_density_ * params_->mass_fractions_[i],
+    cmat.multiply_nn(2.0 * params_->initial_reference_density_ * params_->mass_fractions_[i],
         cstress, dGrowthScalarDC, 1.0);
   }
 
@@ -178,7 +178,7 @@ void MIXTURE::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3
           MixtureConstituent& constituent = *constituents()[i];
 
           growthScalar += params_->mass_fractions_[i] * constituent.get_growth_scalar(gp);
-          dGrowthScalarDC.Update(
+          dGrowthScalarDC.update(
               params_->mass_fractions_[i], constituent.get_d_growth_scalar_d_cg(gp, eleGID), 1.0);
         }
 
@@ -188,8 +188,8 @@ void MIXTURE::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3
   growth_strategy_->evaluate_growth_stress_cmat(*this, currentReferenceGrowthScalar,
       dCurrentReferenceGrowthScalarDC, F, E_strain, params, cstress, ccmat, gp, eleGID);
 
-  S_stress.Update(1.0, cstress, 1.0);
-  cmat.Update(1.0, ccmat, 1.0);
+  S_stress.update(1.0, cstress, 1.0);
+  cmat.update(1.0, ccmat, 1.0);
 }
 
 double MIXTURE::GrowthRemodelMixtureRule::compute_current_reference_growth_scalar(int gp) const

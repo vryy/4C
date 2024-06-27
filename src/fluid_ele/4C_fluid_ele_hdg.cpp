@@ -316,10 +316,10 @@ int Discret::ELEMENTS::FluidHDG::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  print this element (public)                        kronbichler 05/13|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDG::Print(std::ostream& os) const
+void Discret::ELEMENTS::FluidHDG::print(std::ostream& os) const
 {
   os << "FluidHDG ";
-  Element::Print(os);
+  Element::print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

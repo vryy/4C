@@ -386,10 +386,10 @@ Core::Elements::Element* Discret::ELEMENTS::Beam3r::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                              cyron 01/08
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3r::Print(std::ostream& os) const
+void Discret::ELEMENTS::Beam3r::print(std::ostream& os) const
 {
   os << "beam3r ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 
@@ -942,10 +942,10 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
       calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point for under-integration
-      jacobi_gp_elastf_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_elastf_[numgp] = dr0dxi.norm2();
 
       // we need dr0ds for computestrain, just reuse dr0dxi from above for simplicity
-      dr0dxi.Scale(1.0 / jacobi_gp_elastf_[numgp]);
+      dr0dxi.scale(1.0 / jacobi_gp_elastf_[numgp]);
 
       triad_interpolation_scheme_ptr->get_interpolated_triad_at_xi(
           Lambda, gausspoints_elast_force.qxg[numgp][0]);
@@ -1010,10 +1010,10 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
       calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
-      jacobi_gp_elastm_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_elastm_[numgp] = dr0dxi.norm2();
 
       // we need dr0ds for computestrain, just reuse dr0dxi from above for simplicity
-      dr0dxi.Scale(1.0 / jacobi_gp_elastm_[numgp]);
+      dr0dxi.scale(1.0 / jacobi_gp_elastm_[numgp]);
 
       triad_interpolation_scheme_ptr->get_interpolated_local_rotation_vector(Psi_l, I_i[numgp]);
 
@@ -1069,7 +1069,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
       calc_r<nnodecl, vpernode, double>(pos_ref_centerline, H_i[numgp], r0);
 
       // Store Jacobi determinant at this Gauss point
-      jacobi_gp_mass_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_mass_[numgp] = dr0dxi.norm2();
 
       triad_interpolation_scheme_ptr->get_interpolated_quaternion_at_xi(
           qnew_gp_mass_[numgp], gausspoints_inertia.qxg[numgp][0]);
@@ -1126,7 +1126,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
       calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
-      jacobi_gp_dampstoch_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_dampstoch_[numgp] = dr0dxi.norm2();
 
       triad_interpolation_scheme_ptr->get_interpolated_quaternion_at_xi(
           qnew_gp_dampstoch_[numgp], gausspoints_damp_stoch.qxg[numgp][0]);
@@ -1161,7 +1161,7 @@ void Discret::ELEMENTS::Beam3r::set_up_reference_geometry(
       calc_r_xi<nnodecl, vpernode, double>(pos_ref_centerline, H_i_xi[numgp], dr0dxi);
 
       // Store Jacobi determinant at this Gauss point
-      jacobi_gp_neumannline_[numgp] = dr0dxi.Norm2();
+      jacobi_gp_neumannline_[numgp] = dr0dxi.norm2();
     }
   }
 
@@ -1679,7 +1679,7 @@ void Discret::ELEMENTS::Beam3r::set_automatic_differentiation_variables(
    */
   for (unsigned int node = 0; node < nnodetriad; ++node)
   {
-    Q_i[node].PutScalar(0.0);
+    Q_i[node].put_scalar(0.0);
     Core::LargeRotations::angletoquaternion(theta_totlag_i[node], Q_i[node]);
   }
 }
@@ -1895,7 +1895,7 @@ void Discret::ELEMENTS::Beam3r::get_nodal_triads_from_disp_theta(
 
     // renormalize quaternion to keep its absolute value one even in case of long simulations and
     // intricate calculations
-    Qnode[node].Scale(1.0 / Core::FADUtils::VectorNorm(Qnode[node]));
+    Qnode[node].scale(1.0 / Core::FADUtils::VectorNorm(Qnode[node]));
   }
 }
 

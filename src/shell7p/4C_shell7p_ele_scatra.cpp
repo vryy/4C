@@ -333,11 +333,11 @@ bool Discret::ELEMENTS::Shell7pScatra::VisData(const std::string& name, std::vec
 }  // VisData()
 
 
-void Discret::ELEMENTS::Shell7pScatra::Print(std::ostream& os) const
+void Discret::ELEMENTS::Shell7pScatra::print(std::ostream& os) const
 {
   os << "Shell7pScatra ";
   os << " discretization type: " << Core::FE::CellTypeToString(distype_).c_str();
-  Element::Print(os);
+  Element::print(os);
 }
 
 std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Shell7pScatra::Lines()

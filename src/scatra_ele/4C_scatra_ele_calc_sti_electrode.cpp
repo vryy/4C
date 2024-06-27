@@ -132,7 +132,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_jou
 )
 {
   // square of gradient of electric potential
-  const double gradpot2 = var_manager()->GradPot().Dot(var_manager()->GradPot());
+  const double gradpot2 = var_manager()->GradPot().dot(var_manager()->GradPot());
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -166,15 +166,15 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_mix
 
   // ionic flux density
   Core::LinAlg::Matrix<nsd_, 1> n = var_manager()->GradConc();
-  n.Update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
+  n.update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
 
   // derivative of square of ionic flux density w.r.t. temperature
   const double dn2_dT =
-      2. * n.Dot(gradtemp) * diffcoeff * concentration * soret / pow(temperature, 2);
+      2. * n.dot(gradtemp) * diffcoeff * concentration * soret / pow(temperature, 2);
 
   // formal, symbolic derivative of square of ionic flux density w.r.t. temperature gradient
   Core::LinAlg::Matrix<nsd_, 1> dn2_dgradT = n;
-  dn2_dgradT.Scale(-2. * diffcoeff * concentration * soret / temperature);
+  dn2_dgradT.scale(-2. * diffcoeff * concentration * soret / temperature);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -191,7 +191,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_mix
     }
 
     // contributions of heat of mixing term to thermo residuals
-    erhs[vi] -= rhsfac * diffmanagerstielectrode_->GetOCPDeriv() * F * n.Dot(n) / diffcoeff *
+    erhs[vi] -= rhsfac * diffmanagerstielectrode_->GetOCPDeriv() * F * n.dot(n) / diffcoeff *
                 my::funct_(vi);
   }
 }
@@ -219,11 +219,11 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_sor
 
   // ionic flux density
   Core::LinAlg::Matrix<nsd_, 1> n = var_manager()->GradConc();
-  n.Update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
+  n.update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
 
   // derivative of ionic flux density w.r.t. temperature
   Core::LinAlg::Matrix<nsd_, 1> dn_dT = gradtemp;
-  dn_dT.Scale(diffcoeff * concentration * soret / pow(temperature, 2));
+  dn_dT.scale(diffcoeff * concentration * soret / pow(temperature, 2));
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -255,8 +255,8 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_sor
                           (laplawfrhs_n_ui / temperature +
                               laplawfrhs_gradtemp / temperature * (-diffcoeff) * concentration *
                                   soret / temperature -
-                              gradtemp.Dot(n) * pow(1 / temperature, 2.0) * my::funct_(ui) +
-                              gradtemp.Dot(dn_dT) * my::funct_(ui) / temperature) +
+                              gradtemp.dot(n) * pow(1 / temperature, 2.0) * my::funct_(ui) +
+                              gradtemp.dot(dn_dT) * my::funct_(ui) / temperature) +
                       timefacfac * F * concentration * soret *
                           diffmanagerstielectrode_->GetOCPDeriv() *
                           (-laplawf * diffcoeff * concentration * soret / temperature +
@@ -265,7 +265,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_sor
 
     // contributions of Soret effect term to thermo residuals
     erhs[vi] -= rhsfac * concentration * diffmanagerstielectrode_->GetOCPDeriv() * F * soret *
-                (my::funct_(vi) * n.Dot(gradtemp) / temperature + laplawfrhs_n_vi);
+                (my::funct_(vi) * n.dot(gradtemp) / temperature + laplawfrhs_n_vi);
   }
 }
 
@@ -361,7 +361,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_joule_od(
 {
   // extract variables and parameters
   const Core::LinAlg::Matrix<nsd_, 1>& gradpot = var_manager()->GradPot();
-  const double gradpot2 = gradpot.Dot(gradpot);
+  const double gradpot2 = gradpot.dot(gradpot);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -404,23 +404,23 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_mixing_od(
 
   // ionic flux density
   Core::LinAlg::Matrix<nsd_, 1> n = gradconc;
-  n.Update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
+  n.update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
 
   // derivative of ionic flux density w.r.t. concentration
   Core::LinAlg::Matrix<nsd_, 1> dn_dc = gradconc;
-  dn_dc.Update(
+  dn_dc.update(
       -diffcoeffderiv * concentration * soret / temperature - diffcoeff * soret / temperature,
       gradtemp, -diffcoeffderiv);
 
   // square of ionic flux density
-  const double n2 = n.Dot(n);
+  const double n2 = n.dot(n);
 
   // derivative of square of ionic flux density w.r.t. concentration
-  double dn2_dc = 2. * n.Dot(dn_dc);
+  double dn2_dc = 2. * n.dot(dn_dc);
 
   // derivative of square of ionic flux density w.r.t. concentration gradient
   Core::LinAlg::Matrix<nsd_, 1> dn2_dgradc = n;
-  dn2_dgradc.Scale(-2. * diffcoeff);
+  dn2_dgradc.scale(-2. * diffcoeff);
 
   for (int vi = 0; vi < static_cast<int>(nen_); ++vi)
   {
@@ -472,11 +472,11 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_soret_od(
 
   // ionic flux density
   Core::LinAlg::Matrix<nsd_, 1> n = gradconc;
-  n.Update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
+  n.update(-diffcoeff * concentration * soret / temperature, gradtemp, -diffcoeff);
 
   // derivative of ionic flux density w.r.t. concentration
   Core::LinAlg::Matrix<nsd_, 1> dn_dc = gradconc;
-  dn_dc.Update(
+  dn_dc.update(
       -diffcoeffderiv * concentration * soret / temperature - diffcoeff * soret / temperature,
       gradtemp, -diffcoeffderiv);
 
@@ -503,10 +503,10 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_soret_od(
       // linearizations of Soret effect term in thermo residuals w.r.t. concentration dofs
       emat(vi, ui * 2) +=
           timefacfac * my::funct_(vi) * F * soret / temperature *
-              (diffmanagerstielectrode_->GetOCPDeriv() * gradtemp.Dot(n) * my::funct_(ui) +
-                  concentration * diffmanagerstielectrode_->GetOCPDeriv2() * gradtemp.Dot(n) *
+              (diffmanagerstielectrode_->GetOCPDeriv() * gradtemp.dot(n) * my::funct_(ui) +
+                  concentration * diffmanagerstielectrode_->GetOCPDeriv2() * gradtemp.dot(n) *
                       my::funct_(ui) +
-                  concentration * diffmanagerstielectrode_->GetOCPDeriv() * gradtemp.Dot(dn_dc) *
+                  concentration * diffmanagerstielectrode_->GetOCPDeriv() * gradtemp.dot(dn_dc) *
                       my::funct_(ui) +
                   concentration * diffmanagerstielectrode_->GetOCPDeriv() * (-diffcoeff) *
                       laplawfrhs_gradtemp) +

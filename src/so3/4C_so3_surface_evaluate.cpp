@@ -279,7 +279,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
         Core::LinAlg::SerialDenseMatrix dxyzdrs(2, 3);
         Core::LinAlg::multiply(dxyzdrs, deriv, x);
         Core::LinAlg::SerialDenseMatrix metrictensor(2, 2);
-        Core::LinAlg::multiplyNT(metrictensor, dxyzdrs, dxyzdrs);
+        Core::LinAlg::multiply_nt(metrictensor, dxyzdrs, dxyzdrs);
         const double detA =
             sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
 
@@ -296,7 +296,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
             if (functnum > 0)
             {
               // Calculate reference position of GP
-              Core::LinAlg::multiplyTN(gp_coord, funct, x);
+              Core::LinAlg::multiply_tn(gp_coord, funct, x);
               // write coordinates in another datatype
               double gp_coord2[numdim];
               for (int i = 0; i < numdim; i++)
@@ -343,7 +343,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
 
         if (functnum > 0)
         {
-          Core::LinAlg::multiplyTN(gp_coord, funct, xc);
+          Core::LinAlg::multiply_tn(gp_coord, funct, xc);
           // write coordinates in another datatype
           double gp_coord2[numdim];
           for (int i = 0; i < numdim; i++)
@@ -419,7 +419,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
         {
           if (functnum > 0)
           {
-            Core::LinAlg::multiplyTN(gp_coord, funct, xc);
+            Core::LinAlg::multiply_tn(gp_coord, funct, xc);
             // write coordinates in another datatype
             double gp_coord2[numdim];
             for (int i = 0; i < numdim; i++)
@@ -495,7 +495,7 @@ void Discret::ELEMENTS::StructuralSurface::surface_integration(double& detA,
   **        dr     dr            dr     ds            ds     ds
   */
   Core::LinAlg::SerialDenseMatrix metrictensor(2, 2);
-  Core::LinAlg::multiplyNT(metrictensor, dxyzdrs, dxyzdrs);
+  Core::LinAlg::multiply_nt(metrictensor, dxyzdrs, dxyzdrs);
   detA = sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
   normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
   normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
@@ -1443,7 +1443,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
             parent_xi(gp, 2), this->parent_element()->Shape());
         Core::FE::shape_function_3D_deriv1(parent_deriv_notrafo, parent_xi(gp, 0), parent_xi(gp, 1),
             parent_xi(gp, 2), this->parent_element()->Shape());
-        // parent_deriv.Multiply(derivtrafo,parent_deriv_notrafo);
+        // parent_deriv.multiply(derivtrafo,parent_deriv_notrafo);
 
         //        //////////////////
         //       // Debug output //
@@ -1462,7 +1462,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
 
         // compute dXYZ / drs
         Core::LinAlg::Matrix<2, 3> dxyzdrs;
-        dxyzdrs.MultiplyNT(
+        dxyzdrs.multiply_nt(
             deriv, xrefe);  // to calculate unitnormal in current config. argument must be xcurr
 
         normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
@@ -1470,7 +1470,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         normal[2] = dxyzdrs(0, 0) * dxyzdrs(1, 1) - dxyzdrs(0, 1) * dxyzdrs(1, 0);
 
         Core::LinAlg::Matrix<2, 2> metrictensor;
-        metrictensor.MultiplyNT(dxyzdrs, dxyzdrs);
+        metrictensor.multiply_nt(dxyzdrs, dxyzdrs);
         double detA =
             sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
 
@@ -1481,8 +1481,8 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         //        std::cout<<" normal["<<i<<"] "<<normal[i]<<std::endl;
 
         for (int i = 0; i < globdim; ++i) unitnormal(i, 0) = normal[i];
-        const double norm2 = unitnormal.Norm2();
-        unitnormal.Scale(1 / norm2);
+        const double norm2 = unitnormal.norm2();
+        unitnormal.scale(1 / norm2);
 
         //         //////////////////
         //        // Debug output //
@@ -1525,22 +1525,22 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         // by N_XYZ = J^-1 * N_rst
         Core::LinAlg::Matrix<3, 3> invJ(true);
         Core::LinAlg::Matrix<3, 8> N_XYZ(true);
-        invJ.MultiplyNT(parent_deriv_notrafo, parent_xrefe);
-        invJ.Invert();
-        N_XYZ.Multiply(invJ, parent_deriv_notrafo);
+        invJ.multiply_nt(parent_deriv_notrafo, parent_xrefe);
+        invJ.invert();
+        N_XYZ.multiply(invJ, parent_deriv_notrafo);
 
         // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
         Core::LinAlg::Matrix<3, 3> defgrd_inv;
         // deformation gradient
-        defgrd_inv.MultiplyNT(parent_xcurr, N_XYZ);
+        defgrd_inv.multiply_nt(parent_xcurr, N_XYZ);
         // Jacobian determinant
-        double J = defgrd_inv.Determinant();
+        double J = defgrd_inv.determinant();
         // invert deformation gradient
-        defgrd_inv.Invert();
+        defgrd_inv.invert();
 
         Core::LinAlg::Matrix<3, 1> tempvec;
         Core::LinAlg::Matrix<3, 3> tempmat;
-        tempmat.MultiplyNT(cauchystress, defgrd_inv);
+        tempmat.multiply_nt(cauchystress, defgrd_inv);
 
         //        //////////////////
         //       // Debug output //
@@ -1552,7 +1552,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         //
         //      std::cout<<"_________________________________________________________________________________"<<std::endl;
 
-        tempvec.MultiplyNN(tempmat, unitnormal);
+        tempvec.multiply_nn(tempmat, unitnormal);
 
         double gpweight = intpoints.IP().qwgt[gp];
         // fill element vector
@@ -1576,8 +1576,8 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
           tempmat.clear();
           tempvec.clear();
 
-          tempmat.MultiplyNT(pressure_part, defgrd_inv);
-          tempvec.MultiplyNN(tempmat, unitnormal);
+          tempmat.multiply_nt(pressure_part, defgrd_inv);
+          tempvec.multiply_nn(tempmat, unitnormal);
 
           // fill element vector
           for (int node = 0; node < nen; node++)
@@ -1822,7 +1822,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
         Core::LinAlg::SerialDenseMatrix dxyzdrs(2, 3);
         Core::LinAlg::multiply(dxyzdrs, deriv, x);
         Core::LinAlg::SerialDenseMatrix metrictensor(2, 2);
-        Core::LinAlg::multiplyNT(metrictensor, dxyzdrs, dxyzdrs);
+        Core::LinAlg::multiply_nt(metrictensor, dxyzdrs, dxyzdrs);
         const double detA =
             sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
 
@@ -2115,7 +2115,7 @@ double Discret::ELEMENTS::StructuralSurface::compute_constr_vols(
       Core::LinAlg::SerialDenseMatrix metrictensor(2, 3);
       Core::LinAlg::multiply(metrictensor, deriv, ab);
       // Core::LinAlg::SerialDenseMatrix metrictensor(2,2);
-      // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
+      // metrictensor.multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);
       const double dotprodc = funct.dot(c);
@@ -2192,7 +2192,7 @@ void Discret::ELEMENTS::StructuralSurface::compute_vol_deriv(
       // column
       Core::LinAlg::SerialDenseMatrix metrictensor(2, numdim);
       Core::LinAlg::multiply(metrictensor, deriv, ab);
-      // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
+      // metrictensor.multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);
       const double dotprodc = funct.dot(c);
@@ -2516,9 +2516,9 @@ void Discret::ELEMENTS::StructuralSurface::calculate_surface_porosity(
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     //! transposed jacobian "dx/ds"
     Core::LinAlg::SerialDenseMatrix xjm(numdim, numdim);
-    Core::LinAlg::multiplyNT(xjm, deriv, xcurr);
+    Core::LinAlg::multiply_nt(xjm, deriv, xcurr);
     Core::LinAlg::SerialDenseMatrix Jmat(numdim, numdim);
-    Core::LinAlg::multiplyNT(Jmat, deriv, xrefe);
+    Core::LinAlg::multiply_nt(Jmat, deriv, xrefe);
 
     double det = 0.0;
     double detJ = 0.0;

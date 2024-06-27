@@ -310,7 +310,7 @@ namespace Discret::ELEMENTS
     int num_dof_per_element() const override { return 0; }
 
     //! \brief Print this element
-    void Print(std::ostream& os) const override;
+    void print(std::ostream& os) const override;
 
     //! \brief get reference triad i.e. Tref_
     std::vector<Core::LinAlg::Matrix<3, 1>> Tref() const;

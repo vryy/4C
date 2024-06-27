@@ -87,7 +87,7 @@ namespace STR
       const STR::TimeInt::BaseDataGlobalState& global_state() const;
 
       //! print the result of the predictor step
-      void Print() const;
+      void print() const;
 
       //! Run before the external force are computed and assembled
       virtual bool pre_apply_force_external(Epetra_Vector& fextnp) const;

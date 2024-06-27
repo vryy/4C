@@ -157,8 +157,8 @@ namespace Core::Geo
        *  \author sudhakar
        *  \date 10/14
        */
-      void Print(std::ostream& stream);
-      void Print() { Print(std::cout); }
+      void print(std::ostream& stream);
+      void print() { print(std::cout); }
 
       /*!
       \brief Computes the location of Gauss points on the boundarycell (x_gp_lin) from the standard
@@ -199,10 +199,10 @@ namespace Core::Geo
             p1(dim) = xyze(dim, 1);
             p2(dim) = xyze(dim, 2);
           }
-          drs = 2.0 * (Cut::Kernel::getAreaTri(p0.A(), p1.A(), p2.A(), &normal));
+          drs = 2.0 * (Cut::Kernel::getAreaTri(p0.data(), p1.data(), p2.data(), &normal));
         }
 
-        x_gp_lin.Multiply(xyze, funct);
+        x_gp_lin.multiply(xyze, funct);
 
         return;
       }
@@ -268,7 +268,7 @@ namespace Core::Geo
         Core::LinAlg::Matrix<3, numnodes> xyze(this->xyz_, true);
         Core::LinAlg::Matrix<numnodes, 1> funct;
         Core::FE::shape_function<distype>(center, funct);
-        midpoint.Multiply(xyze, funct);
+        midpoint.multiply(xyze, funct);
       }
 
       /// Current position of the boundary cell

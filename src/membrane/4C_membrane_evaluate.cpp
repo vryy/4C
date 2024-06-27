@@ -99,7 +99,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       mem_nlnstiffmass(lm, mydisp, matptr, nullptr, &elevec1, nullptr, nullptr, params,
           Inpar::STR::stress_none, Inpar::STR::strain_none);
@@ -117,7 +117,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       mem_nlnstiffmass(lm, mydisp, matptr, &elemat2, &elevec1, nullptr, nullptr, params,
           Inpar::STR::stress_none, Inpar::STR::strain_none);
@@ -327,7 +327,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         {
           // incompressibility condition to get principle stretch in thickness direction
           lambda3 = std::sqrt(
-              1.0 / (dxds1.Dot(dxds1) * dxds2.Dot(dxds2) - std::pow(dxds1.Dot(dxds2), 2.0)));
+              1.0 / (dxds1.dot(dxds1) * dxds2.dot(dxds2) - std::pow(dxds1.dot(dxds2), 2.0)));
         }
         else
           FOUR_C_THROW(
@@ -345,7 +345,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
 
         // calculate three dimensional right cauchy-green strain tensor in orthonormal base
         Core::LinAlg::Matrix<noddof_, noddof_> cauchygreen_loc(true);
-        cauchygreen_loc.MultiplyTN(1.0, defgrd_loc, defgrd_loc, 0.0);
+        cauchygreen_loc.multiply_tn(1.0, defgrd_loc, defgrd_loc, 0.0);
 
         /*===============================================================================*
          | call material law for evaluation of strain energy                            |
@@ -413,7 +413,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
 
         // extrapolate the nodal thickness for current element
         Core::LinAlg::Matrix<numnod_, 1> nodalthickness;
-        nodalthickness.Multiply(1.0, extrapol, gpthick, 0.0);
+        nodalthickness.multiply(1.0, extrapol, gpthick, 0.0);
 
         // "assembly" of extrapolated nodal thickness
         for (int i = 0; i < numnod_; ++i)
@@ -571,7 +571,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
     xrefe_cross(2) = dXds1(0) * dXds2(1) - dXds1(1) * dXds2(0);
 
     // euclidian norm of xref_cross
-    double xrefe_cn = xrefe_cross.Norm2();
+    double xrefe_cn = xrefe_cross.norm2();
 
     // integration factor
     double fac = (pressure * G1G2_cn * gpweight) / xrefe_cn;
@@ -706,7 +706,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       // standard evaluation (incompressible, plane stress)
       // incompressibility condition to get principle stretch in thickness direction
       lambda3 =
-          std::sqrt(1.0 / (dxds1.Dot(dxds1) * dxds2.Dot(dxds2) - std::pow(dxds1.Dot(dxds2), 2.0)));
+          std::sqrt(1.0 / (dxds1.dot(dxds1) * dxds2.dot(dxds2) - std::pow(dxds1.dot(dxds2), 2.0)));
     }
 
     // surface deformation gradient in 3 dimensions in global coordinates
@@ -721,7 +721,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
 
     // calculate three dimensional right cauchy-green strain tensor in orthonormal base
     Core::LinAlg::Matrix<noddof_, noddof_> cauchygreen_loc(true);
-    cauchygreen_loc.MultiplyTN(1.0, defgrd_loc, defgrd_loc, 0.0);
+    cauchygreen_loc.multiply_tn(1.0, defgrd_loc, defgrd_loc, 0.0);
 
     /*===============================================================================*
      | call material law                                                             |
@@ -738,14 +738,14 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     {
       // Gauss-point coordinates in reference configuration
       Core::LinAlg::Matrix<noddof_, 1> gprefecoord(true);
-      gprefecoord.MultiplyTN(xrefe, shapefcts);
+      gprefecoord.multiply_tn(xrefe, shapefcts);
       params.set("gp_coords_ref", gprefecoord);
 
       // center of element in reference configuration
       Core::LinAlg::Matrix<numnod_, 1> funct_center;
       Core::FE::shape_function_2D(funct_center, 0.0, 0.0, distype);
       Core::LinAlg::Matrix<noddof_, 1> midpoint;
-      midpoint.MultiplyTN(xrefe, funct_center);
+      midpoint.multiply_tn(xrefe, funct_center);
       params.set("elecenter_coords_ref", midpoint);
     }
 
@@ -762,7 +762,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       Core::LinAlg::Tensor::InverseTensorRotation<3>(Q_localToGlobal, defgrd_glob, defgrd_loc);
 
       // update three dimensional right cauchy-green strain tensor in orthonormal base
-      cauchygreen_loc.MultiplyTN(1.0, defgrd_loc, defgrd_loc, 0.0);
+      cauchygreen_loc.multiply_tn(1.0, defgrd_loc, defgrd_loc, 0.0);
     }
 
     // standard evaluation (incompressible, plane stress)
@@ -829,7 +829,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       double fac = gpweight * thickness_ * G1G2_cn;
 
       // determine force and stiffness matrix, Gruttmann1992 equation (37) and (39)
-      force->MultiplyTN(fac, B_matrix, pk2red_loc, 1.0);
+      force->multiply_tn(fac, B_matrix, pk2red_loc, 1.0);
     }
 
     // evaluate stiffness matrix and force vector if needed
@@ -873,15 +873,15 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       double fac = gpweight * thickness_ * G1G2_cn;
 
       // determine force and stiffness matrix, Gruttmann1992 equation (37) and (39)
-      force->MultiplyTN(fac, B_matrix, pk2red_loc, 1.0);
+      force->multiply_tn(fac, B_matrix, pk2red_loc, 1.0);
 
       Core::LinAlg::Matrix<numdof_, noddof_> temp(true);
-      temp.MultiplyTN(1.0, B_matrix, cmatred_loc, 0.0);
+      temp.multiply_tn(1.0, B_matrix, cmatred_loc, 0.0);
       Core::LinAlg::Matrix<numdof_, numdof_> temp2(true);
-      temp2.Multiply(1.0, temp, B_matrix, 0.0);
-      temp2.Update(1.0, G_matrix, 1.0);
+      temp2.multiply(1.0, temp, B_matrix, 0.0);
+      temp2.update(1.0, G_matrix, 1.0);
 
-      stiffmatrix->Update(fac, temp2, 1.0);
+      stiffmatrix->update(fac, temp2, 1.0);
     }
 
     // evaluate massmatrix if needed, just valid for a constant density
@@ -1250,7 +1250,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
    *===============================================================================*/
 
   Core::LinAlg::Matrix<noddof_, numdim_> G12(true);
-  G12.MultiplyTT(1.0, xrefe, derivs, 0.0);
+  G12.multiply_tt(1.0, xrefe, derivs, 0.0);
 
   // G1 and G2 Gruttmann1992 equation (43)
   Core::LinAlg::Matrix<noddof_, 1> G1(true);
@@ -1270,8 +1270,8 @@ void Discret::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
   G1G2_cross(2) = G1(0) * G2(1) - G1(1) * G2(0);
 
   // 2 norm of vectors
-  G1G2_cn = G1G2_cross.Norm2();
-  double G1_n = G1.Norm2();
+  G1G2_cn = G1G2_cross.norm2();
+  double G1_n = G1.norm2();
 
   // Gruttmann1992 equation (44), orthonormal base vectors
   Core::LinAlg::Matrix<noddof_, 1> tn(true);
@@ -1301,17 +1301,17 @@ void Discret::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
   // for the Trafo from local membrane orthonormal coordinates to global coordinates
   // It is not the Jacobian for the Trafo from the parameter space xi, eta to the global coords!
   Core::LinAlg::Matrix<numdim_, numdim_> J(true);
-  J.MultiplyTN(1.0, G12, t12, 0.0);
+  J.multiply_tn(1.0, G12, t12, 0.0);
 
   Core::LinAlg::Matrix<numdim_, numdim_> Jinv(true);
-  Jinv.Invert(J);
+  Jinv.invert(J);
 
   // calclate derivatives of shape functions in orthonormal base, Gruttmann1992 equation (42)
-  derivs_ortho.Multiply(1.0, Jinv, derivs, 0.0);
+  derivs_ortho.multiply(1.0, Jinv, derivs, 0.0);
 
   // derivative of the reference position wrt the orthonormal base
   Core::LinAlg::Matrix<noddof_, numdim_> dXds(true);
-  dXds.MultiplyTT(1.0, xrefe, derivs_ortho, 0.0);
+  dXds.multiply_tt(1.0, xrefe, derivs_ortho, 0.0);
 
   dXds1(0) = dXds(0, 0);
   dXds1(1) = dXds(1, 0);
@@ -1323,7 +1323,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
 
   // derivative of the current position wrt the orthonormal base
   Core::LinAlg::Matrix<noddof_, numdim_> dxds(true);
-  dxds.MultiplyTT(1.0, xcurr, derivs_ortho, 0.0);
+  dxds.multiply_tt(1.0, xcurr, derivs_ortho, 0.0);
 
   dxds1(0) = dxds(0, 0);
   dxds1(1) = dxds(1, 0);
@@ -1358,15 +1358,15 @@ void Discret::ELEMENTS::Membrane<distype>::mem_p_k2to_cauchy(
     Core::LinAlg::Matrix<noddof_, noddof_>& cauchy) const
 {
   // calculate the Jacobi-deterinant
-  const double detF = defgrd.Determinant();
+  const double detF = defgrd.determinant();
 
   // check determinant of deformation gradient
-  if (detF == 0) FOUR_C_THROW("Zero Determinant of Deformation Gradient.");
+  if (detF == 0) FOUR_C_THROW("Zero determinant of Deformation Gradient.");
 
   // determine the cauchy stresses
   Core::LinAlg::Matrix<noddof_, noddof_> temp;
-  temp.Multiply((1.0 / detF), defgrd, pkstress_global, 0.0);
-  cauchy.MultiplyNT(1.0, temp, defgrd, 1.0);
+  temp.multiply((1.0 / detF), defgrd, pkstress_global, 0.0);
+  cauchy.multiply_nt(1.0, temp, defgrd, 1.0);
 
   return;
 
@@ -1382,18 +1382,18 @@ void Discret::ELEMENTS::Membrane<distype>::mem_g_lto_ea(
     Core::LinAlg::Matrix<noddof_, noddof_>& euler_almansi) const
 {
   // check determinant of deformation gradient
-  if (defgrd.Determinant() == 0)
+  if (defgrd.determinant() == 0)
     FOUR_C_THROW(
-        "Inverse of Deformation Gradient can not be calcualated due to a zero Determinant.");
+        "Inverse of Deformation Gradient can not be calcualated due to a zero determinant.");
 
   // inverse of deformation gradient
   Core::LinAlg::Matrix<noddof_, noddof_> invdefgrd(true);
-  invdefgrd.Invert(defgrd);
+  invdefgrd.invert(defgrd);
 
   // determine the euler-almansi strains
   Core::LinAlg::Matrix<noddof_, noddof_> temp;
-  temp.Multiply(1.0, glstrain_global, invdefgrd, 0.0);
-  euler_almansi.MultiplyTN(1.0, invdefgrd, temp, 1.0);
+  temp.multiply(1.0, glstrain_global, invdefgrd, 0.0);
+  euler_almansi.multiply_tn(1.0, invdefgrd, temp, 1.0);
 
   return;
 
@@ -1418,7 +1418,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_defgrd_global(
   xcurr_cross(2) = dxds1(0) * dxds2(1) - dxds1(1) * dxds2(0);
 
   // normalize the cross product for the current configuration
-  xcurr_cross.Scale(1.0 / xcurr_cross.Norm2());
+  xcurr_cross.scale(1.0 / xcurr_cross.norm2());
 
   // determine cross product X,1 x X,2, has unit length due to orthonormal basis
   Core::LinAlg::Matrix<noddof_, 1> xrefe_cross(true);
@@ -1426,10 +1426,10 @@ void Discret::ELEMENTS::Membrane<distype>::mem_defgrd_global(
   xrefe_cross(1) = dXds1(2) * dXds2(0) - dXds1(0) * dXds2(2);
   xrefe_cross(2) = dXds1(0) * dXds2(1) - dXds1(1) * dXds2(0);
 
-  defgrd_glob.MultiplyNT(1.0, dxds1, dXds1, 0.0);
-  defgrd_glob.MultiplyNT(1.0, dxds2, dXds2, 1.0);
+  defgrd_glob.multiply_nt(1.0, dxds1, dXds1, 0.0);
+  defgrd_glob.multiply_nt(1.0, dxds2, dXds2, 1.0);
   // scale third dimension by sqrt(rcg33), that equals the principle stretch lambda_3
-  defgrd_glob.MultiplyNT(lambda3, xcurr_cross, xrefe_cross, 1.0);
+  defgrd_glob.multiply_nt(lambda3, xcurr_cross, xrefe_cross, 1.0);
 
   return;
 
@@ -1472,7 +1472,7 @@ Discret::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
   // fixedsizesolver for inverting extrapol
   Core::LinAlg::FixedSizeSerialDenseSolver<numnod_, numgpt_post_, 1> solver;
   solver.SetMatrix(extrapol);
-  int err = solver.Invert();
+  int err = solver.invert();
   if (err != 0.) FOUR_C_THROW("Matrix extrapol is not invertible");
 
   return extrapol;
@@ -1554,7 +1554,7 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(std::vector<double>& d
       }
       else if (material_global_coordinates != Teuchos::null)
       {
-        SolidMaterial()->Update(defgrd_glob, gp, params, Id());
+        SolidMaterial()->update(defgrd_glob, gp, params, Id());
       }
     }
   }

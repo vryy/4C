@@ -65,7 +65,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::VolumeChang
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::ostream& NOX::Nln::Inner::StatusTest::VolumeChange::Print(
+std::ostream& NOX::Nln::Inner::StatusTest::VolumeChange::print(
     std::ostream& stream, int indent) const
 {
   const std::string indent_str(indent, ' ');

@@ -208,13 +208,13 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
 
   // Jacobian matrix and determinant of parent element (including check)
   Core::LinAlg::Matrix<pnsd, pnsd> dxds(true);
-  dxds.MultiplyNT(pderiv, pxyze);
-  const double detdxds = dxds.Determinant();
+  dxds.multiply_nt(pderiv, pxyze);
+  const double detdxds = dxds.determinant();
 
   // Jacobian matrix and determinant of parent element (including check)
   Core::LinAlg::Matrix<pnsd, pnsd> dXds(true);
-  dXds.MultiplyNT(pderiv, pxyze0);
-  const double detdXds = dXds.Determinant();
+  dXds.multiply_nt(pderiv, pxyze0);
+  const double detdXds = dXds.determinant();
 
   // deformation gradtient dx/dX = dx/ds * ds/dX = dx/ds * (dX/ds)^(-1)
   const double J = detdxds / detdXds;

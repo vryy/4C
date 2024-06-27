@@ -147,7 +147,7 @@ Core::Elements::Element* Discret::ELEMENTS::Rigidsphere::Clone() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                              meier 05/12
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::Print(std::ostream& os) const { return; }
+void Discret::ELEMENTS::Rigidsphere::print(std::ostream& os) const { return; }
 
 
 /*----------------------------------------------------------------------*

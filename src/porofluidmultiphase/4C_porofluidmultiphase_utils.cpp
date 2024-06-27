@@ -480,9 +480,9 @@ double POROFLUIDMULTIPHASE::UTILS::GetMaxNodalDistance(
       pos1(2) = node1->X()[2];
 
       static Core::LinAlg::Matrix<3, 1> dist;
-      dist.Update(1.0, pos0, -1.0, pos1, 0.0);
+      dist.update(1.0, pos0, -1.0, pos1, 0.0);
 
-      maxdist = std::max(maxdist, dist.Norm2());
+      maxdist = std::max(maxdist, dist.norm2());
     }
   }
 

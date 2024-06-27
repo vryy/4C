@@ -62,7 +62,7 @@ namespace
       {
         for (std::size_t i = 0; i < 2; ++i)
         {
-          gpTensors_[gp][i].MultiplyNT(gpFibers_[gp][i], gpFibers_[gp][i]);
+          gpTensors_[gp][i].multiply_nt(gpFibers_[gp][i], gpFibers_[gp][i]);
           Core::LinAlg::Voigt::Stresses::matrix_to_vector(
               gpTensors_[gp][i], gpTensors_stress_[gp][i]);
         }

@@ -84,7 +84,7 @@ namespace CONTACT
     \brief Print this beam3 contact manager
 
     */
-    virtual void Print(std::ostream& os) const;
+    virtual void print(std::ostream& os) const;
 
     /*!
     \brief Get problem discretization
@@ -169,7 +169,7 @@ namespace CONTACT
     visualization in GMSH will be written. Also some output to screen is done.
 
     */
-    void Update(const Epetra_Vector& disrow, const int& timestep, const int& newtonstep);
+    void update(const Epetra_Vector& disrow, const int& timestep, const int& newtonstep);
 
     /*!
     \brief Update constraint norm

@@ -116,7 +116,7 @@ namespace Discret
             direction(2) = xyze(2, i_start) - xyze(2, i_end);
 
             // update elediam
-            if (direction.Norm2() > elediam) elediam = direction.Norm2();
+            if (direction.norm2() > elediam) elediam = direction.norm2();
           }
         }
 

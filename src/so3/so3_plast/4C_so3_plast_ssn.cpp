@@ -480,7 +480,7 @@ void Discret::ELEMENTS::So3Plast<distype>::unpack(const std::vector<char>& data)
  | print this element (public)                              seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::So3Plast<distype>::print(std::ostream& os) const
 {
   os << "So3Plast ";
   return;
@@ -879,7 +879,7 @@ void Discret::ELEMENTS::So3Plast<distype>::soh8_expol(
   }
 
   Core::LinAlg::Matrix<nen_, num_cols> nodalData;
-  nodalData.Multiply(expolOperator, data);
+  nodalData.multiply(expolOperator, data);
 
   // "assembly" of extrapolated nodal data
   for (int i = 0; i < nen_; ++i)

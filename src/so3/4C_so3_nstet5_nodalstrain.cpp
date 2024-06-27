@@ -61,7 +61,7 @@ void Discret::ELEMENTS::NStet5Type::element_deformation_gradient(Core::FE::Discr
         for (int j = 0; j < 3; ++j) disp(i, j) = subdisp(e->sub_lm(k)[i], j);
 
       e->sub_f(k) = e->build_f(disp, e->sub_nxyz(k));
-      double J = e->sub_f(k).Determinant();
+      double J = e->sub_f(k).determinant();
       if (J <= 0.0)
         FOUR_C_THROW("det(F) of Element %d / Subelement %d %10.5e <= 0 !!\n", e->Id(), k, J);
     }  // for (int k=0; k<4; ++k)
@@ -465,8 +465,8 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
       Vnode += V;
 
       // add to nodal deformation gradient
-      F.Scale(V);
-      //     tF.Scale(V);
+      F.scale(V);
+      //     tF.scale(V);
       Fnode += F;
       //     tFnode += tF;
 
@@ -474,8 +474,8 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
   }    // for (int i=0; i<neleinpatch; ++i)
 
   // do the actual averaging
-  Fnode.Scale(1.0 / Vnode);
-  //  tFnode.Scale(1.0/Vnode);
+  Fnode.scale(1.0 / Vnode);
+  //  tFnode.scale(1.0/Vnode);
 
 
   //-----------------------------------------------------------------------
@@ -555,8 +555,8 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
 
   Core::LinAlg::Matrix<3, 3> cauchygreen;
   //  Core::LinAlg::Matrix<3,3,FADFAD> tcauchygreen;
-  cauchygreen.MultiplyTN(Fnode, Fnode);
-  //  tcauchygreen.MultiplyTN(tFnode,tFnode);
+  cauchygreen.multiply_tn(Fnode, Fnode);
+  //  tcauchygreen.multiply_tn(tFnode,tFnode);
 
   // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
@@ -573,7 +573,7 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
   if (iostrain != Inpar::STR::strain_none)
   {
 #ifndef PUSO_NSTET5
-    strain_output(iostrain, *nodalstrain, Fnode, Fnode.Determinant(), 1.0, 1.0 - ALPHA_NSTET5);
+    strain_output(iostrain, *nodalstrain, Fnode, Fnode.determinant(), 1.0, 1.0 - ALPHA_NSTET5);
 #else
     strain_output(iostrain, *nodalstrain, Fnode, glstrain, 1.0 - ALPHA_NSTET5);
 #endif
@@ -613,11 +613,11 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
       // EleGID is set to -1 errorcheck is performed in
       // Mat::Evaluate. I.e if we have elementwise mat params you will catch an error
       select_material(mat, stressele, cmatele, density, glstrain, Fnode, 0, -1);
-      cmat.Update(V, cmatele, 1.0);
-      stress.Update(V, stressele, 1.0);
+      cmat.update(V, cmatele, 1.0);
+      stress.update(V, stressele, 1.0);
     }  // for (int ele=0; ele<neleinpatch; ++ele)
-    stress.Scale(1.0 / Vnode);
-    cmat.Scale(1.0 / Vnode);
+    stress.scale(1.0 / Vnode);
+    cmat.scale(1.0 / Vnode);
   }
 
   //-----------------------------------------------------------------------
@@ -634,39 +634,39 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
     dev_stress_tangent(stressdev, cmatdev, cmat, stress, cauchygreen);
 
     // compute volumetric stress and tangent
-    stressvol.Update(-1.0, stressdev, 1.0, stress, 0.0);
-    cmatvol.Update(-1.0, cmatdev, 1.0, cmat, 0.0);
+    stressvol.update(-1.0, stressdev, 1.0, stress, 0.0);
+    cmatvol.update(-1.0, cmatdev, 1.0, cmat, 0.0);
 
     // compute nodal stress
-    stress.Update(1.0, stressvol, 1 - ALPHA_NSTET5, stressdev, 0.0);
-    cmat.Update(1.0, cmatvol, 1 - ALPHA_NSTET5, cmatdev, 0.0);
+    stress.update(1.0, stressvol, 1 - ALPHA_NSTET5, stressdev, 0.0);
+    cmat.update(1.0, cmatvol, 1 - ALPHA_NSTET5, cmatdev, 0.0);
   }
 #else
   {
-    stress.Scale(1. - ALPHA_NSTET5);
-    cmat.Scale(1. - ALPHA_NSTET5);
+    stress.scale(1. - ALPHA_NSTET5);
+    cmat.scale(1. - ALPHA_NSTET5);
   }
 #endif
   //-----------------------------------------------------------------------
   // stress output
   if (iostress != Inpar::STR::stress_none)
   {
-    stress_output(iostress, *nodalstress, stress, Fnode, Fnode.Determinant());
+    stress_output(iostress, *nodalstress, stress, Fnode, Fnode.determinant());
   }
   //----------------------------------------------------- internal forces
   if (force)
   {
-    Core::LinAlg::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.numRows());
-    Core::LinAlg::multiplyTN(0.0, *force, Vnode, bopbar, stress_epetra);
+    Core::LinAlg::SerialDenseVector stress_epetra(Teuchos::View, stress.data(), stress.numRows());
+    Core::LinAlg::multiply_tn(0.0, *force, Vnode, bopbar, stress_epetra);
   }
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
     Core::LinAlg::SerialDenseMatrix cmat_epetra(
-        Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
+        Teuchos::View, cmat.data(), cmat.numRows(), cmat.numRows(), cmat.numCols());
     Core::LinAlg::SerialDenseMatrix cb(6, ndofinpatch);
     Core::LinAlg::multiply(cb, cmat_epetra, bopbar);
-    Core::LinAlg::multiplyTN(0.0, *stiff, Vnode, bopbar, cb);
+    Core::LinAlg::multiply_tn(0.0, *stiff, Vnode, bopbar, cb);
   }
 
   //----------------------------------------------------- geom. stiffness
@@ -759,7 +759,7 @@ void Discret::ELEMENTS::NStet5Type::dev_stress_tangent(Core::LinAlg::Matrix<6, 1
   //---------------------------------- things that we'll definitely need
   // inverse of C
   Core::LinAlg::Matrix<3, 3> Cinv;
-  const double detC = Cinv.Invert(C);
+  const double detC = Cinv.invert(C);
   // J = det(F) = sqrt(detC)
   const double J = sqrt(detC);
 
@@ -812,7 +812,7 @@ void Discret::ELEMENTS::NStet5Type::dev_stress_tangent(Core::LinAlg::Matrix<6, 1
     Cvec(5) = 2.0 * C(0, 2);
 
     Core::LinAlg::Matrix<6, 1> CCcolonC;
-    CCcolonC.Multiply(CC, Cvec);
+    CCcolonC.multiply(CC, Cvec);
 
     Core::LinAlg::Matrix<3, 3> CCcC;
     CCcC(0, 0) = CCcolonC(0);
@@ -828,7 +828,7 @@ void Discret::ELEMENTS::NStet5Type::dev_stress_tangent(Core::LinAlg::Matrix<6, 1
   }
 
   //----------------------------------------------------- CCdev = CC - CCvol
-  CCdev.Update(1.0, CC, -1.0, CCvol);
+  CCdev.update(1.0, CC, -1.0, CCvol);
 
   return;
 }
@@ -841,19 +841,19 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
     const double volweight, const double devweight)
 {
   Core::LinAlg::Matrix<3, 3> Fiso = F;
-  Fiso.Scale(pow(detF, -1.0 / 3.0));
+  Fiso.scale(pow(detF, -1.0 / 3.0));
 
   Core::LinAlg::Matrix<3, 3> Fvol(true);
   Fvol(0, 0) = 1.0;
   Fvol(1, 1) = 1.0;
   Fvol(2, 2) = 1.0;
-  Fvol.Scale(pow(detF, 1.0 / 3.0));
+  Fvol.scale(pow(detF, 1.0 / 3.0));
 
   Core::LinAlg::Matrix<3, 3> cauchygreeniso(false);
-  cauchygreeniso.MultiplyTN(Fiso, Fiso);
+  cauchygreeniso.multiply_tn(Fiso, Fiso);
 
   Core::LinAlg::Matrix<3, 3> cauchygreenvol(false);
-  cauchygreenvol.MultiplyTN(Fvol, Fvol);
+  cauchygreenvol.multiply_tn(Fvol, Fvol);
 
   Core::LinAlg::Matrix<3, 3> glstrainiso(false);
   glstrainiso(0, 0) = 0.5 * (cauchygreeniso(0, 0) - 1.0);
@@ -878,7 +878,7 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
   glstrainvol(2, 2) = 0.5 * (cauchygreenvol(2, 2) - 1.0);
 
   Core::LinAlg::Matrix<3, 3> glstrainout = glstrainiso;
-  glstrainout.Update(volweight, glstrainvol, devweight);
+  glstrainout.update(volweight, glstrainvol, devweight);
 
   switch (iostrain)
   {
@@ -896,11 +896,11 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
     {
       // inverse of deformation gradient
       Core::LinAlg::Matrix<3, 3> invdefgrd;
-      invdefgrd.Invert(F);
+      invdefgrd.invert(F);
       Core::LinAlg::Matrix<3, 3> temp;
       Core::LinAlg::Matrix<3, 3> euler_almansi;
-      temp.Multiply(glstrainout, invdefgrd);
-      euler_almansi.MultiplyTN(invdefgrd, temp);
+      temp.multiply(glstrainout, invdefgrd);
+      euler_almansi.multiply_tn(invdefgrd, temp);
       nodalstrain[0] = euler_almansi(0, 0);
       nodalstrain[1] = euler_almansi(1, 1);
       nodalstrain[2] = euler_almansi(2, 2);
@@ -952,11 +952,11 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
     {
       // inverse of deformation gradient
       Core::LinAlg::Matrix<3, 3> invdefgrd;
-      invdefgrd.Invert(F);
+      invdefgrd.invert(F);
       Core::LinAlg::Matrix<3, 3> temp;
       Core::LinAlg::Matrix<3, 3> euler_almansi;
-      temp.Multiply(glstrainout, invdefgrd);
-      euler_almansi.MultiplyTN(invdefgrd, temp);
+      temp.multiply(glstrainout, invdefgrd);
+      euler_almansi.multiply_tn(invdefgrd, temp);
       nodalstrain[0] = euler_almansi(0, 0);
       nodalstrain[1] = euler_almansi(1, 1);
       nodalstrain[2] = euler_almansi(2, 2);
@@ -1003,8 +1003,8 @@ void Discret::ELEMENTS::NStet5Type::stress_output(const Inpar::STR::StressType i
       pkstress(2, 2) = stress(2);
       Core::LinAlg::Matrix<3, 3> temp;
       Core::LinAlg::Matrix<3, 3> cauchystress;
-      temp.Multiply(1.0 / detF, F, pkstress);
-      cauchystress.MultiplyNT(temp, F);
+      temp.multiply(1.0 / detF, F, pkstress);
+      cauchystress.multiply_nt(temp, F);
       nodalstress[0] = cauchystress(0, 0);
       nodalstress[1] = cauchystress(1, 1);
       nodalstress[2] = cauchystress(2, 2);

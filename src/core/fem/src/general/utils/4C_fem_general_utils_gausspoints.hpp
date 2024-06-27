@@ -37,7 +37,7 @@ namespace Core::FE
     virtual double Weight(int point) const = 0;
 
     /// debug print
-    virtual void Print() const = 0;
+    virtual void print() const = 0;
   };
 
   /// specific collected gauss points for xfem usage
@@ -72,7 +72,7 @@ namespace Core::FE
 
     double Weight(int point) const override { return gp_[point].data[3]; }
 
-    void Print() const override
+    void print() const override
     {
       std::cout << " collected gauss points:\n";
       for (int i = 0; i < NumPoints(); ++i)
@@ -149,13 +149,13 @@ namespace Core::FE
     }
 
     /// debug print
-    void Print() const override
+    void print() const override
     {
       for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
            ++i)
       {
         Teuchos::RCP<GaussPoints> gp = *i;
-        gp->Print();
+        gp->print();
       }
     }
 
@@ -273,7 +273,7 @@ namespace Core::FE
     double Weight(int point) const { return gp_->Weight(point); }
 
     /// debug print
-    void Print() const { gp_->Print(); }
+    void print() const { gp_->print(); }
 
     Teuchos::RCP<GaussPoints> Points() const { return gp_; }
 
@@ -322,13 +322,13 @@ namespace Core::FE
         Core::FE::shape_function_deriv1<distype>(eta, deriv);
 
         // local coordinates of gauss point w.r.to background element
-        xi.Multiply(xie, funct);
+        xi.multiply(xie, funct);
 
         // get transposed of the jacobian matrix d x / d \xi
         // xjm(i,j) = deriv(i,k)*xyze(j,k)
-        xjm.MultiplyNT(deriv, xie);
+        xjm.multiply_nt(deriv, xie);
 
-        double det = xjm.Determinant();
+        double det = xjm.determinant();
 
         cgp->Append(xi, iquad.Weight() * det);
       }
@@ -370,9 +370,9 @@ namespace Core::FE
 
         // get transposed of the jacobian matrix d x / d \xi
         // xjm(i,j) = deriv(i,k)*xyze(j,k)
-        xjm.MultiplyNT(deriv, xie);
+        xjm.multiply_nt(deriv, xie);
 
-        double det = xjm.Determinant();
+        double det = xjm.determinant();
 
         cgp->Append(xi, iquad.Weight() / det);
       }

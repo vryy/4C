@@ -188,10 +188,10 @@ void Discret::ELEMENTS::SoHex18::unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoHex18::print(std::ostream& os) const
 {
   os << "So_hex18 ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }
@@ -369,7 +369,7 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
       Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* matptr = nullptr;
-      if (elemat1.IsInitialized()) matptr = &elemat1;
+      if (elemat1.is_initialized()) matptr = &elemat1;
 
       nlnstiffmass(lm, mydisp, myres, matptr, nullptr, &elevec1, nullptr, nullptr, params,
           Inpar::STR::stress_none, Inpar::STR::strain_none);
@@ -578,10 +578,10 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
 
     // compute the Jacobian matrix
     Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> jac;
-    jac.Multiply(deriv, xrefe);
+    jac.multiply(deriv, xrefe);
 
     // compute determinant of Jacobian
-    const double detJ = jac.Determinant();
+    const double detJ = jac.determinant();
     if (detJ == 0.0)
       FOUR_C_THROW("ZERO JACOBIAN DETERMINANT");
     else if (detJ < 0.0)
@@ -610,7 +610,7 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
         const double functfac =
             (functnum > 0) ? Global::Problem::Instance()
                                  ->FunctionById<Core::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                                 .evaluate(xrefegp.A(), time, dim)
+                                 .evaluate(xrefegp.data(), time, dim)
                            : 1.0;
         const double dim_fac = (*val)[dim] * fac * functfac;
         for (int nodid = 0; nodid < NUMNOD_SOH18; ++nodid)
@@ -650,8 +650,8 @@ int Discret::ELEMENTS::SoHex18::init_jacobian_mapping()
     Core::LinAlg::Matrix<NUMDIM_SOH18, NUMNOD_SOH18> deriv;
     Core::FE::shape_function_deriv1<Core::FE::CellType::hex18>(xsi_[gp], deriv);
 
-    invJ_[gp].Multiply(deriv, xrefe);
-    detJ_[gp] = invJ_[gp].Invert();
+    invJ_[gp].multiply(deriv, xrefe);
+    detJ_[gp] = invJ_[gp].invert();
     if (detJ_[gp] < 0.) return 1;
   }
 
@@ -710,16 +710,16 @@ void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
     Core::FE::shape_function_deriv1<Core::FE::CellType::hex18>(xsi_[gp], deriv);
 
     // by N_XYZ = J^-1 * N_rst
-    N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)
+    N_XYZ.multiply(invJ_[gp], deriv);  // (6.21)
     double detJ = detJ_[gp];           // (6.22)
 
     // (material) deformation gradient
     // F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr, N_XYZ);
+    defgrd.multiply_tt(xcurr, N_XYZ);
 
     // calcualte total rcg
     Core::LinAlg::Matrix<3, 3> cauchygreen(false);
-    cauchygreen.MultiplyTN(defgrd, defgrd);
+    cauchygreen.multiply_tn(defgrd, defgrd);
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(false);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
@@ -762,7 +762,7 @@ void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
 
     double detJ_w = detJ * wgt_[gp];
     // update internal force vector
-    if (force) force->MultiplyTN(detJ_w, bop, stress, 1.);
+    if (force) force->multiply_tn(detJ_w, bop, stress, 1.);
 
     // update stiffness matrix
     if (stiffmatrix)
@@ -770,12 +770,12 @@ void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<6, NUMDOF_SOH18> cb;
-      cb.Multiply(cmat, bop);
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);
+      cb.multiply(cmat, bop);
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
       // integrate `geometric' stiffness matrix and add to keu *****************
       Core::LinAlg::Matrix<6, 1> sfac(stress);  // auxiliary integrated stress
-      sfac.Scale(detJ_w);                       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
+      sfac.scale(detJ_w);                       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       std::vector<double> SmB_L(3);             // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod = 0; inod < NUMNOD_SOH18; ++inod)

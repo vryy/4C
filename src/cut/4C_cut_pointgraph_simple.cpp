@@ -147,7 +147,7 @@ void Core::Geo::Cut::Impl::SimplePointGraph2D::Graph::find_cycles(
   {
     if (all_points_.size() > 2)
     {
-      for (auto i = all_points_.begin(); i != all_points_.end(); ++i) i->second->Print();
+      for (auto i = all_points_.begin(); i != all_points_.end(); ++i) i->second->print();
       FOUR_C_THROW(
           "A cut_side point cycle with more than 2 points is currently not "
           "supported in the 2-D case, since it cannot happen for level-set "
@@ -275,18 +275,18 @@ void Core::Geo::Cut::Impl::SimplePointGraph2D::correct_rotation_direction(
     Core::LinAlg::Matrix<3, 1> x12;
     Core::LinAlg::Matrix<3, 1> x13;
 
-    x12.Update(1.0, x2, -1.0, x1);
-    x13.Update(1.0, x3, -1.0, x1);
+    x12.update(1.0, x2, -1.0, x1);
+    x13.update(1.0, x3, -1.0, x1);
 
     Core::LinAlg::Matrix<3, 1> normal_cycle;
-    normal_cycle.CrossProduct(x12, x13);
+    normal_cycle.cross_product(x12, x13);
 
     // not really necessary, but we do it anyway ...
-    double nrm2 = normal_cycle.Norm2();
-    normal_cycle.Scale(1.0 / nrm2);
+    double nrm2 = normal_cycle.norm2();
+    normal_cycle.scale(1.0 / nrm2);
 
     // check orientation and skip the remaining part, if the orientation is okay
-    if (normal_cycle.Dot(normal_side) > 0.0) continue;
+    if (normal_cycle.dot(normal_side) > 0.0) continue;
 
     invert_cycle.reserve(cycle_size);
 

@@ -43,7 +43,7 @@ namespace CONTACT
       /// @name get-functions for the Constitutive Law parameters of a broken rational function
       //@{
       /// Get the slope
-      double GetA() const { return a_; };
+      double Getdata() const { return a_; };
       /// Get the y intercept
       double GetB() const { return b_; };
       //@}
@@ -77,7 +77,7 @@ namespace CONTACT
       }
 
       /// Get slope of linear polynomial
-      double GetA() { return params_->GetA(); }
+      double Getdata() { return params_->Getdata(); }
       /// Get y intercept of linear polynomial
       double GetB() { return params_->GetB(); }
 

@@ -512,8 +512,8 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
   residuum.clear();
 
   // data->vel_ = vel^(n+1) for FGI>1, vel = vel^n
-  residuum.Update((1.0 - theta(data)), vel, theta(data), data->vel_);  // dt*v(data->startpoint_)
-  residuum.Update(1.0, data->startpoint_, -1.0, origNodeCoords,
+  residuum.update((1.0 - theta(data)), vel, theta(data), data->vel_);  // dt*v(data->startpoint_)
+  residuum.update(1.0, data->startpoint_, -1.0, origNodeCoords,
       dt_);  // R = data->startpoint_ - data->node_ + dt*v(data->startpoint_)
 
   //==========================================================
@@ -601,17 +601,17 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
       //-------------------------------------------------------
       // reset residual
       residuum.clear();
-      residuum.Update(
+      residuum.update(
           (1.0 - theta(data)), vel, theta(data), data->vel_);  // dt*v(data->startpoint_)
-      residuum.Update(1.0, data->startpoint_, -1.0, origNodeCoords,
+      residuum.update(1.0, data->startpoint_, -1.0, origNodeCoords,
           dt_);  // R = data->startpoint_ - data->movNode_ + dt*v(data->startpoint_)
 
       //-------------------------------------------------------
       // convergence criterion
-      if (data->startpoint_.Norm2() > 1e-3)
+      if (data->startpoint_.norm2() > 1e-3)
       {
-        if (incr.Norm2() / data->startpoint_.Norm2() < rel_tol_incr_ &&
-            residuum.Norm2() / data->startpoint_.Norm2() < rel_tol_res_)
+        if (incr.norm2() / data->startpoint_.norm2() < rel_tol_incr_ &&
+            residuum.norm2() / data->startpoint_.norm2() < rel_tol_res_)
         {
           if (data->changedside_ == false)
           {
@@ -641,7 +641,7 @@ void XFEM::XfluidSemiLagrange::newton_loop(Core::Elements::Element*& ele,  /// p
       }
       else
       {
-        if (incr.Norm2() < rel_tol_incr_ && residuum.Norm2() < rel_tol_res_)
+        if (incr.norm2() < rel_tol_incr_ && residuum.norm2() < rel_tol_res_)
         {
           if (data->changedside_ == false)
           {
@@ -735,17 +735,17 @@ void XFEM::XfluidSemiLagrange::newton_iter(
 
   // build sysmat
   // JAC = I + dt(1-theta)*velDerivXY
-  sysmat.Update((1.0 - theta(data)) * dt_, vel_deriv);  // dt*(1-theta)dN/dx
+  sysmat.update((1.0 - theta(data)) * dt_, vel_deriv);  // dt*(1-theta)dN/dx
 
   for (int i = 0; i < nsd; i++) sysmat(i, i) += 1.0;  // I + dt*velDerivXY
 
   // invers system Matrix built
-  sysmat.Invert();
+  sysmat.invert();
 
 
   // solve Newton iteration
   incr.clear();
-  incr.Multiply(-1.0, sysmat, residuum);  // incr = -Systemmatrix^-1 * residuum
+  incr.multiply(-1.0, sysmat, residuum);  // incr = -Systemmatrix^-1 * residuum
 
   // update iteration
   for (int i = 0; i < nsd; i++) data->startpoint_(i) += incr(i);
@@ -1464,7 +1464,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
 
   //---------------------------------------------------------------------------------
   // interpolate velocity and pressure values at starting point
-  transportVeln.Multiply(nodevel, shapeFcn);
+  transportVeln.multiply(nodevel, shapeFcn);
 
 #ifdef DEBUG_SEMILAGRANGE
   Core::IO::cout << "\t transportVeln\t" << transportVeln << Core::IO::endl;
@@ -1480,8 +1480,8 @@ void XFEM::XfluidSemiLagrange::back_tracking(
     for (int i = 0; i < nsd; ++i) diff(i) += data->dispnp_(i);
     diff -= lagrangeanOrigin;  // diff = x_Node - x_Appr
 
-    double numerator = transportVeln.Dot(diff);             // numerator = v^T*(x_Node-x_Appr)
-    double denominator = transportVeln.Dot(transportVeln);  // denominator = v^T*v
+    double numerator = transportVeln.dot(diff);             // numerator = v^T*(x_Node-x_Appr)
+    double denominator = transportVeln.dot(transportVeln);  // denominator = v^T*v
 
     if (denominator > 1e-15) deltaT = numerator / denominator;  // else deltaT = 0 as initialized
 
@@ -1497,32 +1497,32 @@ void XFEM::XfluidSemiLagrange::back_tracking(
   // values
   for (size_t index = 0; index < oldVectors_.size(); index++)
   {
-    veln[index].Multiply(nodeveldata[index], shapeFcn);
+    veln[index].multiply(nodeveldata[index], shapeFcn);
     // use the averaged nodal gradients
     velnDeriv1[index].clear();
 
     for (int i = 0; i < numnode; i++)
     {
-      velnDeriv1[index].Update(shapeFcn(i), avg_nodevelgraddata[i][index], 1.0);
-      presnDeriv1[index].Update(shapeFcn(i), avg_nodepresgraddata[i][index], 1.0);
+      velnDeriv1[index].update(shapeFcn(i), avg_nodevelgraddata[i][index], 1.0);
+      presnDeriv1[index].update(shapeFcn(i), avg_nodepresgraddata[i][index], 1.0);
     }
   }  // end loop over vectors to be read from
 
 
   for (size_t index = 0; index < oldVectors_.size(); index++)
   {
-    vel.Multiply(1.0 - theta(data), velnDeriv1[index], transportVeln);  // v = (1-theta)*Dv^n/Dx*v^n
-    vel.Multiply(theta(data), data->velDeriv_[index], data->vel_,
+    vel.multiply(1.0 - theta(data), velnDeriv1[index], transportVeln);  // v = (1-theta)*Dv^n/Dx*v^n
+    vel.multiply(theta(data), data->velDeriv_[index], data->vel_,
         1.0);  // v = theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n
-    vel.Update(
+    vel.update(
         1.0, veln[index], deltaT);  // v = v_n + dt*(theta*Dv^n+1/Dx*v^n+1+(1-theta)*Dv^n/Dx*v^n)
     velValues[index] = vel;
 
-    pres.Multiply(
+    pres.multiply(
         1.0 - theta(data), presnDeriv1[index], transportVeln);  // p = (1-theta)*Dp^n/Dx*v^n
-    pres.Multiply(theta(data), data->presDeriv_[index], data->vel_,
+    pres.multiply(theta(data), data->presDeriv_[index], data->vel_,
         1.0);  // p = theta*Dp^n+1/Dx*v^n+1+(1-theta)*Dp^n/Dx*v^n
-    pres.MultiplyTN(1.0, nodepresdata[index], shapeFcn,
+    pres.multiply_tn(1.0, nodepresdata[index], shapeFcn,
         deltaT);  // p = p_n + dt*(theta*Dp^n+1/Dx*v^n+1+(1-theta)*Dp^n/Dx*v^n)
     presValues[index] = pres(0);
 
@@ -1748,15 +1748,15 @@ void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
           colVectors[tmp_index], true);
 
       // add the current gradients
-      velDeriv_avg[tmp_index].Update(1.0, vel_deriv, 1.0);
-      preDeriv_avg[tmp_index].Update(1.0, pres_deriv, 1.0);
+      velDeriv_avg[tmp_index].update(1.0, vel_deriv, 1.0);
+      preDeriv_avg[tmp_index].update(1.0, pres_deriv, 1.0);
     }
   }  // end loop ele
 
   for (size_t vec_index = 0; vec_index < colVectors.size(); vec_index++)
   {
-    velDeriv_avg[vec_index].Scale(1. / numele);
-    preDeriv_avg[vec_index].Scale(1. / numele);
+    velDeriv_avg[vec_index].scale(1. / numele);
+    preDeriv_avg[vec_index].scale(1. / numele);
   }
 
 }  // end function compute nodal gradient

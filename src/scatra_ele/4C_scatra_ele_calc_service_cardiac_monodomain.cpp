@@ -92,8 +92,8 @@ int Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::evaluat
 
         for (unsigned i = 0; i < updatemat.size(); i++)
         {
-          const double csnp = my::funct_.Dot(my::ephinp_[i]);  // be careful, we assume k==i here
-          updatemat[i]->Update(csnp, dt);
+          const double csnp = my::funct_.dot(my::ephinp_[i]);  // be careful, we assume k==i here
+          updatemat[i]->update(csnp, dt);
         }
       }
 

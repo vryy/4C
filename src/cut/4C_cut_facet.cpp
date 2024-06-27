@@ -84,11 +84,11 @@ void Core::Geo::Cut::Facet::Register(VolumeCell* cell)
   cells_.insert(cell);
   if (cells_.size() > 2)
   {
-    this->Print();
+    this->print();
     for (plain_volumecell_set::const_iterator ic = cells_.begin(); ic != cells_.end(); ++ic)
     {
       std::cout << "\n\nVolumeCell " << *ic << std::endl;
-      (*ic)->Print(std::cout);
+      (*ic)->print(std::cout);
     }
 
     // write details of volume cells
@@ -253,9 +253,9 @@ bool Core::Geo::Cut::Facet::is_planar(Mesh& mesh, const std::vector<Point*>& poi
   }
 
   Core::LinAlg::Matrix<3, 3> A;
-  std::copy(b1.A(), b1.A() + 3, A.A());
-  std::copy(b2.A(), b2.A() + 3, A.A() + 3);
-  std::copy(b3.A(), b3.A() + 3, A.A() + 6);
+  std::copy(b1.data(), b1.data() + 3, A.data());
+  std::copy(b2.data(), b2.data() + 3, A.data() + 3);
+  std::copy(b3.data(), b3.data() + 3, A.data() + 6);
 
   // std::copy( points.begin(), points.end(), std::ostream_iterator<Point*>( std::cout, "; " ) );
   // std::cout << "\n";
@@ -263,9 +263,9 @@ bool Core::Geo::Cut::Facet::is_planar(Mesh& mesh, const std::vector<Point*>& poi
   for (++i; i < points.size(); ++i)
   {
     Point* p = points[i];
-    p->Coordinates(x3.A());
+    p->Coordinates(x3.data());
 
-    x3.Update(-1, x1, 1);
+    x3.update(-1, x1, 1);
 
     Core::LinAlg::Matrix<3, 3> B;
     B = A;
@@ -343,14 +343,14 @@ void Core::Geo::Cut::Facet::create_triangulation(Mesh& mesh, const std::vector<P
     for (std::vector<Point*>::iterator i = pts.begin(); i != pts.end(); i++)
     {
       Point* p1 = *i;
-      p1->Coordinates(cur.A());
-      avg.Update(1.0, cur, 1.0);
+      p1->Coordinates(cur.data());
+      avg.update(1.0, cur, 1.0);
     }
-    avg.Scale(1.0 / pts.size());
+    avg.scale(1.0 / pts.size());
     // One could create a better approx for the "midpoint" here parsing information from the
     // levelset
     //  and thus finding the zero level set easier. Might be worthwhile testing.
-    Point* p_mid = mesh.NewPoint(avg.A(), nullptr, ParentSide(),
+    Point* p_mid = mesh.NewPoint(avg.data(), nullptr, ParentSide(),
         0.0);  // change tolerance here intelligently !!! - basically
                // there is no reason why I'd like to merge here!
     p_mid->Position(Position());
@@ -978,13 +978,13 @@ unsigned Core::Geo::Cut::Facet::normal(const std::vector<Point*>& points,
   unsigned pointsize = points.size();
   if (pointsize < 3) return 0;
 
-  points[0]->Coordinates(x1.A());
-  points[1]->Coordinates(x2.A());
+  points[0]->Coordinates(x1.data());
+  points[1]->Coordinates(x2.data());
 
-  b1.Update(1, x2, -1, x1, 0);
-  b1.Scale(1. / b1.Norm2());
+  b1.update(1, x2, -1, x1, 0);
+  b1.scale(1. / b1.norm2());
 
-  if (b1.Norm2() < std::numeric_limits<double>::min())
+  if (b1.norm2() < std::numeric_limits<double>::min())
     FOUR_C_THROW("same point in facet not supported");
 
   bool found = false;
@@ -992,17 +992,17 @@ unsigned Core::Geo::Cut::Facet::normal(const std::vector<Point*>& points,
   for (; i < pointsize; ++i)
   {
     Point* p = points[i];
-    p->Coordinates(x3.A());
+    p->Coordinates(x3.data());
 
-    b2.Update(1, x3, -1, x1, 0);
-    b2.Scale(1. / b2.Norm2());
+    b2.update(1, x3, -1, x1, 0);
+    b2.scale(1. / b2.norm2());
 
     // cross product to get the normal at the point
     b3(0) = b1(1) * b2(2) - b1(2) * b2(1);
     b3(1) = b1(2) * b2(0) - b1(0) * b2(2);
     b3(2) = b1(0) * b2(1) - b1(1) * b2(0);
 
-    if (b3.Norm2() > PLANARTOL)
+    if (b3.norm2() > PLANARTOL)
     {
       found = true;
       break;
@@ -1014,7 +1014,7 @@ unsigned Core::Geo::Cut::Facet::normal(const std::vector<Point*>& points,
     return 0;
   }
 
-  b3.Scale(1. / b3.Norm2());
+  b3.scale(1. / b3.norm2());
   return i;
 }
 
@@ -1170,7 +1170,7 @@ void Core::Geo::Cut::Facet::find_corner_points()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Core::Geo::Cut::Facet::Print(std::ostream& stream) const
+void Core::Geo::Cut::Facet::print(std::ostream& stream) const
 {
   stream << "--- Facet ( address: " << this << " )\n";
   stream << "# Facet: "
@@ -1184,7 +1184,7 @@ void Core::Geo::Cut::Facet::Print(std::ostream& stream) const
   for (std::vector<Point*>::const_iterator i = points_.begin(); i != points_.end(); ++i)
   {
     Point& p = **i;
-    p.Print(stream);
+    p.print(stream);
     stream << "\n";
   }
   stream << "\n";
@@ -1192,7 +1192,7 @@ void Core::Geo::Cut::Facet::Print(std::ostream& stream) const
   for (plain_facet_set::const_iterator i = holes_.begin(); i != holes_.end(); ++i)
   {
     Facet* hole = *i;
-    hole->Print(stream);
+    hole->print(stream);
   }
 
   stream << "\n";
@@ -1400,7 +1400,7 @@ std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Facet& f)
       for (std::vector<Core::Geo::Cut::Point*>::const_iterator i = tri.begin(); i != tri.end(); ++i)
       {
         Core::Geo::Cut::Point* p = *i;
-        p->Print(stream);
+        p->print(stream);
         stream << ",";
       }
       stream << "},";
@@ -1413,7 +1413,7 @@ std::ostream& operator<<(std::ostream& stream, Core::Geo::Cut::Facet& f)
          ++i)
     {
       Core::Geo::Cut::Point* p = *i;
-      p->Print(stream);
+      p->print(stream);
       stream << ",";
     }
     if (f.HasHoles())

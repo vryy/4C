@@ -79,10 +79,10 @@ void Discret::ELEMENTS::Shell7pLine::unpack(const std::vector<char>& data)
 }
 
 
-void Discret::ELEMENTS::Shell7pLine::Print(std::ostream& os) const
+void Discret::ELEMENTS::Shell7pLine::print(std::ostream& os) const
 {
   os << "Shell7pLine ";
-  Element::Print(os);
+  Element::print(os);
 }
 
 FOUR_C_NAMESPACE_CLOSE

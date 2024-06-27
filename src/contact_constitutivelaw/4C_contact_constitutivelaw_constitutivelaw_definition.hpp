@@ -92,7 +92,7 @@ namespace CONTACT
           Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> bundle);
 
       /// print my DAT file section and possible contact constitutive laws
-      std::ostream& Print(std::ostream& stream,  ///< the output stream
+      std::ostream& print(std::ostream& stream,  ///< the output stream
           const Core::FE::Discretization* dis = nullptr);
 
       /// get contact constitutive law name

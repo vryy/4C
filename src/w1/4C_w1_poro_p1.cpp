@@ -79,10 +79,10 @@ Discret::ELEMENTS::Wall1PoroP1<distype>::Surfaces()
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1PoroP1<distype>::Print(std::ostream& os) const
+void Discret::ELEMENTS::Wall1PoroP1<distype>::print(std::ostream& os) const
 {
   os << "Wall1_PoroP1 ";
-  Core::Elements::Element::Print(os);
+  Core::Elements::Element::print(os);
   std::cout << std::endl;
 }
 

@@ -67,8 +67,8 @@ void MIXTURE::SimpleMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     // Add stress contribution to global stress
     // In this basic mixture rule, the mass fractions do not change
     double constituent_density = params_->initial_reference_density_ * params_->mass_fractions_[i];
-    S_stress.Update(constituent_density, cstress, 1.0);
-    cmat.Update(constituent_density, ccmat, 1.0);
+    S_stress.update(constituent_density, cstress, 1.0);
+    cmat.update(constituent_density, ccmat, 1.0);
   }
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -278,7 +278,7 @@ namespace Discret
         // i.e., crosswind diffusion
 
         // get norm of velocity
-        const double vel_norm_sq = velocity.Norm2() * velocity.Norm2();
+        const double vel_norm_sq = velocity.norm2() * velocity.norm2();
 
         // compute tensor
         if (vel_norm_sq > 1.0e-8)

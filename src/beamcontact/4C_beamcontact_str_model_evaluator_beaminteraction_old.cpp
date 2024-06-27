@@ -194,7 +194,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::run_post_compute_x(
  *----------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::BeamInteractionOld::update_step_state(const double& timefac_n)
 {
-  beamcman_->Update(*disnp_ptr_, eval_data().get_step_np(), eval_data().get_nln_iter());
+  beamcman_->update(*disnp_ptr_, eval_data().get_step_np(), eval_data().get_nln_iter());
 
   // add the old time factor scaled contributions to the residual
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();

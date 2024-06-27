@@ -380,11 +380,11 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
 /*----------------------------------------------------------------------*
  |  print beam3 contact manager (public)                      popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::Print(std::ostream& os) const
+void CONTACT::Beam3cmanager::print(std::ostream& os) const
 {
   if (Comm().MyPID() == 0) os << "Beam3 Contact discretization:" << std::endl;
 
-  ProblemDiscret().Print(os);
+  ProblemDiscret().print(os);
 
   return;
 }
@@ -1669,7 +1669,7 @@ std::vector<std::vector<Core::Elements::Element*>> CONTACT::Beam3cmanager::brute
         for (int k = 0; k < 3; k++) distance(k) = secondpos(k) - firstpos(k);
 
         // nodes are near if distance < search radius
-        if (distance.Norm2() < searchradius or searchradius == -1.0)
+        if (distance.norm2() < searchradius or searchradius == -1.0)
           NearNodesGIDs.push_back(secondgid);
       }
     }
@@ -1971,7 +1971,7 @@ void CONTACT::Beam3cmanager::get_max_ele_length(double& maxelelength)
 /*-------------------------------------------------------------------- -*
  |  Update contact forces at the end of time step             popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::Update(
+void CONTACT::Beam3cmanager::update(
     const Epetra_Vector& disrow, const int& timestep, const int& newtonstep)
 {
   // store values of fc_ into fcold_ (generalized alpha)
@@ -2674,7 +2674,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
           {
             normal(k) = (r2_vec[j](k) - r1_vec[j](k));
           }
-          normal.Scale(1.0 / normal.Norm2());
+          normal.scale(1.0 / normal.norm2());
 
           for (int k = 0; k < 3; k++)
           {
@@ -5050,7 +5050,7 @@ bool CONTACT::Beam3cmanager::close_midpoint_distance(const Core::Elements::Eleme
   // compute distance
   for (int i = 0; i < 3; i++) diffvector(i) = midpos1(i) - midpos2(i);
 
-  if (diffvector.Norm2() <= sphericalsearchradius)
+  if (diffvector.norm2() <= sphericalsearchradius)
     return true;
   else
     return false;

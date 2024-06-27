@@ -131,7 +131,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
  *
  */
 template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::Print(
+void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::print(
     std::ostream& out) const
 {
   check_init_setup();
@@ -167,9 +167,9 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
   for (unsigned int index_segment = 0; index_segment < line_to_3D_segments_.size(); index_segment++)
   {
     out << "    segment " << index_segment << ": ";
-    out << "eta in [" << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].GetEtaA())
-        << ", " << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].GetEtaB())
-        << "]";
+    out << "eta in ["
+        << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].GetEtadata()) << ", "
+        << Core::FADUtils::CastToDouble(line_to_3D_segments_[index_segment].GetEtaB()) << "]";
     out << ", Gauss points = "
         << line_to_3D_segments_[index_segment].get_number_of_projection_points();
     out << "\n";

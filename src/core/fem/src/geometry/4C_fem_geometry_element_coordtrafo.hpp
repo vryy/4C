@@ -137,7 +137,7 @@ namespace Core::Geo
       case FE::CellType::tet4:
       case FE::CellType::tet10:
       {
-        xsi.PutScalar(0.3);
+        xsi.put_scalar(0.3);
         break;
       }
       case FE::CellType::quad4:
@@ -150,7 +150,7 @@ namespace Core::Geo
       case FE::CellType::tri3:
       case FE::CellType::tri6:
       {
-        xsi.PutScalar(0.3);
+        xsi.put_scalar(0.3);
         break;
       }
       case FE::CellType::line2:
@@ -727,10 +727,10 @@ namespace Core::Geo
       xsi += dx;
       updateRHSForNWE<DISTYPE, dim>(b, xsi, x_scaled, xyze_scaled);
 
-      residual = b.Norm2();
+      residual = b.norm2();
       iter++;
 
-      if (iter >= maxiter || xsi.Norm1() > Core::Geo::TOLPLUS8)
+      if (iter >= maxiter || xsi.norm1() > Core::Geo::TOLPLUS8)
       {
         nodeWithinElement = false;
         break;
@@ -923,7 +923,7 @@ namespace Core::Geo
       for (int i = 0; i < 2; ++i)
         for (int j = 0; j < 3; ++j) b(i) -= Jacobi(j, i) * F(j);
 
-      const double residual = b.Norm2();
+      const double residual = b.norm2();
       if (residual < Core::Geo::TOL14)
       {
         break;
@@ -1144,7 +1144,7 @@ namespace Core::Geo
           for (int inode = 0; inode < numNodes; ++inode)
             A(isd, jsd) += xyze(isd, inode) * deriv1(jsd, inode);
 
-      const double det = A_inv.Invert(A);
+      const double det = A_inv.invert(A);
 
       if (fabs(det) < Core::Geo::TOL14)
       {
@@ -1161,7 +1161,7 @@ namespace Core::Geo
 
       // update of local coordinates
       dx.clear();
-      dx.Multiply(A_inv, b);
+      dx.multiply(A_inv, b);
       for (int i = 0; i < numDim; i++) xsi(i, 0) += dx(i);
 
       residual = b.Norm2();

@@ -95,7 +95,7 @@ namespace Core::Conditions
         std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the discretization
-    std::ostream& Print(std::ostream& stream, const Core::FE::Discretization* dis = nullptr);
+    std::ostream& print(std::ostream& stream, const Core::FE::Discretization* dis = nullptr);
 
     /// name of my section in input file
     std::string SectionName() const { return sectionname_; }

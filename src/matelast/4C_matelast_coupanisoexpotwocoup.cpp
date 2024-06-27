@@ -63,8 +63,8 @@ void Mat::Elastic::CoupAnisoExpoTwoCoup::add_stress_aniso_principal(
 
   double a1a2 = anisotropy_extension_.get_coupled_scalar_product(gp);
 
-  double I4 = A1.Dot(rcg);
-  double I6 = A2.Dot(rcg);
+  double I4 = A1.dot(rcg);
+  double I6 = A2.dot(rcg);
   double I8;
   I8 = A1A2(0) * rcg(0) + A1A2(1) * rcg(1) + A1A2(2) * rcg(2) + A1A2(3) * rcg(3) +
        A1A2(4) * rcg(4) + A1A2(5) * rcg(5);
@@ -86,21 +86,21 @@ void Mat::Elastic::CoupAnisoExpoTwoCoup::add_stress_aniso_principal(
   }
 
   double gamma = 2.0 * A4 * (I4 - 1.0) * exp(B4 * (I4 - 1.0) * (I4 - 1.0));
-  stress.Update(gamma, A1, 1.0);
+  stress.update(gamma, A1, 1.0);
   gamma = 2.0 * A6 * (I6 - 1.0) * exp(B6 * (I6 - 1.0) * (I6 - 1.0));
-  stress.Update(gamma, A2, 1.0);
+  stress.update(gamma, A2, 1.0);
   gamma = 2.0 * A8 * (I8 - a1a2) * exp(B8 * (I8 - a1a2) * (I8 - a1a2));
-  stress.Update(gamma, A1A2, 1.0);
+  stress.update(gamma, A1A2, 1.0);
 
   double delta = 2.0 * (1.0 + 2.0 * B4 * (I4 - 1.0) * (I4 - 1.0)) * 2.0 * A4 *
                  exp(B4 * (I4 - 1.0) * (I4 - 1.0));
-  cmat.MultiplyNT(delta, A1, A1, 1.0);
+  cmat.multiply_nt(delta, A1, A1, 1.0);
   delta = 2.0 * (1.0 + 2.0 * B6 * (I6 - 1.0) * (I6 - 1.0)) * 2.0 * A6 *
           exp(B6 * (I6 - 1.0) * (I6 - 1.0));
-  cmat.MultiplyNT(delta, A2, A2, 1.0);
+  cmat.multiply_nt(delta, A2, A2, 1.0);
   delta =
       4.0 * A8 * exp(B8 * (I8 - a1a2) * (I8 - a1a2)) * (1 + 2.0 * B8 * (I8 - a1a2) * (I8 - a1a2));
-  cmat.MultiplyNT(delta, A1A2, A1A2, 1.0);
+  cmat.multiply_nt(delta, A1A2, A1A2, 1.0);
 }
 
 void Mat::Elastic::CoupAnisoExpoTwoCoup::GetFiberVecs(

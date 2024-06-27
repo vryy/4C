@@ -181,10 +181,10 @@ void Discret::ELEMENTS::SoSh18Plast::unpack(const std::vector<char>& data)
   return;
 }
 
-void Discret::ELEMENTS::SoSh18Plast::Print(std::ostream& os) const
+void Discret::ELEMENTS::SoSh18Plast::print(std::ostream& os) const
 {
   os << "So_sh18Plast ";
-  Element::Print(os);
+  Element::print(os);
   std::cout << std::endl;
   return;
 }
@@ -216,21 +216,21 @@ void Discret::ELEMENTS::SoSh18Plast::SyncEAS()
     eastype_ = soh18p_eassosh18;
     neas_ = num_eas;
     So3Plast<Core::FE::CellType::hex18>::KaaInv_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(
-        Teuchos::View, SoSh18::KaaInv_.A(), num_eas, num_eas, num_eas));
+        Teuchos::View, SoSh18::KaaInv_.data(), num_eas, num_eas, num_eas));
     So3Plast<Core::FE::CellType::hex18>::Kad_ = Teuchos::rcp(new Core::LinAlg::SerialDenseMatrix(
-        Teuchos::View, SoSh18::Kad_.A(), num_eas, num_eas, numdofperelement_));
+        Teuchos::View, SoSh18::Kad_.data(), num_eas, num_eas, numdofperelement_));
     So3Plast<Core::FE::CellType::hex18>::feas_ = Teuchos::rcp(
-        new Core::LinAlg::SerialDenseVector(Teuchos::View, SoSh18::feas_.A(), num_eas));
+        new Core::LinAlg::SerialDenseVector(Teuchos::View, SoSh18::feas_.data(), num_eas));
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_ = Teuchos::rcp(
-        new Core::LinAlg::SerialDenseVector(Teuchos::View, SoSh18::alpha_eas_.A(), num_eas));
+        new Core::LinAlg::SerialDenseVector(Teuchos::View, SoSh18::alpha_eas_.data(), num_eas));
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_last_timestep_ =
         Teuchos::rcp(new Core::LinAlg::SerialDenseVector(
-            Teuchos::View, SoSh18::alpha_eas_last_timestep_.A(), num_eas));
+            Teuchos::View, SoSh18::alpha_eas_last_timestep_.data(), num_eas));
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_delta_over_last_timestep_ =
         Teuchos::rcp(new Core::LinAlg::SerialDenseVector(
-            Teuchos::View, SoSh18::alpha_eas_delta_over_last_timestep_.A(), num_eas));
+            Teuchos::View, SoSh18::alpha_eas_delta_over_last_timestep_.data(), num_eas));
     So3Plast<Core::FE::CellType::hex18>::alpha_eas_inc_ = Teuchos::rcp(
-        new Core::LinAlg::SerialDenseVector(Teuchos::View, SoSh18::alpha_eas_inc_.A(), num_eas));
+        new Core::LinAlg::SerialDenseVector(Teuchos::View, SoSh18::alpha_eas_inc_.data(), num_eas));
     Kba_ = Teuchos::rcp(new std::vector<Core::LinAlg::SerialDenseMatrix>(
         numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, num_eas, true)));
   }
@@ -307,7 +307,7 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
   std::vector<Core::LinAlg::Matrix<6, num_eas>> M_gp(num_eas);
   Core::LinAlg::Matrix<3, 1> G3_0_contra;
   Core::LinAlg::Matrix<6, num_eas> M;
-  Core::LinAlg::SerialDenseMatrix M_ep(Teuchos::View, M.A(), 6, 6, num_eas);
+  Core::LinAlg::SerialDenseMatrix M_ep(Teuchos::View, M.data(), 6, 6, num_eas);
   Core::LinAlg::SerialDenseMatrix Kda(numdofperelement_, num_eas);
 
   // prepare EAS***************************************
@@ -353,7 +353,7 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
 
         jac(2, dim) += .5 * shapefunct_q9(k) * (xrefe(k + 9, dim) - xrefe(k, dim));
       }
-    double detJ = jac.Determinant();
+    double detJ = jac.determinant();
 
     // transformation from local (parameter) element space to global(material) space
     // with famous 'T'-matrix already used for EAS but now evaluated at each gp
@@ -366,7 +366,7 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH18> bop_loc(true);
     calculate_bop_loc(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, bop_loc);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH18> bop;
-    bop.Multiply(TinvT, bop_loc);
+    bop.multiply(TinvT, bop_loc);
 
     // **************************************************************************
     // shell-like calculation of strains
@@ -375,7 +375,7 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> lstrain(true);
     calculate_loc_strain(xcurr, xrefe, shapefunct_q9, deriv_q9, gp, lstrain);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain;
-    glstrain.Multiply(TinvT, lstrain);
+    glstrain.multiply(TinvT, lstrain);
     // **************************************************************************
     // shell-like calculation of strains
     // **************************************************************************
@@ -386,8 +386,8 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
       double t33 = 0.;
       for (int dim = 0; dim < 3; ++dim) t33 += jac(2, dim) * G3_0_contra(dim);
 
-      M.Multiply(t33 * t33 / detJ, TinvT, M_gp[gp], 0.);
-      glstrain.Multiply(1., M, SoSh18::alpha_eas_, 1.);
+      M.multiply(t33 * t33 / detJ, TinvT, M_gp[gp], 0.);
+      glstrain.multiply(1., M, SoSh18::alpha_eas_, 1.);
     }
     // end EAS: enhance the strains *******************************************
 
@@ -414,7 +414,7 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
 
       // displacement-based deformation gradient
       Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd_disp;
-      defgrd_disp.MultiplyNT(defgrd_loc, SoSh18::invJ_[gp]);
+      defgrd_disp.multiply_nt(defgrd_loc, SoSh18::invJ_[gp]);
       if (eas_ || dsg_shear_ || dsg_membrane_ || dsg_ctl_)
         SoSh18::calc_consistent_defgrd(defgrd_disp, glstrain, defgrd);
     }
@@ -455,8 +455,8 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
         case Inpar::STR::strain_ea:
         {
           Core::LinAlg::Matrix<3, 3> bi;
-          bi.MultiplyNT(defgrd, defgrd);
-          bi.Invert();
+          bi.multiply_nt(defgrd, defgrd);
+          bi.invert();
           for (int i = 0; i < 3; i++) (*elestrain)(gp, i) = .5 * (1. - bi(i, i));
           (*elestrain)(gp, 3) = -bi(0, 1);
           (*elestrain)(gp, 4) = -bi(2, 1);
@@ -503,8 +503,8 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
 
           Core::LinAlg::Matrix<3, 3> cauchystress;
           Core::LinAlg::Matrix<3, 3> temp;
-          temp.Multiply(1.0 / defgrd.Determinant(), defgrd, pkstress);
-          cauchystress.MultiplyNT(temp, defgrd);
+          temp.multiply(1.0 / defgrd.determinant(), defgrd, pkstress);
+          cauchystress.multiply_nt(temp, defgrd);
 
           (*elestress)(gp, 0) = cauchystress(0, 0);
           (*elestress)(gp, 1) = cauchystress(1, 1);
@@ -526,7 +526,7 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
     double detJ_w = detJ * SoSh18::wgt_[gp];
 
     // update internal force vector
-    if (force != nullptr) force->MultiplyTN(detJ_w, bop, pk2, 1.0);
+    if (force != nullptr) force->multiply_tn(detJ_w, bop, pk2, 1.0);
 
     // update stiffness matrix
     if (stiffmatrix != nullptr)
@@ -534,8 +534,8 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, NUMDOF_SOH18> cb;
-      cb.Multiply(cmat, bop);
-      stiffmatrix->MultiplyTN(detJ_w, bop, cb, 1.0);  // standard hex8 evaluation
+      cb.multiply(cmat, bop);
+      stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);  // standard hex8 evaluation
       // intergrate `geometric' stiffness matrix and add to keu *****************
       calculate_geo_stiff(shapefunct_q9, deriv_q9, TinvT, gp, detJ_w, pk2, stiffmatrix);
 
@@ -543,12 +543,12 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
       if (eas_)
       {
         Core::LinAlg::Matrix<6, num_eas> cM;
-        cM.Multiply(cmat, M);
-        SoSh18::KaaInv_.MultiplyTN(detJ_w, M, cM, 1.);
-        SoSh18::Kad_.MultiplyTN(detJ_w, M, cb, 1.);
-        SoSh18::feas_.MultiplyTN(detJ_w, M, pk2, 1.);
-        Core::LinAlg::DenseFunctions::multiplyTN<double, numdofperelement_, numstr_, num_eas>(
-            1.0, Kda.values(), detJ_w, cb.A(), M.A());
+        cM.multiply(cmat, M);
+        SoSh18::KaaInv_.multiply_tn(detJ_w, M, cM, 1.);
+        SoSh18::Kad_.multiply_tn(detJ_w, M, cb, 1.);
+        SoSh18::feas_.multiply_tn(detJ_w, M, pk2, 1.);
+        Core::LinAlg::DenseFunctions::multiply_tn<double, numdofperelement_, numstr_, num_eas>(
+            1.0, Kda.values(), detJ_w, cb.data(), M.data());
       }
       // EAS technology: integrate matrices --------------------------------- EAS
     }
@@ -609,14 +609,14 @@ void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
     Core::LinAlg::FixedSizeSerialDenseSolver<num_eas, num_eas, 1> solve_for_KaaInv;
     solve_for_KaaInv.SetMatrix(SoSh18::KaaInv_);
     int err2 = solve_for_KaaInv.Factor();
-    int err = solve_for_KaaInv.Invert();
+    int err = solve_for_KaaInv.invert();
     if ((err != 0) || (err2 != 0)) FOUR_C_THROW("Inversion of Kaa failed");
 
     Core::LinAlg::Matrix<NUMDOF_SOH18, num_eas> KdaKaa;
     Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_, num_eas, num_eas>(
-        0., KdaKaa.A(), 1., Kda.values(), SoSh18::KaaInv_.A());
-    if (stiffmatrix) stiffmatrix->Multiply(-1., KdaKaa, SoSh18::Kad_, 1.);
-    if (force) force->Multiply(-1., KdaKaa, SoSh18::feas_, 1.);
+        0., KdaKaa.data(), 1., Kda.values(), SoSh18::KaaInv_.data());
+    if (stiffmatrix) stiffmatrix->multiply(-1., KdaKaa, SoSh18::Kad_, 1.);
+    if (force) force->multiply(-1., KdaKaa, SoSh18::feas_, 1.);
   }
 
   return;

@@ -83,10 +83,10 @@ void Discret::ELEMENTS::Ale2Line::unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2Line::Print(std::ostream& os) const
+void Discret::ELEMENTS::Ale2Line::print(std::ostream& os) const
 {
   os << "Ale2Line ";
-  Element::Print(os);
+  Element::print(os);
   return;
 }
 

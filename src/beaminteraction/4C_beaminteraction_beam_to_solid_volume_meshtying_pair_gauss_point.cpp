@@ -95,7 +95,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::eva
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the current positions on beam and solid.
       GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
@@ -105,7 +105,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::eva
       // that acts on the beam.
       force = r_solid;
       force -= r_beam;
-      force.Scale(penalty_parameter);
+      force.scale(penalty_parameter);
 
       // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
       // dof. This is done with the virtual work equation $F \delta r = f \delta q$.
@@ -254,7 +254,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
 
   // If given, assemble force terms into the global force vector.
   if (force_vector != Teuchos::null)
-    force_vector->SumIntoGlobalValues(gid_pair.numRows(), gid_pair.A(), local_force.A());
+    force_vector->SumIntoGlobalValues(gid_pair.numRows(), gid_pair.data(), local_force.data());
 
   // If given, assemble force terms into the global stiffness matrix.
   if (stiffness_matrix != Teuchos::null)
@@ -338,7 +338,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Calculate the rotation vector of this cross section.
       triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
@@ -371,7 +371,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       // Force terms.
       Core::FE::shape_function_1D(L_i, projected_gauss_point.GetEta(), Core::FE::CellType::line3);
       potential_variation = psi_rel;
-      potential_variation.Scale(rotational_penalty_parameter);
+      potential_variation.scale(rotational_penalty_parameter);
       for (unsigned int i_node = 0; i_node < 3; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           fc_beam_gp(3 * i_node + i_dim) = -1.0 * L_i(i_node) * potential_variation(i_dim) *
@@ -385,9 +385,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
           d_psi_solid_d_q_solid(i_dim, i_solid) = psi_solid(i_dim).dx(3 + i_solid);
       T_solid_inv = T_solid;
       Core::LinAlg::Inverse(T_solid_inv);
-      Tinv_solid_times_potential_variation.MultiplyTN(T_solid_inv, potential_variation);
-      fc_solid_gp.MultiplyTN(d_psi_solid_d_q_solid, Tinv_solid_times_potential_variation);
-      fc_solid_gp.Scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
+      Tinv_solid_times_potential_variation.multiply_tn(T_solid_inv, potential_variation);
+      fc_solid_gp.multiply_tn(d_psi_solid_d_q_solid, Tinv_solid_times_potential_variation);
+      fc_solid_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
       for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
         local_force(n_dof_rot_ + i_dof) += Core::FADUtils::CastToDouble(fc_solid_gp(i_dof));
 
@@ -408,14 +408,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
             I_beam_tilde_full(i_dim_0, i_node * 3 + i_dim_1) =
                 I_beam_tilde[i_node](i_dim_0, i_dim_1);
 
-      T_beam_times_I_beam_tilde_full.Multiply(
+      T_beam_times_I_beam_tilde_full.multiply(
           Core::FADUtils::CastToDouble(T_beam), I_beam_tilde_full);
-      stiff_beam_beam_gp.Multiply(d_fc_beam_d_psi_beam, T_beam_times_I_beam_tilde_full);
+      stiff_beam_beam_gp.multiply(d_fc_beam_d_psi_beam, T_beam_times_I_beam_tilde_full);
       for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
         for (unsigned int j_dof = 0; j_dof < n_dof_rot_; j_dof++)
           local_stiff(i_dof, j_dof) += stiff_beam_beam_gp(i_dof, j_dof);
 
-      stiff_solid_beam_gp.Multiply(d_fc_solid_d_psi_beam, T_beam_times_I_beam_tilde_full);
+      stiff_solid_beam_gp.multiply(d_fc_solid_d_psi_beam, T_beam_times_I_beam_tilde_full);
       for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
         for (unsigned int j_dof = 0; j_dof < n_dof_rot_; j_dof++)
           local_stiff(i_dof + n_dof_rot_, j_dof) += stiff_solid_beam_gp(i_dof, j_dof);

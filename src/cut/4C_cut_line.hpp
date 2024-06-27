@@ -75,11 +75,11 @@ namespace Core::Geo
       }
 
       /*! \brief Print the coordinates of the points on screen */
-      void Print()
+      void print()
       {
-        p1_->Print();
+        p1_->print();
         std::cout << "--";
-        p2_->Print();
+        p2_->print();
         std::cout << "\n";
       }
 

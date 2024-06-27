@@ -736,8 +736,8 @@ void Core::FE::UTILS::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
     // evaluate shape function and derivatevs at integration point
     Core::FE::Nurbs::nurbs_get_funct_deriv(shpfunct, deriv, xsi, *knots, weights, distype);
 
-    xjm.MultiplyNT(deriv, xyze);
-    double det = xjm.Determinant();
+    xjm.multiply_nt(deriv, xyze);
+    double det = xjm.determinant();
 
     if (det < 1E-16)
       FOUR_C_THROW(

@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------*/
 /*! \file
 
-\brief Determinant analysis for Solid Hex8 element
+\brief determinant analysis for Solid Hex8 element
 
 \level 3
 
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_sub_map_bezier_to_lagra
  *----------------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange20_to_bezier27()
 {
-  map_q_.putScalar(0.0);
+  map_q_.put_scalar(0.0);
 
   const double block_template[4][4] = {
       {1.0, 1.0, 0.0, 0.0}, {0.0, 1.0, 1.0, 0.0}, {0.0, 0.0, 1.0, 1.0}, {1.0, 0.0, 0.0, 1.0}};
@@ -153,14 +153,14 @@ void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange_to_bezier(
   int info = 0;
 
   Teuchos::LAPACK<int, double> lapack;
-  lapack.GETRF(27, 27, map_l2b_.A(), 27, ipiv.data(), &info);
+  lapack.GETRF(27, 27, map_l2b_.data(), 27, ipiv.data(), &info);
 
   if (info) FOUR_C_THROW("Error detected in LAPACK::GETRF. info = %d", info);
 
   // (1) compute the optimal block size first
   std::vector<double> work(1);
   int lwork = -1;
-  lapack.GETRI(27, map_l2b_.A(), 27, ipiv.data(), work.data(), lwork, &info);
+  lapack.GETRI(27, map_l2b_.data(), 27, ipiv.data(), work.data(), lwork, &info);
   if (info)
     FOUR_C_THROW(
         "Error detected in LAPACK::GETRI during the calculation of "
@@ -170,7 +170,7 @@ void Discret::ELEMENTS::SoHex8DeterminantAnalysis::build_map_lagrange_to_bezier(
   // (2) compute the inverse: map from lagrange to bezier
   lwork = work[0];
   work.resize(lwork);
-  lapack.GETRI(27, map_l2b_.A(), 27, ipiv.data(), work.data(), lwork, &info);
+  lapack.GETRI(27, map_l2b_.data(), 27, ipiv.data(), work.data(), lwork, &info);
   if (info)
     FOUR_C_THROW(
         "Error detected in LAPACK::GETRI during the calculation of "
@@ -189,21 +189,21 @@ bool Discret::ELEMENTS::SoHex8DeterminantAnalysis::isValid(
 
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
   std::cout << "20 TET4 volumes:\n";
-  tet4_volumes.Print(std::cout);
+  tet4_volumes.print(std::cout);
 #endif
 
   // Check the TET4 volumes. If one is not positive, return FALSE
-  if (has_invalid_entry(tet4_volumes.A(), 20)) return false;
+  if (has_invalid_entry(tet4_volumes.data(), 20)) return false;
 
   BezierCube bcube;
   bcube.init();
 
   // place on stack and thus not static
   Core::LinAlg::Matrix<27, 1> bcoeffs(false);
-  bcoeffs.Multiply(map_q_, tet4_volumes);
+  bcoeffs.multiply(map_q_, tet4_volumes);
 
   // Check the remaining Bezier coefficients. If all are positive, return TRUE.
-  if (not has_invalid_entry(bcoeffs.A() + 8, 19)) return true;
+  if (not has_invalid_entry(bcoeffs.data() + 8, 19)) return true;
 
   // init recursion counter
   unsigned rcount = 0;
@@ -334,7 +334,7 @@ bool Discret::ELEMENTS::SoHex8DeterminantAnalysis::recursive_subdivision(
     get_bezier_coeffs_of_subdomain(bcoeffs, *it, sub_bcoeffs);
 
     // check first 8 entries of each column
-    if (has_invalid_entry(sub_bcoeffs.A(), 8)) return false;
+    if (has_invalid_entry(sub_bcoeffs.data(), 8)) return false;
 
     /* If none of the remaining Bezier coefficients is invalid, erase the
      * corresponding sub-cube. */
@@ -376,12 +376,12 @@ void Discret::ELEMENTS::SoHex8DeterminantAnalysis::get_bezier_coeffs_of_subdomai
 
   build_sub_map_bezier_to_lagrange(subcube.left_, subcube.right_, sub_map_b2l);
 
-  tmp.Multiply(sub_map_b2l, bcoeffs);
-  sub_bcoeffs.Multiply(map_l2b_, tmp);
+  tmp.multiply(sub_map_b2l, bcoeffs);
+  sub_bcoeffs.multiply(map_l2b_, tmp);
 
 #ifdef DEBUG_SO_HEX8_DET_ANALYSIS
   std::cout << "Bezier coefficients:\n";
-  sub_bcoeffs.Print(std::cout);
+  sub_bcoeffs.print(std::cout);
   subcube.print(std::cout);
 #endif
 }
@@ -415,19 +415,19 @@ unsigned Discret::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_corne
   {
     // coordinates of the first TET4 node
     unsigned j = f_index0(i);  // 0, 1, 2, 3
-    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.A());
+    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.data());
 
     // coordinates of the second TET4 node
     j = f_index1(i);  // 1, 2, 3, 0
-    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.A() + NUMDIM_SOH8);
+    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.data() + NUMDIM_SOH8);
 
     // coordinates of the third TET4 node
     j = f_index2(i);  // 3, 0, 1, 2
-    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.A() + 2 * NUMDIM_SOH8);
+    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.data() + 2 * NUMDIM_SOH8);
 
     // coordinates of the fourth TET4 node
     j = f_index3(i);  // 4, 5, 6, 7
-    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.A() + 3 * NUMDIM_SOH8);
+    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.data() + 3 * NUMDIM_SOH8);
 
     tet4_volumes(i + offset) = compute_tet4_volume(tet4_coords);
   }
@@ -453,20 +453,20 @@ unsigned Discret::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_vol_at_edges
   for (unsigned i = 0; i < 4; ++i)
   {
     unsigned j = f_index0(i);
-    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.A());
+    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.data());
 
     j = f_index1(i);
-    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.A() + NUMDIM_SOH8);
+    std::copy(&x_curr(0, j), &x_curr(0, j) + NUMDIM_SOH8, tet4_coords.data() + NUMDIM_SOH8);
 
     j = f_index20(i);
     unsigned jj = f_index21(i);
     for (unsigned k = 0; k < NUMDIM_SOH8; ++k) tmp(k, 0) = 0.5 * (x_curr(k, j) + x_curr(k, jj));
-    std::copy(tmp.A(), tmp.A() + NUMDIM_SOH8, tet4_coords.A() + 2 * NUMDIM_SOH8);
+    std::copy(tmp.data(), tmp.data() + NUMDIM_SOH8, tet4_coords.data() + 2 * NUMDIM_SOH8);
 
     j = f_index30(i);
     jj = f_index31(i);
     for (unsigned k = 0; k < NUMDIM_SOH8; ++k) tmp(k, 0) = 0.5 * (x_curr(k, j) + x_curr(k, jj));
-    std::copy(tmp.A(), tmp.A() + NUMDIM_SOH8, tet4_coords.A() + 3 * NUMDIM_SOH8);
+    std::copy(tmp.data(), tmp.data() + NUMDIM_SOH8, tet4_coords.data() + 3 * NUMDIM_SOH8);
 
     tet4_volumes(i + offset) = compute_tet4_volume(tet4_coords);
   }
@@ -539,19 +539,19 @@ void Discret::ELEMENTS::SoHex8DeterminantAnalysis::compute20_tet4_volumes(
 double Discret::ELEMENTS::SoHex8DeterminantAnalysis::compute_tet4_volume(
     const Core::LinAlg::Matrix<NUMDIM_SOH8, 4>& tet4_ncoords) const
 {
-  const Core::LinAlg::Matrix<3, 1> xref(tet4_ncoords.A(), true);
+  const Core::LinAlg::Matrix<3, 1> xref(tet4_ncoords.data(), true);
   Core::LinAlg::Matrix<3, 3> v;
 
   for (unsigned i = 0; i < 3; ++i)
   {
-    Core::LinAlg::Matrix<3, 1> vr(v.A() + i * 3, true);
-    const Core::LinAlg::Matrix<3, 1> xother(tet4_ncoords.A() + (i + 1) * 3, true);
-    vr.Update(1.0, xother, -1.0, xref);
+    Core::LinAlg::Matrix<3, 1> vr(v.data() + i * 3, true);
+    const Core::LinAlg::Matrix<3, 1> xother(tet4_ncoords.data() + (i + 1) * 3, true);
+    vr.update(1.0, xother, -1.0, xref);
   }
 
-  const Core::LinAlg::Matrix<3, 1> a(v.A(), true);
-  const Core::LinAlg::Matrix<3, 1> b(v.A() + 3, true);
-  const Core::LinAlg::Matrix<3, 1> c(v.A() + 6, true);
+  const Core::LinAlg::Matrix<3, 1> a(v.data(), true);
+  const Core::LinAlg::Matrix<3, 1> b(v.data() + 3, true);
+  const Core::LinAlg::Matrix<3, 1> c(v.data() + 6, true);
 
   // compute the triple product
   return c(0) * (a(1) * b(2) - a(2) * b(1)) + c(1) * (a(2) * b(0) - a(0) * b(2)) +

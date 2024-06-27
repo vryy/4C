@@ -103,7 +103,7 @@ void LineIntegration::Transform(const Core::LinAlg::Matrix<2, 2> &xyze, const do
   Core::FE::ComputeMetricTensorForBoundaryEle<Core::FE::CellType::line2>(
       xyze, deriv, metrictensor, drs, &normal);
 
-  x_gp_lin.Multiply(xyze, funct);
+  x_gp_lin.multiply(xyze, funct);
 
   return;
 }

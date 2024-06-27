@@ -1342,7 +1342,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_od_fl
       // gradphi^T * difftensor
       // TODO: not sure if this works for anisotropic fluid difftensor
       static Core::LinAlg::Matrix<1, nsd_> gradphiTdifftensor(true);
-      gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
+      gradphiTdifftensor.multiply_tn(gradphi, difftensor);
 
       for (unsigned vi = 0; vi < nen_; ++vi)
       {
@@ -1385,7 +1385,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_od_fl
 
         // gradphi^T * difftensor
         static Core::LinAlg::Matrix<1, nsd_> gradphiTdifftensor(true);
-        gradphiTdifftensor.MultiplyTN(gradphi, difftensor);
+        gradphiTdifftensor.multiply_tn(gradphi, difftensor);
 
         // calculate density*heatcapacity
         double densheatcapacity =

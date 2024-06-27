@@ -726,7 +726,7 @@ double MyocardTenTusscher::GetIonicCurrents(const int k) const
 /*----------------------------------------------------------------------*
  |  update of material at the end of a time step             ljag 07/12 |
  *----------------------------------------------------------------------*/
-void MyocardTenTusscher::Update(const double phi, const double dt)
+void MyocardTenTusscher::update(const double phi, const double dt)
 {
   // update initial values for next time step
   for (int i = 0; i < 19; i++) s0_[i] = s_[i];

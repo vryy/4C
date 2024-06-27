@@ -246,7 +246,7 @@ namespace Mat
     void resize_internal_state_variables();
 
     /// time update for this material
-    void Update(const double phi, const double dt);
+    void update(const double phi, const double dt);
 
     /// get number of Gauss points
     int GetNumberOfGP() const;

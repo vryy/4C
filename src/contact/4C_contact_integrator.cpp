@@ -5509,9 +5509,9 @@ void CONTACT::Integrator::DerivXiGP3D(Mortar::Element& sele, Mortar::Element& me
     }
 
   // get inverse of the 3x3 matrix L (in place)
-  if (abs(lmatrix.Determinant()) < 1e-12) FOUR_C_THROW("Singular lmatrix for derivgp3d");
+  if (abs(lmatrix.determinant()) < 1e-12) FOUR_C_THROW("Singular lmatrix for derivgp3d");
 
-  lmatrix.Invert();
+  lmatrix.invert();
 
   // build directional derivative of slave GP normal
   typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
@@ -5671,7 +5671,7 @@ void CONTACT::Integrator::DerivXiGP3DAuxPlane(Mortar::Element& ele, double* xigp
     }
 
   // get inverse of the 3x3 matrix L (in place)
-  lmatrix.Invert();
+  lmatrix.invert();
 
   // start to fill linearization maps for element GP
   typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
@@ -10114,10 +10114,10 @@ void inline CONTACT::Integrator::gp_3_d_wear(Mortar::Element& sele, Mortar::Elem
   }
 
   // build tangential jump
-  jumptan.Multiply(tanplane, jump);
+  jumptan.multiply(tanplane, jump);
 
   // build tangential lm
-  lmtan.Multiply(tanplane, lm);
+  lmtan.multiply(tanplane, lm);
 
   // evaluate wear
   // not including wearcoefficient
@@ -12955,10 +12955,10 @@ double CONTACT::Integrator::t_det_deformation_gradient(
     }
   }
   // std::cout<<xcurr<<"xcurr, "<<xrefe<<"xrefe"<<std::endl;
-  xjm.MultiplyNT(pderiv_loc, xcurr);
-  Jmat.MultiplyNT(pderiv_loc, xrefe);
-  double det = xjm.Determinant();
-  double detJ = Jmat.Determinant();
+  xjm.multiply_nt(pderiv_loc, xcurr);
+  Jmat.multiply_nt(pderiv_loc, xrefe);
+  double det = xjm.determinant();
+  double detJ = Jmat.determinant();
   const double J = det / detJ;
 
   // Linearisation of Jacobian (atm missing!)
@@ -12966,7 +12966,7 @@ double CONTACT::Integrator::t_det_deformation_gradient(
 
   //  Core::LinAlg::Matrix<dim,numnodes>  auxJLin (true);   // matrix to be filled with
   //  linearization scalars
-  xjm.Invert();
+  xjm.invert();
   {
     //    Core::Nodes::Node** nodes = sele.parent_element()->Nodes();
     for (int inode = 0; inode < numnodes; ++inode)

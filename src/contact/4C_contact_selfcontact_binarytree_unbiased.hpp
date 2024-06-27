@@ -171,7 +171,7 @@ namespace CONTACT
       }
     }
 
-    coord.Multiply(1.0, nodecoords, funct, 0.0);
+    coord.multiply(1.0, nodecoords, funct, 0.0);
   }
 
   /**
@@ -207,21 +207,21 @@ namespace CONTACT
       }
     }
 
-    gxieta.MultiplyNT(1.0, nodecoords, deriv, 0.0);
+    gxieta.multiply_nt(1.0, nodecoords, deriv, 0.0);
     static Core::LinAlg::Matrix<3, 1> gxi(true);
     static Core::LinAlg::Matrix<3, 1> geta(true);
     static Core::LinAlg::Matrix<2, 1> first(true);
     static Core::LinAlg::Matrix<2, 1> second(true);
     first(0, 0) = 1.0;
     second(1, 0) = 1.0;
-    gxi.Multiply(1.0, gxieta, first, 0.0);
-    geta.Multiply(1.0, gxieta, second, 0.0);
+    gxi.multiply(1.0, gxieta, first, 0.0);
+    geta.multiply(1.0, gxieta, second, 0.0);
 
     // clear, calculate and scale normal
     normal.clear();
-    normal.CrossProduct(gxi, geta);
-    const double normnormal = normal.Norm2();
-    normal.Scale(1.0 / normnormal);
+    normal.cross_product(gxi, geta);
+    const double normnormal = normal.norm2();
+    normal.scale(1.0 / normnormal);
   }
 
 }  // namespace CONTACT

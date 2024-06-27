@@ -75,7 +75,7 @@ void MIXTURE::MixtureConstituentElastHyper::evaluate_elastic_part(
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   static Core::LinAlg::Matrix<3, 3> iFin(false);
-  iFin.MultiplyNN(iFextin, prestretch_tensor(gp));
+  iFin.multiply_nn(iFextin, prestretch_tensor(gp));
 
   Mat::ElastHyperEvaluateElasticPart(
       F, iFin, S_stress, cmat, summands(), summand_properties(), gp, eleGID);

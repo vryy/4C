@@ -185,28 +185,28 @@ namespace FLD
         b_rot = Q * b
         with Q as defined in the setup() function
          */
-        if (elemat1.IsInitialized())  // do not try to access an uninitialized matrix!
+        if (elemat1.is_initialized())  // do not try to access an uninitialized matrix!
         {
           Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> elematold1(
               elemat1);
           Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> tempmatrix(
               true);
-          tempmatrix.MultiplyNT(elematold1, rotmat_);
-          elemat1.Multiply(rotmat_, tempmatrix);
+          tempmatrix.multiply_nt(elematold1, rotmat_);
+          elemat1.multiply(rotmat_, tempmatrix);
         }
-        if (elemat2.IsInitialized())
+        if (elemat2.is_initialized())
         {
           Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> elematold2(
               elemat2);
           Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> tempmatrix(
               true);
-          tempmatrix.MultiplyNT(elematold2, rotmat_);
-          elemat2.Multiply(rotmat_, tempmatrix);
+          tempmatrix.multiply_nt(elematold2, rotmat_);
+          elemat2.multiply(rotmat_, tempmatrix);
         }
-        if (elevec1.IsInitialized())
+        if (elevec1.is_initialized())
         {
           Core::LinAlg::Matrix<numdofpernode * elenumnode, 1> elevec1old(elevec1);
-          elevec1.Multiply(rotmat_, elevec1old);
+          elevec1.multiply(rotmat_, elevec1old);
         }
       }
       return;
@@ -225,20 +225,20 @@ namespace FLD
         b_rot = Q * b
         with Q as defined in the setup() function
          */
-        if (elemat1.IsInitialized())  // do not try to access an uninitialized matrix!
+        if (elemat1.is_initialized())  // do not try to access an uninitialized matrix!
         {
           Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> elemat1old(
               elemat1);
           Core::LinAlg::Matrix<numdofpernode * elenumnode, numdofpernode * elenumnode> tempmatrix(
               true);
-          tempmatrix.MultiplyNT(elemat1old, rotmat_);
-          elemat1.Multiply(rotmat_, tempmatrix);
+          tempmatrix.multiply_nt(elemat1old, rotmat_);
+          elemat1.multiply(rotmat_, tempmatrix);
         }
 
-        if (elevec1.IsInitialized())
+        if (elevec1.is_initialized())
         {
           Core::LinAlg::Matrix<numdofpernode * elenumnode, 1> elevec1old(elevec1);
-          elevec1.Multiply(rotmat_, elevec1old);
+          elevec1.multiply(rotmat_, elevec1old);
         }
       }
       return;

@@ -84,10 +84,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
     Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
 {
   // Initialize the local mortar matrices.
-  local_D.PutScalar(0.0);
-  local_M.PutScalar(0.0);
-  local_kappa.PutScalar(0.0);
-  local_constraint.PutScalar(0.0);
+  local_D.put_scalar(0.0);
+  local_M.put_scalar(0.0);
+  local_kappa.put_scalar(0.0);
+  local_constraint.put_scalar(0.0);
 
   // Initialize variables for shape function values.
   Core::LinAlg::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
@@ -122,7 +122,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
-      segment_jacobian = dr_beam_ref.Norm2() * beam_segmentation_factor;
+      segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the shape function matrices.
       N_mortar.clear();

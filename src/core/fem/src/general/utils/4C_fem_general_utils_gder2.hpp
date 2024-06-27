@@ -73,15 +73,15 @@ namespace Core::FE
 
     // compute d^2x/dr^2
     double xder2[numderiv2 * nsd];
-    Core::LinAlg::DenseFunctions::multiplyNT<double, numderiv2, numnode, nsd>(
-        xder2, deriv2.A(), xyze.A());
+    Core::LinAlg::DenseFunctions::multiply_nt<double, numderiv2, numnode, nsd>(
+        xder2, deriv2.data(), xyze.data());
 
     // compute -(dN/dx)*(d^2x/dr^2)
     Core::LinAlg::DenseFunctions::multiply<double, numderiv2, nsd, numnode>(
-        derxy2.A(), -1.0, xder2, derxy.A());
+        derxy2.data(), -1.0, xder2, derxy.data());
 
     // compute -(dN/dx)*(d^2x/dr^2) + (d^2N/dr^2)
-    derxy2.Update(1.0, deriv2, 1.0);
+    derxy2.update(1.0, deriv2, 1.0);
 
     // finally multiply by (dx/dr)^-1 from the left and (dx/dr)^-T from the right
     // write out the products by hand because derxy2 only stores the symmetric part
@@ -89,7 +89,7 @@ namespace Core::FE
     double xjiData[9];
     double* xji[3];
     for (int i = 0; i < nsd; ++i) xji[i] = &xjiData[nsd * i];
-    Core::LinAlg::DenseFunctions::invert<double, nsd, nsd>(xjiData, xjm.A());
+    Core::LinAlg::DenseFunctions::invert<double, nsd, nsd>(xjiData, xjm.data());
     for (int node = 0; node < numnode; ++node)
     {
       double tmp[3][3];

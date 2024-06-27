@@ -890,7 +890,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::check_feasibility_of
         curr_bindingspot_beam_tangent(idim) = bspottriad(idim, 0);
 
       Core::LinAlg::Matrix<3, 1> dist_vec(true);
-      dist_vec.Update(1.0, bspotpos, -1.0, spherepos);
+      dist_vec.update(1.0, bspotpos, -1.0, spherepos);
 
       double const linkanglemin =
           spherebeamlinking_params_ptr_->GetLinkerMaterial()->LinkingAngle() -
@@ -1083,9 +1083,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
   // acting on the linker
   Core::LinAlg::Matrix<3, 1> dist_vec(true);
   Core::LinAlg::Matrix<3, 1> bspotforceone(true);
-  dist_vec.Update(-1.0, linkelepairptr->GetBindSpotPos1(), 1.0, linkelepairptr->GetBindSpotPos2());
+  dist_vec.update(-1.0, linkelepairptr->GetBindSpotPos1(), 1.0, linkelepairptr->GetBindSpotPos2());
   for (unsigned int j = 0; j < 3; ++j) bspotforceone(j) = bspotforce_one(j);
-  double sgn = (dist_vec.Dot(bspotforceone) < 0.0) ? -1.0 : 1.0;
+  double sgn = (dist_vec.dot(bspotforceone) < 0.0) ? -1.0 : 1.0;
 
   /* alternative for linear centerline interpolation would be to compare
    * reference length and current length to see if element is stretched or compressed

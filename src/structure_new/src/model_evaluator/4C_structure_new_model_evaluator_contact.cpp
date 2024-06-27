@@ -78,7 +78,7 @@ void STR::MODELEVALUATOR::Contact::setup()
   factory.BuildSearchTree(interfaces);
 
   // print final screen output
-  factory.Print(interfaces, strategy_ptr_, cparams);
+  factory.print(interfaces, strategy_ptr_, cparams);
 
   // ---------------------------------------------------------------------
   // final touches to the contact strategy

@@ -274,8 +274,8 @@ void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3
   Core::LinAlg::Matrix<3, 3> structuraltensor(true);
   for (unsigned int p = 0; p < 3; ++p)
   {
-    fibervector.MultiplyTN(1.0, Q_trafo, fibervecs_[p], 0.0);
-    structuraltensor.MultiplyNT(1.0, fibervector, fibervector, 0.0);
+    fibervector.multiply_tn(1.0, Q_trafo, fibervecs_[p], 0.0);
+    structuraltensor.multiply_nt(1.0, fibervector, fibervector, 0.0);
     structural_tensors_loc.push_back(structuraltensor);
   }
 
@@ -307,9 +307,9 @@ void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3
       (1 - (1 - gamma1) * (1 - gamma2)) /
       ((1 - gamma1) * (1 - gamma2));  // compute gamma_n such that active material is incompressible
 
-  defgrd_active_inv_loc.Update(gamma1 / (1.0 - gamma1), structural_tensors_loc.at(0), 1.0);
-  defgrd_active_inv_loc.Update(gamma2 / (1.0 - gamma2), structural_tensors_loc.at(1), 1.0);
-  defgrd_active_inv_loc.Update(
+  defgrd_active_inv_loc.update(gamma1 / (1.0 - gamma1), structural_tensors_loc.at(0), 1.0);
+  defgrd_active_inv_loc.update(gamma2 / (1.0 - gamma2), structural_tensors_loc.at(1), 1.0);
+  defgrd_active_inv_loc.update(
       -gammaNormal / (1.0 + gammaNormal), structural_tensors_loc.at(2), 1.0);
 
   //******************
@@ -317,8 +317,8 @@ void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3
   //******************
   Core::LinAlg::Matrix<3, 3> cauchygreen_passive_local(true);
   Core::LinAlg::Matrix<3, 3> defgrd_passive_local(true);
-  defgrd_passive_local.MultiplyNN(1.0, defgrd, defgrd_active_inv_loc, 0.0);
-  cauchygreen_passive_local.MultiplyTN(1.0, defgrd_passive_local, defgrd_passive_local, 0.0);
+  defgrd_passive_local.multiply_nn(1.0, defgrd, defgrd_active_inv_loc, 0.0);
+  cauchygreen_passive_local.multiply_tn(1.0, defgrd_passive_local, defgrd_passive_local, 0.0);
 
   // compute passive green lagrange strain
   Core::LinAlg::Matrix<3, 3> cmatpassive_loc(true);
@@ -344,8 +344,8 @@ void Mat::MembraneActiveStrain::EvaluateMembrane(const Core::LinAlg::Matrix<3, 3
   defgrd_active_inv_loc_red(1, 1) = defgrd_active_inv_loc(1, 1);
 
   Core::LinAlg::Matrix<2, 2> temp2(true);
-  temp2.MultiplyNT(1.0, S_passive_loc, defgrd_active_inv_loc_red, 0.0);
-  S_tot.MultiplyNN(1.0, defgrd_active_inv_loc_red, temp2, 0.0);
+  temp2.multiply_nt(1.0, S_passive_loc, defgrd_active_inv_loc_red, 0.0);
+  S_tot.multiply_nn(1.0, defgrd_active_inv_loc_red, temp2, 0.0);
 
   stress(0) = S_tot(0, 0);
   stress(1) = S_tot(1, 1);
@@ -459,9 +459,9 @@ void Mat::MembraneActiveStrain::setup_fiber_vectors(int numgp, Input::LineDefini
         "Wrong number of fiber vectors. This material need three, it is %i", fibervecs_.size());
 
   double eps = 1e-12;
-  if (std::abs(fibervecs_[0].Dot(fibervecs_[1])) > eps or
-      std::abs(fibervecs_[1].Dot(fibervecs_[2])) > eps or
-      std::abs(fibervecs_[0].Dot(fibervecs_[2])) > eps)
+  if (std::abs(fibervecs_[0].dot(fibervecs_[1])) > eps or
+      std::abs(fibervecs_[1].dot(fibervecs_[2])) > eps or
+      std::abs(fibervecs_[0].dot(fibervecs_[2])) > eps)
   {
     std::cout << std::endl;
     std::cout << "\tWARNING: fiber vectors do NOT build orthonormal basis!" << std::endl;
@@ -513,8 +513,8 @@ void Mat::MembraneActiveStrain::setup_normal_direction()
   normaldir(2) = dir1(0) * dir2(1) - dir1(1) * dir2(0);
 
   // normalization
-  double norm = normaldir.Norm2();
-  normaldir.Scale(1 / norm);
+  double norm = normaldir.norm2();
+  normaldir.scale(1 / norm);
 
   fibervecs_.push_back(normaldir);
 }  // Mat::MembraneActiveStrain::setup_normal_direction

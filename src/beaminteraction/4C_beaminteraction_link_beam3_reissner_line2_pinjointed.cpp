@@ -98,16 +98,16 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
   Core::LinAlg::Matrix<3, 3> linkeletriad(true);
   Core::LinAlg::Matrix<3, 1> distvec(true);
 
-  distvec.Update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
+  distvec.update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
 
   // feasibility check regarding coinciding connection sites
-  if (distvec.Norm2() < 1e-12)
+  if (distvec.norm2() < 1e-12)
   {
     std::cout << "\nBeamLinkPinJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
-    initpos[0].Print(std::cout);
+    initpos[0].print(std::cout);
     std::cout << "\ninitbspotpos2 =";
-    initpos[1].Print(std::cout);
+    initpos[1].print(std::cout);
 
     FOUR_C_THROW(
         "Initialization of BeamLinkPinJointed failed because the two given binding "
@@ -115,9 +115,9 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
   }
 
   // FIRST base vector
-  distvec.Scale(1.0 / distvec.Norm2());
+  distvec.scale(1.0 / distvec.norm2());
 
-  std::copy(distvec.A(), distvec.A() + 3, &linkeletriad(0, 0));
+  std::copy(distvec.data(), distvec.data() + 3, &linkeletriad(0, 0));
 
   // SECOND base vector
   // check included angle of desired crosslinker axis (normalized distvec = first
@@ -134,26 +134,26 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
   // is included angle smaller than 45 degrees ? then avoid singularity at angle=0 degrees ...
   if (std::abs(scalarproduct) > 0.5 * std::sqrt(2))
   {
-    second_base_vecor_linkerele.CrossProduct(distvec, unit_vector_global_y);
+    second_base_vecor_linkerele.cross_product(distvec, unit_vector_global_y);
   }
   else
   {
-    second_base_vecor_linkerele.CrossProduct(distvec, unit_vector_global_x);
+    second_base_vecor_linkerele.cross_product(distvec, unit_vector_global_x);
   }
 
   // feasibility check
-  if (second_base_vecor_linkerele.Norm2() < 1e-12)
+  if (second_base_vecor_linkerele.norm2() < 1e-12)
   {
     std::cout << "\nBeamLinkPinJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
-    initpos[0].Print(std::cout);
+    initpos[0].print(std::cout);
     std::cout << "\ninitbspotpos2 =";
-    initpos[1].Print(std::cout);
+    initpos[1].print(std::cout);
 
     std::cout << "\ndistvec = ";
-    distvec.Print(std::cout);
+    distvec.print(std::cout);
     std::cout << "\nsecond_base_vecor_linkerele = ";
-    second_base_vecor_linkerele.Print(std::cout);
+    second_base_vecor_linkerele.print(std::cout);
 
     FOUR_C_THROW(
         "Initialization of BeamLinkPinJointed failed because the second base vector of the"
@@ -161,29 +161,29 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
   }
   else
   {
-    second_base_vecor_linkerele.Scale(1.0 / second_base_vecor_linkerele.Norm2());
+    second_base_vecor_linkerele.scale(1.0 / second_base_vecor_linkerele.norm2());
   }
 
 
   // THIRD base vector to complete orthonormal triad
   Core::LinAlg::Matrix<3, 1> third_base_vecor_linkerele(true);
-  third_base_vecor_linkerele.CrossProduct(distvec, second_base_vecor_linkerele);
+  third_base_vecor_linkerele.cross_product(distvec, second_base_vecor_linkerele);
 
   // feasibility check
-  if (std::abs(third_base_vecor_linkerele.Norm2() - 1.0) > 1e-12)
+  if (std::abs(third_base_vecor_linkerele.norm2() - 1.0) > 1e-12)
   {
     std::cout << "\nBeamLinkPinJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
-    initpos[0].Print(std::cout);
+    initpos[0].print(std::cout);
     std::cout << "\ninitbspotpos2 =";
-    initpos[1].Print(std::cout);
+    initpos[1].print(std::cout);
 
     std::cout << "\ndistvec = ";
-    distvec.Print(std::cout);
+    distvec.print(std::cout);
     std::cout << "\nsecond_base_vecor_linkerele = ";
-    second_base_vecor_linkerele.Print(std::cout);
+    second_base_vecor_linkerele.print(std::cout);
     std::cout << "\nthird_base_vecor_linkerele = ";
-    third_base_vecor_linkerele.Print(std::cout);
+    third_base_vecor_linkerele.print(std::cout);
 
     FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the third base vector of the"
@@ -193,10 +193,10 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::init(int id,
 
   /* store the initial triads as quaternions in class variables for the subsequent
    * use in setup of reference configuration of the connecting element */
-  std::copy(
-      second_base_vecor_linkerele.A(), second_base_vecor_linkerele.A() + 3, &linkeletriad(0, 1));
-  std::copy(
-      third_base_vecor_linkerele.A(), third_base_vecor_linkerele.A() + 3, &linkeletriad(0, 2));
+  std::copy(second_base_vecor_linkerele.data(), second_base_vecor_linkerele.data() + 3,
+      &linkeletriad(0, 1));
+  std::copy(third_base_vecor_linkerele.data(), third_base_vecor_linkerele.data() + 3,
+      &linkeletriad(0, 2));
 
   Core::LargeRotations::triadtoquaternion(linkeletriad, triad_);
 
@@ -459,20 +459,20 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
   Core::LinAlg::Matrix<3, 3> linkeletriad(true);
   Core::LinAlg::Matrix<3, 1> distvec(true);
 
-  distvec.Update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
+  distvec.update(1.0, GetBindSpotPos2(), -1.0, GetBindSpotPos1());
 
   // feasibility check regarding coinciding connection sites
-  if (distvec.Norm2() < 1e-12)
+  if (distvec.norm2() < 1e-12)
   {
     std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
-    GetBindSpotPos1().Print(std::cout);
+    GetBindSpotPos1().print(std::cout);
     std::cout << "\ninitbspotpos2 =";
-    GetBindSpotPos2().Print(std::cout);
+    GetBindSpotPos2().print(std::cout);
     std::cout << "\ninitbspottriad1 =";
-    GetBindSpotPos1().Print(std::cout);
+    GetBindSpotPos1().print(std::cout);
     std::cout << "\ninitbspottriad2 =";
-    GetBindSpotPos2().Print(std::cout);
+    GetBindSpotPos2().print(std::cout);
 
     FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the two given binding "
@@ -480,9 +480,9 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
   }
 
   // first base vector
-  distvec.Scale(1.0 / distvec.Norm2());
+  distvec.scale(1.0 / distvec.norm2());
 
-  std::copy(distvec.A(), distvec.A() + 3, &linkeletriad(0, 0));
+  std::copy(distvec.data(), distvec.data() + 3, &linkeletriad(0, 0));
 
 
   // second base vector
@@ -500,30 +500,30 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
   // is included angle smaller than 45 degrees ? then avoid singularity at angle=0 degrees ...
   if (std::abs(scalarproduct) > 0.5 * std::sqrt(2))
   {
-    second_base_vecor_linkerele.CrossProduct(distvec, unit_vector_global_y);
+    second_base_vecor_linkerele.cross_product(distvec, unit_vector_global_y);
   }
   else
   {
-    second_base_vecor_linkerele.CrossProduct(distvec, unit_vector_global_x);
+    second_base_vecor_linkerele.cross_product(distvec, unit_vector_global_x);
   }
 
   // feasibility check
-  if (second_base_vecor_linkerele.Norm2() < 1e-12)
+  if (second_base_vecor_linkerele.norm2() < 1e-12)
   {
     std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
-    GetBindSpotPos1().Print(std::cout);
+    GetBindSpotPos1().print(std::cout);
     std::cout << "\ninitbspotpos2 =";
-    GetBindSpotPos2().Print(std::cout);
+    GetBindSpotPos2().print(std::cout);
     std::cout << "\ninitbspottriad1 =";
-    GetBindSpotPos1().Print(std::cout);
+    GetBindSpotPos1().print(std::cout);
     std::cout << "\ninitbspottriad2 =";
-    GetBindSpotPos2().Print(std::cout);
+    GetBindSpotPos2().print(std::cout);
 
     std::cout << "\ndistvec = ";
-    distvec.Print(std::cout);
+    distvec.print(std::cout);
     std::cout << "\nsecond_base_vecor_linkerele = ";
-    second_base_vecor_linkerele.Print(std::cout);
+    second_base_vecor_linkerele.print(std::cout);
 
     FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the second base vector of the"
@@ -531,33 +531,33 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
   }
   else
   {
-    second_base_vecor_linkerele.Scale(1.0 / second_base_vecor_linkerele.Norm2());
+    second_base_vecor_linkerele.scale(1.0 / second_base_vecor_linkerele.norm2());
   }
 
 
   // third base vector to complete orthonormal triad
   Core::LinAlg::Matrix<3, 1> third_base_vecor_linkerele(true);
-  third_base_vecor_linkerele.CrossProduct(distvec, second_base_vecor_linkerele);
+  third_base_vecor_linkerele.cross_product(distvec, second_base_vecor_linkerele);
 
   // feasibility check
-  if (std::abs(third_base_vecor_linkerele.Norm2() - 1.0) > 1e-12)
+  if (std::abs(third_base_vecor_linkerele.norm2() - 1.0) > 1e-12)
   {
     std::cout << "\nBeamLinkRigidJointed initialized with ...";
     std::cout << "\ninitbspotpos1 =";
-    GetBindSpotPos1().Print(std::cout);
+    GetBindSpotPos1().print(std::cout);
     std::cout << "\ninitbspotpos2 =";
-    GetBindSpotPos2().Print(std::cout);
+    GetBindSpotPos2().print(std::cout);
     std::cout << "\ninitbspottriad1 =";
-    GetBindSpotPos1().Print(std::cout);
+    GetBindSpotPos1().print(std::cout);
     std::cout << "\ninitbspottriad2 =";
-    GetBindSpotPos2().Print(std::cout);
+    GetBindSpotPos2().print(std::cout);
 
     std::cout << "\ndistvec = ";
-    distvec.Print(std::cout);
+    distvec.print(std::cout);
     std::cout << "\nsecond_base_vecor_linkerele = ";
-    second_base_vecor_linkerele.Print(std::cout);
+    second_base_vecor_linkerele.print(std::cout);
     std::cout << "\nthird_base_vecor_linkerele = ";
-    third_base_vecor_linkerele.Print(std::cout);
+    third_base_vecor_linkerele.print(std::cout);
 
     FOUR_C_THROW(
         "Initialization of BeamLinkRigidJointed failed because the third base vector of the"
@@ -566,10 +566,10 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::ResetState(
 
   /* store the initial triads as quaternions in class variables for the subsequent
    * use in setup of reference configuration of the connecting element */
-  std::copy(
-      second_base_vecor_linkerele.A(), second_base_vecor_linkerele.A() + 3, &linkeletriad(0, 1));
-  std::copy(
-      third_base_vecor_linkerele.A(), third_base_vecor_linkerele.A() + 3, &linkeletriad(0, 2));
+  std::copy(second_base_vecor_linkerele.data(), second_base_vecor_linkerele.data() + 3,
+      &linkeletriad(0, 1));
+  std::copy(third_base_vecor_linkerele.data(), third_base_vecor_linkerele.data() + 3,
+      &linkeletriad(0, 2));
 
   Core::LargeRotations::triadtoquaternion(linkeletriad, triad_);
 }

@@ -49,7 +49,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::ElementHandle::create_projec
     const Core::LinAlg::Matrix<3, 1>& xi = local_coordinates(p);
 
     // copy first dim entries into xie
-    std::copy(xi.A(), xi.A() + dim, &xie(0, i));
+    std::copy(xi.data(), xi.data() + dim, &xie(0, i));
   }
 
   Core::FE::GaussIntegration intpoints(gp_ic);
@@ -899,11 +899,11 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
     }
 
     Core::FE::shape_function_2D(side_funct, 0.0, 0.0, Core::FE::CellType::quad8);
-    xyz.Multiply(side_xyze, side_funct);
-    lsv.Multiply(side_lsvs, side_funct);
+    xyz.multiply(side_xyze, side_funct);
+    lsv.multiply(side_lsvs, side_funct);
 
     // find the unique center node of the quadratic quad8 sides
-    center_nodes[localsideid] = mesh.GetNode(node_nids, xyz.A(), lsv(0));
+    center_nodes[localsideid] = mesh.GetNode(node_nids, xyz.data(), lsv(0));
   }
 
   Node* node20 = center_nodes[0];
@@ -942,11 +942,11 @@ Core::Geo::Cut::Hex20ElementHandle::Hex20ElementHandle(
   Core::LinAlg::Matrix<20, 1> funct;
   Core::FE::shape_function_3D(funct, 0.0, 0.0, 0.0, Core::FE::CellType::hex20);
 
-  xyz.Multiply(xyze, funct);
-  lsv.Multiply(lsvs, funct);
+  xyz.multiply(xyze, funct);
+  lsv.multiply(lsvs, funct);
   node_nids.clear();
   std::copy(node_ids.begin(), node_ids.end(), std::inserter(node_nids, node_nids.begin()));
-  Node* node26 = mesh.GetNode(node_nids, xyz.A(), lsv(0));
+  Node* node26 = mesh.GetNode(node_nids, xyz.data(), lsv(0));
   int node26_id = node26->Id();
 
 
@@ -1376,11 +1376,11 @@ Core::Geo::Cut::Wedge15ElementHandle::Wedge15ElementHandle(
     }
 
     Core::FE::shape_function_2D(side_funct, 0.0, 0.0, Core::FE::CellType::quad8);
-    xyz.Multiply(side_xyze, side_funct);
-    lsv.Multiply(side_lsvs, side_funct);
+    xyz.multiply(side_xyze, side_funct);
+    lsv.multiply(side_lsvs, side_funct);
 
     // find the unique center node of the quadratic quad8 sides
-    center_nodes[localsideid] = mesh.GetNode(node_nids, xyz.A(), lsv(0));
+    center_nodes[localsideid] = mesh.GetNode(node_nids, xyz.data(), lsv(0));
   }
 
   Core::LinAlg::Matrix<3, 6> tb_side_xyze;  // top_bottom_sides
