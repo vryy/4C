@@ -224,14 +224,12 @@ Teuchos::RCP<Epetra_MultiVector> Core::FE::solve_nodal_l2_projection(
     switch (prectyp)
     {
       case Core::LinearSolver::PreconditionerType::multigrid_ml:
-      case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid:
       case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
       case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       {
         Teuchos::ParameterList* preclist_ptr = nullptr;
         // switch here between ML and MueLu cases
         if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml or
-            prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid or
             prectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2)
           preclist_ptr = &((solver->Params()).sublist("ML Parameters"));
         else if (prectyp == Core::LinearSolver::PreconditionerType::multigrid_muelu)

@@ -261,9 +261,6 @@ Teuchos::ParameterList translate_four_c_to_ml(const Teuchos::ParameterList& inpa
   {
     case Core::LinearSolver::PreconditionerType::multigrid_ml:
       break;
-    case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid:
-      mllist.set("aggregation: use tentative restriction", true);
-      break;
     case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
       mllist.set("energy minimization: enable", true);
       mllist.set("energy minimization: type", 3);
@@ -669,11 +666,7 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
     case Core::LinearSolver::PreconditionerType::ilu:
       beloslist.set("Preconditioner Type", "ILU");
       break;
-    case Core::LinearSolver::PreconditionerType::icc:
-      beloslist.set("Preconditioner Type", "IC");
-      break;
     case Core::LinearSolver::PreconditionerType::multigrid_ml:
-    case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid:
     case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
       beloslist.set("Preconditioner Type", "ML");
@@ -708,8 +701,7 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
   }
 
   // set parameters for Ifpack if used
-  if (azprectyp == Core::LinearSolver::PreconditionerType::ilu ||
-      azprectyp == Core::LinearSolver::PreconditionerType::icc)
+  if (azprectyp == Core::LinearSolver::PreconditionerType::ilu)
   {
     Teuchos::ParameterList& ifpacklist = outparams.sublist("IFPACK Parameters");
     ifpacklist = translate_four_c_to_ifpack(inparams);
@@ -730,7 +722,6 @@ Teuchos::ParameterList translate_four_c_to_belos(const Teuchos::ParameterList& i
 
   // set parameters for ML if used
   if (azprectyp == Core::LinearSolver::PreconditionerType::multigrid_ml ||
-      azprectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid ||
       azprectyp == Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2)
   {
     Teuchos::ParameterList& mllist = outparams.sublist("ML Parameters");
