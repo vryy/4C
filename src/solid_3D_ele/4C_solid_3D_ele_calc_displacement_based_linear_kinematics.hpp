@@ -20,40 +20,6 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret::ELEMENTS
 {
-  namespace Details
-  {
-    template <Core::FE::CellType celltype,
-        std::enable_if_t<DETAIL::num_dim<celltype> == 3, int> = 0>
-    Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
-        DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
-    evaluate_linear_strain_gradient(const JacobianMapping<celltype>& jacobian_mapping)
-    {
-      // B-operator
-      Core::LinAlg::Matrix<DETAIL::num_str<celltype>,
-          DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
-          Bop;
-      for (int i = 0; i < DETAIL::num_nodes<celltype>; ++i)
-      {
-        for (int d = 0; d < DETAIL::num_dim<celltype>; ++d)
-        {
-          Bop(d, DETAIL::num_dim<celltype> * i + d) = jacobian_mapping.N_XYZ_(d, i);
-        }
-
-        Bop(3, DETAIL::num_dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(1, i);
-        Bop(3, DETAIL::num_dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(0, i);
-        Bop(3, DETAIL::num_dim<celltype> * i + 2) = 0;
-        Bop(4, DETAIL::num_dim<celltype> * i + 0) = 0;
-        Bop(4, DETAIL::num_dim<celltype> * i + 1) = jacobian_mapping.N_XYZ_(2, i);
-        Bop(4, DETAIL::num_dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(1, i);
-        Bop(5, DETAIL::num_dim<celltype> * i + 0) = jacobian_mapping.N_XYZ_(2, i);
-        Bop(5, DETAIL::num_dim<celltype> * i + 1) = 0;
-        Bop(5, DETAIL::num_dim<celltype> * i + 2) = jacobian_mapping.N_XYZ_(0, i);
-      }
-
-      return Bop;
-    }
-  }  // namespace Details
-
   /*!
    * @brief A container holding the linearization of the displacement based linear kinematics solid
    * element formulation
@@ -91,17 +57,10 @@ namespace Discret::ELEMENTS
         const JacobianMapping<celltype>& jacobian_mapping, Evaluator evaluator)
     {
       const DisplacementBasedLinearKinematicsLinearizationContainer<celltype> linearization{
-          Details::evaluate_linear_strain_gradient(jacobian_mapping)};
+          Discret::ELEMENTS::evaluate_linear_strain_gradient(jacobian_mapping)};
 
-      Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, 1> nodal_displs(
-          true);
-
-      for (unsigned i = 0; i < Core::FE::num_nodes<celltype>; ++i)
-        for (unsigned j = 0; j < Core::FE::dim<celltype>; ++j)
-          nodal_displs(i * Core::FE::dim<celltype> + j, 0) = nodal_coordinates.displacements_(i, j);
-
-      Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> gl_strain;
-      gl_strain.Multiply(linearization.linear_b_operator_, nodal_displs);
+      Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> gl_strain =
+          evaluate_linear_gl_strain(nodal_coordinates, linearization.linear_b_operator_);
 
       return evaluator(
           Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>(), gl_strain, linearization);

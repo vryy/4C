@@ -11,6 +11,7 @@
 #include "4C_config.hpp"
 
 #include "4C_fem_general_cell_type_traits.hpp"
+#include "4C_inpar_structure.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based.hpp"
 #include "4C_solid_3D_ele_calc_displacement_based_linear_kinematics.hpp"
 #include "4C_solid_3D_ele_calc_eas.hpp"
@@ -46,8 +47,14 @@ namespace Discret::ELEMENTS
     using FbarEvaluators = Core::FE::apply_celltype_sequence<FBarSolidIntegrator,
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>>;
     using EASEvaluators = Core::FE::BaseTypeList<
-        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>,
-        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21>>;
+        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9,
+            Inpar::STR::KinemType::nonlinearTotLag>,
+        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21,
+            Inpar::STR::KinemType::nonlinearTotLag>,
+        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9,
+            Inpar::STR::KinemType::linear>,
+        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21,
+            Inpar::STR::KinemType::linear>>;
     using MulfEvaluators =
         Core::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes>;
     using FBarMulfEvaluators = Core::FE::apply_celltype_sequence<MulfFBarSolidIntegrator,

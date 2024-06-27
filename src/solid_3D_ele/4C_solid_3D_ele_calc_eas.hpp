@@ -12,6 +12,7 @@
 
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
+#include "4C_inpar_structure.hpp"
 #include "4C_solid_3D_ele_calc_interface.hpp"
 #include "4C_solid_3D_ele_interface_serializable.hpp"
 #include "4C_solid_3D_ele_utils.hpp"
@@ -102,7 +103,7 @@ namespace Discret
       Core::LinAlg::Matrix<num_eas, 1> alpha_{true};
     };
 
-    template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+    template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype, Inpar::STR::KinemType>
     class SolidEleCalcEas
     {
      public:
