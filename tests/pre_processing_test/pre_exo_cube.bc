@@ -7,5 +7,5 @@ of Shape: HEX8
 has 1 Elements
 *eb1="ELEMENT"
 sectionname="STRUCTURE"
-description="MAT 1 KINEM nonlinear EAS none"
-elementname="SOLIDH8"
+description="MAT 1 KINEM nonlinear"
+elementname="SOLID"

@@ -311,10 +311,10 @@ NODE 14 COORD 2.5 -2.5 -0.2
 NODE 15 COORD 2.5 2.5 -0.2
 NODE 16 COORD 1.0 1.0 -0.2
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 1 2 6 5 4 3 7 8 MAT 2 KINEM nonlinear EAS none
-2 SOLIDH8 HEX8 1 10 14 5 2 9 13 6 MAT 2 KINEM nonlinear EAS none
-3 SOLIDH8 HEX8 9 10 14 13 12 11 15 16 MAT 2 KINEM nonlinear EAS none
-4 SOLIDH8 HEX8 3 12 16 7 11 15 8 4 MAT 2 KINEM nonlinear EAS none
+1 SOLID HEX8 1 2 6 5 4 3 7 8 MAT 2 KINEM nonlinear
+2 SOLID HEX8 1 10 14 5 2 9 13 6 MAT 2 KINEM nonlinear
+3 SOLID HEX8 9 10 14 13 12 11 15 16 MAT 2 KINEM nonlinear
+4 SOLID HEX8 3 12 16 7 11 15 8 4 MAT 2 KINEM nonlinear
 ----------------------------------------------------------------FLUID DOMAIN
 LOWER_BOUND                     -1.6 -1.6 -.04
 UPPER_BOUND                     1.6 1.6 .04

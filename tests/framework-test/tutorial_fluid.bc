@@ -18,8 +18,8 @@ of Shape: HEX8
 has 9417816 Elements
 '*eb0="ELEMENT"'
 sectionname="STRUCTURE"
-description="MAT 1 EAS mild KINEM nonlinear"
-elementname="SOLIDH8"
+description="MAT 1 TECH eas_mild KINEM nonlinear"
+elementname="SOLID"
 
 Node Set, named:
 Property Name: INFLOW

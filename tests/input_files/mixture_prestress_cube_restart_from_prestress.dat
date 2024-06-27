@@ -173,5 +173,5 @@ FNODE 6 COORD 1.0 1.0 0.0 FIBER1 1.0 0.0 0.0
 FNODE 7 COORD 1.0 0.0 1.0 FIBER1 1.0 0.0 0.0
 FNODE 8 COORD 1.0 1.0 1.0 FIBER1 1.0 0.0 0.0
 ------------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear EAS none
+1 SOLID HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear
 ---------------------------------------------------------------------------END

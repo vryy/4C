@@ -361,10 +361,10 @@ NODE 38    COORD  1.9000000000000000e+00  1.9000000000000000e+00  2.100000000000
 2 SOLIDH8PORO HEX8  2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none
 3 SOLIDH8PORO HEX8  4 3 14 13 8 7 16 15 MAT 1 KINEM nonlinear EAS none
 4 SOLIDH8PORO HEX8  3 10 17 14 7 12 18 16 MAT 1 KINEM nonlinear EAS none
-5 SOLIDH8 HEX8  21 22 23 24 25 26 27 28 MAT 5 KINEM nonlinear EAS none
-6 SOLIDH8 HEX8  22 29 30 23 26 31 32 27 MAT 5 KINEM nonlinear EAS none
-7 SOLIDH8 HEX8  24 23 34 33 28 27 36 35 MAT 5 KINEM nonlinear EAS none
-8 SOLIDH8 HEX8  23 30 37 34 27 32 38 36 MAT 5 KINEM nonlinear EAS none
+5 SOLID HEX8 21 22 23 24 25 26 27 28 MAT 5 KINEM nonlinear
+6 SOLID HEX8 22 29 30 23 26 31 32 27 MAT 5 KINEM nonlinear
+7 SOLID HEX8 24 23 34 33 28 27 36 35 MAT 5 KINEM nonlinear
+8 SOLID HEX8 23 30 37 34 27 32 38 36 MAT 5 KINEM nonlinear
 ----------------------------------------------------------RESULT DESCRIPTION
 //These tolerance are specified not very strict due to the critical problem setup
 // (physic is not really resolved and a low number of integration points on the interface)

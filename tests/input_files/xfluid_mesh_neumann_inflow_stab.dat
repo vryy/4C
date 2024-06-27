@@ -118,7 +118,7 @@ LOWER_BOUND  -0.25 -0.25 -.03
 UPPER_BOUND  0.25 0.25 .03
 INTERVALS   2 2 1
 ROTATION 0 0 45
-ELEMENTS    SOLIDH8 HEX8 MAT 2 KINEM nonlinear EAS none
+ELEMENTS    SOLID HEX8 MAT 2 KINEM nonlinear
 PARTITION   structured
 ----------------------------------------------------FLUID DOMAIN
 LOWER_BOUND  -0.5 -0.5 -.03

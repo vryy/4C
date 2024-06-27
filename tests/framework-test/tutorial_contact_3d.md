@@ -46,10 +46,10 @@ For the definition of the boundary conditions, it is convenient to use the proto
 <buildDir>/pre_exodus --exo=tutorial_contact_3d.e
 ```
 
-In `tutorial_contact_3d.bc` it can be seen, that the first two blocks of text define the structure elements, which will later fill the system matrices. The other text blocks define conditions on parts of the system. The first line of each block assignes an (optional) name to the element block/nodeset and the shape of the element type is specified. The next part has already been filled in by `pre_exodus`. For our simple geometry and discretization it can easily be checked that the number of elements/nodes in the corresponding element blocks and nodesets is correct. Next, the Section of the `.dat` file under which this information will be listed is given. the structure element properties are listed under `STRUCTURE`, whereas the boundary/contact conditions will be listed under their corresponding section names. The parameters for assigning a material model to an element block with `SOLIDH8` elements of shape `HEX8` are:
+In `tutorial_contact_3d.bc` it can be seen, that the first two blocks of text define the structure elements, which will later fill the system matrices. The other text blocks define conditions on parts of the system. The first line of each block assignes an (optional) name to the element block/nodeset and the shape of the element type is specified. The next part has already been filled in by `pre_exodus`. For our simple geometry and discretization it can easily be checked that the number of elements/nodes in the corresponding element blocks and nodesets is correct. Next, the Section of the `.dat` file under which this information will be listed is given. the structure element properties are listed under `STRUCTURE`, whereas the boundary/contact conditions will be listed under their corresponding section names. The parameters for assigning a material model to an element block with `SOLID` elements of shape `HEX8` are:
 
 ```bash
-description="MAT 1 KINEM nonlinear EAS none"
+description="MAT 1 KINEM nonlinear"
 ```
 
 where we choose material model 1, set the kinematics to nonlinear and assume no enhanced assumed strain. Last, the element type/condition specific set of parameters is given and the name of the element type is specified. Hint: A list of possible options can be found in the `.bc` default file.
