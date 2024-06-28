@@ -1,3 +1,5 @@
+"""Check header guards in C/C++ files."""
+
 import argparse
 import os
 from four_c_utils import common_utils as utils

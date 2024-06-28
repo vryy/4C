@@ -1,11 +1,10 @@
-from codecs import namereplace_errors
+"""Check input test files for errors."""
+
 import os
 import sys
 import argparse
 import re
-import json
 from four_c_utils import common_utils as utils
-from typing import Optional, List
 
 
 # CHECK INPUT FILE TESTS

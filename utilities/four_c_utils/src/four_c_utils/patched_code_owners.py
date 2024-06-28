@@ -1,4 +1,4 @@
-"Patched version of the codeowners module"
+"""Patched version of the codeowners module"""
 
 import re
 from codeowners import CodeOwners

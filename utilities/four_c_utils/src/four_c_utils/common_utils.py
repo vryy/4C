@@ -1,7 +1,6 @@
+"""Utils."""
+
 import subprocess, os, sys, re
-
-
-# UTILS
 
 
 def command_output(cmd):

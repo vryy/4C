@@ -1,8 +1,7 @@
-"4C header check"
+"""4C header check"""
 
 import argparse
 from four_c_utils import file_header as bh
-from typing import Sequence
 from four_c_utils import common_utils as utils
 
 
