@@ -24,8 +24,7 @@ def check_inputtests(filenames, allerrors):
         if re.search(r"\b" + re.escape(expected_test_name) + r"\b", all_lines) is None:
             missing_input_tests.append(input_test)
 
-    # Currently disabled since this needs a few fixes
-    if False and len(missing_input_tests) > 0:
+    if len(missing_input_tests) > 0:
         errors += 1
         allerrors.append(
             "The following input files are missing in TestingFrameworkListOfTests.cmake:"
