@@ -3,6 +3,7 @@ repos:
     rev: v14.0.0
     hooks:
       - id: clang-format
+        name: Format C/C++
         # Only use on C and C++ files and not on other files that clang could format (e.g. json).
         types_or: [c++, c]
 
@@ -10,6 +11,7 @@ repos:
     rev: v0.6.13
     hooks:
       - id: cmake-format
+        name: Format cmake
         args: [--config, utilities/code_checks/.cmake-format.yaml, --in-place]
         additional_dependencies: [pyyaml>=5.1]
 
@@ -17,11 +19,13 @@ repos:
     rev: 22.3.0
     hooks:
       - id: black
+        name: Format python
 
   - repo: https://github.com/pamoller/xmlformatter
     rev: v0.2.6
     hooks:
       - id: xml-formatter
+        name: Format xml
         args: [--indent, '2', --indent-char, ' ', --selfclose, --overwrite]
         # Only run on "pure" XML files and not on files that internally use XML (e.g. svg)
         files: \.xml$
@@ -30,21 +34,62 @@ repos:
     rev: v0.12.1
     hooks:
       - id: yamlfmt
+        name: Format yaml
         args: [-conf, utilities/code_checks/.yamlfmt.yaml]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
+        name: Trim trailing whitespace
         # Do not modify reference vtu files, since we generate these and do not hand-edit them.
         exclude: 'vtu$'
         # Prevents committing to `master` and `main` branches by default.
       - id: no-commit-to-branch
+        name: Don't commit to master
 
   - repo: local
     hooks:
-      - id: custom-checks
-        name: Custom Checks
+      - id: cpp-header
+        name: C++ file headers
+        description: 'Check that all C++ files have the correct header'
         language: system
-        pass_filenames: false
-        entry: ./utilities/code_checks/pre-commit
+        types_or: [c++, c]
+        entry: utilities/python-venv/bin/check-file-header
+        always_run: true
+
+      - id: cpp-filename-includes
+        name: C++ file names and include style
+        description: 'Check that all C++ files have the correct file name and include style'
+        language: system
+        types_or: [c++, c]
+        exclude: 'tests/cut_test/'
+        entry: utilities/python-venv/bin/check-filenames-and-includes
+        args: ['--paths', 'src/', 'unittests/', 'apps/', '--files']
+
+      - id: cpp-include-guard
+        name: Include guards
+        description: 'Check that all C++ files have the correct include guards'
+        language: python
+        types_or: [c++, c]
+        files: '\.(h|hpp)$'
+        entry: utilities/python-venv/bin/check-header-guards
+
+      - id: codeowners
+        name: Inclusion in CODEOWNERS file
+        description: 'Check that files are listed in CODEOWNERS file'
+        language: python
+        entry: utilities/python-venv/bin/check-codeowners
+
+      - id: input-files
+        name: Test input files
+        description: 'Check input files conform to expectations'
+        language: python
+        files: 'tests/input_files/.*\.dat$'
+        entry: utilities/python-venv/bin/check-test-files
+
+      - id: non-ascii-chars
+        name: Non-ASCII characters
+        language: system
+        exclude_types: [markdown, rst]
+        entry: ./utilities/code_checks/check_non_ascii_chars

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Exit the script at the first failure
+set -e
+
+## Check that all rules in CODEOWNERS match at least one file
+[ -e wrong_codeowners.txt ] && rm wrong_codeowners.txt
+
+# Load the python virtual environment, which provides the formatters.
+source ./utilities/python-venv/bin/activate
+
+echo "Start test for Codeowners ..."
+python ./utilities/python-venv/bin/check-codeowners --check-rules
+
+echo "Passed."
+exit 0
