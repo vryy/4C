@@ -66,6 +66,16 @@ namespace Core::Binstrategy
   /// forward declaration
   class Less;
 
+  /**
+   * Write either no, row or column bins for visualization.
+   */
+  enum WriteBins
+  {
+    none,
+    rows,
+    cols
+  };
+
   /*!
    *  \brief strategy for sorting data (e.g. finite elements) into spatial bins
    *  to enable tracking of interaction (e.g. contact) between them fully in
