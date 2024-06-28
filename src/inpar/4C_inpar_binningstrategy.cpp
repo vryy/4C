@@ -12,6 +12,7 @@
 
 #include "4C_inpar_binningstrategy.hpp"
 
+#include "4C_binstrategy.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -47,7 +48,10 @@ void Inpar::BINSTRATEGY::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
 
   setStringToIntegralParameter<int>("WRITEBINS", "none",
       "Write none, row or column bins for visualization",
-      tuple<std::string>("none", "rows", "cols"), tuple<int>(none, rows, cols), &binningstrategy);
+      tuple<std::string>("none", "rows", "cols"),
+      tuple<int>(Core::Binstrategy::WriteBins::none, Core::Binstrategy::WriteBins::rows,
+          Core::Binstrategy::WriteBins::cols),
+      &binningstrategy);
 }
 
 FOUR_C_NAMESPACE_CLOSE

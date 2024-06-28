@@ -22,15 +22,6 @@ namespace Inpar
 {
   namespace BINSTRATEGY
   {
-    /*!
-     * \ brief write either no, row or column bins for visualization
-     */
-    enum Writebins
-    {
-      none,
-      rows,
-      cols
-    };
 
     /// set the binning strategy parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);

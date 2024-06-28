@@ -15,7 +15,6 @@
 #include "4C_fem_dofset_independent.hpp"
 #include "4C_fem_geometry_intersection_math.hpp"
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
-#include "4C_inpar_binningstrategy.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
@@ -45,8 +44,7 @@ Core::Binstrategy::BinningStrategy::BinningStrategy(const Teuchos::ParameterList
     std::vector<Teuchos::RCP<const Epetra_Vector>> disnp)
     : bin_size_lower_bound_(binning_params.get<double>("BIN_SIZE_LOWER_BOUND")),
       deforming_simulation_domain_handler_(Teuchos::null),
-      writebinstype_(
-          Core::UTILS::IntegralValue<Inpar::BINSTRATEGY::Writebins>(binning_params, ("WRITEBINS"))),
+      writebinstype_(Core::UTILS::IntegralValue<WriteBins>(binning_params, ("WRITEBINS"))),
       myrank_(my_rank),
       comm_(comm.Clone()),
       element_filter_(std::move(element_filter)),
@@ -620,7 +618,7 @@ Teuchos::RCP<Epetra_Map> Core::Binstrategy::BinningStrategy::create_linear_map_f
 void Core::Binstrategy::BinningStrategy::WriteBinOutput(int const step, double const time)
 {
   // no bin output
-  if (writebinstype_ == Inpar::BINSTRATEGY::none) return;
+  if (writebinstype_ == WriteBins::none) return;
 
   if (myrank_ == 0)
     Core::IO::cout(Core::IO::verbose) << "\nBinning discretization output (step " << step
@@ -678,7 +676,7 @@ void Core::Binstrategy::BinningStrategy::WriteBinOutput(int const step, double c
 
   // get max gid before adding elements
   int maxgid = bindis_->ElementRowMap()->MaxAllGID() + 1;
-  if (writebinstype_ == Inpar::BINSTRATEGY::cols)
+  if (writebinstype_ == WriteBins::cols)
   {
     // gather all numbers of ghosted bins that are going to be row eles
     int nummycol;
