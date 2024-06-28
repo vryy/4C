@@ -177,6 +177,13 @@ function(four_c_test)
       )
   endif()
 
+  # Assert that NP <= 3
+  foreach(_np IN LISTS _parsed_NP)
+    if(_np GREATER 3)
+      message(FATAL_ERROR "Number of processors must be less than or equal to 3!")
+    endif()
+  endforeach()
+
   # check if source files exist
   set(source_file "")
   foreach(string IN LISTS _parsed_TEST_FILE)
