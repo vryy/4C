@@ -134,7 +134,9 @@ void FLD::XFluidStateCreator::create_new_cut_state(
 )
 {
   // new wizard using information about cutting sides from the condition_manager
-  wizard = Teuchos::rcp(new Core::Geo::CutWizard(xdiscret));
+  wizard = Teuchos::rcp(new Core::Geo::CutWizard(xdiscret,
+      [xdiscret](const Core::Nodes::Node& node, std::vector<int>& lm)
+      { xdiscret->InitialDof(&node, lm); }));
 
   // Set options for the cut wizard
   wizard->SetOptions(nodal_dofset_strategy_,  // strategy for nodal dofset management

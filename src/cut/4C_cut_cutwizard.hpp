@@ -12,6 +12,7 @@ surface meshes
 
 #include "4C_config.hpp"
 
+#include "4C_fem_general_node.hpp"
 #include "4C_inpar_cut.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
@@ -159,10 +160,16 @@ namespace Core::Geo
     //! @name Constructor and Destructor
     /*========================================================================*/
 
-    /*!
-    \brief Constructor
-    */
-    CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis);
+    /**
+     * \brief Constructor.
+     *
+     * Create CutWizard object with the given background discretization. The optional
+     * function @p global_dof_indices can be used to retrieve the global dof indices from
+     * the background discretization.
+     */
+    CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis,
+        std::function<void(const Core::Nodes::Node& node, std::vector<int>& lm)>
+            global_dof_indices = nullptr);
 
 
     /*!
@@ -355,6 +362,7 @@ namespace Core::Geo
 
     //! @name meshes
     Teuchos::RCP<BackMesh> back_mesh_;
+    std::function<void(const Core::Nodes::Node& node, std::vector<int>& lm)> global_dof_indices_;
     std::map<int, Teuchos::RCP<CutterMesh>> cutter_meshes_;
     const Epetra_Comm& comm_;
     int myrank_;  ///< my processor Id

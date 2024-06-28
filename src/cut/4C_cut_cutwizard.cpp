@@ -19,7 +19,6 @@ surface meshes
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_xfem_discretization.hpp"
 
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
@@ -52,8 +51,10 @@ const Core::Elements::Element* Core::Geo::CutWizard::BackMesh::lColElement(int l
 /*-------------------------------------------------------------*
  * constructor
  *-------------------------------------------------------------*/
-Core::Geo::CutWizard::CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis)
+Core::Geo::CutWizard::CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis,
+    std::function<void(const Core::Nodes::Node& node, std::vector<int>& lm)> global_dof_indices)
     : back_mesh_(Teuchos::rcp(new CutWizard::BackMesh(backdis, this))),
+      global_dof_indices_(std::move(global_dof_indices)),
       comm_(backdis->Comm()),
       myrank_(backdis->Comm().MyPID()),
       intersection_(Teuchos::rcp(new Core::Geo::Cut::CombIntersection(myrank_))),
@@ -501,31 +502,20 @@ void Core::Geo::CutWizard::get_physical_nodal_coordinates(
 
     if (back_mesh_->IsBackDisp())
     {
-      // castt to DiscretizationXFEM
-      Teuchos::RCP<XFEM::DiscretizationXFEM> xbackdis =
-          Teuchos::rcp_dynamic_cast<XFEM::DiscretizationXFEM>(back_mesh_->GetPtr(), true);
-
       lm.clear();
       mydisp.clear();
 
-      xbackdis->InitialDof(
-          &node, lm);  // to get all dofs of background (also not active ones at the moment!)
+      FOUR_C_ASSERT(global_dof_indices_, "global_dof_indices callback not set.");
+      global_dof_indices_(node, lm);
 
-      if (lm.size() == 3)  // case used actually?
-      {
-        Core::FE::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm);
-      }
-      else if (lm.size() == 4)  // case xFluid ... just take the first three
-      {
-        // copy the first three entries for the displacement, the fourth entry an all others
-        std::vector<int> lm_red;  // reduced local map
-        lm_red.clear();
-        for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
+      FOUR_C_ASSERT(lm.size() == 4, "Wrong number of dofs for node %i", lm.size());
 
-        Core::FE::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm_red);
-      }
-      else
-        FOUR_C_THROW("wrong number of dofs for node %i", lm.size());
+      // copy the first three entries for the displacement, the fourth entry an all others
+      std::vector<int> lm_red;  // reduced local map
+      lm_red.clear();
+      for (int k = 0; k < 3; k++) lm_red.push_back(lm[k]);
+
+      Core::FE::ExtractMyValues(back_mesh_->BackDispCol(), mydisp, lm_red);
 
       if (mydisp.size() != 3) FOUR_C_THROW("we need 3 displacements here");
 
