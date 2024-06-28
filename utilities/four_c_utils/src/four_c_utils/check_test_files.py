@@ -55,8 +55,7 @@ def check_inputtests(filenames, allerrors):
                 elif line.strip() != "":
                     num_current_section_non_empty_lines += 1
 
-    # Currently disabled since this needs a few fixes
-    if False and len(tests_empty_sections) > 0:
+    if len(tests_empty_sections) > 0:
         errors += 1
         allerrors.append(
             "The following input files have empty sections. Please delete them or correct your input file."

@@ -47,7 +47,6 @@ MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100.0 NUE 0.3 DENS 0.5
 --------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 1 VALUES 0 1
-
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 3
 // N1
@@ -107,8 +106,6 @@ NODE    23 DLINE 4
 NODE    24 DLINE 4
 NODE    28 DLINE 4
 NODE    32 DLINE 4
------------------------------------------------DSURF-NODE TOPOLOGY
-------------------------------------------------DVOL-NODE TOPOLOGY
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  2.0000000000000000e+01  4.0000000000000000e+01  0.0000000000000000e+00
 NODE         2 COORD  1.3333333333333336e+01  4.0000000000000000e+01  0.0000000000000000e+00

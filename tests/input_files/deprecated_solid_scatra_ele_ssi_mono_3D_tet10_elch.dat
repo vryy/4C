@@ -1,4 +1,3 @@
--------------------------------------------------------------TITLE
 - simple block discretized with 12 tet10 elements
 - initial concentration profile is quadratic in x
 - homogeneous Neumann boundary conditions for entire scalar transport field

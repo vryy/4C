@@ -1,4 +1,3 @@
------------------------------------------------------------------------TITLE
 - Two micro SCL discretizations (line2) between three blocks (hex8)
 - Two degrees of freedom are used (concentration, electric potential)
 - A voltage difference is applied leading to a formation of SCLs
