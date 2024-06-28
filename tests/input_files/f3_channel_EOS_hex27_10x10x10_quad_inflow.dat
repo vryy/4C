@@ -79,31 +79,11 @@ EOS_H_DEFINITION                EOS_he_surf_with_max_diameter
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos
-AZOUTPUT                        50
 AZSOLVE                         GMRES
-ML_PRINT                        5
-AZPREC                          MLFLUID2
-AZREUSE                         0
-AZOMEGA                         1.0
-AZGRAPH                         1
-IFPACKGFILL                     0
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/fluid3D_template.xml
 AZTOL                           1.0E-12
 AZCONV                          AZ_r0
-AZITER                          1000
-AZSUB                           30
-ML_MAXCOARSESIZE                2500
-ML_MAXLEVEL                     3
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  0.0
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  SGS
-ML_SMOOTHERCOARSE               Umfpack
-ML_SMOTIMES                     3 3 1
-ML_DAMPFINE                     0.66
-ML_DAMPMED                      0.66
-ML_DAMPCOARSE                   1.0
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0
