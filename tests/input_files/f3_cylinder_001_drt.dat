@@ -86,33 +86,11 @@ E 13 - 0 CENTER 0.5 0.205 0.205 AXIS 0.0 0.0 0.1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos
-AZOUTPUT                        1
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2
-AZREUSE                         8
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/fluid3D_template.xml
 AZTOL                           1.0E-4
-AZITER                          600
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
 AZCONV                          AZ_r0
-IFPACKGFILL                     0
-IFPACKOVERLAP                   2
-IFPACKCOMBINE                   Zero
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     3
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  1.33
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  SGS
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     2 3 1
-ML_DAMPFINE                     0.89
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
