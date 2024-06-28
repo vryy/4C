@@ -1432,14 +1432,14 @@ std::pair<bool, bool> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, 
     bool conv = false;
     switch (get_options_ptr()->geom_distance_floattype())
     {
-      case Inpar::Cut::floattype_double:
+      case Core::Geo::Cut::floattype_double:
       {
         Kernel::ComputeDistance<3, Core::FE::CellType::tri3, false> cd(xsi);
         conv = cd(xyze_triElement, point, distance[tri_id], signeddistance);
         if (conv) loc[tri_id] = cd.GetSideLocation();
         break;
       }
-      case Inpar::Cut::floattype_cln:
+      case Core::Geo::Cut::floattype_cln:
       {
         Kernel::ComputeDistance<3, Core::FE::CellType::tri3, true> cd(xsi);
         conv = cd(xyze_triElement, point, distance[tri_id], signeddistance);

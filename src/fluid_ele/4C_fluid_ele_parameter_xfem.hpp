@@ -14,6 +14,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_cut_enum.hpp"
 #include "4C_fluid_ele_parameter_std.hpp"
 #include "4C_inpar_cut.hpp"
 #include "4C_inpar_xfem.hpp"
@@ -43,10 +44,10 @@ namespace Discret
       //@{
 
       //! get the volumecell integration method used for integrating cut elements?
-      Inpar::Cut::VCellGaussPts volume_cell_gauss_points() const { return vcellgausspts_; };
+      Core::Geo::Cut::VCellGaussPts volume_cell_gauss_points() const { return vcellgausspts_; };
 
       //! get the boundarycell integration method used for integrating the surface in cut elements?
-      Inpar::Cut::BCellGaussPts boundary_cell_gauss_points() const { return bcellgausspts_; };
+      Core::Geo::Cut::BCellGaussPts boundary_cell_gauss_points() const { return bcellgausspts_; };
 
       //@}
 
@@ -180,10 +181,10 @@ namespace Discret
       //@{
 
       //! which volumecell integration is used for integrating cut elements?
-      Inpar::Cut::VCellGaussPts vcellgausspts_;
+      Core::Geo::Cut::VCellGaussPts vcellgausspts_;
 
       //! which boundarycell integration is used for integrating the surface in cut elements?
-      Inpar::Cut::BCellGaussPts bcellgausspts_;
+      Core::Geo::Cut::BCellGaussPts bcellgausspts_;
 
       //@}
 

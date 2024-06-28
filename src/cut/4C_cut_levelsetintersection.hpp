@@ -77,7 +77,7 @@ namespace Core::Geo
        *  \author winter
        *  \date 08/14  */
       void Cut(bool include_inner = true, bool screenoutput = false,
-          Inpar::Cut::VCellGaussPts VCellGP = Inpar::Cut::VCellGaussPts_Tessellation);
+          VCellGaussPts VCellGP = VCellGaussPts_Tessellation);
 
       //! @}
       /*========================================================================*/

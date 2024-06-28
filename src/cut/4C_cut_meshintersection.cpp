@@ -131,9 +131,9 @@ void Core::Geo::Cut::MeshIntersection::build_static_search_tree()
  * !!!IS JUST USED FOR CUT TESTS                                                                  *
  *                                                                                   schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::MeshIntersection::CutTest_Cut(bool include_inner,
-    Inpar::Cut::VCellGaussPts VCellgausstype, Inpar::Cut::BCellGaussPts BCellgausstype,
-    bool tetcellsonly, bool screenoutput, bool do_Cut_Positions_Dofsets)
+void Core::Geo::Cut::MeshIntersection::CutTest_Cut(bool include_inner, VCellGaussPts VCellgausstype,
+    Core::Geo::Cut::BCellGaussPts BCellgausstype, bool tetcellsonly, bool screenoutput,
+    bool do_Cut_Positions_Dofsets)
 {
   int mypid = 0;
   int mpi_is_running = 0;

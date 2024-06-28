@@ -13,19 +13,14 @@ mesh
 #include "4C_config.hpp"
 
 #include "4C_cut_boundingbox.hpp"
+#include "4C_cut_edge.hpp"
 #include "4C_cut_facet.hpp"
-#include "4C_inpar_cut.hpp"
+#include "4C_cut_node.hpp"
 
 #include <Shards_BasicTopologies.hpp>
 #include <Shards_CellTopologyTraits.hpp>
 
 #include <list>
-
-#ifdef FOUR_C_ENABLE_ASSERTIONS
-
-#include "4C_cut_edge.hpp"
-#include "4C_cut_node.hpp"
-#endif
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -321,12 +316,13 @@ namespace Core::Geo
       void create_integration_cells(int count, bool tetcellsonly = false);
 
       /// Call the moment fitting method for each element to generate the Gaussian integration rule
-      void moment_fit_gauss_weights(bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype);
+      void moment_fit_gauss_weights(
+          bool include_inner, Core::Geo::Cut::BCellGaussPts Bcellgausstype);
 
       /// Call the DirectDivergence method for each element to generate the Gaussian integration
       /// rule
       void direct_divergence_gauss_rule(
-          bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype);
+          bool include_inner, Core::Geo::Cut::BCellGaussPts Bcellgausstype);
 
 
       /*========================================================================*/
@@ -338,15 +334,14 @@ namespace Core::Geo
 
       /// test if for all elements the element volume is equal to the volume of all integration
       /// cells
-      void TestElementVolume(
-          bool fatal, Inpar::Cut::VCellGaussPts VCellGP = Inpar::Cut::VCellGaussPts_Tessellation);
+      void TestElementVolume(bool fatal, VCellGaussPts VCellGP = VCellGaussPts_Tessellation);
 
       /*!
       \brief Find the difference between the volume of background element and the sum of volume of
       all integration cells. There should be no difference between these two
        */
       void TestElementVolume(
-          Core::FE::CellType shape, Element& e, bool fatal, Inpar::Cut::VCellGaussPts VCellGP);
+          Core::FE::CellType shape, Element& e, bool fatal, VCellGaussPts VCellGP);
 
 
       /*========================================================================*/

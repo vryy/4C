@@ -34,7 +34,7 @@ void Core::Geo::Cut::ParentIntersection::CreateNodalDofSet(
 
   Mesh& m = NormalMesh();
 
-  const Inpar::Cut::NodalDofSetStrategy strategy = options_.get_nodal_dof_set_strategy();
+  const Core::Geo::Cut::NodalDofSetStrategy strategy = options_.get_nodal_dof_set_strategy();
 
   // nodes used for CUT std::map<node->ID, Node>, shadow nodes have ID<0
   std::map<int, Node*> nodes;
@@ -136,13 +136,13 @@ void Core::Geo::Cut::ParentIntersection::CreateNodalDofSet(
       n->SortNodalDofSets();
 
 
-      if (strategy == Inpar::Cut::NDS_Strategy_OneDofset_PerNodeAndPosition)
+      if (strategy == NDS_Strategy_OneDofset_PerNodeAndPosition)
       {
         /* combine the (ghost and standard) dofsets for this node w.r.t each phase to avoid
          * multiple ghost nodal dofsets for a certain phase */
         n->CollectNodalDofSets(true);
       }  // otherwise do nothing
-      else if (strategy == Inpar::Cut::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition)
+      else if (strategy == NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition)
       {
         /* combine the only the ghost dofsets for this node w.r.t each phase to avoid
          * multiple ghost nodal dofsets for a certain phase */
@@ -510,8 +510,8 @@ void Core::Geo::Cut::ParentIntersection::ConnectNodalDOFSets(std::vector<Node*>&
  * node positions have to be parallelized                                            schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::ParentIntersection::Cut_Finalize(bool include_inner,
-    Inpar::Cut::VCellGaussPts VCellgausstype, Inpar::Cut::BCellGaussPts BCellgausstype,
-    bool tetcellsonly, bool screenoutput)
+    VCellGaussPts VCellgausstype, Core::Geo::Cut::BCellGaussPts BCellgausstype, bool tetcellsonly,
+    bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::Geo::CUT --- 6/6 --- Cut_Finalize");
 
@@ -523,7 +523,7 @@ void Core::Geo::Cut::ParentIntersection::Cut_Finalize(bool include_inner,
 
   Mesh& m = NormalMesh();
 
-  if (VCellgausstype == Inpar::Cut::VCellGaussPts_Tessellation)
+  if (VCellgausstype == VCellGaussPts_Tessellation)
   {
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::Tessellation");
     m.create_integration_cells(
@@ -536,13 +536,13 @@ void Core::Geo::Cut::ParentIntersection::Cut_Finalize(bool include_inner,
     m.TestFacetArea();
     if (myrank_ == 0 and screenoutput) Core::IO::cout << "\n\t *     TestFacetArea ...";
   }
-  else if (VCellgausstype == Inpar::Cut::VCellGaussPts_MomentFitting)
+  else if (VCellgausstype == VCellGaussPts_MomentFitting)
   {
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::MomentFitting");
     m.moment_fit_gauss_weights(include_inner, BCellgausstype);
     m.TestFacetArea();
   }
-  else if (VCellgausstype == Inpar::Cut::VCellGaussPts_DirectDivergence)
+  else if (VCellgausstype == VCellGaussPts_DirectDivergence)
   {
     TEUCHOS_FUNC_TIME_MONITOR("XFEM::FluidWizard::Cut::DirectDivergence");
 

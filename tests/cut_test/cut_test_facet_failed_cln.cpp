@@ -3263,5 +3263,5 @@ void test_generated_1901()
 
 
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }

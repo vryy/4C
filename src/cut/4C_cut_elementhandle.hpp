@@ -137,7 +137,7 @@ namespace Core::Geo
               The integration rules over all the volume-cells are connected.
        */
       Teuchos::RCP<Core::FE::GaussPointsComposite> gauss_points_connected(
-          plain_volumecell_set& cells, Inpar::Cut::VCellGaussPts gausstype);
+          plain_volumecell_set& cells, VCellGaussPts gausstype);
 
 
       //! ...

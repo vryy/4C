@@ -436,8 +436,8 @@ void SimpleWrapper::AssumeVolumeCells(unsigned num)
 
 void SimpleWrapper::CutTest_Cut(bool include_inner, bool do_Cut_Positions_Dofsets)
 {
-  mesh_->CutTest_Cut(include_inner, Inpar::Cut::VCellGaussPts_DirectDivergence,
-      Inpar::Cut::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
+  mesh_->CutTest_Cut(include_inner, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+      Core::Geo::Cut::BCellGaussPts_Tessellation, true, true, do_Cut_Positions_Dofsets);
 }
 
 void SimpleWrapper::create_element(

@@ -90,8 +90,8 @@ namespace Core::Geo
        *         for the desired boundary cell positions
        *
        *  \author hiermeier \date 01/17   */
-      void add_side(Inpar::Cut::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
-          Core::FE::CellType shape, const std::vector<Point*>& side);
+      void add_side(Core::Geo::Cut::BoundaryCellPosition bcell_position, VolumeCell* vc,
+          Facet* facet, Core::FE::CellType shape, const std::vector<Point*>& side);
 
       /// add the side (boundary cell) information during the Create<Shape>Cell calls
       void add_side(

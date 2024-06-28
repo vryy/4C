@@ -593,7 +593,7 @@ bool Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Jus
 
 template <unsigned probDim, Core::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 bool Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::HandleParallelCut(
-    Edge* other, Side* side, PointSet* cut_points, Inpar::Cut::CutFloattype floattype)
+    Edge* other, Side* side, PointSet* cut_points, Core::Geo::Cut::CutFloatType floattype)
 {
   PointSet parallel_cuts;
   if (numNodesEdge != 2 or other->NumNodes() != 2)
@@ -672,7 +672,7 @@ bool Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Han
 template <unsigned probDim, Core::FE::CellType edgeType, unsigned dimEdge, unsigned numNodesEdge>
 void Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::GetTouchingPoints(
     const std::vector<Node*>& nodes, std::vector<Node*>& touch_nodes,
-    Inpar::Cut::CutFloattype floattype)
+    Core::Geo::Cut::CutFloatType floattype)
 {
   bool signeddistance = false;
   double distance = 0;
@@ -697,7 +697,7 @@ void Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
     bool SurfaceWithinLimits0 = false;
     switch (floattype)
     {
-      case Inpar::Cut::floattype_double:
+      case Core::Geo::Cut::floattype_double:
       {
         Kernel::ComputeDistance<probDim, edgeType, false> cd(xsi);
         conv = cd(xyze_edge, p_coord, distance, signeddistance);
@@ -706,7 +706,7 @@ void Core::Geo::Cut::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Get
           SurfaceWithinLimits0 = cd.SurfaceWithinLimits(0.0);
         break;
       }
-      case Inpar::Cut::floattype_cln:
+      case Core::Geo::Cut::floattype_cln:
       {
         Kernel::ComputeDistance<probDim, edgeType, true> cd(xsi);
         conv = cd(xyze_edge, p_coord, distance, signeddistance);

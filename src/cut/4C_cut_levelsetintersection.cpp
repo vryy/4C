@@ -162,7 +162,7 @@ void Core::Geo::Cut::LevelSetIntersection::Cut_Mesh(bool screenoutput)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::Geo::Cut::LevelSetIntersection::Cut(
-    bool include_inner, bool screenoutput, Inpar::Cut::VCellGaussPts VCellGP)
+    bool include_inner, bool screenoutput, VCellGaussPts VCellGP)
 {
   // ###########################################################################
   //  STEP 1/3 CUT THE MESH
@@ -195,10 +195,10 @@ void Core::Geo::Cut::LevelSetIntersection::Cut(
     if (myrank_ == 0 and screenoutput)
       std::cout << "\n\t * 5/6 create_integration_cells ..." << std::flush;
 
-    if (VCellGP == Inpar::Cut::VCellGaussPts_Tessellation)
+    if (VCellGP == VCellGaussPts_Tessellation)
       m.create_integration_cells(0);
     else
-      m.direct_divergence_gauss_rule(true, Inpar::Cut::BCellGaussPts_Tessellation);
+      m.direct_divergence_gauss_rule(true, BCellGaussPts_Tessellation);
 
     if (myrank_ == 0 and screenoutput)
     {

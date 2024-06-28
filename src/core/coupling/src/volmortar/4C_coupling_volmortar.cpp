@@ -1629,13 +1629,13 @@ void Core::VolMortar::VolMortarCoupl::perform_cut(
   if (Core::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_tessellation)
   {
     // Set options for the cut wizard
-    wizard->SetOptions(Inpar::Cut::NDS_Strategy_full,
-        Inpar::Cut::VCellGaussPts_Tessellation,  // how to create volume cell Gauss points?
-        Inpar::Cut::BCellGaussPts_Tessellation,  // how to create boundary cell Gauss points?
-        false,                                   // gmsh output for cut library
-        true,                                    // find point positions
-        true,                                    // generate only tet cells
-        false                                    // print screen output
+    wizard->SetOptions(Core::Geo::Cut::NDS_Strategy_full,
+        Core::Geo::Cut::VCellGaussPts_Tessellation,  // how to create volume cell Gauss points?
+        Core::Geo::Cut::BCellGaussPts_Tessellation,  // how to create boundary cell Gauss points?
+        false,                                       // gmsh output for cut library
+        true,                                        // find point positions
+        true,                                        // generate only tet cells
+        false                                        // print screen output
     );
 
     // cut in reference configuration
@@ -1691,9 +1691,9 @@ void Core::VolMortar::VolMortarCoupl::perform_cut(
   else if (Core::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_directdivergence)
   {
     // Set options for the cut wizard
-    wizard->SetOptions(Inpar::Cut::NDS_Strategy_full,
-        Inpar::Cut::VCellGaussPts_DirectDivergence,  // how to create volume cell Gauss points?
-        Inpar::Cut::BCellGaussPts_Tessellation,      // how to create boundary cell Gauss points?
+    wizard->SetOptions(Core::Geo::Cut::NDS_Strategy_full,
+        Core::Geo::Cut::VCellGaussPts_DirectDivergence,  // how to create volume cell Gauss points?
+        Core::Geo::Cut::BCellGaussPts_Tessellation,  // how to create boundary cell Gauss points?
         false,                                       // gmsh output for cut library
         true,                                        // find point positions
         false,                                       // generate only tet cells

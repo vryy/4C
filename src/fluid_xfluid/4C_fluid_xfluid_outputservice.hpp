@@ -15,7 +15,7 @@
 /*! header inclusions */
 #include "4C_config.hpp"
 
-#include "4C_inpar_cut.hpp"
+#include "4C_cut_enum.hpp"
 #include "4C_inpar_xfem.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
@@ -279,7 +279,7 @@ namespace FLD
     //@}
 
     //! integration approach
-    const Inpar::Cut::VCellGaussPts volume_cell_gauss_point_by_;
+    const Core::Geo::Cut::VCellGaussPts volume_cell_gauss_point_by_;
 
     //! include elements with inside position?
     const bool include_inner_;

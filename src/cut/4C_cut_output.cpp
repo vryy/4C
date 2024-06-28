@@ -1301,11 +1301,11 @@ void Core::Geo::Cut::Output::GmshElementCutTest(
     file << ""
          << "\n";
   }
-  file << "  intersection.CutTest_Cut( true,Inpar::Cut::VCellGaussPts_DirectDivergence, "
-          "Inpar::Cut::BCellGaussPts_Tessellation );"
+  file << "  intersection.CutTest_Cut( true,Core::Geo::Cut::VCellGaussPts_DirectDivergence, "
+          "Core::Geo::Cut::BCellGaussPts_Tessellation );"
        << "\n";
-  file << "  intersection.Cut_Finalize( true, Inpar::Cut::VCellGaussPts_DirectDivergence, "
-          "Inpar::Cut::BCellGaussPts_Tessellation, false, true );"
+  file << "  intersection.Cut_Finalize( true, Core::Geo::Cut::VCellGaussPts_DirectDivergence, "
+          "Core::Geo::Cut::BCellGaussPts_Tessellation, false, true );"
        << "\n";
   file << ""
        << "\n";
@@ -1347,7 +1347,8 @@ void Core::Geo::Cut::Output::GmshElementCutTest(
     file << "    Core::Geo::Cut::VolumeCell * vc = &**i;"
          << "\n";
     file << "    "
-            "vc->moment_fit_gauss_weights(vc->parent_element(),mesh,true,Inpar::Cut::BCellGaussPts_"
+            "vc->moment_fit_gauss_weights(vc->parent_element(),mesh,true,Core::Geo::Cut::"
+            "BCellGaussPts_"
             "Tessellation);"
          << "\n";
     file << "    momFitVol.push_back(vc->Volume());"

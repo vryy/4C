@@ -1643,7 +1643,7 @@ void test_ls_hex8_between()
     // std::cout << "\n";
 
     lsi.add_element(e, nids, xyze, Core::FE::CellType::hex8, &lsvs[0]);
-    lsi.Cut(true, false, Inpar::Cut::VCellGaussPts_DirectDivergence);
+    lsi.Cut(true, false, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
   }
 }
 

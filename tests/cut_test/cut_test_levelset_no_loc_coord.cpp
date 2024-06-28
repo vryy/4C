@@ -85,8 +85,8 @@ Core::Geo::Cut::CombIntersection Cut_With_Tesselation(std::vector<int> nids,
   ci.NormalMesh().FindLSNodePositions();
   ci.NormalMesh().FindNodalDOFSets(true);
 
-  ci.Cut_Finalize(true, Inpar::Cut::VCellGaussPts_Tessellation,
-      Inpar::Cut::BCellGaussPts_Tessellation, false, true);
+  ci.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_Tessellation,
+      Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
   std::cout << "TESSELATION, Cut without error." << std::endl;
 
 #ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
@@ -114,8 +114,8 @@ Core::Geo::Cut::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids
   ci.NormalMesh().FindLSNodePositions();
   ci.NormalMesh().FindNodalDOFSets(true);
 
-  ci.Cut_Finalize(true, Inpar::Cut::VCellGaussPts_DirectDivergence,
-      Inpar::Cut::BCellGaussPts_Tessellation, false, true);
+  ci.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+      Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
   std::cout << "DIRECT DIVERGENCE, Cut without error." << std::endl;
 
 #ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
@@ -151,11 +151,11 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
   cidd.NormalMesh().FindLSNodePositions();
   cidd.NormalMesh().FindNodalDOFSets(true);
 
-  ci.Cut_Finalize(true, Inpar::Cut::VCellGaussPts_Tessellation,
-      Inpar::Cut::BCellGaussPts_Tessellation, false, true);
+  ci.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_Tessellation,
+      Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
   std::cout << "TESSELATION, Cut without error." << std::endl;
-  cidd.Cut_Finalize(true, Inpar::Cut::VCellGaussPts_DirectDivergence,
-      Inpar::Cut::BCellGaussPts_Tessellation, false, true);
+  cidd.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+      Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
   std::cout << "DIRECT DIVERGENCE, Cut without error." << std::endl;
 
 #ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
@@ -279,7 +279,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
     //    std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL #" << counter <<  ".....!" << std::endl;
     //    std::cout << "Volumecell Position: " << vc->Position() << std::endl;
     vc->direct_divergence_gauss_rule(
-        vc->parent_element(), ci.NormalMesh(), true, Inpar::Cut::BCellGaussPts_Tessellation);
+        vc->parent_element(), ci.NormalMesh(), true, Core::Geo::Cut::BCellGaussPts_Tessellation);
     //    std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL #" << counter <<  " WITHOUT ERROR!" <<
     //    std::endl << std::endl;
     counter++;
@@ -1270,7 +1270,7 @@ void test_ls_mesh_hex8_simple()
 
   // CUT WITH MESH
   intersection.add_element(1, nids, GetLocalHex8Coords(), Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
 
   std::vector<double> tessVol, dirDivVol;
 
@@ -1292,7 +1292,7 @@ void test_ls_mesh_hex8_simple()
               << std::endl;
     std::cout << "Volumecell Position: " << vc->Position() << std::endl;
     vc->direct_divergence_gauss_rule(
-        vc->parent_element(), mesh, true, Inpar::Cut::BCellGaussPts_Tessellation);
+        vc->parent_element(), mesh, true, Core::Geo::Cut::BCellGaussPts_Tessellation);
     std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL USING MESH #" << counter << " WITHOUT ERROR!"
               << std::endl
               << std::endl;
@@ -1414,10 +1414,10 @@ void test_ls_hex8_experiment_magnus()
   ci.FindNodePositions();
 
   // Changed to DD
-  ci.Cut_Finalize(true, Inpar::Cut::VCellGaussPts_Tessellation,
-      Inpar::Cut::BCellGaussPts_Tessellation, false, true);
-  // ci.Cut_Finalize( true, Inpar::Cut::VCellGaussPts_DirectDivergence,
-  // Inpar::Cut::BCellGaussPts_Tessellation, false, true );
+  ci.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_Tessellation,
+      Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
+  // ci.Cut_Finalize( true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+  // Core::Geo::Cut::BCellGaussPts_Tessellation, false, true );
 
 
   // #ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
@@ -1621,8 +1621,8 @@ void test_ls_hex8_magnus7()
 //  lsi.print_cell_stats();
 //  Geo::Cut::Mesh mesh = lsi.NormalMesh();
 //
-////  ci.Cut_Finalize( true, Inpar::Cut::VCellGaussPts_Tessellation,
-/// Inpar::Cut::BCellGaussPts_Tessellation, false, true );
+////  ci.Cut_Finalize( true, Core::Geo::Cut::VCellGaussPts_Tessellation,
+/// Core::Geo::Cut::BCellGaussPts_Tessellation, false, true );
 //
 //  //Gmsh-output
 //  mesh.DumpGmsh("xxx_cut_test_ls_hex8_magnus3.CUT.pos");

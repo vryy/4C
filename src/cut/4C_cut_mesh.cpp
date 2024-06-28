@@ -1531,7 +1531,7 @@ void Core::Geo::Cut::Mesh::create_integration_cells(int count, bool tetcellsonly
  * Call the moment fitting method for each element to generate the Gaussian integration rule
  *-------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::Mesh::moment_fit_gauss_weights(
-    bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype)
+    bool include_inner, Core::Geo::Cut::BCellGaussPts Bcellgausstype)
 {
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1568,7 +1568,7 @@ void Core::Geo::Cut::Mesh::moment_fit_gauss_weights(
  * Call the DirectDivergence method for each element to generate the Gaussian integration rule
  *-------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::Mesh::direct_divergence_gauss_rule(
-    bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype)
+    bool include_inner, Core::Geo::Cut::BCellGaussPts Bcellgausstype)
 {
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1640,7 +1640,7 @@ void Core::Geo::Cut::Mesh::remove_empty_volume_cells()
 /*-------------------------------------------------------------------------------------*
  * test if for all elements the element volume is equal to the volume of all integration cells
  *-------------------------------------------------------------------------------------*/
-void Core::Geo::Cut::Mesh::TestElementVolume(bool fatal, Inpar::Cut::VCellGaussPts VCellGP)
+void Core::Geo::Cut::Mesh::TestElementVolume(bool fatal, VCellGaussPts VCellGP)
 {
   for (std::map<int, Teuchos::RCP<Element>>::iterator i = elements_.begin(); i != elements_.end();
        ++i)
@@ -1662,7 +1662,7 @@ void Core::Geo::Cut::Mesh::TestElementVolume(bool fatal, Inpar::Cut::VCellGaussP
  * of all integration cells. There should be no difference between these two
  *-------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::Mesh::TestElementVolume(
-    Core::FE::CellType shape, Element& e, bool fatal, Inpar::Cut::VCellGaussPts VCellGP)
+    Core::FE::CellType shape, Element& e, bool fatal, VCellGaussPts VCellGP)
 {
   if (e.IsCut())
   {
@@ -1685,7 +1685,7 @@ void Core::Geo::Cut::Mesh::TestElementVolume(
     double cv = 0;
     [[maybe_unused]] double ba = 0;
     const plain_volumecell_set& cells = e.VolumeCells();
-    if (VCellGP == Inpar::Cut::VCellGaussPts_Tessellation)
+    if (VCellGP == VCellGaussPts_Tessellation)
     {
       for (plain_volumecell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
       {
@@ -1703,7 +1703,7 @@ void Core::Geo::Cut::Mesh::TestElementVolume(
         }
       }
     }
-    else if (VCellGP == Inpar::Cut::VCellGaussPts_DirectDivergence)
+    else if (VCellGP == VCellGaussPts_DirectDivergence)
     {
       for (plain_volumecell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
       {

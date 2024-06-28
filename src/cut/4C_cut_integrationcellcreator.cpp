@@ -158,22 +158,22 @@ bool Core::Geo::Cut::IntegrationCellCreator::create_point1_cell(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::Geo::Cut::IntegrationCellCreator::add_side(
-    Inpar::Cut::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
+    Core::Geo::Cut::BoundaryCellPosition bcell_position, VolumeCell* vc, Facet* facet,
     Core::FE::CellType shape, const std::vector<Point*>& side)
 {
   switch (bcell_position)
   {
-    case Inpar::Cut::bcells_on_cut_side:
+    case Core::Geo::Cut::bcells_on_cut_side:
     {
       if (facet->OnBoundaryCellSide()) add_side(vc, facet, shape, side);
       break;
     }
-    case Inpar::Cut::bcells_on_all_sides:
+    case Core::Geo::Cut::bcells_on_all_sides:
     {
       if (vc->parent_element()->IsCut()) add_side(vc, facet, shape, side);
       break;
     }
-    case Inpar::Cut::bcells_none:
+    case Core::Geo::Cut::bcells_none:
       /* do nothing */
       break;
     default:
@@ -195,7 +195,7 @@ bool Core::Geo::Cut::IntegrationCellCreator::create_line2_cell(
   std::vector<Point*> line_corner_points;
   line_corner_points.reserve(2);
 
-  const enum Inpar::Cut::BoundaryCellPosition bcell_pos =
+  const enum Core::Geo::Cut::BoundaryCellPosition bcell_pos =
       mesh.CreateOptions().gen_boundary_cell_position();
 
   for (plain_facet_set::const_iterator cit = facets.begin(); cit != facets.end(); ++cit)
@@ -237,7 +237,7 @@ bool Core::Geo::Cut::IntegrationCellCreator::create2_d_cell(
   // check the facet number
   if (facets.size() != numfaces) return false;
 
-  const enum Inpar::Cut::BoundaryCellPosition bcell_pos =
+  const enum Core::Geo::Cut::BoundaryCellPosition bcell_pos =
       mesh.CreateOptions().gen_boundary_cell_position();
 
   Impl::SimplePointGraph2D pg = Impl::SimplePointGraph2D();

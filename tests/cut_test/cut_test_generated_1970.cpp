@@ -2993,8 +2993,8 @@ void test_generated_1970()
 
 
 
-  intersection.CutTest_Cut(
-      true, Inpar::Cut::VCellGaussPts_DirectDivergence, Inpar::Cut::BCellGaussPts_Tessellation);
-  intersection.Cut_Finalize(true, Inpar::Cut::VCellGaussPts_DirectDivergence,
-      Inpar::Cut::BCellGaussPts_Tessellation, false, true);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+      Core::Geo::Cut::BCellGaussPts_Tessellation);
+  intersection.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+      Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
 }

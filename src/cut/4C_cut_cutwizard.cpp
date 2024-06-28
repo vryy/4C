@@ -61,8 +61,8 @@ Core::Geo::CutWizard::CutWizard(const Teuchos::RCP<Core::FE::Discretization>& ba
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
       level_set_sid_(-1),
-      v_cellgausstype_(Inpar::Cut::VCellGaussPts_Tessellation),
-      b_cellgausstype_(Inpar::Cut::BCellGaussPts_Tessellation),
+      v_cellgausstype_(Core::Geo::Cut::VCellGaussPts_Tessellation),
+      b_cellgausstype_(Core::Geo::Cut::BCellGaussPts_Tessellation),
       gmsh_output_(false),
       tetcellsonly_(false),
       screenoutput_(false),
@@ -82,8 +82,8 @@ Core::Geo::CutWizard::CutWizard(const Epetra_Comm& comm)
       do_mesh_intersection_(false),
       do_levelset_intersection_(false),
       level_set_sid_(-1),
-      v_cellgausstype_(Inpar::Cut::VCellGaussPts_Tessellation),
-      b_cellgausstype_(Inpar::Cut::BCellGaussPts_Tessellation),
+      v_cellgausstype_(Core::Geo::Cut::VCellGaussPts_Tessellation),
+      b_cellgausstype_(Core::Geo::Cut::BCellGaussPts_Tessellation),
       gmsh_output_(false),
       tetcellsonly_(false),
       screenoutput_(false),
@@ -101,14 +101,15 @@ Core::Geo::CutWizard::CutWizard(const Epetra_Comm& comm)
  * set options and flags used during the cut
  *--------------------------------------------------------------*/
 void Core::Geo::CutWizard::SetOptions(
-    Inpar::Cut::NodalDofSetStrategy
-        nodal_dofset_strategy,                 //!< strategy for nodal dofset management
-    Inpar::Cut::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
-    Inpar::Cut::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
-    bool gmsh_output,                          //!< print write gmsh output for cut
-    bool positions,     //!< set inside and outside point, facet and volumecell positions
-    bool tetcellsonly,  //!< generate only tet cells
-    bool screenoutput   //!< print screen output
+    Core::Geo::Cut::NodalDofSetStrategy
+        nodal_dofset_strategy,                     //!< strategy for nodal dofset management
+    Core::Geo::Cut::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
+    Core::Geo::Cut::BCellGaussPts
+        BCellgausstype,  //!< Gauss point generation method for Boundarycell
+    bool gmsh_output,    //!< print write gmsh output for cut
+    bool positions,      //!< set inside and outside point, facet and volumecell positions
+    bool tetcellsonly,   //!< generate only tet cells
+    bool screenoutput    //!< print screen output
 )
 {
   v_cellgausstype_ = VCellgausstype;
