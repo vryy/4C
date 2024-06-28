@@ -14,7 +14,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_cut_kernel.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 
