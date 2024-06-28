@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Exit the script at the first failure
+set -e
+
 # set the field separator to new line
 IFS=$'\n'
 

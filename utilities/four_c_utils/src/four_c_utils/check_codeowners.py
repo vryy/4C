@@ -53,7 +53,7 @@ def main():
     parser.add_argument(
         "--check-rules",
         action="store_true",
-        help="Check whether all rules in CODEOWNERS are used at least once with the set of filenames.",
+        help="Check whether all rules in CODEOWNERS match at least one file.",
     )
     parser.add_argument(
         "--out",
@@ -67,7 +67,10 @@ def main():
     errors = 0
     allerrors = []
     if args.check_rules:
-        errors += check_codeowners_rules_are_used(args.filenames, allerrors)
+        look_cmd = "git ls-files"
+        errors += check_codeowners_rules_are_used(
+            utils.files_changed(look_cmd), allerrors
+        )
     errors += check_files_are_owned(args.filenames, allerrors)
 
     utils.pretty_print_error_report("", allerrors, errfile)

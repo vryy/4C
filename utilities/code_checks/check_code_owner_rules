@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Exit the script at the first failure
+set -e
+
 ## Check that all rules in CODEOWNERS match at least one file
 [ -e wrong_codeowners.txt ] && rm wrong_codeowners.txt
 
