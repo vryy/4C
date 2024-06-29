@@ -91,7 +91,8 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile(),
         element_filter, rigid_sphere_radius, correct_beam_center_node);
     // setup projection matrices
-    volcoupl_->setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_->setup(Global::Problem::Instance()->VolmortarParams(),
+        Global::Problem::Instance()->CutGeneralParams());
   }
 
   if (Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(

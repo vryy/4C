@@ -84,7 +84,8 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
 
     volcoupl_->Redistribute(binning_params, Global::Problem::Instance()->OutputControlFile(),
         element_filter, rigid_sphere_radius, correct_beam_center_node);
-    volcoupl_->setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_->setup(Global::Problem::Instance()->VolmortarParams(),
+        Global::Problem::Instance()->CutGeneralParams());
   }
 
   // access structural dynamic params list which will be possibly modified while creating the time
@@ -293,7 +294,7 @@ void PoroElast::PoroBase::read_restart(const int step)
 
       volcoupl_->AssignMaterials(structure_field()->discretization(),
           fluid_field()->discretization(), Global::Problem::Instance()->VolmortarParams(),
-          materialstrategy);
+          Global::Problem::Instance()->CutGeneralParams(), materialstrategy);
     }
   }
 }

@@ -121,8 +121,9 @@ namespace Core::VolMortar
     VolMortarCoupl(int dim, Teuchos::RCP<Core::FE::Discretization> dis1,
         Teuchos::RCP<Core::FE::Discretization> dis2,
         const Teuchos::ParameterList& volmortar_parameters,
-        std::vector<int>* coupleddof12 = nullptr, std::vector<int>* coupleddof21 = nullptr,
-        std::pair<int, int>* dofset12 = nullptr, std::pair<int, int>* dofset21 = nullptr,
+        const Teuchos::ParameterList& cut_parameters, std::vector<int>* coupleddof12 = nullptr,
+        std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofset12 = nullptr,
+        std::pair<int, int>* dofset21 = nullptr,
         Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy =
             Teuchos::null);
 
@@ -436,8 +437,9 @@ namespace Core::VolMortar
     VolMortarCoupl(const VolMortarCoupl& old);
 
     //! @name global problem information
-    const int dim_;                  /// dimension of problem (2D or 3D)
-    Teuchos::ParameterList params_;  /// global parameter list for volmortar coupling
+    const int dim_;                      /// dimension of problem (2D or 3D)
+    Teuchos::ParameterList params_;      ///  parameter list for volmortar coupling
+    Teuchos::ParameterList cut_params_;  /// parameter list for cut algorithm
     std::pair<int, int>
         dofset12_;  /// dofset number dofs of Omega_2 and Omega_1 in P Omega_2 -> Omega_1
     std::pair<int, int>

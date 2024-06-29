@@ -90,7 +90,8 @@ void FSI::DirichletNeumannVolCoupl::setup_coupling_struct_ale(
       &dofsets12, &dofsets21, Teuchos::null, false);
 
   // setup coupling adapter
-  coupsa_->setup(Global::Problem::Instance()->VolmortarParams());
+  coupsa_->setup(Global::Problem::Instance()->VolmortarParams(),
+      Global::Problem::Instance()->CutGeneralParams());
 }
 
 /*----------------------------------------------------------------------*/

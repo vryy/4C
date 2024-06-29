@@ -50,6 +50,7 @@ Core::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
     Teuchos::RCP<Core::FE::Discretization> dis1,  // on Omega_1
     Teuchos::RCP<Core::FE::Discretization> dis2,  // on Omega_2
     const Teuchos::ParameterList& volmortar_parameters,
+    const Teuchos::ParameterList& cut_parameters,
     std::vector<int>* coupleddof12,  // 2-->1
     std::vector<int>* coupleddof21,  // 1-->2
     std::pair<int, int>* dofset12,   // 2-->1
@@ -57,7 +58,11 @@ Core::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
     Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy>
         materialstrategy  // strategy for element information transfer
     )
-    : dim_(dim), dis1_(dis1), dis2_(dis2), materialstrategy_(materialstrategy)
+    : dim_(dim),
+      cut_params_(cut_parameters),
+      dis1_(dis1),
+      dis2_(dis2),
+      materialstrategy_(materialstrategy)
 {
   // check
   if (not dis1_->Filled() or not dis2_->Filled())
@@ -1629,9 +1634,10 @@ void Core::VolMortar::VolMortarCoupl::perform_cut(
   if (Core::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_tessellation)
   {
     // Set options for the cut wizard
-    wizard->SetOptions(Core::Geo::Cut::NDS_Strategy_full,
+    wizard->SetOptions(cut_params_, Core::Geo::Cut::NDS_Strategy_full,
         Core::Geo::Cut::VCellGaussPts_Tessellation,  // how to create volume cell Gauss points?
         Core::Geo::Cut::BCellGaussPts_Tessellation,  // how to create boundary cell Gauss points?
+        "invalid_file",                              // no file needed
         false,                                       // gmsh output for cut library
         true,                                        // find point positions
         true,                                        // generate only tet cells
@@ -1691,9 +1697,10 @@ void Core::VolMortar::VolMortarCoupl::perform_cut(
   else if (Core::UTILS::IntegralValue<CutType>(params(), "CUTTYPE") == cuttype_directdivergence)
   {
     // Set options for the cut wizard
-    wizard->SetOptions(Core::Geo::Cut::NDS_Strategy_full,
+    wizard->SetOptions(cut_params_, Core::Geo::Cut::NDS_Strategy_full,
         Core::Geo::Cut::VCellGaussPts_DirectDivergence,  // how to create volume cell Gauss points?
         Core::Geo::Cut::BCellGaussPts_Tessellation,  // how to create boundary cell Gauss points?
+        "invalid_file",                              // no file needed
         false,                                       // gmsh output for cut library
         true,                                        // find point positions
         false,                                       // generate only tet cells

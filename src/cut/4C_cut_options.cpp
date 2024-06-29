@@ -11,16 +11,9 @@
 #include "4C_cut_options.hpp"
 
 #include "4C_cut_position.hpp"
-#include "4C_global_data.hpp"
 #include "4C_utils_parameter_list.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-
-/// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
-void Core::Geo::Cut::Options::Init_by_Paramlist()
-{
-  Init_by_Paramlist(Global::Problem::Instance()->CutGeneralParams());
-}
 
 /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT GENERAL)
 void Core::Geo::Cut::Options::Init_by_Paramlist(const Teuchos::ParameterList& cutparams)

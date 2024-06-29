@@ -405,7 +405,8 @@ Teuchos::RCP<Core::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_mortar_ob
   volume_coupling_object->Redistribute(binning_params,
       Global::Problem::Instance()->OutputControlFile(), element_filter, rigid_sphere_radius,
       correct_beam_center_node);
-  volume_coupling_object->setup(Global::Problem::Instance()->VolmortarParams());
+  volume_coupling_object->setup(Global::Problem::Instance()->VolmortarParams(),
+      Global::Problem::Instance()->CutGeneralParams());
 
   return volume_coupling_object;
 }

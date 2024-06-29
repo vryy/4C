@@ -77,7 +77,8 @@ void Adapter::ScaTraFluidCouplingAlgorithm::setup()
 
   // setup coupling adapter
   if (not volcoupl_fluidscatra_.is_null())
-    volcoupl_fluidscatra_->setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_fluidscatra_->setup(Global::Problem::Instance()->VolmortarParams(),
+        Global::Problem::Instance()->CutGeneralParams());
 
   // set also initial field
   SetInitialFlowField(Global::Problem::Instance()->FluidDynamicParams());

@@ -16,7 +16,6 @@ surface meshes
 #include "4C_cut_volumecell.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
-#include "4C_global_data.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 
@@ -101,19 +100,22 @@ Core::Geo::CutWizard::CutWizard(const Epetra_Comm& comm)
  * set options and flags used during the cut
  *--------------------------------------------------------------*/
 void Core::Geo::CutWizard::SetOptions(
+    const Teuchos::ParameterList& cutparams,  //!< parameter list for cut options
     Core::Geo::Cut::NodalDofSetStrategy
         nodal_dofset_strategy,                     //!< strategy for nodal dofset management
     Core::Geo::Cut::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
     Core::Geo::Cut::BCellGaussPts
-        BCellgausstype,  //!< Gauss point generation method for Boundarycell
-    bool gmsh_output,    //!< print write gmsh output for cut
-    bool positions,      //!< set inside and outside point, facet and volumecell positions
-    bool tetcellsonly,   //!< generate only tet cells
-    bool screenoutput    //!< print screen output
+        BCellgausstype,         //!< Gauss point generation method for Boundarycell
+    std::string output_prefix,  //!< prefix for output files
+    bool gmsh_output,           //!< print write gmsh output for cut
+    bool positions,             //!< set inside and outside point, facet and volumecell positions
+    bool tetcellsonly,          //!< generate only tet cells
+    bool screenoutput           //!< print screen output
 )
 {
   v_cellgausstype_ = VCellgausstype;
   b_cellgausstype_ = BCellgausstype;
+  output_prefix_ = output_prefix;
   gmsh_output_ = gmsh_output;
   tetcellsonly_ = tetcellsonly;
   screenoutput_ = screenoutput;
@@ -123,7 +125,7 @@ void Core::Geo::CutWizard::SetOptions(
   intersection_->set_nodal_dof_set_strategy(nodal_dofset_strategy);
 
   // Initialize Cut Parameters based on dat file section CUT GENERAL
-  intersection_->GetOptions().Init_by_Paramlist();
+  intersection_->GetOptions().Init_by_Paramlist(cutparams);
 
   is_set_options_ = true;
 }
@@ -758,11 +760,7 @@ void Core::Geo::CutWizard::print_cell_stats() { intersection_->print_cell_stats(
  *------------------------------------------------------------------------------------------------*/
 void Core::Geo::CutWizard::dump_gmsh_num_dof_sets(bool include_inner)
 {
-  std::string filename = Global::Problem::Instance()->OutputControlFile()->file_name();
-  std::stringstream str;
-  str << filename;
-
-  intersection_->dump_gmsh_num_dof_sets(str.str(), include_inner, back_mesh_->get());
+  intersection_->dump_gmsh_num_dof_sets(output_prefix_, include_inner, back_mesh_->get());
 }
 
 
@@ -771,9 +769,8 @@ void Core::Geo::CutWizard::dump_gmsh_num_dof_sets(bool include_inner)
  *------------------------------------------------------------------------------------------------*/
 void Core::Geo::CutWizard::dump_gmsh_volume_cells(bool include_inner)
 {
-  std::string name = Global::Problem::Instance()->OutputControlFile()->file_name();
   std::stringstream str;
-  str << name << ".CUT_volumecells." << myrank_ << ".pos";
+  str << output_prefix_ << ".CUT_volumecells." << myrank_ << ".pos";
   intersection_->dump_gmsh_volume_cells(str.str(), include_inner);
 }
 
@@ -782,9 +779,8 @@ void Core::Geo::CutWizard::dump_gmsh_volume_cells(bool include_inner)
  *------------------------------------------------------------------------------------------------*/
 void Core::Geo::CutWizard::dump_gmsh_integration_cells()
 {
-  std::string name = Global::Problem::Instance()->OutputControlFile()->file_name();
   std::stringstream str;
-  str << name << ".CUT_integrationcells." << myrank_ << ".pos";
+  str << output_prefix_ << ".CUT_integrationcells." << myrank_ << ".pos";
   intersection_->dump_gmsh_integration_cells(str.str());
 }
 

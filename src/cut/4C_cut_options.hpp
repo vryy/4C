@@ -55,10 +55,6 @@ namespace Core::Geo
 
       /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT
       /// GENERAL)
-      void Init_by_Paramlist();
-
-      /// Initializes Cut Parameters by Parameterlist (typically from *.dat-file section CUT
-      /// GENERAL)
       void Init_by_Paramlist(const Teuchos::ParameterList& cutparams);
 
       /// Initializes Cut Parameters for Cuttests (use full cln)

@@ -302,8 +302,10 @@ void PoroElastScaTra::PoroScatraBase::setup_coupling(
     volcoupl_fluidscatra_->init(Global::Problem::Instance()->NDim(), fluiddis, scatradis, nullptr,
         nullptr, &dofsets12_fluidscatra, &dofsets21_fluidscatra, Teuchos::null);
 
-    volcoupl_structurescatra_->setup(Global::Problem::Instance()->VolmortarParams());
-    volcoupl_fluidscatra_->setup(Global::Problem::Instance()->VolmortarParams());
+    volcoupl_structurescatra_->setup(Global::Problem::Instance()->VolmortarParams(),
+        Global::Problem::Instance()->CutGeneralParams());
+    volcoupl_fluidscatra_->setup(Global::Problem::Instance()->VolmortarParams(),
+        Global::Problem::Instance()->CutGeneralParams());
   }
 }
 
