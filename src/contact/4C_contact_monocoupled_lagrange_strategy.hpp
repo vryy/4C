@@ -2,7 +2,7 @@
 /*! \file
 \brief This class provides the functionality to use contact with Lagrangian
 multipliers for monolithical coupled multifield problems!
-Therefore ApplyForceStiffCmt() & Recover() are overloaded by this class and
+Therefore apply_force_stiff_cmt() & recover() are overloaded by this class and
 do nothing, as they are called directly in the structure. To use the contact
 the additional methods apply_force_stiff_cmt_coupled() & RecoverCoupled() have
 to be called!
@@ -49,9 +49,9 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
 
 
-    // Overload CONTACT::AbstractStrategy::ApplyForceStiffCmt as this is called in the structure
+    // Overload CONTACT::AbstractStrategy::apply_force_stiff_cmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
-    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {
@@ -64,9 +64,9 @@ namespace CONTACT
       return;
     };
 
-    // Overload CONTACT::LagrangeStrategy::Recover as this is called in the structure --> no
+    // Overload CONTACT::LagrangeStrategy::recover as this is called in the structure --> no
     // enought information available for monolithically coupled algorithms!
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) override
+    void recover(Teuchos::RCP<Epetra_Vector> disi) override
     {
       if (has_to_recover_ && 0)
         FOUR_C_THROW(
@@ -81,21 +81,21 @@ namespace CONTACT
 
     //! @name Evaluation methods
 
-    // Alternative Method to CONTACT::AbstractStrategy::ApplyForceStiffCmt for monolithically
+    // Alternative Method to CONTACT::AbstractStrategy::apply_force_stiff_cmt for monolithically
     // coupled algorithms
     virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
         std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>*> k_sx,
         Teuchos::RCP<Epetra_Vector>& rhs_s, const int step, const int iter, bool predictor);
 
-    // Alternative Method to CONTACT::AbstractStrategy::ApplyForceStiffCmt for monolithically
+    // Alternative Method to CONTACT::AbstractStrategy::apply_force_stiff_cmt for monolithically
     // coupled algorithms
     virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& k_sx, Teuchos::RCP<Epetra_Vector>& rhs_s,
         const int step, const int iter, bool predictor);
 
-    // Alternative Method to CONTACT::LagrangeStrategy::Recover as this is called in the structure
+    // Alternative Method to CONTACT::LagrangeStrategy::recover as this is called in the structure
     // --> no enought information available for monolithically coupled algorithms!
     /*!
     \brief Recovery method
@@ -136,8 +136,8 @@ namespace CONTACT
 
     //! pure useage safty flags
     bool has_to_evaluate_;  // checks if apply_force_stiff_cmt_coupled() after every call of
-                            // ApplyForceStiffCmt()
-    bool has_to_recover_;   // checks if RecoverCoupled() after every call of Recover()
+                            // apply_force_stiff_cmt()
+    bool has_to_recover_;   // checks if RecoverCoupled() after every call of recover()
 
   };  // class MonoCoupledLagrangeStrategy
 }  // namespace CONTACT

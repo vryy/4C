@@ -462,12 +462,12 @@ void CONTACT::Aug::PenaltyUpdateSufficientAngle::set_state(
 
   // split the previously accepted state into its different parts
   Teuchos::RCP<Epetra_Vector> displ_slma, zn_active, zn_inactive;
-  strategy().SplitStateVector(
+  strategy().split_state_vector(
       get_state().get_previously_accepted_state(), displ_slma, zn_active, zn_inactive);
 
   // split the direction into its different parts
   Teuchos::RCP<Epetra_Vector> dincr_slma, znincr_active, znincr_inactive;
-  strategy().SplitStateVector(
+  strategy().split_state_vector(
       get_state().GetDirection(), dincr_slma, znincr_active, znincr_inactive);
 
   Epetra_Vector tmp(dincr_slma->Map(), true);
@@ -491,7 +491,7 @@ void CONTACT::Aug::PenaltyUpdateSufficientAngle::set_state(
 
   // directional derivative of the active constraint gradient
   Teuchos::RCP<const Epetra_Vector> dgapn_ptr = get_inconsistent_d_gap_n(*dincr_slma);
-  Epetra_Vector dgapn_active(*data().g_active_n_dof_row_map_ptr());
+  Epetra_Vector dgapn_active(*data().global_active_n_dof_row_map_ptr());
   Core::LinAlg::ExtractMyVector(*dgapn_ptr, dgapn_active);
 
   double dgapn_zn = 0.0;
@@ -499,14 +499,14 @@ void CONTACT::Aug::PenaltyUpdateSufficientAngle::set_state(
 
   Epetra_Vector sc_dgapn(dgapn_active);
   MultiplyElementwise(
-      get_state().get_active_tributary_area(), data().GActiveNodeRowMap(), sc_dgapn, true);
+      get_state().get_active_tributary_area(), data().global_active_node_row_map(), sc_dgapn, true);
 
   double sc_dgapn_dgapn = 0.0;
   CATCH_EPETRA_ERROR(sc_dgapn.Dot(dgapn_active, &sc_dgapn_dgapn));
 
   Epetra_Vector awgapn(*get_state().wgap_);
   MultiplyElementwise(
-      get_state().get_active_tributary_area(), data().GActiveNodeRowMap(), awgapn, true);
+      get_state().get_active_tributary_area(), data().global_active_node_row_map(), awgapn, true);
 
   double awgapn_nrm2 = 0.0;
   awgapn.Norm2(&awgapn_nrm2);

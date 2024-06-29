@@ -199,7 +199,7 @@ NOX::Nln::SolutionType NOX::Nln::CONTACT::LinearSystem::get_active_lin_solver(
   bool issaddlepoint = false;
   for (cit = i_constr_prec_.begin(); cit != i_constr_prec_.end(); ++cit)
   {
-    if (cit->second->IsSaddlePointSystem())
+    if (cit->second->is_saddle_point_system())
     {
       issaddlepoint = true;
       break;
@@ -213,7 +213,7 @@ NOX::Nln::SolutionType NOX::Nln::CONTACT::LinearSystem::get_active_lin_solver(
   bool iscondensed = false;
   for (cit = i_constr_prec_.begin(); cit != i_constr_prec_.end(); ++cit)
   {
-    if (cit->second->IsCondensedSystem())
+    if (cit->second->is_condensed_system())
     {
       iscondensed = true;
       break;

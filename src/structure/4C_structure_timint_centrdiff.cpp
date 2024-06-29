@@ -166,10 +166,10 @@ int STR::TimIntCentrDiff::IntegrateStep()
     fcmtn_->PutScalar(0.0);
 
     if (cmtbridge_->HaveMeshtying())
-      cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(
+      cmtbridge_->MtManager()->GetStrategy().apply_force_stiff_cmt(
           disn_, stiff_, fcmtn_, stepn_, 0, false);
     if (cmtbridge_->HaveContact())
-      cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(
+      cmtbridge_->ContactManager()->GetStrategy().apply_force_stiff_cmt(
           disn_, stiff_, fcmtn_, stepn_, 0, false);
   }
 

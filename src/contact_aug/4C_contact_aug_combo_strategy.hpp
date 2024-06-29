@@ -80,25 +80,25 @@ namespace CONTACT
           const Epetra_Vector& xnew) override;
 
       /// function wrapper
-      bool IsSaddlePointSystem() const override;
+      bool is_saddle_point_system() const override;
 
       /// function wrapper
-      void ResetActiveSet() override;
+      void reset_active_set() override;
 
       /// function wrapper
-      double ConstraintNorm() const override;
+      double constraint_norm() const override;
 
       /// function wrapper
-      void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override;
+      void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override;
 
       /// function wrapper
-      bool ActiveSetConverged() override;
+      bool active_set_converged() override;
 
       /// function wrapper
-      int ActiveSetSteps() override;
+      int active_set_steps() override;
 
       /// function wrapper
-      void UpdateActiveSet() override;
+      void update_active_set() override;
 
       /// function wrapper
       void evaluate_rel_mov_predict() override;
@@ -110,23 +110,22 @@ namespace CONTACT
       Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const override;
 
       /// function wrapper
-      Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override;
+      Teuchos::RCP<const Epetra_Map> get_old_slip_row_nodes() const override;
 
       /// function wrapper
-      Teuchos::RCP<const Epetra_Map> sl_normal_do_f_row_map_ptr(const bool& redist) const override;
+      Teuchos::RCP<const Epetra_Map> slave_n_dof_row_map_ptr(const bool& redist) const override;
 
       /// function wrapper
-      const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override;
+      const Epetra_Map& slave_n_dof_row_map(const bool& redist) const override;
 
       /// function wrapper
-      Teuchos::RCP<const Epetra_Map> sl_tangential_do_f_row_map_ptr(
-          const bool& redist) const override;
+      Teuchos::RCP<const Epetra_Map> slave_t_dof_row_map_ptr(const bool& redist) const override;
 
       /// function wrapper
-      const Epetra_Map& sl_tangential_do_f_row_map(const bool& redist) const override;
+      const Epetra_Map& slave_t_dof_row_map(const bool& redist) const override;
 
       /// function wrapper
-      Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+      Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
           const enum CONTACT::VecBlockType& bt) const override;
 
       /// function wrapper
@@ -134,11 +133,11 @@ namespace CONTACT
           const enum CONTACT::VecBlockType& bt) const override;
 
       /// function wrapper
-      Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
+      Teuchos::RCP<const Epetra_Vector> get_condensed_rhs_ptr(
           Epetra_Vector& f, const double& timefac_np) const override;
 
       /// function wrapper
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
           const enum CONTACT::MatBlockType& bt,
           const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
@@ -147,13 +146,13 @@ namespace CONTACT
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& kteff, const double& timefac_np) const override;
 
       /// function wrapper
-      Teuchos::RCP<Epetra_Vector> ConstrRhs() override;
+      Teuchos::RCP<Epetra_Vector> constraint_rhs() override;
 
       /// function wrapper
       void initialize() override;
 
       /// function wrapper
-      void EvalConstrRHS() override;
+      void evaluate_constr_rhs() override;
 
       /// function wrapper
       void update_active_set_semi_smooth(const bool firstStepPredictor = false) override;
@@ -167,7 +166,7 @@ namespace CONTACT
       void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
       /// function wrapper
-      double GetPotentialValue(
+      double get_potential_value(
           const enum NOX::Nln::MeritFunction::MeritFctName mrt_type) const override;
 
       /// function wrapper
@@ -219,15 +218,15 @@ namespace CONTACT
       /** \brief function wrapper: Compute force terms
        *
        *  \author hiermeier \date 03/17 */
-      void eval_force(CONTACT::ParamsInterface& cparams) override;
+      void evaluate_force(CONTACT::ParamsInterface& cparams) override;
 
       /** \brief function wrapper: Compute force and stiffness terms
        *
        *  \author hiermeier \date 03/17 */
-      void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
+      void evaluate_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
-      void eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams) override;
+      void evaluate_static_constraint_rhs(CONTACT::ParamsInterface& cparams) override;
 
       /// function wrapper
       void run_pre_evaluate(CONTACT::ParamsInterface& cparams) override;
@@ -286,7 +285,7 @@ namespace CONTACT
       /// run after EvalForce
       void run_post_eval_force(CONTACT::ParamsInterface& cparams);
 
-      /// run after eval_force_stiff
+      /// run after evaluate_force_stiff
       void run_post_eval_force_stiff(CONTACT::ParamsInterface& cparams);
 
       /// run after EvalStaticConstraontRHS
@@ -299,12 +298,12 @@ namespace CONTACT
 
       //! @name Deprecated methods
       //! @{
-      void EvaluateContact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+      void evaluate_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void EvaluateFriction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+      void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
         FOUR_C_THROW("Deprecated function call!");
@@ -321,7 +320,7 @@ namespace CONTACT
       {
         FOUR_C_THROW("Deprecated function call!");
       };
-      void Recover(Teuchos::RCP<Epetra_Vector> disi) override
+      void recover(Teuchos::RCP<Epetra_Vector> disi) override
       {
         FOUR_C_THROW("Deprecated function call! Replaced by run_post_compute_x().");
       };
@@ -333,21 +332,21 @@ namespace CONTACT
        * Actually it would be a much better idea to cast the object to the right strategy at the
        * place where it is needed.                                            hiermeier 05/16 */
       //! @{
-      double InitialPenalty() override
+      double initial_penalty() override
       {
         FOUR_C_THROW("Wrong strategy!");
         exit(EXIT_FAILURE);
       };
-      void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+      void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
           Teuchos::RCP<Epetra_Vector>& feff) override
       {
         FOUR_C_THROW("Wrong strategy!");
       };
-      void ResetPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
-      void ModifyPenalty() override { FOUR_C_THROW("Wrong strategy!"); };
+      void reset_penalty() override { FOUR_C_THROW("Wrong strategy!"); };
+      void modify_penalty() override { FOUR_C_THROW("Wrong strategy!"); };
       void update_uzawa_augmented_lagrange() override { FOUR_C_THROW("Wrong strategy!"); };
       void update_constraint_norm(int uzawaiter = 0) override { FOUR_C_THROW("Wrong strategy!"); };
-      bool IsPenalty() const override { return false; };
+      bool is_penalty() const override { return false; };
       //! @}
       //! @}
 

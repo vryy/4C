@@ -56,7 +56,7 @@ namespace CONTACT
     {
     }
 
-    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override;
 
@@ -65,7 +65,7 @@ namespace CONTACT
 
     void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
-    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bp) const override;
 
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(

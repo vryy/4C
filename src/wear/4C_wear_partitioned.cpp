@@ -518,7 +518,7 @@ void Wear::Partitioned::merge_wear(Teuchos::RCP<Epetra_Vector>& disinterface_s,
 {
   Mortar::StrategyBase& strategy = cmtman_->GetStrategy();
   CONTACT::AbstractStrategy& cstrategy = static_cast<CONTACT::AbstractStrategy&>(strategy);
-  std::vector<Teuchos::RCP<CONTACT::Interface>> interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::Interface>> interface = cstrategy.contact_interfaces();
   Teuchos::RCP<Wear::WearInterface> winterface =
       Teuchos::rcp_dynamic_cast<Wear::WearInterface>(interface[0]);
   if (winterface == Teuchos::null) FOUR_C_THROW("Casting to WearInterface returned null!");
@@ -653,7 +653,7 @@ void Wear::Partitioned::wear_spatial_master_map(
 
     Teuchos::RCP<Epetra_Vector> wear_master = Teuchos::rcp(new Epetra_Vector(*masterdofs, true));
 
-    cstrategy.MMatrix()->Multiply(true, *disinterface_s, *wear_master);
+    cstrategy.m_matrix()->Multiply(true, *disinterface_s, *wear_master);
 
     // 1. set state to material displacement state
     winterface->set_state(Mortar::state_new_displacement, *structure_field()->WriteAccessDispnp());
@@ -883,7 +883,7 @@ void Wear::Partitioned::wear_spatial_slave(Teuchos::RCP<Epetra_Vector>& disinter
       Teuchos::RCP<Core::LinAlg::SparseMatrix> daa, dai, dia, dii;
       Teuchos::RCP<Epetra_Map> gidofs;
       Core::LinAlg::SplitMatrix2x2(
-          cstrategy.DMatrix(), activedofs, gidofs, activedofs, gidofs, daa, dai, dia, dii);
+          cstrategy.d_matrix(), activedofs, gidofs, activedofs, gidofs, daa, dai, dia, dii);
 
       Teuchos::RCP<Epetra_Vector> wear_vectora = Teuchos::rcp(new Epetra_Vector(*activedofs, true));
       Teuchos::RCP<Epetra_Vector> wear_vectori = Teuchos::rcp(new Epetra_Vector(*gidofs));
@@ -1112,7 +1112,7 @@ void Wear::Partitioned::wear_pull_back_slave(Teuchos::RCP<Epetra_Vector>& disint
     {
       // multiply current D matrix with current wear
       Teuchos::RCP<Epetra_Vector> forcecurr = Teuchos::rcp(new Epetra_Vector(*slavedofs));
-      cstrategy.DMatrix()->Multiply(false, *disinterface_s, *forcecurr);
+      cstrategy.d_matrix()->Multiply(false, *disinterface_s, *forcecurr);
 
       // LM in reference / current configuration
       Teuchos::RCP<Epetra_Vector> zref = Teuchos::rcp(new Epetra_Vector(*slavedofs));

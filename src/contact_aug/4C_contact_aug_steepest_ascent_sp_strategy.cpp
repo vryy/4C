@@ -53,9 +53,9 @@ CONTACT::Aug::SteepestAscentSaddlePoint::Strategy::Strategy(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Aug::SteepestAscentSaddlePoint::Strategy::eval_str_contact_rhs()
+void CONTACT::Aug::SteepestAscentSaddlePoint::Strategy::evaluate_str_contact_rhs()
 {
-  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
+  if (!is_in_contact() and !was_in_contact() and !was_in_contact_last_time_step())
   {
     data().StrContactRhsPtr() = Teuchos::null;
     return;
@@ -64,7 +64,7 @@ void CONTACT::Aug::SteepestAscentSaddlePoint::Strategy::eval_str_contact_rhs()
 
 
   // For self contact, slave and master sets may have changed,
-  if (IsSelfContact())
+  if (is_self_contact())
     FOUR_C_THROW(
         "ERROR: Augmented Lagrange Formulation: Self contact is not yet "
         "considered!");
@@ -213,9 +213,10 @@ CONTACT::Aug::SteepestAscentSaddlePoint::Strategy::get_kzz_diag_modification() c
 {
   Teuchos::RCP<Epetra_Vector> active_mod_vec =
       Teuchos::rcp(new Epetra_Vector(*data().KappaVecPtr()));
-  CATCH_EPETRA_ERROR(active_mod_vec->ReplaceMap(*data().g_active_n_dof_row_map_ptr()));
+  CATCH_EPETRA_ERROR(active_mod_vec->ReplaceMap(*data().global_active_n_dof_row_map_ptr()));
 
-  MultiplyElementwise(*data().CnPtr(), *data().g_active_node_row_map_ptr(), *active_mod_vec, true);
+  MultiplyElementwise(
+      *data().CnPtr(), *data().global_active_node_row_map_ptr(), *active_mod_vec, true);
 
   return active_mod_vec;
 }

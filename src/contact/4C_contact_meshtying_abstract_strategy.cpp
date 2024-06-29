@@ -260,7 +260,7 @@ void CONTACT::MtAbstractStrategy::setup(bool redistributed)
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator      popp 06/09 |
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+void CONTACT::MtAbstractStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
@@ -271,7 +271,7 @@ void CONTACT::MtAbstractStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector>
   evaluate(kt, f, dis);
 
   // output interface forces
-  InterfaceForces();
+  interface_forces();
 
   return;
 }
@@ -305,7 +305,7 @@ void CONTACT::MtAbstractStrategy::set_state(
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
+void CONTACT::MtAbstractStrategy::mortar_coupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
   //********************************************************************
   // initialize and evaluate interfaces
@@ -463,7 +463,7 @@ void CONTACT::MtAbstractStrategy::restrict_meshtying_zone()
 /*----------------------------------------------------------------------*
  |  mesh initialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
+void CONTACT::MtAbstractStrategy::mesh_initialization(Teuchos::RCP<Epetra_Vector> Xslavemod)
 {
   //**********************************************************************
   // (1) perform mesh initialization node by node
@@ -591,7 +591,7 @@ void CONTACT::MtAbstractStrategy::evaluate(Teuchos::RCP<Core::LinAlg::SparseOper
     Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis)
 {
   // trivial (no choice as for contact)
-  EvaluateMeshtying(kteff, feff, dis);
+  evaluate_meshtying(kteff, feff, dis);
   return;
 }
 
@@ -609,17 +609,17 @@ void CONTACT::MtAbstractStrategy::store_nodal_quantities(Mortar::StrategyBase::Q
     {
       case Mortar::StrategyBase::lmcurrent:
       {
-        vectorglobal = LagrMult();
+        vectorglobal = lagrange_multiplier();
         break;
       }
       case Mortar::StrategyBase::lmold:
       {
-        vectorglobal = LagrMultOld();
+        vectorglobal = lagrange_multiplier_old();
         break;
       }
       case Mortar::StrategyBase::lmupdate:
       {
-        vectorglobal = LagrMult();
+        vectorglobal = lagrange_multiplier();
         break;
       }
       case Mortar::StrategyBase::lmuzawa:
@@ -786,10 +786,10 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (!restartwithmeshtying) reader.read_vector(LagrMult(), "mt_lagrmultold");
+  if (!restartwithmeshtying) reader.read_vector(lagrange_multiplier(), "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmcurrent);
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (!restartwithmeshtying) reader.read_vector(LagrMultOld(), "mt_lagrmultold");
+  if (!restartwithmeshtying) reader.read_vector(lagrange_multiplier_old(), "mt_lagrmultold");
   store_nodal_quantities(Mortar::StrategyBase::lmold);
 
   // only for Uzawa strategy
@@ -808,7 +808,7 @@ void CONTACT::MtAbstractStrategy::DoReadRestart(
 /*----------------------------------------------------------------------*
  |  Compute interface forces (for debugging only)             popp 02/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
+void CONTACT::MtAbstractStrategy::interface_forces(bool output)
 {
   // check chosen output option
   Inpar::CONTACT::EmOutputType emtype =
@@ -866,7 +866,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < Dim(); ++d)
       {
         int dofid = (fcslavetemp->Map()).LID(mtnode->Dofs()[d]);
-        if (dofid < 0) FOUR_C_THROW("InterfaceForces: Did not find slave dof in map");
+        if (dofid < 0) FOUR_C_THROW("interface_forces: Did not find slave dof in map");
         nodeforce[d] = (*fcslavetemp)[dofid];
         gfcs[d] += nodeforce[d];
         position[d] = mtnode->xspatial()[d];
@@ -907,7 +907,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < Dim(); ++d)
       {
         int dofid = (fcmastertemp->Map()).LID(mtnode->Dofs()[d]);
-        if (dofid < 0) FOUR_C_THROW("InterfaceForces: Did not find master dof in map");
+        if (dofid < 0) FOUR_C_THROW("interface_forces: Did not find master dof in map");
         nodeforce[d] = -(*fcmastertemp)[dofid];
         gfcm[d] += nodeforce[d];
         position[d] = mtnode->xspatial()[d];
@@ -963,7 +963,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
       for (int d = 0; d < Dim(); ++d)
       {
         int dofid = (fcslavetemp->Map()).LID(mtnode->Dofs()[d]);
-        if (dofid < 0) FOUR_C_THROW("InterfaceForces: Did not find slave dof in map");
+        if (dofid < 0) FOUR_C_THROW("interface_forces: Did not find slave dof in map");
         nodegaps[d] = (*gapslavefinal)[dofid];
         nodegapm[d] = (*gapmasterfinal)[dofid];
         lm[d] = mtnode->MoData().lm()[d];
@@ -1071,7 +1071,7 @@ void CONTACT::MtAbstractStrategy::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | print active set information                               popp 06/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::PrintActiveSet() const
+void CONTACT::MtAbstractStrategy::print_active_set() const
 {
   //**********************************************************************
   // only do this if corresponding output option is chosen
@@ -1208,7 +1208,7 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet() const
 /*----------------------------------------------------------------------*
  | Visualization of meshtying segments with gmsh              popp 08/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtAbstractStrategy::VisualizeGmsh(const int step, const int iter)
+void CONTACT::MtAbstractStrategy::visualize_gmsh(const int step, const int iter)
 {
   // visualization with gmsh
   for (int i = 0; i < (int)interface_.size(); ++i) interface_[i]->VisualizeGmsh(step, iter);
@@ -1311,7 +1311,7 @@ void CONTACT::MtAbstractStrategy::collect_maps_for_preconditioner(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::MtAbstractStrategy::IsSaddlePointSystem() const
+bool CONTACT::MtAbstractStrategy::is_saddle_point_system() const
 {
   if (SystemType() == Inpar::CONTACT::system_saddlepoint) return true;
 
@@ -1320,7 +1320,7 @@ bool CONTACT::MtAbstractStrategy::IsSaddlePointSystem() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool CONTACT::MtAbstractStrategy::IsCondensedSystem() const
+bool CONTACT::MtAbstractStrategy::is_condensed_system() const
 {
   if (SystemType() != Inpar::CONTACT::system_saddlepoint) return true;
 
@@ -1381,10 +1381,10 @@ void CONTACT::MtAbstractStrategy::postprocess_quantities_per_interface(
   using Teuchos::RCP;
 
   // Evaluate slave and master forces
-  RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(DMatrix()->RowMap()));
-  RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(MMatrix()->DomainMap()));
-  DMatrix()->Multiply(true, *zold_, *fcslave);
-  MMatrix()->Multiply(true, *zold_, *fcmaster);
+  RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(d_matrix()->RowMap()));
+  RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(m_matrix()->DomainMap()));
+  d_matrix()->Multiply(true, *zold_, *fcslave);
+  m_matrix()->Multiply(true, *zold_, *fcmaster);
 
   // Append data to parameter list
   outputParams->set<RCP<const Epetra_Vector>>("interface traction", zold_);

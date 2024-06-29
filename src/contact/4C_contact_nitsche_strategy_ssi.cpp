@@ -170,7 +170,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategySsi::setup_rhs_block_vec(
 
 /*------------------------------------------------------------------------*
 /-------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategySsi::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategySsi::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bp) const
 {
   if (bp == CONTACT::VecBlockType::constraint) return Teuchos::null;
@@ -185,7 +185,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategySsi::GetRhsBlockPtr(
     case CONTACT::VecBlockType::scatra:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(fs_), 0));
     default:
-      return CONTACT::NitscheStrategy::GetRhsBlockPtr(bp);
+      return CONTACT::NitscheStrategy::get_rhs_block_ptr(bp);
   }
 }
 
@@ -270,7 +270,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategySsi::GetMatrixB
     case CONTACT::MatBlockType::displ_scatra:
       return kds_;
     default:
-      return CONTACT::NitscheStrategy::GetMatrixBlockPtr(bp, nullptr);
+      return CONTACT::NitscheStrategy::get_matrix_block_ptr(bp, nullptr);
   }
 }
 FOUR_C_NAMESPACE_CLOSE

@@ -81,7 +81,7 @@ namespace CONTACT
     this case and activesetconv_ is meaningless.
 
     */
-    bool ActiveSetConverged() override
+    bool active_set_converged() override
     {
       bool semismooth = Core::UTILS::IntegralValue<int>(Params(), "SEMI_SMOOTH_NEWTON");
       if (!semismooth)
@@ -94,7 +94,7 @@ namespace CONTACT
     \brief Return no. of fixed-point active sets in this time step
 
     */
-    int ActiveSetSteps() override { return activesetsteps_; }
+    int active_set_steps() override { return activesetsteps_; }
 
     /*! \brief Return the desired right-hand-side block pointer (read-only)
      *
@@ -102,11 +102,11 @@ namespace CONTACT
      *  contributions are present.
      *
      *  \param bt (in): Desired vector block type, e.g. displ, constraint,*/
-    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
 
-    /*! \brief Recover the current state
+    /*! \brief recover the current state
      *
      * The main task of this method is to recover the Lagrange multiplier solution.
      * The Lagrange multiplier solution will be stored inside the corresponding strategy
@@ -134,7 +134,8 @@ namespace CONTACT
      *
      *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *  \param cparams (in): contact parameter interface (read-only) */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
+        const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     /*! \brief Apply modifications (e.g. condensation) directly before linear solve
@@ -167,7 +168,7 @@ namespace CONTACT
     virtual void CondenseFriction(
         Teuchos::RCP<Core::LinAlg::SparseMatrix> kteff, Epetra_Vector& rhs);
 
-    /*! Recover condensed Lagrange multiplier after linear solve
+    /*! recover condensed Lagrange multiplier after linear solve
      *
      * \todo Complete documentation of parameters.
      *
@@ -196,9 +197,9 @@ namespace CONTACT
     //! Assemble all contact contributions (frictional contact)
     virtual void assemble_all_contact_terms_friction();
 
-    const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const override
+    const Epetra_Map& slave_n_dof_row_map(const bool& redist) const override
     {
-      if ((not redist) and ParRedist())
+      if ((not redist) and parallel_redistribution_status())
         FOUR_C_THROW("The original / not redistributed slave normal row map is not available!");
 
       return *gsdofrowmap_;
@@ -211,7 +212,10 @@ namespace CONTACT
     };
 
     //! Get the slip node row map of the previous Newton step
-    Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override { return gOldslipnodes_; };
+    Teuchos::RCP<const Epetra_Map> get_old_slip_row_nodes() const override
+    {
+      return gOldslipnodes_;
+    };
 
     //@}
 
@@ -296,13 +300,13 @@ namespace CONTACT
     This function is outsourced cause the vector is needed for the line search algorithm.
 
     */
-    void EvalConstrRHS() override;
+    void evaluate_constr_rhs() override;
 
     /*! \brief Compute force and stiffness terms
      *
      * \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
+    void evaluate_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Run at the beginning of the evaluate() routine
      *         set force evaluation flag
@@ -328,7 +332,7 @@ namespace CONTACT
     conditions can be checked, too.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
+    void recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     /*! \brief Reset the internal stored Lagrange multipliers
      *
@@ -343,7 +347,7 @@ namespace CONTACT
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      * integration*/
-    void eval_force(CONTACT::ParamsInterface& cparams) override;
+    void evaluate_force(CONTACT::ParamsInterface& cparams) override;
 
     /*!
     \brief Update active set and check for convergence
@@ -359,7 +363,7 @@ namespace CONTACT
     to be performed for the current time / load step.
 
     */
-    void UpdateActiveSet() override;
+    void update_active_set() override;
 
     /*!
     \brief Update active set and check for convergence
@@ -389,7 +393,7 @@ namespace CONTACT
     \brief Reset active set status for next time step
 
     */
-    void ResetActiveSet() override
+    void reset_active_set() override
     {
       activesetssconv_ = false;
       activesetconv_ = false;
@@ -401,7 +405,7 @@ namespace CONTACT
     \brief Return matrix T
 
     */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> TMatrix() override { return tmatrix_; }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> t_matrix() override { return tmatrix_; }
 
     //@}
 
@@ -435,7 +439,7 @@ namespace CONTACT
     \brief Saving reference state is required for penalty support (LTL)
 
     */
-    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override;
+    void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override;
     //@}
 
     //! @name Empty methods
@@ -447,18 +451,18 @@ namespace CONTACT
     Call them whenever you like.
 
     */
-    double ConstraintNorm() const override { return 0.0; }
+    double constraint_norm() const override { return 0.0; }
     void evaluate_rel_mov_predict() override {}
-    double InitialPenalty() override { return 0.0; }
-    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    double initial_penalty() override { return 0.0; }
+    void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
-    void ResetPenalty() override {}
-    void ModifyPenalty() override {}
+    void reset_penalty() override {}
+    void modify_penalty() override {}
     void update_uzawa_augmented_lagrange() override {}
     void update_constraint_norm(int uzawaiter = 0) override {}
-    bool IsPenalty() const override { return false; };
+    bool is_penalty() const override { return false; };
 
    protected:
     //! derived
@@ -488,14 +492,14 @@ namespace CONTACT
     results in some matrix and vector splitting and a lot of matrix-vector calculation in here!
 
     */
-    void EvaluateContact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
     \brief Evaluate frictional contact
 
     */
-    void EvaluateFriction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
     void Update(Teuchos::RCP<const Epetra_Vector> dis) override;

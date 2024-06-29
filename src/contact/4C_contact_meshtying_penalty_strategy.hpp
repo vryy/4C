@@ -56,13 +56,13 @@ namespace CONTACT
     \brief Return L2-norm of active constraints
 
     */
-    double ConstraintNorm() const override { return constrnorm_; }
+    double constraint_norm() const override { return constrnorm_; }
 
     /*!
     \brief Return initial penalty parameter
 
     */
-    double InitialPenalty() override { return initialpenalty_; }
+    double initial_penalty() override { return initialpenalty_; }
 
     //@}
 
@@ -74,7 +74,7 @@ namespace CONTACT
     Only do this ONCE for meshtying upon initialization!
 
     */
-    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) override;
+    void mortar_coupling(const Teuchos::RCP<const Epetra_Vector>& dis) override;
 
     /*!
     \brief Mesh initialization for rotational invariance
@@ -89,7 +89,7 @@ namespace CONTACT
 
     \return Vector with modified nodal positions
     */
-    Teuchos::RCP<const Epetra_Vector> MeshInitialization() override;
+    Teuchos::RCP<const Epetra_Vector> mesh_initialization() override;
 
     /*!
     \brief Evaluate meshtying
@@ -106,7 +106,7 @@ namespace CONTACT
     \param dis (in): current displacement state
 
     */
-    void EvaluateMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*!
@@ -117,7 +117,7 @@ namespace CONTACT
     create an out-of-balance force again.
 
     */
-    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
@@ -132,9 +132,9 @@ namespace CONTACT
     at the beginning of each time step and resets the penalty parameter to its initial value.
 
     */
-    void ResetPenalty() override;
+    void reset_penalty() override;
 
-    void ModifyPenalty() override;
+    void modify_penalty() override;
 
     /*!
     \brief Compute L2-norm of active constraints
@@ -161,7 +161,7 @@ namespace CONTACT
     /*!
     \brief Tell that this is a penalty strategy
     */
-    bool IsPenalty() const override { return true; };
+    bool is_penalty() const override { return true; };
     //@}
 
     //! @name Empty functions (Lagrange meshtying)
@@ -169,7 +169,7 @@ namespace CONTACT
     // All these functions only have functionality in Lagrange meshtying simulations,
     // thus they are defined empty here in the case of Penalty meshtying.
 
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
+    void recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,

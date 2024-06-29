@@ -81,7 +81,7 @@ void ScaTra::HeterogeneousReactionStrategy::EvaluateMeshtying()
   // to check in which algorithms states are set on discret_ .
   discret_->ClearState();
   return;
-}  // ScaTra::HeterogeneousReactionStrategy::EvaluateMeshtying
+}  // ScaTra::HeterogeneousReactionStrategy::evaluate_meshtying
 
 
 /*----------------------------------------------------------------------*

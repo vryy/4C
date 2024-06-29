@@ -1036,7 +1036,7 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
               Inpar::CONTACT::friction_none &&
           Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
               Inpar::CONTACT::solution_lagmult)
-        FOUR_C_THROW("POROCONTACT: Friction for poro contact not implemented!");
+        FOUR_C_THROW("POROCONTACT: is_friction for poro contact not implemented!");
 
       if (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(contact, "SYSTEM") !=
               Inpar::CONTACT::system_condensed &&
@@ -1226,8 +1226,8 @@ void CONTACT::Manager::write_restart(Core::IO::DiscretizationWriter& output, boo
   // quantities to be written for restart
   GetStrategy().DoWriteRestart(restart_vectors, forcedrestart);
 
-  if (GetStrategy().LagrMultOld() != Teuchos::null)
-    output.write_vector("lagrmultold", GetStrategy().LagrMultOld());
+  if (GetStrategy().lagrange_multiplier_old() != Teuchos::null)
+    output.write_vector("lagrmultold", GetStrategy().lagrange_multiplier_old());
 
   // write all vectors specified by used strategy
   for (std::map<std::string, Teuchos::RCP<Epetra_Vector>>::const_iterator p =
@@ -1250,10 +1250,10 @@ void CONTACT::Manager::read_restart(Core::IO::DiscretizationReader& reader,
   if (atype == Inpar::Mortar::algorithm_gpts)
   {
     for (unsigned i = 0;
-         i < dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy()).ContactInterfaces().size();
+         i < dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy()).contact_interfaces().size();
          ++i)
       dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy())
-          .ContactInterfaces()[i]
+          .contact_interfaces()[i]
           ->create_volume_ghosting();
   }
 
@@ -1283,15 +1283,15 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
 
   // evaluate active set and slip set
   Teuchos::RCP<Epetra_Vector> activeset =
-      Teuchos::rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
+      Teuchos::rcp(new Epetra_Vector(*GetStrategy().active_row_nodes()));
   activeset->PutScalar(1.0);
-  if (GetStrategy().Friction())
+  if (GetStrategy().is_friction())
   {
     Teuchos::RCP<Epetra_Vector> slipset =
-        Teuchos::rcp(new Epetra_Vector(*GetStrategy().SlipRowNodes()));
+        Teuchos::rcp(new Epetra_Vector(*GetStrategy().slip_row_nodes()));
     slipset->PutScalar(1.0);
     Teuchos::RCP<Epetra_Vector> slipsetexp =
-        Teuchos::rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
+        Teuchos::rcp(new Epetra_Vector(*GetStrategy().active_row_nodes()));
     Core::LinAlg::Export(*slipset, *slipsetexp);
     activeset->Update(1.0, *slipsetexp, 1.0);
   }
@@ -1327,7 +1327,7 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   // export to problem dof row map
   Teuchos::RCP<Epetra_Map> gapnodes = GetStrategy().ProblemNodes();
   Teuchos::RCP<Epetra_Vector> gaps =
-      Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strategy_)->ContactWGap();
+      Teuchos::rcp_dynamic_cast<CONTACT::AbstractStrategy>(strategy_)->contact_wgap();
   if (gaps != Teuchos::null)
   {
     Teuchos::RCP<Epetra_Vector> gapsexp = Teuchos::rcp(new Epetra_Vector(*gapnodes));
@@ -1347,12 +1347,12 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
 
   // normal direction
-  Teuchos::RCP<Epetra_Vector> normalstresses = GetStrategy().ContactNorStress();
+  Teuchos::RCP<Epetra_Vector> normalstresses = GetStrategy().contact_normal_stress();
   Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   Core::LinAlg::Export(*normalstresses, *normalstressesexp);
 
   // tangential plane
-  Teuchos::RCP<Epetra_Vector> tangentialstresses = GetStrategy().ContactTanStress();
+  Teuchos::RCP<Epetra_Vector> tangentialstresses = GetStrategy().contact_tangential_stress();
   Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   Core::LinAlg::Export(*tangentialstresses, *tangentialstressesexp);
 
@@ -1361,15 +1361,15 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   output.write_vector("norcontactstress", normalstressesexp);
   output.write_vector("tancontactstress", tangentialstressesexp);
 
-  if (GetStrategy().ContactNorForce() != Teuchos::null)
+  if (GetStrategy().contact_normal_force() != Teuchos::null)
   {
     // normal direction
-    Teuchos::RCP<Epetra_Vector> normalforce = GetStrategy().ContactNorForce();
+    Teuchos::RCP<Epetra_Vector> normalforce = GetStrategy().contact_normal_force();
     Teuchos::RCP<Epetra_Vector> normalforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*normalforce, *normalforceexp);
 
     // tangential plane
-    Teuchos::RCP<Epetra_Vector> tangentialforce = GetStrategy().ContactTanForce();
+    Teuchos::RCP<Epetra_Vector> tangentialforce = GetStrategy().contact_tangential_force();
     Teuchos::RCP<Epetra_Vector> tangentialforceexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     Core::LinAlg::Export(*tangentialforce, *tangentialforceexp);
 
@@ -1460,14 +1460,14 @@ void CONTACT::Manager::postprocess_quantities(Core::IO::DiscretizationWriter& ou
   //  // negative sign. Therefore, we have to extract the right force entries from the
   //  // master force which correcpond to the slave force!
   //  Teuchos::RCP<Epetra_Vector> slavedummy =
-  //      Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap(),true));
+  //      Teuchos::rcp(new Epetra_Vector(GetStrategy().d_matrix()->RowMap(),true));
   //  Core::LinAlg::Export(*fcmasternor,*slavedummy);
   //  int err = fcslavenor->Update(-1.0,*slavedummy,1.0);
   //  if(err!=0)
   //    FOUR_C_THROW("ERROR");
   //
   //  Teuchos::RCP<Epetra_Vector> masterdummy =
-  //      Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap(),true));
+  //      Teuchos::rcp(new Epetra_Vector(GetStrategy().m_matrix()->DomainMap(),true));
   //  Core::LinAlg::Export(*slavedummy,*masterdummy);
   //  err = fcmasternor->Update(-1.0,*masterdummy,1.0);
   //  if(err!=0)
@@ -1575,7 +1575,7 @@ void CONTACT::Manager::reconnect_parent_elements()
 
     CONTACT::AbstractStrategy& strategy = dynamic_cast<CONTACT::AbstractStrategy&>(GetStrategy());
 
-    for (auto& interface : strategy.ContactInterfaces())
+    for (auto& interface : strategy.contact_interfaces())
     {
       const Epetra_Map* ielecolmap = interface->Discret().ElementColMap();
 

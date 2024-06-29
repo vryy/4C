@@ -969,8 +969,8 @@ namespace CONTACT
     we notice that g is a vector-quantity at each node there. Yet, in
     (frictionless) we are only interested in the normal part, which makes
     g a scalar quantity here. Compare also the different definitions of g_
-    in CONTACT::MtAbstractStrategy::MortarCoupling() -> gsdofrowmap_ and
-    in CONTACT::AbstractStrategy::InitMortar()/AssembleMortar() -> gsnoderowmap_!!!
+    in CONTACT::MtAbstractStrategy::mortar_coupling() -> gsdofrowmap_ and
+    in CONTACT::AbstractStrategy::initialize_mortar()/assemble_mortar() -> gsnoderowmap_!!!
 
     */
     virtual void AssembleG(Epetra_Vector& gglobal);

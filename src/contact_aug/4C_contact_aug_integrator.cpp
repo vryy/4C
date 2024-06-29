@@ -628,7 +628,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::set_ev
         evaluator_ = Teuchos::rcp(new EvaluatorDeriv1stOnly(*this));
 
       //      static int count = 0;
-      //      std::cout << "eval_force = " << ++count << std::endl;
+      //      std::cout << "evaluate_force = " << ++count << std::endl;
       break;
     }
     case Mortar::eval_force_stiff:
@@ -637,7 +637,7 @@ void CONTACT::Aug::Integrator<probdim, slavetype, mastertype, IntPolicy>::set_ev
         evaluator_ = Teuchos::rcp(new EvaluatorFull(*this));
 
       //      static int count = 0;
-      //      std::cout << "eval_force_stiff = " << ++count << std::endl;
+      //      std::cout << "evaluate_force_stiff = " << ++count << std::endl;
       break;
     }
     default:

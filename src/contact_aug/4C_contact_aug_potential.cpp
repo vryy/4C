@@ -63,10 +63,10 @@ bool CONTACT::Aug::Potential::IsValid::isSameDirection(const Epetra_Vector& dir)
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::Potential::setup()
 {
-  zn_active_ = Teuchos::rcp(new Epetra_Vector(*data_.g_active_n_dof_row_map_ptr()));
+  zn_active_ = Teuchos::rcp(new Epetra_Vector(*data_.global_active_n_dof_row_map_ptr()));
 
   Teuchos::RCP<Epetra_Map> ginactivendofs = Core::LinAlg::SplitMap(
-      *data_.g_sl_normal_dof_row_map_ptr(), *data_.g_active_n_dof_row_map_ptr());
+      *data_.g_sl_normal_dof_row_map_ptr(), *data_.global_active_n_dof_row_map_ptr());
   zn_inactive_ = Teuchos::rcp(new Epetra_Vector(*ginactivendofs));
 
   isvalid_.state_ = false;
@@ -90,7 +90,7 @@ void CONTACT::Aug::Potential::set_active_inactive_state()
 void CONTACT::Aug::Potential::set_direction(const Epetra_Vector& direction,
     Epetra_Vector& dincrSlMa, Epetra_Vector& znincr_active, Epetra_Vector& znincr_inactive)
 {
-  strategy_.SplitStateVector(direction, dincrSlMa, znincr_active, znincr_inactive);
+  strategy_.split_state_vector(direction, dincrSlMa, znincr_active, znincr_inactive);
 }
 
 /*----------------------------------------------------------------------------*
@@ -106,7 +106,7 @@ void CONTACT::Aug::Potential::Compute()
   std::array<double, 4> lterms = {0.0, 0.0, 0.0, 0.0};
 
   const std::vector<Teuchos::RCP<CONTACT::Interface>>& co_interfaces =
-      strategy_.ContactInterfaces();
+      strategy_.contact_interfaces();
 
   for (const Teuchos::RCP<CONTACT::Interface>& cit : co_interfaces)
   {
@@ -147,7 +147,7 @@ void CONTACT::Aug::Potential::ComputeLin(const Epetra_Vector& dir)
   if (not isvalid_.state_) FOUR_C_THROW("Call set_state() first!");
 
   Teuchos::RCP<Epetra_Vector> dincrSlMa =
-      Teuchos::rcp(new Epetra_Vector(*data_.GSlMaDofRowMapPtr(), true));
+      Teuchos::rcp(new Epetra_Vector(*data_.global_slave_master_dof_row_map_ptr(), true));
   Teuchos::RCP<Epetra_Vector> znincr_active =
       Teuchos::rcp(new Epetra_Vector(zn_active_->Map(), true));
   Teuchos::RCP<Epetra_Vector> znincr_inactive =
@@ -173,9 +173,9 @@ void CONTACT::Aug::Potential::compute_lin_active(
     const Epetra_Vector& dincrSlMa, const Epetra_Vector& znincr_active)
 {
   // if there are no global active nodes, we do a direct return
-  if (data_.g_active_node_row_map_ptr()->NumGlobalElements() == 0) return;
+  if (data_.global_active_node_row_map_ptr()->NumGlobalElements() == 0) return;
 
-  Epetra_Vector gradWGapD(*data_.g_active_n_dof_row_map_ptr());
+  Epetra_Vector gradWGapD(*data_.global_active_n_dof_row_map_ptr());
 
   int err = data_.d_lm_nw_gap_lin_matrix_ptr()->Multiply(false, dincrSlMa, gradWGapD);
   if (err) FOUR_C_THROW("Vector-matrix multiplication failed! (err=%d)", err);
@@ -196,7 +196,7 @@ void CONTACT::Aug::Potential::compute_lin_active(
     // cn * awgn(x_k)^T * gradWG(x_k)^T * dincr
     Epetra_Vector scAWGap = Epetra_Vector(*data_.AWGapPtr());
     const Epetra_Vector& cn = *data_.CnPtr();
-    MultiplyElementwise(cn, *data_.g_active_node_row_map_ptr(), scAWGap, false);
+    MultiplyElementwise(cn, *data_.global_active_node_row_map_ptr(), scAWGap, false);
     scAWGap.Dot(gradWGapD, &lindata_.gn_dgn_);
   }
 
@@ -216,8 +216,8 @@ void CONTACT::Aug::Potential::compute_lin_inactive(const Epetra_Vector& znincr_i
   // --------------------------------------------------------------------------
   // Potential: Inactive contributions
   // --------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Map> ginactiveslnodes =
-      Core::LinAlg::SplitMap(*data_.GSlNodeRowMapPtr(), *data_.g_active_node_row_map_ptr());
+  Teuchos::RCP<Epetra_Map> ginactiveslnodes = Core::LinAlg::SplitMap(
+      *data_.global_slave_node_row_map_ptr(), *data_.global_active_node_row_map_ptr());
   Epetra_Vector scZnincr_inactive(znincr_inactive);
 
   {

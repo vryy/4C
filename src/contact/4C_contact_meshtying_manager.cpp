@@ -624,7 +624,7 @@ bool CONTACT::MtManager::read_and_check_input(
  *----------------------------------------------------------------------*/
 void CONTACT::MtManager::write_restart(Core::IO::DiscretizationWriter& output, bool forcedrestart)
 {
-  output.write_vector("mt_lagrmultold", GetStrategy().LagrMultOld());
+  output.write_vector("mt_lagrmultold", GetStrategy().lagrange_multiplier_old());
 
   return;
 }
@@ -650,19 +650,19 @@ void CONTACT::MtManager::postprocess_quantities(Core::IO::DiscretizationWriter& 
   // evaluate interface tractions
   Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemDofs();
   Teuchos::RCP<Epetra_Vector> traction =
-      Teuchos::rcp(new Epetra_Vector(*(GetStrategy().LagrMultOld())));
+      Teuchos::rcp(new Epetra_Vector(*(GetStrategy().lagrange_multiplier_old())));
   Teuchos::RCP<Epetra_Vector> tractionexp = Teuchos::rcp(new Epetra_Vector(*problem));
   Core::LinAlg::Export(*traction, *tractionexp);
 
   // evaluate slave and master forces
   Teuchos::RCP<Epetra_Vector> fcslave =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().DMatrix()->RowMap()));
+      Teuchos::rcp(new Epetra_Vector(GetStrategy().d_matrix()->RowMap()));
   Teuchos::RCP<Epetra_Vector> fcmaster =
-      Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
+      Teuchos::rcp(new Epetra_Vector(GetStrategy().m_matrix()->DomainMap()));
   Teuchos::RCP<Epetra_Vector> fcslaveexp = Teuchos::rcp(new Epetra_Vector(*problem));
   Teuchos::RCP<Epetra_Vector> fcmasterexp = Teuchos::rcp(new Epetra_Vector(*problem));
-  GetStrategy().DMatrix()->Multiply(true, *traction, *fcslave);
-  GetStrategy().MMatrix()->Multiply(true, *traction, *fcmaster);
+  GetStrategy().d_matrix()->Multiply(true, *traction, *fcslave);
+  GetStrategy().m_matrix()->Multiply(true, *traction, *fcmaster);
   Core::LinAlg::Export(*fcslave, *fcslaveexp);
   Core::LinAlg::Export(*fcmaster, *fcmasterexp);
 

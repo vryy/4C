@@ -717,7 +717,8 @@ void STR::TimIntImpl::predict_tang_dis_consist_vel_acc()
   if (bContactSP)
   {
     // extract subvectors
-    Teuchos::RCP<Epetra_Vector> lagrincr = cmtbridge_->GetStrategy().LagrMultSolveIncr();
+    Teuchos::RCP<Epetra_Vector> lagrincr =
+        cmtbridge_->GetStrategy().lagrange_multiplier_increment();
 
     // build residual displacement norm
     normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
@@ -1045,13 +1046,13 @@ void STR::TimIntImpl::apply_force_stiff_contact_meshtying(
     // make contact / meshtying modifications to lhs and rhs
     // (depending on whether this is a predictor step or not)
     if (cmtbridge_->HaveMeshtying())
-      cmtbridge_->MtManager()->GetStrategy().ApplyForceStiffCmt(
+      cmtbridge_->MtManager()->GetStrategy().apply_force_stiff_cmt(
           dis, stiff, fresm, stepn_, iter_, predict);
     if (cmtbridge_->HaveContact())
     {
       dynamic_cast<CONTACT::AbstractStrategy&>(cmtbridge_->ContactManager()->GetStrategy())
-          .SetParentState("displacement", dis, discret_);
-      cmtbridge_->ContactManager()->GetStrategy().ApplyForceStiffCmt(
+          .set_parent_state("displacement", dis, discret_);
+      cmtbridge_->ContactManager()->GetStrategy().apply_force_stiff_cmt(
           dis, stiff, fresm, stepn_, iter_, predict);
     }
 
@@ -1653,8 +1654,9 @@ int STR::TimIntImpl::NewtonFull()
     if (bContactSP)
     {
       // extract subvectors (for mt and contact use only contact lm)
-      Teuchos::RCP<Epetra_Vector> lagrincr = cmtbridge_->GetStrategy().LagrMultSolveIncr();
-      Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().ConstrRhs();
+      Teuchos::RCP<Epetra_Vector> lagrincr =
+          cmtbridge_->GetStrategy().lagrange_multiplier_increment();
+      Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().constraint_rhs();
 
       // build residual force norm
       normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
@@ -2990,7 +2992,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
     {
       // active set strategy
       int activeiter = 0;
-      while (cmtbridge_->GetStrategy().ActiveSetConverged() == false)
+      while (cmtbridge_->GetStrategy().active_set_converged() == false)
       {
         // increase active set iteration index
         ++activeiter;
@@ -3003,7 +3005,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
         if (error) return error;
 
         // update of active set (fixed-point)
-        cmtbridge_->GetStrategy().UpdateActiveSet();
+        cmtbridge_->GetStrategy().update_active_set();
       }
     }
 
@@ -3090,7 +3092,7 @@ int STR::TimIntImpl::CmtNonlinearSolve()
       if (uzawaiter > 1)
       {
         fres_->Scale(-1.0);
-        cmtbridge_->GetStrategy().InitializeUzawa(stiff_, fres_);
+        cmtbridge_->GetStrategy().initialize_uzawa(stiff_, fres_);
         fres_->Scale(-1.0);
       }
 
@@ -3105,10 +3107,10 @@ int STR::TimIntImpl::CmtNonlinearSolve()
       cmtbridge_->GetStrategy().update_uzawa_augmented_lagrange();
       cmtbridge_->GetStrategy().store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
 
-    } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
+    } while (cmtbridge_->GetStrategy().constraint_norm() >= eps);
 
     // reset penalty parameter
-    cmtbridge_->GetStrategy().ResetPenalty();
+    cmtbridge_->GetStrategy().reset_penalty();
   }
 
   return 0;
@@ -3198,7 +3200,7 @@ void STR::TimIntImpl::CmtLinearSolve()
   {
     // check if contact contributions are present,
     // if not we make a standard solver call to speed things up
-    if (!cmtbridge_->GetStrategy().IsInContact() && !cmtbridge_->GetStrategy().WasInContact() &&
+    if (!cmtbridge_->GetStrategy().is_in_contact() && !cmtbridge_->GetStrategy().was_in_contact() &&
         !cmtbridge_->GetStrategy().was_in_contact_last_time_step())
     {
       solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, solver_params);
@@ -3239,7 +3241,8 @@ void STR::TimIntImpl::CmtLinearSolve()
     {
       // check if contact contributions are present,
       // if not we make a standard solver call to speed things up
-      if (!cmtbridge_->GetStrategy().IsInContact() && !cmtbridge_->GetStrategy().WasInContact() &&
+      if (!cmtbridge_->GetStrategy().is_in_contact() &&
+          !cmtbridge_->GetStrategy().was_in_contact() &&
           !cmtbridge_->GetStrategy().was_in_contact_last_time_step())
       {
         // standard solver call (fallback solver for pure structure problem)
@@ -3505,8 +3508,9 @@ int STR::TimIntImpl::PTC()
     if (bContactSP)
     {
       // extract subvectors
-      Teuchos::RCP<Epetra_Vector> lagrincr = cmtbridge_->GetStrategy().LagrMultSolveIncr();
-      Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().ConstrRhs();
+      Teuchos::RCP<Epetra_Vector> lagrincr =
+          cmtbridge_->GetStrategy().lagrange_multiplier_increment();
+      Teuchos::RCP<Epetra_Vector> constrrhs = cmtbridge_->GetStrategy().constraint_rhs();
 
       // build residual force norm
       normfres_ = STR::calculate_vector_norm(iternorm_, fres_);
@@ -3817,7 +3821,7 @@ void STR::TimIntImpl::print_newton_iter_header(FILE* ofile)
     if (cmtbridge_->HaveContact())
     {
       oss << std::setw(11) << "#active";
-      if (cmtbridge_->GetStrategy().Friction()) oss << std::setw(10) << "#slip";
+      if (cmtbridge_->GetStrategy().is_friction()) oss << std::setw(10) << "#slip";
     }
   }
 
@@ -3991,15 +3995,15 @@ void STR::TimIntImpl::print_newton_iter_text(FILE* ofile)
         bool ccontact = cmtbridge_->GetStrategy().active_set_semi_smooth_converged();
         // active set changed
         if (!ccontact)
-          oss << std::setw(8) << cmtbridge_->GetStrategy().NumberOfActiveNodes() << "(c)";
+          oss << std::setw(8) << cmtbridge_->GetStrategy().number_of_active_nodes() << "(c)";
         // active set didnot change
         else
-          oss << std::setw(8) << cmtbridge_->GetStrategy().NumberOfActiveNodes() << "(-)";
+          oss << std::setw(8) << cmtbridge_->GetStrategy().number_of_active_nodes() << "(-)";
       }
       else
-        oss << std::setw(11) << cmtbridge_->GetStrategy().NumberOfActiveNodes();
-      if (cmtbridge_->GetStrategy().Friction())
-        oss << std::setw(10) << cmtbridge_->GetStrategy().NumberOfSlipNodes();
+        oss << std::setw(11) << cmtbridge_->GetStrategy().number_of_active_nodes();
+      if (cmtbridge_->GetStrategy().is_friction())
+        oss << std::setw(10) << cmtbridge_->GetStrategy().number_of_slip_nodes();
     }
   }
 
@@ -4039,8 +4043,8 @@ void STR::TimIntImpl::export_contact_quantities()
   // store active set
   if (MyFile)
   {
-    fprintf(MyFile, "%d\t", cmtbridge_->GetStrategy().NumberOfActiveNodes());
-    fprintf(MyFile, "%d\n", cmtbridge_->GetStrategy().NumberOfSlipNodes());
+    fprintf(MyFile, "%d\t", cmtbridge_->GetStrategy().number_of_active_nodes());
+    fprintf(MyFile, "%d\n", cmtbridge_->GetStrategy().number_of_slip_nodes());
     fclose(MyFile);
   }
   else
@@ -4447,7 +4451,7 @@ int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
     {
       // active set strategy
       int activeiter = 0;
-      while (cmtbridge_->GetStrategy().ActiveSetConverged() == false)
+      while (cmtbridge_->GetStrategy().active_set_converged() == false)
       {
         // increase active set iteration index
         ++activeiter;
@@ -4460,7 +4464,7 @@ int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
         if (error) return error;
 
         // update of active set (fixed-point)
-        cmtbridge_->GetStrategy().UpdateActiveSet();
+        cmtbridge_->GetStrategy().update_active_set();
       }
     }
 
@@ -4515,7 +4519,7 @@ int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
       if (uzawaiter > 1)
       {
         fres_->Scale(-1.0);
-        cmtbridge_->GetStrategy().InitializeUzawa(stiff_, fres_);
+        cmtbridge_->GetStrategy().initialize_uzawa(stiff_, fres_);
         fres_->Scale(-1.0);
       }
 
@@ -4530,10 +4534,10 @@ int STR::TimIntImpl::cmt_windk_constr_nonlinear_solve()
       cmtbridge_->GetStrategy().update_uzawa_augmented_lagrange();
       cmtbridge_->GetStrategy().store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
 
-    } while (cmtbridge_->GetStrategy().ConstraintNorm() >= eps);
+    } while (cmtbridge_->GetStrategy().constraint_norm() >= eps);
 
     // reset penalty parameter
-    cmtbridge_->GetStrategy().ResetPenalty();
+    cmtbridge_->GetStrategy().reset_penalty();
   }
 
   return 0;

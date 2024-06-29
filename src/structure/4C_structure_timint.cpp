@@ -548,7 +548,7 @@ void STR::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdynpa
   {
     // FOR MESHTYING (ONLY ONCE), NO FUNCTIONALITY FOR CONTACT CASES
     // (1) do mortar coupling in reference configuration
-    cmtbridge_->MtManager()->GetStrategy().MortarCoupling(zeros_);
+    cmtbridge_->MtManager()->GetStrategy().mortar_coupling(zeros_);
 
     // perform mesh initialization if required by input parameter MESH_RELOCATION
     auto mesh_relocation_parameter = Core::UTILS::IntegralValue<Inpar::Mortar::MeshRelocation>(
@@ -559,7 +559,7 @@ void STR::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdynpa
       // (2) perform mesh initialization for rotational invariance (interface)
       // and return the modified slave node positions in vector Xslavemod
       Teuchos::RCP<const Epetra_Vector> Xslavemod =
-          cmtbridge_->MtManager()->GetStrategy().MeshInitialization();
+          cmtbridge_->MtManager()->GetStrategy().mesh_initialization();
 
       // (3) apply result of mesh initialization to underlying problem discretization
       apply_mesh_initialization(Xslavemod);
@@ -577,7 +577,7 @@ void STR::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdynpa
   {
     // FOR PENALTY CONTACT (ONLY ONCE), NO FUNCTIONALITY FOR OTHER CASES
     // (1) Explicitly store gap-scaling factor kappa
-    cmtbridge_->ContactManager()->GetStrategy().SaveReferenceState(zeros_);
+    cmtbridge_->ContactManager()->GetStrategy().save_reference_state(zeros_);
 
     // FOR CONTACT FORMULATIONS (ONLY ONCE)
     // (1) Evaluate reference state for friction and initialize gap
@@ -924,7 +924,7 @@ void STR::TimInt::apply_mesh_initialization(Teuchos::RCP<const Epetra_Vector> Xs
   if (Xslavemod == Teuchos::null) return;
 
   // create fully overlapping slave node map
-  Teuchos::RCP<Epetra_Map> slavemap = cmtbridge_->MtManager()->GetStrategy().SlaveRowNodes();
+  Teuchos::RCP<Epetra_Map> slavemap = cmtbridge_->MtManager()->GetStrategy().slave_row_nodes_ptr();
   Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::AllreduceEMap(*slavemap);
 
   // export modified node positions to column map of problem discretization
@@ -981,7 +981,7 @@ void STR::TimInt::PrepareStepContact()
     if (cmtbridge_->HaveContact())
     {
       cmtbridge_->GetStrategy().Inttime_init();
-      cmtbridge_->GetStrategy().RedistributeContact((*dis_)(0), (*vel_)(0));
+      cmtbridge_->GetStrategy().redistribute_contact((*dis_)(0), (*vel_)(0));
     }
   }
 }
@@ -1284,7 +1284,7 @@ void STR::TimInt::update_step_contact_vum()
     if (do_vum)
     {
       // check for actual contact and leave if active set empty
-      bool isincontact = cmtbridge_->GetStrategy().IsInContact();
+      bool isincontact = cmtbridge_->GetStrategy().is_in_contact();
       if (!isincontact) return;
 
       // check for contact force evaluation
@@ -1328,12 +1328,12 @@ void STR::TimInt::update_step_contact_vum()
 
       // maps
       const Epetra_Map* dofmap = discret_->dof_row_map();
-      Teuchos::RCP<Epetra_Map> activenodemap = cmtbridge_->GetStrategy().ActiveRowNodes();
-      Teuchos::RCP<Epetra_Map> slavenodemap = cmtbridge_->GetStrategy().SlaveRowNodes();
+      Teuchos::RCP<Epetra_Map> activenodemap = cmtbridge_->GetStrategy().active_row_nodes();
+      Teuchos::RCP<Epetra_Map> slavenodemap = cmtbridge_->GetStrategy().slave_row_nodes_ptr();
       Teuchos::RCP<Epetra_Map> notredistslavedofmap =
-          cmtbridge_->GetStrategy().not_re_dist_slave_row_dofs();
+          cmtbridge_->GetStrategy().non_redist_slave_row_dofs();
       Teuchos::RCP<Epetra_Map> notredistmasterdofmap =
-          cmtbridge_->GetStrategy().not_re_dist_master_row_dofs();
+          cmtbridge_->GetStrategy().non_redist_master_row_dofs();
       Teuchos::RCP<Epetra_Map> notactivenodemap =
           Core::LinAlg::SplitMap(*slavenodemap, *activenodemap);
 
@@ -1361,8 +1361,8 @@ void STR::TimInt::update_step_contact_vum()
       Dd->Update(-1.0, (*dis_)[0], 1.0);
 
       // mortar operator Bc
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Mmat = cmtbridge_->GetStrategy().MMatrix();
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> Dmat = cmtbridge_->GetStrategy().DMatrix();
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Mmat = cmtbridge_->GetStrategy().m_matrix();
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> Dmat = cmtbridge_->GetStrategy().d_matrix();
       Teuchos::RCP<Epetra_Map> slavedofmap = Teuchos::rcp(new Epetra_Map(Dmat->RangeMap()));
       Teuchos::RCP<Core::LinAlg::SparseMatrix> Bc =
           Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dofmap, 10));
@@ -1388,10 +1388,11 @@ void STR::TimInt::update_step_contact_vum()
       Bc->ApplyDirichlet(*(dbcmaps_->cond_map()), false);
 
       // matrix of the normal vectors
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> N = cmtbridge_->GetStrategy().EvaluateNormals(disn_);
+      Teuchos::RCP<Core::LinAlg::SparseMatrix> N =
+          cmtbridge_->GetStrategy().evaluate_normals(disn_);
 
       // lagrange multiplier z
-      Teuchos::RCP<Epetra_Vector> LM = cmtbridge_->GetStrategy().LagrMult();
+      Teuchos::RCP<Epetra_Vector> LM = cmtbridge_->GetStrategy().lagrange_multiplier();
       Teuchos::RCP<Epetra_Vector> Z = Core::LinAlg::CreateVector(*slavenodemap, true);
       Teuchos::RCP<Epetra_Vector> z = Core::LinAlg::CreateVector(*activenodemap, true);
       N->Multiply(false, *LM, *Z);
@@ -2610,7 +2611,7 @@ void STR::TimInt::OutputContact()
   if (have_contact_meshtying())
   {
     // print active set
-    cmtbridge_->GetStrategy().PrintActiveSet();
+    cmtbridge_->GetStrategy().print_active_set();
 
     // check chosen output option
     Inpar::CONTACT::EmOutputType emtype = Core::UTILS::IntegralValue<Inpar::CONTACT::EmOutputType>(
@@ -2773,7 +2774,7 @@ void STR::TimInt::OutputContact()
     }
 
     //-------------------------- Compute and output interface forces
-    cmtbridge_->GetStrategy().InterfaceForces(true);
+    cmtbridge_->GetStrategy().interface_forces(true);
   }
 }
 
@@ -3167,7 +3168,7 @@ Inpar::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
       // adapt penalty and search parameter
       if (have_contact_meshtying())
       {
-        cmtbridge_->GetStrategy().ModifyPenalty();
+        cmtbridge_->GetStrategy().modify_penalty();
       }
     }
     break;
@@ -3234,7 +3235,7 @@ Inpar::STR::ConvergenceStatus STR::TimInt::PerformErrorAction(
                 << Core::IO::endl;
           }
 
-          cmtbridge_->GetStrategy().ModifyPenalty();
+          cmtbridge_->GetStrategy().modify_penalty();
         }
 
         divconrefinementlevel_++;

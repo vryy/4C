@@ -88,16 +88,16 @@ CONTACT::Aug::DataContainer::DataContainer()
 void CONTACT::Aug::DataContainer::init_matrix_row_col_transformer()
 {
   Mortar::MatrixRowColTransformer::plain_block_map_pairs redistributed_row(4);
-  redistributed_row[CONTACT::MatBlockType::displ_displ] = &GSlMaDofRowMapPtr();
-  redistributed_row[CONTACT::MatBlockType::displ_lm] = &GDispDofRowMapPtr();
-  redistributed_row[CONTACT::MatBlockType::lm_displ] = &GLmDofRowMapPtr();
-  redistributed_row[CONTACT::MatBlockType::lm_lm] = &GLmDofRowMapPtr();
+  redistributed_row[CONTACT::MatBlockType::displ_displ] = &global_slave_master_dof_row_map_ptr();
+  redistributed_row[CONTACT::MatBlockType::displ_lm] = &global_disp_dof_row_map_ptr();
+  redistributed_row[CONTACT::MatBlockType::lm_displ] = &global_lm_dof_row_map_ptr();
+  redistributed_row[CONTACT::MatBlockType::lm_lm] = &global_lm_dof_row_map_ptr();
 
   Mortar::MatrixRowColTransformer::plain_block_map_pairs redistributed_col(4);
-  redistributed_col[CONTACT::MatBlockType::displ_displ] = &GSlMaDofRowMapPtr();
-  redistributed_col[CONTACT::MatBlockType::displ_lm] = &GLmDofRowMapPtr();
-  redistributed_col[CONTACT::MatBlockType::lm_displ] = &GDispDofRowMapPtr();
-  redistributed_col[CONTACT::MatBlockType::lm_lm] = &GLmDofRowMapPtr();
+  redistributed_col[CONTACT::MatBlockType::displ_displ] = &global_slave_master_dof_row_map_ptr();
+  redistributed_col[CONTACT::MatBlockType::displ_lm] = &global_lm_dof_row_map_ptr();
+  redistributed_col[CONTACT::MatBlockType::lm_displ] = &global_disp_dof_row_map_ptr();
+  redistributed_col[CONTACT::MatBlockType::lm_lm] = &global_lm_dof_row_map_ptr();
 
   Mortar::MatrixRowColTransformer::plain_block_map_pairs unredistributed_row(4);
   unredistributed_row[CONTACT::MatBlockType::displ_displ] = &PGSlMaDofRowMapPtr();
@@ -199,9 +199,9 @@ CONTACT::Aug::Strategy::Strategy(const Teuchos::RCP<CONTACT::AbstractStratDataCo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::Aug::Strategy::IsSaddlePointSystem() const
+bool CONTACT::Aug::Strategy::is_saddle_point_system() const
 {
-  return (IsInContact() or WasInContact() or was_in_contact_last_time_step());
+  return (is_in_contact() or was_in_contact() or was_in_contact_last_time_step());
 }
 
 /*----------------------------------------------------------------------------*
@@ -232,7 +232,7 @@ void CONTACT::Aug::Strategy::post_setup(bool redistributed, bool init)
     // initialize cn
     initialize_cn(data().ConstantCn());
 
-    if (ParRedist()) data().init_matrix_row_col_transformer();
+    if (parallel_redistribution_status()) data().init_matrix_row_col_transformer();
   }
 
   // just used for the redistributed case
@@ -246,7 +246,7 @@ void CONTACT::Aug::Strategy::post_setup(bool redistributed, bool init)
         (data().g_old_active_slave_nodes().NumGlobalElements() > 0))
     {
       data().g_old_active_slave_nodes_ptr() = Core::Rebalance::RebalanceInAccordanceWithReference(
-          SlRowNodes(), data().g_old_active_slave_nodes());
+          slave_row_nodes(), data().g_old_active_slave_nodes());
     }
   }
 
@@ -258,7 +258,7 @@ void CONTACT::Aug::Strategy::post_setup(bool redistributed, bool init)
   data().Potential().setup();
 
   // setup the row column transformer object
-  if (ParRedist()) data().matrix_row_col_transformer().setup();
+  if (parallel_redistribution_status()) data().matrix_row_col_transformer().setup();
 
   return;
 }
@@ -324,7 +324,7 @@ void CONTACT::Aug::Strategy::initialize_cn(const double cn_init)
   if (cn_init <= 0.0) FOUR_C_THROW("The initial CN value must be greater than zero!");
 
   if (data().CnPtr().is_null() or data().Cn().GlobalLength() == 0)
-    data().CnPtr() = Core::LinAlg::CreateVector(SlRowNodes(), true);
+    data().CnPtr() = Core::LinAlg::CreateVector(slave_row_nodes(), true);
 
   // set all nodal cn-values to the input value
   data().Cn().PutScalar(cn_init);
@@ -337,7 +337,7 @@ void CONTACT::Aug::Strategy::initialize_cn(const double cn_init)
 void CONTACT::Aug::Strategy::redistribute_cn()
 {
   // redistribute the cn-vector
-  Teuchos::RCP<Epetra_Vector> newcn = Teuchos::rcp(new Epetra_Vector(SlRowNodes()));
+  Teuchos::RCP<Epetra_Vector> newcn = Teuchos::rcp(new Epetra_Vector(slave_row_nodes()));
   Core::LinAlg::Export(data().Cn(), *newcn);
   data().CnPtr() = newcn;
 }
@@ -353,7 +353,7 @@ void CONTACT::Aug::Strategy::DoReadRestart(Core::IO::DiscretizationReader& reade
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::InitMortar()
+void CONTACT::Aug::Strategy::initialize_mortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing Dn, Mn etc.
@@ -370,7 +370,7 @@ void CONTACT::Aug::Strategy::InitMortar()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::AssembleMortar()
+void CONTACT::Aug::Strategy::assemble_mortar()
 {
   // for all interfaces
   for (plain_interface_set::const_iterator cit = interface_.begin(); cit != interface_.end(); ++cit)
@@ -380,7 +380,7 @@ void CONTACT::Aug::Strategy::AssembleMortar()
     interface.AssembleBMatrix(data().BMatrix());
   }
 
-  data().BMatrix().Complete(SlMaDoFRowMap(true), data().GSlNormalDofRowMap());
+  data().BMatrix().Complete(slave_master_dof_row_map(true), data().GSlNormalDofRowMap());
 
   return;
 }
@@ -391,11 +391,11 @@ void CONTACT::Aug::Strategy::split_mortar()
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
-  data().DMatrixPtr() =
-      ExtractMatrix(data().BMatrix(), data().GActiveNDofRowMap(), *data().GSlDofRowMapPtr());
+  data().DMatrixPtr() = ExtractMatrix(data().BMatrix(), data().global_active_n_dof_row_map(),
+      *data().global_slave_dof_row_map_ptr());
 
-  data().MMatrixPtr() =
-      ExtractMatrix(data().BMatrix(), data().GActiveNDofRowMap(), *data().GMaDofRowMapPtr());
+  data().MMatrixPtr() = ExtractMatrix(data().BMatrix(), data().global_active_n_dof_row_map(),
+      *data().global_master_dof_row_map_ptr());
 
   return;
 }
@@ -423,22 +423,22 @@ void CONTACT::Aug::Strategy::create_stiffness_state(const Epetra_Map& gAugInacti
 {
   // *** (re)setup global matrices ***
   data().DGLmLinMatrixPtr() = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      SlMaDoFRowMap(true), 100, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+      slave_master_dof_row_map(true), 100, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
   data().DGGLinMatrixPtr() = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      SlMaDoFRowMap(true), 100, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+      slave_master_dof_row_map(true), 100, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
 
-  data().d_lm_nw_gap_lin_matrix_ptr() =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(data().GActiveNDofRowMap(), 100, false, false));
-  data().DLmTLmTMatrixPtr() =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(data().GActiveTDofRowMap(), 100, false, false));
-  data().DLmTLmTLinMatrixPtr() =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(data().GActiveTDofRowMap(), 100, false, false));
+  data().d_lm_nw_gap_lin_matrix_ptr() = Teuchos::rcp(
+      new Core::LinAlg::SparseMatrix(data().global_active_n_dof_row_map(), 100, false, false));
+  data().DLmTLmTMatrixPtr() = Teuchos::rcp(
+      new Core::LinAlg::SparseMatrix(data().global_active_t_dof_row_map(), 100, false, false));
+  data().DLmTLmTLinMatrixPtr() = Teuchos::rcp(
+      new Core::LinAlg::SparseMatrix(data().global_active_t_dof_row_map(), 100, false, false));
 
   data().inactive_diag_matrix_ptr() = Core::LinAlg::CreateVector(gAugInactiveSlaveDofs, true);
   data().inactive_lin_matrix_ptr() =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(gAugInactiveSlaveDofs, 100, false, false));
   data().InactiveDDMatrixPtr() = Teuchos::rcp(new Core::LinAlg::SparseMatrix(
-      SlDoFRowMap(true), 100, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
+      slave_dof_row_map(true), 100, false, false, Core::LinAlg::SparseMatrix::FE_MATRIX));
 }
 
 /*----------------------------------------------------------------------------*
@@ -469,21 +469,23 @@ void CONTACT::Aug::Strategy::zeroize_rhs_state()
 void CONTACT::Aug::Strategy::create_rhs_state(const Epetra_Map& gAugInactiveSlaveDofs)
 {
   // *** (re)setup global augmented Epetra_Vectors ***
-  data().LmNPtr() = Teuchos::rcp(new Epetra_Vector(data().GActiveNDofRowMap(), true));
-  data().AWGapPtr() = Teuchos::rcp(new Epetra_Vector(data().GActiveNDofRowMap(), true));
-  data().DLmTLmTRhsPtr() = Teuchos::rcp(new Epetra_Vector(data().GActiveTDofRowMap(), true));
+  data().LmNPtr() = Teuchos::rcp(new Epetra_Vector(data().global_active_n_dof_row_map(), true));
+  data().AWGapPtr() = Teuchos::rcp(new Epetra_Vector(data().global_active_n_dof_row_map(), true));
+  data().DLmTLmTRhsPtr() =
+      Teuchos::rcp(new Epetra_Vector(data().global_active_t_dof_row_map(), true));
   data().InactiveRhsPtr() = Teuchos::rcp(new Epetra_Vector(gAugInactiveSlaveDofs, true));
 
-  data().AVecPtr() = Teuchos::rcp(new Epetra_Vector(SlRowNodes(), true));
-  data().KappaVecPtr() = Teuchos::rcp(new Epetra_Vector(data().GActiveNodeRowMap(), true));
-  data().WGapPtr() = Teuchos::rcp(new Epetra_Vector(data().GActiveNDofRowMap(), true));
+  data().AVecPtr() = Teuchos::rcp(new Epetra_Vector(slave_row_nodes(), true));
+  data().KappaVecPtr() = Teuchos::rcp(new Epetra_Vector(data().global_active_node_row_map(), true));
+  data().WGapPtr() = Teuchos::rcp(new Epetra_Vector(data().global_active_n_dof_row_map(), true));
   data().WGapAllSlNodesPtr() = Teuchos::rcp(new Epetra_Vector(data().GSlNormalDofRowMap(), true));
 
-  data().SlForceLmPtr() = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true), true));
-  data().sl_force_lm_inactive_ptr() = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true), true));
-  data().SlForceGPtr() = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)), true);
-  data().MaForceLmPtr() = Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true), true));
-  data().MaForceGPtr() = Teuchos::rcp(new Epetra_Vector(MaDoFRowMap(true)), true);
+  data().SlForceLmPtr() = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true), true));
+  data().sl_force_lm_inactive_ptr() =
+      Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true), true));
+  data().SlForceGPtr() = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)), true);
+  data().MaForceLmPtr() = Teuchos::rcp(new Epetra_Vector(master_dof_row_map(true), true));
+  data().MaForceGPtr() = Teuchos::rcp(new Epetra_Vector(master_dof_row_map(true)), true);
 }
 
 /*----------------------------------------------------------------------------*
@@ -492,7 +494,7 @@ void CONTACT::Aug::Strategy::initialize(enum Mortar::ActionType actiontype)
 {
   // get inactive slave dofs
   Teuchos::RCP<Epetra_Map> gAugInactiveSlaveDofs = Teuchos::null;
-  Core::LinAlg::SplitMap(SlDoFRowMap(true), data().GActiveDofRowMap());
+  Core::LinAlg::SplitMap(slave_dof_row_map(true), data().global_active_dof_row_map());
 
   switch (actiontype)
   {
@@ -505,7 +507,7 @@ void CONTACT::Aug::Strategy::initialize(enum Mortar::ActionType actiontype)
       else
       {
         gAugInactiveSlaveDofs =
-            Core::LinAlg::SplitMap(SlDoFRowMap(true), data().GActiveDofRowMap());
+            Core::LinAlg::SplitMap(slave_dof_row_map(true), data().global_active_dof_row_map());
         create_stiffness_state(*gAugInactiveSlaveDofs);
         data().SetMatrixMapsValid(true);
       }
@@ -522,7 +524,7 @@ void CONTACT::Aug::Strategy::initialize(enum Mortar::ActionType actiontype)
       {
         if (gAugInactiveSlaveDofs.is_null())
           gAugInactiveSlaveDofs =
-              Core::LinAlg::SplitMap(SlDoFRowMap(true), data().GActiveDofRowMap());
+              Core::LinAlg::SplitMap(slave_dof_row_map(true), data().global_active_dof_row_map());
         create_rhs_state(*gAugInactiveSlaveDofs);
         data().SetVectorMapsValid(true);
       }
@@ -537,7 +539,7 @@ void CONTACT::Aug::Strategy::initialize(enum Mortar::ActionType actiontype)
     }
   }
 
-  if (data().IsFriction())
+  if (data().is_friction())
     FOUR_C_THROW(
         "AugmentedLagrangeStrategy::Initialize: "
         "Frictional case is not yet considered!");
@@ -547,10 +549,10 @@ void CONTACT::Aug::Strategy::initialize(enum Mortar::ActionType actiontype)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::eval_force_stiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::Strategy::evaluate_force_stiff(CONTACT::ParamsInterface& cparams)
 {
   // call the evaluate force routine
-  eval_force(cparams);
+  evaluate_force(cparams);
 
   // --- Assemble stiffness matrix ---------------------------------------
   assemble_contact_stiff();
@@ -562,12 +564,13 @@ void CONTACT::Aug::Strategy::eval_force_stiff(CONTACT::ParamsInterface& cparams)
  *----------------------------------------------------------------------*/
 void CONTACT::Aug::Strategy::post_eval_force_stiff(CONTACT::ParamsInterface& cparams)
 {
-  if (not IsInContact() and not WasInContact() and not was_in_contact_last_time_step()) return;
+  if (not is_in_contact() and not was_in_contact() and not was_in_contact_last_time_step()) return;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
+void CONTACT::Aug::Strategy::initialize_and_evaluate_interface(
+    Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
@@ -576,7 +579,7 @@ void CONTACT::Aug::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInter
   data().PDController().setup(*cparams_ptr);
 
   // get type of parallel strategy
-  Inpar::Mortar::ExtendGhosting strat = data().GhostingStrategy();
+  Inpar::Mortar::ExtendGhosting strat = data().ghosting_strategy();
 
   // Evaluation for all interfaces
   for (plain_interface_set::const_iterator cit = interface_.begin(); cit != interface_.end(); ++cit)
@@ -596,7 +599,7 @@ void CONTACT::Aug::Strategy::InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInter
       case Inpar::Mortar::ExtendGhosting::redundant_all:
       case Inpar::Mortar::ExtendGhosting::redundant_master:
       {
-        eval_interface(interface, 0, cparams_ptr);
+        evaluate_interface(interface, 0, cparams_ptr);
 
         break;
       }
@@ -643,8 +646,8 @@ bool CONTACT::Aug::Strategy::dyn_redistribute_contact(const Teuchos::RCP<const E
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::eval_interface(CONTACT::Aug::Interface& interface, const int rriter,
-    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+void CONTACT::Aug::Strategy::evaluate_interface(CONTACT::Aug::Interface& interface,
+    const int rriter, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
 {
   const enum Mortar::ActionType atype = cparams_ptr->get_action_type();
   switch (atype)
@@ -691,9 +694,9 @@ void CONTACT::Aug::Strategy::run_post_compute_x(const CONTACT::ParamsInterface& 
   /* Since the augmented Lagrangian strategy does not support any kind
    * of condensation, we use this routine just to store the Lagrange
    * multiplier increment. */
-  Epetra_Vector zincr_exp(LMDoFRowMap(true));
+  Epetra_Vector zincr_exp(lm_dof_row_map(true));
   Core::LinAlg::Export(dir, zincr_exp);
-  int err = zincr_exp.ReplaceMap(SlDoFRowMap(true));
+  int err = zincr_exp.ReplaceMap(slave_dof_row_map(true));
   if (err) FOUR_C_THROW("ReplaceMap failed with error code %d.", err);
 
   // get the current step length
@@ -726,11 +729,11 @@ void CONTACT::Aug::Strategy::reset_lagrange_multipliers(
 
   z.PutScalar(0.0);
 
-  if (z.ReplaceMap(LMDoFRowMap(true))) FOUR_C_THROW("ReplaceMap failed!");
+  if (z.ReplaceMap(lm_dof_row_map(true))) FOUR_C_THROW("ReplaceMap failed!");
 
   Core::LinAlg::Export(xnew, z);
 
-  if (z.ReplaceMap(SlDoFRowMap(true))) FOUR_C_THROW("ReplaceMap failed!");
+  if (z.ReplaceMap(slave_dof_row_map(true))) FOUR_C_THROW("ReplaceMap failed!");
 
   // ---------------------------------------------------------------------
   // store the new Lagrange multiplier in the nodes
@@ -752,23 +755,23 @@ void CONTACT::Aug::Strategy::pre_eval_force(CONTACT::ParamsInterface& cparams)
    | interface evaluations.                                       |
    *--------------------------------------------------------------*/
   Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::rcp(&cparams, false);
-  if (IsSelfContact())
+  if (is_self_contact())
   {
     // evaluate mortar terms (integrate...)
-    InitEvalInterface(cparams_ptr);
+    initialize_and_evaluate_interface(cparams_ptr);
     // initialize mortar matrices and vectors
-    InitMortar();
+    initialize_mortar();
     // assemble mortar terms into global matrices
-    AssembleMortar();
+    assemble_mortar();
   }
   else
   {
     // initialize mortar matrices and vectors
-    InitMortar();
+    initialize_mortar();
     // evaluate mortar terms (integrate...)
-    InitEvalInterface(cparams_ptr);
+    initialize_and_evaluate_interface(cparams_ptr);
     // assemble mortar terms into global matrices
-    AssembleMortar();
+    assemble_mortar();
   }
 
   if (cparams.is_predictor())
@@ -777,7 +780,7 @@ void CONTACT::Aug::Strategy::pre_eval_force(CONTACT::ParamsInterface& cparams)
     evaluate_rel_mov_predict();
   }
   else
-    EvaluateRelMov();
+    evaluate_relative_movement();
 
   // update active set
   update_active_set_semi_smooth(cparams);
@@ -792,7 +795,7 @@ void CONTACT::Aug::Strategy::pre_eval_force(CONTACT::ParamsInterface& cparams)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::eval_force(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::Strategy::evaluate_force(CONTACT::ParamsInterface& cparams)
 {
   // --- Prepare the evaluation and integrate all quantities ------------------
   pre_eval_force(cparams);
@@ -801,7 +804,7 @@ void CONTACT::Aug::Strategy::eval_force(CONTACT::ParamsInterface& cparams)
   assemble_gap();
 
   // --- compute the augmented forces -----------------------------------------
-  eval_augmented_forces();
+  evaluate_augmented_forces();
 
   // --- Assemble the right hand side terms -----------------------------------
   assemble_contact_rhs();
@@ -809,8 +812,8 @@ void CONTACT::Aug::Strategy::eval_force(CONTACT::ParamsInterface& cparams)
   /* Evaluate structural and constraint rhs. This is also necessary, if the
    * rhs did not change during the predictor step, but a redistribution was
    * executed! */
-  eval_str_contact_rhs();  // update structural contact rhs
-  EvalConstrRHS();         // update the constrRHS
+  evaluate_str_contact_rhs();  // update structural contact rhs
+  evaluate_constr_rhs();       // update the constrRHS
 
   post_eval_force(cparams);
 }
@@ -831,7 +834,7 @@ void CONTACT::Aug::Strategy::assemble_gap()
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
+  if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()) return;
   /*--------------------------------------------------------------------*
    | Assembly                                                           |
    *--------------------------------------------------------------------*
@@ -855,7 +858,7 @@ bool CONTACT::Aug::Strategy::assemble_contact_rhs()
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return false;
+  if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()) return false;
   /*--------------------------------------------------------------------*
    |             ASSEMBLE THE CONTACT RIGHT HAND SIDE                   |
    *--------------------------------------------------------------------*/
@@ -899,7 +902,7 @@ void CONTACT::Aug::Strategy::assemble_contact_stiff()
 
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
+  if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()) return;
 
   /*--------------------------------------------------------------------*
    |             ASSEMBLE THE TANGENTIAL STIFFNESS MATRIX               |
@@ -947,22 +950,24 @@ void CONTACT::Aug::Strategy::assemble_contact_stiff()
   // domainmap: columnmap | rangemap: rowmap
   // get inactive slave dofs
   Teuchos::RCP<Epetra_Map> gAugInactiveSlaveDofs =
-      Core::LinAlg::SplitMap(SlDoFRowMap(true), data().GActiveDofRowMap());
+      Core::LinAlg::SplitMap(slave_dof_row_map(true), data().global_active_dof_row_map());
 
   // --- Force Balance --------------------------------------------------
   // linearization w.r.t. displ.
-  data().DGLmLinMatrix().Complete(SlMaDoFRowMap(true), SlMaDoFRowMap(true));
-  data().DGGLinMatrix().Complete(SlMaDoFRowMap(true), SlMaDoFRowMap(true));
+  data().DGLmLinMatrix().Complete(slave_master_dof_row_map(true), slave_master_dof_row_map(true));
+  data().DGGLinMatrix().Complete(slave_master_dof_row_map(true), slave_master_dof_row_map(true));
 
   // --- Constraints ----------------------------------------------------
   // linearization w.r.t. LM
-  data().DLmTLmTMatrix().Complete(data().GActiveTDofRowMap(), data().GActiveTDofRowMap());
+  data().DLmTLmTMatrix().Complete(
+      data().global_active_t_dof_row_map(), data().global_active_t_dof_row_map());
 
   // linearization w.r.t. displ.
-  data().DLmNWGapLinMatrix().Complete(SlMaDoFRowMap(true), data().GActiveNDofRowMap());
-  data().DLmTLmTLinMatrix().Complete(SlDoFRowMap(true), data().GActiveTDofRowMap());
-  data().InactiveLinMatrix().Complete(SlDoFRowMap(true), *gAugInactiveSlaveDofs);
-  data().InactiveDDMatrix().Complete(SlDoFRowMap(true), SlDoFRowMap(true));
+  data().DLmNWGapLinMatrix().Complete(
+      slave_master_dof_row_map(true), data().global_active_n_dof_row_map());
+  data().DLmTLmTLinMatrix().Complete(slave_dof_row_map(true), data().global_active_t_dof_row_map());
+  data().InactiveLinMatrix().Complete(slave_dof_row_map(true), *gAugInactiveSlaveDofs);
+  data().InactiveDDMatrix().Complete(slave_dof_row_map(true), slave_dof_row_map(true));
 
   // --- END - fill_complete matrices ------------------------------------
 
@@ -979,9 +984,9 @@ void CONTACT::Aug::Strategy::update_active_set_semi_smooth(const CONTACT::Params
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::eval_str_contact_rhs()
+void CONTACT::Aug::Strategy::evaluate_str_contact_rhs()
 {
-  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
+  if (!is_in_contact() and !was_in_contact() and !was_in_contact_last_time_step())
   {
     data().StrContactRhsPtr() = Teuchos::null;
     return;
@@ -990,7 +995,7 @@ void CONTACT::Aug::Strategy::eval_str_contact_rhs()
 
 
   // For self contact, slave and master sets may have changed,
-  if (IsSelfContact())
+  if (is_self_contact())
     FOUR_C_THROW("Augmented Lagrange Formulation: Self contact is not yet considered!");
 
   // --- add contact force terms ----------------------------------------------
@@ -1017,9 +1022,9 @@ void CONTACT::Aug::Strategy::eval_str_contact_rhs()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::EvalConstrRHS()
+void CONTACT::Aug::Strategy::evaluate_constr_rhs()
 {
-  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
+  if (!is_in_contact() and !was_in_contact() and !was_in_contact_last_time_step())
   {
     // (re)setup the vector
     data().ConstrRhsPtr() = Teuchos::null;
@@ -1028,19 +1033,19 @@ void CONTACT::Aug::Strategy::EvalConstrRHS()
 
   // initialize constraint r.h.s. (still with wrong map)
   Teuchos::RCP<Epetra_Vector> augConstrRhs =
-      Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true), true));
+      Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true), true));
 
   // We solve for the incremental Lagrange multiplier dz_. Hence,
   // we can keep the contact force terms on the right-hand side!
   add_contributions_to_constr_rhs(*augConstrRhs);
 
   // replace row map
-  augConstrRhs->ReplaceMap(LMDoFRowMap(true));
+  augConstrRhs->ReplaceMap(lm_dof_row_map(true));
 
   // export and set constraint rhs vector
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
-    data().ConstrRhsPtr() = Teuchos::rcp(new Epetra_Vector(LMDoFRowMap(false)));
+    data().ConstrRhsPtr() = Teuchos::rcp(new Epetra_Vector(lm_dof_row_map(false)));
     Core::LinAlg::Export(*augConstrRhs, *data().ConstrRhsPtr());
   }
   else
@@ -1051,17 +1056,17 @@ void CONTACT::Aug::Strategy::EvalConstrRHS()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::Strategy::evaluate_static_constraint_rhs(CONTACT::ParamsInterface& cparams)
 {
   set_current_eval_state(cparams);
-  InitEvalInterface(cparams);
+  initialize_and_evaluate_interface(cparams);
 
   // --- Assemble the gap vectors ---------------------------------------------
   initialize(cparams.get_action_type());
   assemble_gap();
 
   // --- Evaluate only the forces coming from the constraints -----------------
-  eval_constraint_forces();
+  evaluate_constraint_forces();
 
   // --- Zeroize all contributions from the LM values -------------------------
   zeroize_lm_forces();
@@ -1070,8 +1075,8 @@ void CONTACT::Aug::Strategy::eval_static_constraint_rhs(CONTACT::ParamsInterface
   assemble_contact_rhs();
 
   // --- update the rhs w.r.t. all constraint contributions -------------------
-  eval_str_contact_rhs();
-  EvalConstrRHS();
+  evaluate_str_contact_rhs();
+  evaluate_constr_rhs();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1298,9 +1303,9 @@ void CONTACT::Aug::Strategy::check_conservation_laws(CONTACT::ParamsInterface& c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::eval_augmented_forces()
+void CONTACT::Aug::Strategy::evaluate_augmented_forces()
 {
-  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step()) return;
+  if (!is_in_contact() and !was_in_contact() and !was_in_contact_last_time_step()) return;
 
   // augmented force terms
   enum ForceTerm
@@ -1310,18 +1315,18 @@ void CONTACT::Aug::Strategy::eval_augmented_forces()
   };
 
   const Epetra_Vector& zn = data().Potential().GetZnActive();
-  Epetra_Vector awgapn(data().GActiveNDofRowMap(), true);
+  Epetra_Vector awgapn(data().global_active_n_dof_row_map(), true);
   Core::LinAlg::ExtractMyVector(data().AWGap(), awgapn);
 
   // scale the averaged weighted gap elementwise by cn
-  MultiplyElementwise(data().Cn(), data().GActiveNodeRowMap(), awgapn, false);
+  MultiplyElementwise(data().Cn(), data().global_active_node_row_map(), awgapn, false);
 
   std::array<double*, 2> values = {nullptr, nullptr};
 
   values[lm_term] = zn.Values();
   values[g_term] = awgapn.Values();
 
-  const Epetra_MultiVector zn_awgapn(View, data().GActiveNDofRowMap(), values.data(), 2);
+  const Epetra_MultiVector zn_awgapn(View, data().global_active_n_dof_row_map(), values.data(), 2);
 
   /*----------------- SLAVE SIDE ---------------------------------------------*/
   std::array<double*, 2> f_values = {nullptr, nullptr};
@@ -1329,7 +1334,7 @@ void CONTACT::Aug::Strategy::eval_augmented_forces()
   f_values[g_term] = data().SlForceG().Values();
 
   // interface forces on the slave side
-  Epetra_MultiVector slForces(View, SlDoFRowMap(true), f_values.data(), 2);
+  Epetra_MultiVector slForces(View, slave_dof_row_map(true), f_values.data(), 2);
 
   data().DMatrix().Multiply(true, zn_awgapn, slForces);
 
@@ -1346,22 +1351,22 @@ void CONTACT::Aug::Strategy::eval_augmented_forces()
   f_values[g_term] = data().MaForceG().Values();
 
   // interface forces on the slave side
-  Epetra_MultiVector maForces(View, MaDoFRowMap(true), f_values.data(), 2);
+  Epetra_MultiVector maForces(View, master_dof_row_map(true), f_values.data(), 2);
 
   data().MMatrix().Multiply(true, zn_awgapn, maForces);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::eval_constraint_forces()
+void CONTACT::Aug::Strategy::evaluate_constraint_forces()
 {
-  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step()) return;
+  if (!is_in_contact() and !was_in_contact() and !was_in_contact_last_time_step()) return;
 
-  Epetra_Vector awgapn(data().GActiveNDofRowMap(), true);
+  Epetra_Vector awgapn(data().global_active_n_dof_row_map(), true);
   Core::LinAlg::ExtractMyVector(data().AWGap(), awgapn);
 
   // scale the averaged weighted gap elementwise by cn
-  MultiplyElementwise(data().Cn(), data().GActiveNodeRowMap(), awgapn, false);
+  MultiplyElementwise(data().Cn(), data().global_active_node_row_map(), awgapn, false);
 
   data().DMatrix().Multiply(true, awgapn, data().SlForceG());
 
@@ -1379,30 +1384,30 @@ void CONTACT::Aug::Strategy::zeroize_lm_forces()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::AugForces(Epetra_Vector& gAugFs_lm, Epetra_Vector& gAugFs_g,
-    Epetra_Vector& gAugFm_lm, Epetra_Vector& gAugFm_g) const
+void CONTACT::Aug::Strategy::evaluate_augmented_forces(Epetra_Vector& augfs_lm,
+    Epetra_Vector& augfs_g, Epetra_Vector& augfm_lm, Epetra_Vector& augfm_g) const
 {
-  if (!IsInContact()) return;
+  if (!is_in_contact()) return;
 
   /****************** SLAVE SIDE ****************************************/
   // *** standard Lagrange multiplier fraction ***
   // Export
-  Core::LinAlg::Export(*data().SlForceLmPtr(), gAugFs_lm);
+  Core::LinAlg::Export(*data().SlForceLmPtr(), augfs_lm);
 
   // *** regularization fraction ***
   // Export
-  Core::LinAlg::Export(*data().SlForceGPtr(), gAugFs_g);
-  gAugFs_g.Scale(-1.0);
+  Core::LinAlg::Export(*data().SlForceGPtr(), augfs_g);
+  augfs_g.Scale(-1.0);
 
   /****************** MASTER SIDE ***************************************/
   // *** standard lagrange multiplier fraction ***
   // Export
-  Core::LinAlg::Export(*data().MaForceLmPtr(), gAugFm_lm);
+  Core::LinAlg::Export(*data().MaForceLmPtr(), augfm_lm);
 
   // *** regularization fraction ***
   // Export
-  Core::LinAlg::Export(*data().MaForceGPtr(), gAugFm_g);
-  gAugFm_g.Scale(-1.0);
+  Core::LinAlg::Export(*data().MaForceGPtr(), augfm_g);
+  augfm_g.Scale(-1.0);
 
   return;
 }
@@ -1412,8 +1417,8 @@ void CONTACT::Aug::Strategy::AugForces(Epetra_Vector& gAugFs_lm, Epetra_Vector& 
 void CONTACT::Aug::Strategy::compute_contact_stresses()
 {
   // reset contact stress class variables
-  data().StressNormalPtr() = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
-  data().StressTangentialPtr() = Teuchos::rcp(new Epetra_Vector(SlDoFRowMap(true)));
+  data().StressNormalPtr() = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
+  data().StressTangentialPtr() = Teuchos::rcp(new Epetra_Vector(slave_dof_row_map(true)));
 
   // loop over all interfaces
   for (plain_interface_set::const_iterator cit = interface_.begin(); cit != interface_.end(); ++cit)
@@ -1475,7 +1480,7 @@ void CONTACT::Aug::Strategy::WriteOutput(Core::IO::DiscretizationWriter& writer)
   Teuchos::RCP<Epetra_Vector> augfm_g = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
 
   // evaluate augmented contact forces
-  AugForces(*augfs_lm, *augfs_g, *augfm_lm, *augfm_g);
+  evaluate_augmented_forces(*augfs_lm, *augfs_g, *augfm_lm, *augfm_g);
 
   // contact forces on slave and master side
   writer.write_vector("norslaveforcelm", augfs_lm);
@@ -1503,11 +1508,12 @@ void CONTACT::Aug::Strategy::WriteOutput(Core::IO::DiscretizationWriter& writer)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::Strategy::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::Strategy::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
   // if there are no active contact contributions
-  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return Teuchos::null;
+  if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step())
+    return Teuchos::null;
 
   // get the desired vector and return it (read-only)
   Teuchos::RCP<const Epetra_Vector> vec_ptr = Teuchos::null;
@@ -1552,13 +1558,14 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::Strategy::GetRhsBlockPtr(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::GetMatrixBlockPtr(
-    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::get_matrix_block_ptr(
+    const enum CONTACT::MatBlockType& bt, const ParamsInterface* cparams) const
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
   // if there are no active contact contributions
-  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return Teuchos::null;
+  if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step())
+    return Teuchos::null;
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_ptr = Teuchos::null;
   switch (bt)
@@ -1566,11 +1573,12 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::GetMatrixBlockP
     case CONTACT::MatBlockType::displ_displ:
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix>& kdd_ptr = mat_ptr;
-      kdd_ptr = Teuchos::rcp(new Core::LinAlg::SparseMatrix(SlMaDoFRowMap(true), 100, false, true));
+      kdd_ptr = Teuchos::rcp(
+          new Core::LinAlg::SparseMatrix(slave_master_dof_row_map(true), 100, false, true));
 
       // build matrix kdd
       add_contributions_to_matrix_block_displ_displ(*kdd_ptr);
-      kdd_ptr->Complete(SlMaDoFRowMap(true), SlMaDoFRowMap(true));
+      kdd_ptr->Complete(slave_master_dof_row_map(true), slave_master_dof_row_map(true));
 
       break;
     }
@@ -1578,49 +1586,51 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::GetMatrixBlockP
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix>& kdz_ptr = mat_ptr;
       kdz_ptr = Teuchos::rcp(
-          new Core::LinAlg::SparseMatrix(*data().GDispDofRowMapPtr(), 100, false, true));
+          new Core::LinAlg::SparseMatrix(*data().global_disp_dof_row_map_ptr(), 100, false, true));
 
       // build constraint matrix kdz
       add_contributions_to_matrix_block_displ_lm(*kdz_ptr);
-      kdz_ptr->Complete(SlDoFRowMap(true), *data().GDispDofRowMapPtr());
+      kdz_ptr->Complete(slave_dof_row_map(true), *data().global_disp_dof_row_map_ptr());
 
       // transform constraint matrix kzd to lmdofmap (MatrixColTransform)
       static Teuchos::RCP<Epetra_Map> newcolmap = Teuchos::null;
-      Mortar::ReplaceColumnAndDomainMap(*kdz_ptr, *LMDoFRowMapPtr(true), &newcolmap);
+      Mortar::ReplaceColumnAndDomainMap(*kdz_ptr, *lm_dof_row_map_ptr(true), &newcolmap);
 
       break;
     }
     case CONTACT::MatBlockType::lm_displ:
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix>& kzd_ptr = mat_ptr;
-      kzd_ptr = Teuchos::rcp(new Core::LinAlg::SparseMatrix(SlDoFRowMap(true), 100, false, true));
+      kzd_ptr =
+          Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 100, false, true));
 
       // build constraint matrix kzd
       add_contributions_to_matrix_block_lm_displ(*kzd_ptr);
-      int err = kzd_ptr->ReplaceRowMap(*LMDoFRowMapPtr(true));
+      int err = kzd_ptr->ReplaceRowMap(*lm_dof_row_map_ptr(true));
       if (err) FOUR_C_THROW("ReplaceMap failed on kzd_ptr! (err = %d)", err);
 
-      kzd_ptr->Complete(*data().GDispDofRowMapPtr(), *LMDoFRowMapPtr(true));
+      kzd_ptr->Complete(*data().global_disp_dof_row_map_ptr(), *lm_dof_row_map_ptr(true));
 
       break;
     }
     case CONTACT::MatBlockType::lm_lm:
     {
       Teuchos::RCP<Core::LinAlg::SparseMatrix>& kzz_ptr = mat_ptr;
-      kzz_ptr = Teuchos::rcp(new Core::LinAlg::SparseMatrix(SlDoFRowMap(true), 100, false, true));
+      kzz_ptr =
+          Teuchos::rcp(new Core::LinAlg::SparseMatrix(slave_dof_row_map(true), 100, false, true));
 
       // build constraint matrix kzz
       add_contributions_to_matrix_block_lm_lm(*kzz_ptr);
 
       // replace row map
-      int err = kzz_ptr->ReplaceRowMap(*LMDoFRowMapPtr(true));
+      int err = kzz_ptr->ReplaceRowMap(*lm_dof_row_map_ptr(true));
       if (err) FOUR_C_THROW("ReplaceMap failed on kzz_ptr! (err = %d)", err);
 
-      kzz_ptr->Complete(SlDoFRowMap(true), *LMDoFRowMapPtr(true));
+      kzz_ptr->Complete(slave_dof_row_map(true), *lm_dof_row_map_ptr(true));
 
       // transform constraint matrix kzz to lmdofmap (columns, 2nd step)
       static Teuchos::RCP<Epetra_Map> newcolmap = Teuchos::null;
-      Mortar::ReplaceColumnAndDomainMap(*kzz_ptr, *LMDoFRowMapPtr(true), &newcolmap);
+      Mortar::ReplaceColumnAndDomainMap(*kzz_ptr, *lm_dof_row_map_ptr(true), &newcolmap);
 
       break;
     }
@@ -1633,7 +1643,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::GetMatrixBlockP
 
   // transform parallel row/column distribution
   // (only necessary in the parallel redistribution case)
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     Mortar::MatrixRowColTransformer& transformer = data().matrix_row_col_transformer();
     mat_ptr = transformer.redistributed_to_unredistributed(bt, *mat_ptr);
@@ -1697,7 +1707,7 @@ void CONTACT::Aug::Strategy::add_contributions_to_matrix_block_lm_lm(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::Aug::Strategy::ConstraintNorm() const
+double CONTACT::Aug::Strategy::constraint_norm() const
 {
   double nrm2 = 0.0;
   data().ConstrRhsPtr()->Norm2(&nrm2);
@@ -1706,7 +1716,7 @@ double CONTACT::Aug::Strategy::ConstraintNorm() const
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-const Epetra_Vector& CONTACT::Aug::Strategy::GetWeightedGap(const enum MapType type) const
+const Epetra_Vector& CONTACT::Aug::Strategy::get_weighted_gap(const enum MapType type) const
 {
   switch (type)
   {
@@ -1752,7 +1762,7 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::get_weigh
         case MapType::active_slave_nodes:
         {
           Teuchos::RCP<Core::LinAlg::SparseMatrix> wgap_grad = Teuchos::rcp(
-              new Core::LinAlg::SparseMatrix(*data().g_active_n_dof_row_map_ptr(), 100));
+              new Core::LinAlg::SparseMatrix(*data().global_active_n_dof_row_map_ptr(), 100));
 
           if (data().DMatrixPtr().is_null() or data().MMatrixPtr().is_null())
             FOUR_C_THROW("D-Matrix or/and M-Matrix are nullptr!");
@@ -1760,7 +1770,8 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::get_weigh
           wgap_grad->Add(*data().DMatrixPtr(), false, 1.0, 0.0);
           wgap_grad->Add(*data().MMatrixPtr(), false, 1.0, 0.0);
 
-          wgap_grad->Complete(*data().GSlMaDofRowMapPtr(), *data().g_active_n_dof_row_map_ptr());
+          wgap_grad->Complete(*data().global_slave_master_dof_row_map_ptr(),
+              *data().global_active_n_dof_row_map_ptr());
 
           return wgap_grad;
         }
@@ -1798,7 +1809,8 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::get_weigh
             interface.assemble_d_lm_nw_gap_lin_matrix(*wgap_grad, map_type);
           }
 
-          wgap_grad->Complete(*data().GSlMaDofRowMapPtr(), *data().g_sl_normal_dof_row_map_ptr());
+          wgap_grad->Complete(
+              *data().global_slave_master_dof_row_map_ptr(), *data().g_sl_normal_dof_row_map_ptr());
 
           return wgap_grad;
         }
@@ -1822,10 +1834,10 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::get_weigh
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::eval_weighted_gap_gradient_error(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::Strategy::evaluate_weighted_gap_gradient_error(CONTACT::ParamsInterface& cparams)
 {
-  const int num_my_activenodes = data().g_active_node_row_map_ptr()->NumMyElements();
-  const int num_gactivenodes = data().g_active_node_row_map_ptr()->NumGlobalElements();
+  const int num_my_activenodes = data().global_active_node_row_map_ptr()->NumMyElements();
+  const int num_gactivenodes = data().global_active_node_row_map_ptr()->NumGlobalElements();
   if (num_gactivenodes == 0) return;
 
   std::unordered_map<int, Deriv1stMap> grad_error_ma;
@@ -1837,7 +1849,7 @@ void CONTACT::Aug::Strategy::eval_weighted_gap_gradient_error(CONTACT::ParamsInt
   cparams.SetUnorderedMap(&grad_error_jac, 1);
 
   Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::rcpFromRef(cparams);
-  InitEvalInterface(cparams_ptr);
+  initialize_and_evaluate_interface(cparams_ptr);
 
   // --- Nodal gradient error due to the convective parametric master coordinate
   {
@@ -1868,7 +1880,7 @@ void CONTACT::Aug::Strategy::eval_weighted_gap_gradient_error(CONTACT::ParamsInt
   {
     std::unordered_map<int, Deriv1stMap>* error_map_vec[2] = {&grad_error_ma, &grad_error_jac};
     double my_total_error = MyTotalSquareError(error_map_vec, 2);
-    double& total_error = data().TotalGradientError();
+    double& total_error = data().total_gradient_error();
     Comm().SumAll(&my_total_error, &total_error, 1);
 
     total_error /= num_gactivenodes;
@@ -1923,7 +1935,7 @@ void CONTACT::Aug::L2ErrorNormPerNode(const std::unordered_map<int, Deriv1stMap>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::Aug::Strategy::GetPotentialValue(
+double CONTACT::Aug::Strategy::get_potential_value(
     const enum NOX::Nln::MeritFunction::MeritFctName mrt_type) const
 {
   // Since constness is broken in this implementation, we resort to a const-cast here.
@@ -2120,42 +2132,43 @@ void CONTACT::Aug::Strategy::get_linearized_potential_model_terms_2nd_order(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::SplitStateVector(const Epetra_Vector& full_state,
+void CONTACT::Aug::Strategy::split_state_vector(const Epetra_Vector& full_state,
     Teuchos::RCP<Epetra_Vector>& displ_state_slma_ptr,
     Teuchos::RCP<Epetra_Vector>& z_state_active_ptr,
     Teuchos::RCP<Epetra_Vector>& z_state_inactive_ptr) const
 {
   if (displ_state_slma_ptr.is_null())
-    displ_state_slma_ptr = Teuchos::rcp(new Epetra_Vector(*data().GSlMaDofRowMapPtr()));
+    displ_state_slma_ptr =
+        Teuchos::rcp(new Epetra_Vector(*data().global_slave_master_dof_row_map_ptr()));
 
   if (z_state_active_ptr.is_null())
-    z_state_active_ptr = Teuchos::rcp(new Epetra_Vector(*data().g_active_n_dof_row_map_ptr()));
+    z_state_active_ptr = Teuchos::rcp(new Epetra_Vector(*data().global_active_n_dof_row_map_ptr()));
 
   if (z_state_inactive_ptr.is_null())
   {
     Teuchos::RCP<Epetra_Map> ginactivendofs = Core::LinAlg::SplitMap(
-        *data().g_sl_normal_dof_row_map_ptr(), *data().g_active_n_dof_row_map_ptr());
+        *data().g_sl_normal_dof_row_map_ptr(), *data().global_active_n_dof_row_map_ptr());
     z_state_inactive_ptr = Teuchos::rcp(new Epetra_Vector(*ginactivendofs));
   }
 
-  SplitStateVector(full_state, *displ_state_slma_ptr, *z_state_active_ptr, *z_state_inactive_ptr);
+  split_state_vector(full_state, *displ_state_slma_ptr, *z_state_active_ptr, *z_state_inactive_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Strategy::SplitStateVector(const Epetra_Vector& full_state,
+void CONTACT::Aug::Strategy::split_state_vector(const Epetra_Vector& full_state,
     Epetra_Vector& displ_state_slma, Epetra_Vector& z_state_active,
     Epetra_Vector& z_state_inactive) const
 {
   // extract slave/master part of the displacement increment
-  Epetra_Vector displ_exp(*data().GDispDofRowMapPtr());
+  Epetra_Vector displ_exp(*data().global_disp_dof_row_map_ptr());
   Core::LinAlg::Export(full_state, displ_exp);
   Core::LinAlg::ExtractMyVector(displ_exp, displ_state_slma);
 
   // extract active/inactive part of the solution vector
-  Epetra_Vector z_exp(LMDoFRowMap(true));
+  Epetra_Vector z_exp(lm_dof_row_map(true));
   Core::LinAlg::Export(full_state, z_exp);
-  CATCH_EPETRA_ERROR(z_exp.ReplaceMap(SlDoFRowMap(true)));
+  CATCH_EPETRA_ERROR(z_exp.ReplaceMap(slave_dof_row_map(true)));
 
   Core::LinAlg::ExtractMyVector(z_exp, z_state_active);
   Core::LinAlg::ExtractMyVector(z_exp, z_state_inactive);

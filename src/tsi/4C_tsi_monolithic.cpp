@@ -1690,7 +1690,7 @@ void TSI::Monolithic::print_newton_iter_header(FILE* ofile)
   {
     oss << std::setw(12) << "tc";
     oss << std::setw(11) << "#active";
-    if (contact_strategy_lagrange_->Friction()) oss << std::setw(10) << "#slip";
+    if (contact_strategy_lagrange_->is_friction()) oss << std::setw(10) << "#slip";
   }
 
   // finish oss
@@ -1862,9 +1862,9 @@ void TSI::Monolithic::print_newton_iter_text(FILE* ofile)
   if (contact_strategy_lagrange_ != Teuchos::null)
   {
     oss << std::setw(12) << std::setprecision(2) << std::scientific << dtcmt_;
-    oss << std::setw(11) << contact_strategy_lagrange_->NumberOfActiveNodes();
-    if (contact_strategy_lagrange_->Friction())
-      oss << std::setw(10) << contact_strategy_lagrange_->NumberOfSlipNodes();
+    oss << std::setw(11) << contact_strategy_lagrange_->number_of_active_nodes();
+    if (contact_strategy_lagrange_->is_friction())
+      oss << std::setw(10) << contact_strategy_lagrange_->number_of_slip_nodes();
   }
 
   // finish oss
@@ -1946,7 +1946,7 @@ void TSI::Monolithic::apply_str_coupl_matrix(
 
   // add nitsche contact integral
   if (contact_strategy_nitsche_ != Teuchos::null)
-    k_st->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::displ_temp),
+    k_st->Add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::displ_temp),
         false, 1., 1.);
 
   // TODO 2013-11-11 move scaling to the so3_thermo element
@@ -2097,7 +2097,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
 
   // add nitsche contact integral
   if (contact_strategy_nitsche_ != Teuchos::null)
-    k_ts->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_displ),
+    k_ts->Add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_displ),
         false, timefac, 1.);
 }  // ApplyThrCouplMatrix()
 

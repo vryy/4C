@@ -88,14 +88,14 @@ namespace CONTACT
      */
     void set_state(const enum Mortar::StateType& statetype, const Epetra_Vector& vec) override;
 
-    // Overload CONTACT::AbstractStrategy::ApplyForceStiffCmt as this is called in the structure
+    // Overload CONTACT::AbstractStrategy::apply_force_stiff_cmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
-    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {
       // structure single-field predictors (e.g.TangDis) may evaluate the structural contact part
-      if (predictor) AbstractStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
+      if (predictor) AbstractStrategy::apply_force_stiff_cmt(dis, kt, f, step, iter, predictor);
     }
 
     /*!
@@ -116,11 +116,11 @@ namespace CONTACT
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> temp);
 
     /*!
-    \brief Overload CONTACT::LagrangeStrategy::Recover as this is called in the structure
+    \brief Overload CONTACT::LagrangeStrategy::recover as this is called in the structure
 
     --> not enough information available for monolithically coupled algorithms!
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
+    void recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
 
     virtual void RecoverCoupled(Teuchos::RCP<Epetra_Vector> sinc,  /// displacement  increment
         Teuchos::RCP<Epetra_Vector> tinc,                          /// thermal  increment

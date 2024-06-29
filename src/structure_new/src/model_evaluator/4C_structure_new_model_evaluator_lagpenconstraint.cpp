@@ -155,7 +155,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_force(
 
   Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *fstrconstr_np_ptr_);
 
-  if (noxinterface_prec_ptr_->IsSaddlePointSystem())
+  if (noxinterface_prec_ptr_->is_saddle_point_system())
   {
     // assemble constraint rhs
     block_vec_ptr = constrman_->GetError();
@@ -191,7 +191,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
   // no need to keep it
   stiff_constr_ptr_->Zero();
 
-  if (noxinterface_prec_ptr_->IsSaddlePointSystem())
+  if (noxinterface_prec_ptr_->is_saddle_point_system())
   {
     // --- Kdz - block - scale with time-integrator dependent value!-----
     block_ptr = (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(
@@ -335,7 +335,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::get_block_
 {
   check_init_setup();
 
-  if (noxinterface_prec_ptr_->IsSaddlePointSystem())
+  if (noxinterface_prec_ptr_->is_saddle_point_system())
   {
     return constrman_->GetConstraintMap();
   }

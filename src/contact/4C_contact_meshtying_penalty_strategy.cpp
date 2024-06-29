@@ -44,9 +44,9 @@ CONTACT::MtPenaltyStrategy::MtPenaltyStrategy(const Epetra_Map* dof_row_map,
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
+void CONTACT::MtPenaltyStrategy::mortar_coupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::MortarCoupling");
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::mortar_coupling");
 
   // print message
   if (Comm().MyPID() == 0)
@@ -60,7 +60,7 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
   const double t_start = Teuchos::Time::wallTime();
 
   // refer call to parent class
-  MtAbstractStrategy::MortarCoupling(dis);
+  MtAbstractStrategy::mortar_coupling(dis);
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -69,7 +69,7 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
   // D         ---->   D * T^(-1)
   // D^(-1)    ---->   T * D^(-1)
   // These modifications are applied once right here, thus the
-  // following code (EvaluateMeshtying) remains unchanged.
+  // following code (evaluate_meshtying) remains unchanged.
   //----------------------------------------------------------------------
   if (Dualquadslavetrafo())
   {
@@ -130,9 +130,9 @@ void CONTACT::MtPenaltyStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_
 /*----------------------------------------------------------------------*
  |  mesh initialization for rotational invariance              popp 12/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization()
+Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::mesh_initialization()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::MeshInitialization");
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtPenaltyStrategy::mesh_initialization");
 
   // get out of here is NTS algorithm is activated
   if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(Params(), "ALGORITHM") ==
@@ -178,7 +178,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
   // (3) perform mesh initialization node by node
   //**********************************************************************
   // this can be done in the AbstractStrategy now
-  MtAbstractStrategy::MeshInitialization(Xslavemod);
+  MtAbstractStrategy::mesh_initialization(Xslavemod);
 
   // time measurement
   Comm().Barrier();
@@ -196,7 +196,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::MeshInitialization
 /*----------------------------------------------------------------------*
  | evaluate meshtying and create linear system                popp 06/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(
+void CONTACT::MtPenaltyStrategy::evaluate_meshtying(
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     Teuchos::RCP<Epetra_Vector> dis)
 {
@@ -277,7 +277,7 @@ void CONTACT::MtPenaltyStrategy::EvaluateMeshtying(
 /*----------------------------------------------------------------------*
  | intialize Uzawa step 2,3...                                popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::InitializeUzawa(
+void CONTACT::MtPenaltyStrategy::initialize_uzawa(
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // remove penalty meshtying force terms
@@ -317,16 +317,16 @@ void CONTACT::MtPenaltyStrategy::InitializeUzawa(
 /*----------------------------------------------------------------------*
  | reset penalty parameter to intial value                    popp 08/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::ResetPenalty()
+void CONTACT::MtPenaltyStrategy::reset_penalty()
 {
   // reset penalty parameter in strategy
-  Params().set<double>("PENALTYPARAM", InitialPenalty());
+  Params().set<double>("PENALTYPARAM", initial_penalty());
 
 
   // reset penalty parameter in all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    interface_[i]->interface_params().set<double>("PENALTYPARAM", InitialPenalty());
+    interface_[i]->interface_params().set<double>("PENALTYPARAM", initial_penalty());
   }
 
   return;
@@ -335,11 +335,11 @@ void CONTACT::MtPenaltyStrategy::ResetPenalty()
 /*----------------------------------------------------------------------*
  | modify penalty parameter to intial value                    mhv 03/16|
  *----------------------------------------------------------------------*/
-void CONTACT::MtPenaltyStrategy::ModifyPenalty()
+void CONTACT::MtPenaltyStrategy::modify_penalty()
 {
   // generate random number between 0.95 and 1.05
   double randnum = ((double)rand() / (double)RAND_MAX) * 0.1 + 0.95;
-  double pennew = randnum * InitialPenalty();
+  double pennew = randnum * initial_penalty();
 
   // modify penalty parameter in strategy
   Params().set<double>("PENALTYPARAM", pennew);
@@ -378,7 +378,7 @@ void CONTACT::MtPenaltyStrategy::update_constraint_norm(int uzawaiter)
     // check convergence of cnorm and update penalty parameter
     // only do this for second, third, ... Uzawa iteration
     // cf. Wriggers, Computational Contact Mechanics, 2nd edition (2006), p. 340
-    if ((uzawaiter >= 2) && (cnorm > 0.25 * ConstraintNorm()))
+    if ((uzawaiter >= 2) && (cnorm > 0.25 * constraint_norm()))
     {
       updatepenalty = true;
 

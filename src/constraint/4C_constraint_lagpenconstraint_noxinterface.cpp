@@ -191,7 +191,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool LAGPENCONSTRAINT::NoxInterfacePrec::IsSaddlePointSystem() const
+bool LAGPENCONSTRAINT::NoxInterfacePrec::is_saddle_point_system() const
 {
   Teuchos::RCP<const Core::FE::Discretization> dis = gstate_ptr_->get_discret();
 
@@ -220,9 +220,9 @@ bool LAGPENCONSTRAINT::NoxInterfacePrec::IsSaddlePointSystem() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool LAGPENCONSTRAINT::NoxInterfacePrec::IsCondensedSystem() const
+bool LAGPENCONSTRAINT::NoxInterfacePrec::is_condensed_system() const
 {
-  //  std::cout << "IsCondensedSystem" << std::endl;
+  //  std::cout << "is_condensed_system" << std::endl;
   return false;
 }
 

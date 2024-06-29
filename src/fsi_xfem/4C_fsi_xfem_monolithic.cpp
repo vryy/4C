@@ -234,7 +234,7 @@ void FSI::MonolithicXFEM::setup_coupling_objects()
         if (!cs)
           FOUR_C_THROW(
               "FSI::MonolithicXFEM: Only Nitsche Contact Strategy for XFSCI/XFPSCI available yet!");
-        if (cs->ContactInterfaces().size() > 1)
+        if (cs->contact_interfaces().size() > 1)
           FOUR_C_THROW("FSI::MonolithicXFEM: Only one contact interface supported!");
 
         have_contact_ = true;
@@ -245,11 +245,12 @@ void FSI::MonolithicXFEM::setup_coupling_objects()
             fluid_field()->discretization(), fluid_field()->GetConditionManager(),
             fluid_field()->Params());
 
-        xf_c_comm_->SetupSurfElePtrs(cs->ContactInterfaces()[0]->Discret());
+        xf_c_comm_->SetupSurfElePtrs(cs->contact_interfaces()[0]->Discret());
 
-        for (int i = 0; i < (int)cs->ContactInterfaces().size(); ++i)
-          cs->ContactInterfaces()[i]->interface_params().set<Teuchos::RCP<XFEM::XFluidContactComm>>(
-              "XFluidContactComm", xf_c_comm_);
+        for (int i = 0; i < (int)cs->contact_interfaces().size(); ++i)
+          cs->contact_interfaces()[i]
+              ->interface_params()
+              .set<Teuchos::RCP<XFEM::XFluidContactComm>>("XFluidContactComm", xf_c_comm_);
       }
     }
   }

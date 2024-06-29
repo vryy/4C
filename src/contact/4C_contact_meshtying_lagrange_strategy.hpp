@@ -56,7 +56,7 @@ namespace CONTACT
     Only do this ONCE for meshtying upon initialization!
 
     */
-    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) override;
+    void mortar_coupling(const Teuchos::RCP<const Epetra_Vector>& dis) override;
 
     /*!
     \brief Mesh initialization for rotational invariance
@@ -71,7 +71,7 @@ namespace CONTACT
 
     \return Vector with modified nodal positions
     */
-    Teuchos::RCP<const Epetra_Vector> MeshInitialization() override;
+    Teuchos::RCP<const Epetra_Vector> mesh_initialization() override;
 
     /*!
     \brief Evaluate meshtying
@@ -89,7 +89,7 @@ namespace CONTACT
     \param dis (in): current displacement state
 
     */
-    void EvaluateMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*!
@@ -121,8 +121,9 @@ namespace CONTACT
 
     void EvalConstrRHS()
     {
-      std::cout << "Warning: The EvalConstrRHS() function is not yet implemented for meshtying."
-                << std::endl;
+      std::cout
+          << "Warning: The evaluate_constr_rhs() function is not yet implemented for meshtying."
+          << std::endl;
     }
 
 
@@ -133,7 +134,7 @@ namespace CONTACT
     the setup of the global problem!
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
+    void recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     //@}
 
@@ -143,18 +144,18 @@ namespace CONTACT
      * thus they are defined as FOUR_C_THROW here in the case of Lagrange meshtying.
      */
 
-    double ConstraintNorm() const override { return 0.0; }
-    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    double constraint_norm() const override { return 0.0; }
+    void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
-    double InitialPenalty() override { return 0.0; }
-    void ResetPenalty() override {}
-    void ModifyPenalty() override {}
-    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override {}
+    double initial_penalty() override { return 0.0; }
+    void reset_penalty() override {}
+    void modify_penalty() override {}
+    void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override {}
     void update_uzawa_augmented_lagrange() override {}
     void update_constraint_norm(int uzawaiter = 0) override {}
-    bool IsPenalty() const override { return false; };
+    bool is_penalty() const override { return false; };
 
     //@}
 

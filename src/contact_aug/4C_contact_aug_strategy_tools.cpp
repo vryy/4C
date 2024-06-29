@@ -182,7 +182,7 @@ void CONTACT::Aug::Strategy::FdDebug::evaluate(
 
     // Update matrix and rhs
     for (auto& iptr : strat_->interfaces()) iptr->set_element_areas();
-    strat_->eval_force_stiff(cparams);
+    strat_->evaluate_force_stiff(cparams);
 
     // loop over all rows of the updated right hand side vector
     // and save the values in a new matrix
@@ -199,7 +199,7 @@ void CONTACT::Aug::Strategy::FdDebug::evaluate(
 
     // Update matrix and rhs
     for (auto& iptr : strat_->interfaces()) iptr->set_element_areas();
-    strat_->eval_force_stiff(cparams);
+    strat_->evaluate_force_stiff(cparams);
 
     std::cout << "done!" << std::endl;
   }
@@ -215,7 +215,7 @@ void CONTACT::Aug::Strategy::FdDebug::evaluate(
     int rowId = rowMap.GID(r);
     // check if the row belongs to the slave or master side
     std::string rSlMa = "(S)";
-    if (strat_->SlaveRowDofs()->LID(rowId) == -1) rSlMa = "(M)";
+    if (strat_->slave_row_dofs()->LID(rowId) == -1) rSlMa = "(M)";
 
     int w = 0;
 
@@ -248,7 +248,7 @@ void CONTACT::Aug::Strategy::FdDebug::evaluate(
 
       // check if the column belongs to the slave or master side
       std::string cSlMa = "(S)";
-      if (strat_->SlaveRowDofs()->LID(cIdsFD[c]) == -1) cSlMa = "(M)";
+      if (strat_->slave_row_dofs()->LID(cIdsFD[c]) == -1) cSlMa = "(M)";
 
       // search for entry in the analytical solution
       int anaId = -1;

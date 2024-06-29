@@ -131,12 +131,12 @@ void CONTACT::LagrangeStrategyTsi::evaluate(
     FOUR_C_THROW("only condensed system implemented");
 
   // First, we need to evaluate all the interfaces
-  InitMortar();         // initialize mortar matrices and vectors
-  InitEvalInterface();  // evaluate mortar terms (integrate...)
-  AssembleMortar();
+  initialize_mortar();                  // initialize mortar matrices and vectors
+  initialize_and_evaluate_interface();  // evaluate mortar terms (integrate...)
+  assemble_mortar();
 
   // get the relative movement for frictional contact
-  EvaluateRelMov();
+  evaluate_relative_movement();
 
   // update active set
   update_active_set_semi_smooth();

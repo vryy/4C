@@ -87,7 +87,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::Plot::Direction::read_sparse_vector_fr
     const std::string& dir_file) const
 {
   Teuchos::RCP<const Epetra_Map> prbdofs = plot_.strat_->ProblemDofs();
-  Teuchos::RCP<const Epetra_Map> lmdofs = plot_.strat_->LMDoFRowMapPtr(false);
+  Teuchos::RCP<const Epetra_Map> lmdofs = plot_.strat_->lm_dof_row_map_ptr(false);
 
   Teuchos::RCP<Epetra_Map> full_map = Core::LinAlg::MergeMap(prbdofs, lmdofs, false);
   Teuchos::RCP<Epetra_Vector> direction = Teuchos::rcp(new Epetra_Vector(*full_map, true));
@@ -156,10 +156,11 @@ bool CONTACT::Aug::Plot::Direction::extend_file_name(
 void CONTACT::Aug::Plot::Direction::split_into_slave_master_body(const Epetra_Vector& dir,
     Teuchos::RCP<Epetra_Vector>& x_dir_ptr, Teuchos::RCP<Epetra_Vector>& y_dir_ptr) const
 {
-  if (plot_.strat_->ParRedist()) FOUR_C_THROW("Parallel redistribution is not supported!");
+  if (plot_.strat_->parallel_redistribution_status())
+    FOUR_C_THROW("Parallel redistribution is not supported!");
 
-  const Epetra_Map& slnodes = plot_.strat_->SlRowNodes();
-  const Epetra_Map& manodes = plot_.strat_->MaRowNodes();
+  const Epetra_Map& slnodes = plot_.strat_->slave_row_nodes();
+  const Epetra_Map& manodes = plot_.strat_->master_row_nodes();
 
   if (slnodes.NumMyElements() > 0)
   {
@@ -766,7 +767,7 @@ void CONTACT::Aug::Plot::compute_distance_position()
 {
   const Core::LinAlg::Matrix<3, 1> ref_pos(ref_points_[0].data(), true);
 
-  const Epetra_Map& slrownodes = strat_->SlRowNodes();
+  const Epetra_Map& slrownodes = strat_->slave_row_nodes();
   const unsigned num_my_nodes = slrownodes.NumMyElements();
   const int* node_gids = slrownodes.MyGlobalElements();
 
@@ -792,7 +793,7 @@ void CONTACT::Aug::Plot::compute_angle_position()
   Core::LinAlg::Matrix<3, 1> ref12(ref_points_[0], false);
   ref12.update(1.0, ref_points_[1], -1.0);
 
-  const Epetra_Map& slrownodes = strat_->SlRowNodes();
+  const Epetra_Map& slrownodes = strat_->slave_row_nodes();
   const unsigned num_my_nodes = slrownodes.NumMyElements();
   const int* node_gids = slrownodes.MyGlobalElements();
 
@@ -1163,7 +1164,7 @@ void CONTACT::Aug::Plot::Direction::split_into_surface_directions(const Epetra_V
       x_dir_ptr = Teuchos::rcp(new Epetra_Vector(*plot_.strat_->ProblemDofs(), true));
       Core::LinAlg::ExtractMyVector(dir, *x_dir_ptr);
 
-      y_dir_ptr = Teuchos::rcp(new Epetra_Vector(plot_.strat_->LMDoFRowMap(false), true));
+      y_dir_ptr = Teuchos::rcp(new Epetra_Vector(plot_.strat_->lm_dof_row_map(false), true));
       Core::LinAlg::ExtractMyVector(dir, *y_dir_ptr);
 
       break;
@@ -1197,7 +1198,8 @@ double CONTACT::Aug::Plot::get_value(const enum Inpar::CONTACT::PlotFuncName fun
     {
       case Inpar::CONTACT::PlotFuncName::weighted_gap:
       {
-        const Epetra_Vector& wgap = strat_->GetWeightedGap(CONTACT::Aug::MapType::all_slave_nodes);
+        const Epetra_Vector& wgap =
+            strat_->get_weighted_gap(CONTACT::Aug::MapType::all_slave_nodes);
         const int dof_gid = map_sl_node_gi_d2_n_dof_gid(wgap_node_gid_);
 
         const int dof_lid = wgap.Map().LID(dof_gid);
@@ -1374,11 +1376,11 @@ void CONTACT::Aug::Plot::get_w_gap_direction_gradients(
  *----------------------------------------------------------------------------*/
 int CONTACT::Aug::Plot::map_sl_node_gi_d2_n_dof_gid(int node_gid) const
 {
-  if (!strat_->SlRowNodes().PointSameAs(strat_->SlNormalDoFRowMap(false)))
+  if (!strat_->slave_row_nodes().PointSameAs(strat_->slave_n_dof_row_map(false)))
     FOUR_C_THROW("Mapping is not possible!");
 
-  const int node_lid = strat_->SlRowNodes().LID(node_gid);
-  return strat_->SlNormalDoFRowMap(false).GID(node_lid);
+  const int node_lid = strat_->slave_row_nodes().LID(node_gid);
+  return strat_->slave_n_dof_row_map(false).GID(node_lid);
 }
 
 /*----------------------------------------------------------------------------*

@@ -61,17 +61,17 @@ namespace CONTACT
     NitscheStrategy operator=(const NitscheStrategy& old) = delete;
     NitscheStrategy(const NitscheStrategy& old) = delete;
 
-    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, int step,
-        int iter, bool predictor) override;
+    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
+        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
+        const int step, const int iter, bool predictor) override;
 
     void DoReadRestart(Core::IO::DiscretizationReader& reader,
         Teuchos::RCP<const Epetra_Vector> dis,
         Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
-    bool IsSaddlePointSystem() const override { return false; }
+    bool is_saddle_point_system() const override { return false; }
 
-    bool IsCondensedSystem() const override { return false; }
+    bool is_condensed_system() const override { return false; }
 
     /*!
      * @brief Integrate all contact interfaces
@@ -82,11 +82,11 @@ namespace CONTACT
      */
     virtual void Integrate(const CONTACT::ParamsInterface& cparams);
 
-    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
-        const CONTACT::ParamsInterface* cparams) const override;
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
+        const enum CONTACT::MatBlockType& bt, const ParamsInterface* cparams) const override;
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
 
@@ -124,16 +124,16 @@ namespace CONTACT
      */
     virtual void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec);
 
-    Teuchos::RCP<const Epetra_Vector> GetLagrMultN(const bool& redist) const override
+    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_n(const bool& redist) const override
     {
       return Teuchos::null;
     }
-    Teuchos::RCP<const Epetra_Vector> GetLagrMultNp(const bool& redist) const override
+    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_np(const bool& redist) const override
     {
       return Teuchos::null;
     }
-    Teuchos::RCP<Epetra_Vector> LagrMultOld() override { return Teuchos::null; }
-    Teuchos::RCP<const Epetra_Map> LMDoFRowMapPtr(const bool& redist) const override
+    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_old() override { return Teuchos::null; }
+    Teuchos::RCP<const Epetra_Map> lm_dof_row_map_ptr(const bool& redist) const override
     {
       return Teuchos::null;
     }
@@ -145,14 +145,17 @@ namespace CONTACT
     {
       return Teuchos::null;
     };
-    Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override { return Teuchos::null; };
+    Teuchos::RCP<const Epetra_Map> get_old_slip_row_nodes() const override
+    {
+      return Teuchos::null;
+    };
     bool IsNitsche() const override { return true; }
-    void PrintActiveSet() const override{};
+    void print_active_set() const override{};
     bool active_set_semi_smooth_converged() const override { return true; }
-    bool ActiveSetConverged() override { return true; }
-    int ActiveSetSteps() override { return 0; }
-    void ResetActiveSet() override {}
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) override {}
+    bool active_set_converged() override { return true; }
+    int active_set_steps() override { return 0; }
+    void reset_active_set() override {}
+    void recover(Teuchos::RCP<Epetra_Vector> disi) override {}
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
@@ -169,33 +172,33 @@ namespace CONTACT
           "Nitsche does not have Lagrange multiplier DOFs. So, saddle point system makes no sense "
           "here.");
     }
-    void EvalConstrRHS() override {}
-    void UpdateActiveSet() override {}
+    void evaluate_constr_rhs() override {}
+    void update_active_set() override {}
     void update_active_set_semi_smooth(const bool firstStepPredictor) override {}
     void evaluate_rel_mov_predict() override {}
-    void ModifyPenalty() override {}
+    void modify_penalty() override {}
     void update_uzawa_augmented_lagrange() override {}
     void update_constraint_norm(int uzawaiter) override {}
     void initialize() override{};
-    void EvaluateContact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
       FOUR_C_THROW("not supported in this strategy");
     }
-    void EvaluateFriction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
       FOUR_C_THROW("not supported in this strategy");
     }
-    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
-    void ResetPenalty() override {}
-    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override {}
-    double InitialPenalty() override { return 0.0; }
-    double ConstraintNorm() const override { return 0.0; }
-    bool IsPenalty() const override { return false; }
+    void reset_penalty() override {}
+    void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override {}
+    double initial_penalty() override { return 0.0; }
+    double constraint_norm() const override { return 0.0; }
+    bool is_penalty() const override { return false; }
 
    protected:
     std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces() override { return interface_; }
@@ -205,9 +208,9 @@ namespace CONTACT
       return interface_;
     }
 
-    void eval_force(CONTACT::ParamsInterface& cparams) override;
+    void evaluate_force(CONTACT::ParamsInterface& cparams) override;
 
-    void eval_force_stiff(CONTACT::ParamsInterface& cparams) override;
+    void evaluate_force_stiff(CONTACT::ParamsInterface& cparams) override;
 
     void reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
         const Epetra_Vector& xnew) override;

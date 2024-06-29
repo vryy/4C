@@ -49,8 +49,8 @@ void CONTACT::Aug::LagrangeMultiplierFunction::init(
   issetup_ = false;
 
   strategy_ = strategy;
-  interfaces_.reserve(strategy->ContactInterfaces().size());
-  std::copy(strategy->ContactInterfaces().begin(), strategy->ContactInterfaces().end(),
+  interfaces_.reserve(strategy->contact_interfaces().size());
+  std::copy(strategy->contact_interfaces().begin(), strategy->contact_interfaces().end(),
       std::back_inserter(interfaces_));
 
   data_ = Teuchos::rcpFromRef(data);
@@ -79,7 +79,7 @@ void CONTACT::Aug::LagrangeMultiplierFunction::setup()
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::LagrangeMultiplierFunction::Redistribute()
 {
-  const Epetra_Map& slMaDofRowMap = *data_->GSlMaDofRowMapPtr();
+  const Epetra_Map& slMaDofRowMap = *data_->global_slave_master_dof_row_map_ptr();
   bmat_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(slMaDofRowMap, 100, false, false));
 }
 
@@ -134,16 +134,17 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::Compute(
 
   check_init_setup();
 
-  Teuchos::RCP<Epetra_Vector> lmn_vec = Teuchos::rcp(new Epetra_Vector(data_->GActiveNDofRowMap()));
+  Teuchos::RCP<Epetra_Vector> lmn_vec =
+      Teuchos::rcp(new Epetra_Vector(data_->global_active_n_dof_row_map()));
 
   Teuchos::RCP<Epetra_Vector> str_gradient = get_structure_gradient(cparams);
 
   create_b_matrix();
 
-  Epetra_Vector str_gradient_exp(*data_->GSlMaDofRowMapPtr(), true);
+  Epetra_Vector str_gradient_exp(*data_->global_slave_master_dof_row_map_ptr(), true);
   Core::LinAlg::Export(*str_gradient, str_gradient_exp);
 
-  Epetra_Vector rhs(data_->GActiveNDofRowMap(), true);
+  Epetra_Vector rhs(data_->global_active_n_dof_row_map(), true);
   bmat_->Multiply(true, str_gradient_exp, rhs);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> bbmat =
@@ -181,7 +182,8 @@ void CONTACT::Aug::LagrangeMultiplierFunction::create_b_matrix()
   bmat_->Add(data_->MMatrix(), true, 1.0, 1.0);
   //  bmat_->Add( data_->DLmNWGapLinMatrix(), true, 1.0, 0.0 );
 
-  bmat_->Complete(data_->GActiveNDofRowMap(), *data_->GSlMaDofRowMapPtr());
+  bmat_->Complete(
+      data_->global_active_n_dof_row_map(), *data_->global_slave_master_dof_row_map_ptr());
 }
 
 /*----------------------------------------------------------------------------*
@@ -191,7 +193,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::FirstOrder
 {
   TEUCHOS_FUNC_TIME_MONITOR(CONTACT_FUNC_NAME);
 
-  Epetra_Vector rhs(data_->GActiveNDofRowMap(), true);
+  Epetra_Vector rhs(data_->global_active_n_dof_row_map(), true);
 
   const STR::MODELEVALUATOR::Generic& model = cparams.get_model_evaluator();
   const STR::MODELEVALUATOR::Contact& cmodel =
@@ -202,7 +204,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::FirstOrder
       *cmodel.get_jacobian_block(STR::MatBlockType::displ_displ), Core::LinAlg::Copy);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kdd_ptr =
-      strategy_->GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
+      strategy_->get_matrix_block_ptr(CONTACT::MatBlockType::displ_displ);
 
   // undo matrix contributions
   full_stiff.Add(*kdd_ptr, false, -1.0, 1.0);
@@ -214,7 +216,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::FirstOrder
   if (err) FOUR_C_THROW("Multiply failed with err = %d", err);
 
   Teuchos::RCP<Epetra_Vector> tmp_vec_exp =
-      Core::LinAlg::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
+      Core::LinAlg::CreateVector(*data_->global_slave_master_dof_row_map_ptr(), true);
 
   // build necessary exporter
   Epetra_Export exporter(tmp_vec_exp->Map(), tmp_vec->Map());
@@ -231,7 +233,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::FirstOrder
   tmp_vec_exp->Import(*tmp_vec, exporter, Insert);
 
   Teuchos::RCP<Epetra_Vector> dincr_exp =
-      Core::LinAlg::CreateVector(*data_->GSlMaDofRowMapPtr(), true);
+      Core::LinAlg::CreateVector(*data_->global_slave_master_dof_row_map_ptr(), true);
   err = dincr_exp->Import(dincr, exporter, Insert);
   if (err) FOUR_C_THROW("Import failed with err = %d", err);
 
@@ -240,7 +242,8 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::FirstOrder
   // --- 3rd summand
   assemble_gradient_bb_matrix_contribution(*dincr_exp, data_->LmN(), rhs);
 
-  Teuchos::RCP<Epetra_Vector> lmincr = Core::LinAlg::CreateVector(data_->GActiveNDofRowMap(), true);
+  Teuchos::RCP<Epetra_Vector> lmincr =
+      Core::LinAlg::CreateVector(data_->global_active_n_dof_row_map(), true);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> bbmat =
       Core::LinAlg::MLMultiply(*bmat_, true, *bmat_, false, false, false, true);

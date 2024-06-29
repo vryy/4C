@@ -65,7 +65,7 @@ void CONTACT::LagrangeStrategyPoro::DoReadRestart(Core::IO::DiscretizationReader
   // it's clear that we get some zeros here ... but poroelast monolithic fixes this a little bit
   // later by doing the same thing with correct displacements again :-)
   Core::LinAlg::Export(*dis, *global);
-  SetParentState("displacement", global, discret);
+  set_parent_state("displacement", global, discret);
 
   // Call (nearly absolute)Base Class
   CONTACT::AbstractStrategy::DoReadRestart(reader, dis, cparams_ptr);
@@ -128,7 +128,7 @@ void CONTACT::LagrangeStrategyPoro::PoroInitialize(
                  // meshtying, as the maps and matrix mapping stay the same for meshtying. would
                  // work without this but would do things repeatedly unnecessarily
   {
-    if (no_penetration_ && (IsInContact() || WasInContact() || was_in_contact_last_time_step()))
+    if (no_penetration_ && (is_in_contact() || was_in_contact() || was_in_contact_last_time_step()))
     {
       //  (1)                                                          //
       //      Get required fluid maps from structural maps             //
@@ -149,7 +149,7 @@ void CONTACT::LagrangeStrategyPoro::PoroInitialize(
   //                                                               //
   if (fullinit)
   {
-    if (no_penetration_ && (IsInContact() || WasInContact() || was_in_contact_last_time_step()))
+    if (no_penetration_ && (is_in_contact() || was_in_contact() || was_in_contact_last_time_step()))
     {
       // (re)setup global nCoup Vector
       NCoup_ = Teuchos::rcp(new Epetra_Vector(*gactiven_));
@@ -191,7 +191,7 @@ void CONTACT::LagrangeStrategyPoro::PoroInitialize(
   //                                                               //
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
-    if (no_penetration_ && (IsInContact() || WasInContact() || was_in_contact_last_time_step()))
+    if (no_penetration_ && (is_in_contact() || was_in_contact() || was_in_contact_last_time_step()))
     {
       interface_[i]->AssembleNCoup(*NCoup_);
 
@@ -209,7 +209,7 @@ void CONTACT::LagrangeStrategyPoro::PoroInitialize(
   //  (4)                                                          //
   //      Complete Matrices                                        //
   //                                                               //
-  if (no_penetration_ && (IsInContact() || WasInContact() || was_in_contact_last_time_step()))
+  if (no_penetration_ && (is_in_contact() || was_in_contact() || was_in_contact_last_time_step()))
   {
     NCoup_lindisp_->Complete(*ProblemDofs(), *gactiven_);
     NCoup_linvel_->Complete(*fluiddofs, *gactiven_);
@@ -224,7 +224,7 @@ void CONTACT::LagrangeStrategyPoro::PoroInitialize(
   //  (5)                                                          //
   //      Reset Matrix Transform Objects                           //
   //                                                               //
-  if (no_penetration_ && (IsInContact() || WasInContact() || was_in_contact_last_time_step()))
+  if (no_penetration_ && (is_in_contact() || was_in_contact() || was_in_contact_last_time_step()))
   {
     linncoupveltransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
     linncoupdisptransform_ = Teuchos::rcp(new Core::LinAlg::MatrixRowTransform);
@@ -242,7 +242,7 @@ void CONTACT::LagrangeStrategyPoro::PoroInitialize(
   //  (6)                                                          //
   //      Transform Matrices from structural dofs to fluid dofs    //
   //                                                               //
-  if (no_penetration_ && (IsInContact() || WasInContact() || was_in_contact_last_time_step()))
+  if (no_penetration_ && (is_in_contact() || was_in_contact() || was_in_contact_last_time_step()))
   // eventually a coupling object just on the mortar interface would make sense!!! ChrAg
   {
     // transform matrices coming from contact to fluid maps, as they are all in structure maps!
@@ -438,7 +438,8 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!no_penetration_ || (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()))
+  if (!no_penetration_ ||
+      (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()))
     return;
   // h.Willmann this method should be renamed as it handles twosided poro meshtying now aswell and
   // is able to handle fluid coupling for twosided contact
@@ -464,7 +465,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   /**********************************************************************/
 
   // transform if necessary
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!!!");
     lindmatrix_ = Mortar::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
@@ -501,7 +502,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   // split into slave/master part + structure part
   Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fseffmatrix =
       Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_fseff);
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!");
     // split and transform to redistributed maps
@@ -536,7 +537,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   Teuchos::RCP<Epetra_Vector> fsm;
 
   // do the vector splitting smn -> sm+n
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!");
     // split and transform to redistributed maps
@@ -749,7 +750,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   // fm: add alphaf * old contact forces (t_n)
   // for self contact, slave and master sets may have changed,
   // thus we have to export the product Mold^T * zold to fit
-  if (IsSelfContact())
+  if (is_self_contact())
   {
     FOUR_C_THROW("CHECK ME!");
     //        Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
@@ -774,7 +775,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
 
   // for self contact, slave and master sets may have changed,
   // thus we have to export the product Dold^T * zold to fit
-  if (IsSelfContact())
+  if (is_self_contact())
   {
     FOUR_C_THROW("CHECK ME!");
     //        Teuchos::RCP<Epetra_Vector> tempvec  = Teuchos::rcp(new
@@ -841,7 +842,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_mat_poro_no_pen(
   // case, where the contact interfaces have been redistributed
   // independently of the underlying problem discretization.
 
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!");
     //        //----------------------------------------------------------- FIRST LINE
@@ -984,7 +985,8 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!no_penetration_ || (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()))
+  if (!no_penetration_ ||
+      (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()))
     return;
   // this method should be renamed as it handles twosided poro meshtying now aswell and is
   // able to handle fluid coupling for twosided contact
@@ -1033,7 +1035,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   // split into slave/master part + structure part
   Teuchos::RCP<Core::LinAlg::SparseMatrix> Feffmatrix =
       Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(Feff);
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!");
     // split and transform to redistributed maps
@@ -1138,7 +1140,7 @@ void CONTACT::LagrangeStrategyPoro::evaluate_other_mat_poro_no_pen(
   // case, where the contact interfaces have been redistributed
   // independently of the underlying problem discretization.
 
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     FOUR_C_THROW("CHECK ME!");
     //        //----------------------------------------------------------- FIRST LINE
@@ -1226,7 +1228,8 @@ void CONTACT::LagrangeStrategyPoro::RecoverPoroNoPen(
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!no_penetration_ || (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()))
+  if (!no_penetration_ ||
+      (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()))
     return;
 
   // shape function and system types
@@ -1473,7 +1476,7 @@ void CONTACT::LagrangeStrategyPoro::set_state(
 /*------------------------------------------------------------------------*
  | Assign generell poro contact state!                          ager 10/14|
  *------------------------------------------------------------------------*/
-void CONTACT::LagrangeStrategyPoro::SetParentState(const std::string& statename,
+void CONTACT::LagrangeStrategyPoro::set_parent_state(const std::string& statename,
     const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Core::FE::Discretization> dis)
 {
   if (statename == "displacement")

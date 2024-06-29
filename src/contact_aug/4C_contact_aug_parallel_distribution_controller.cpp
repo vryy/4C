@@ -88,7 +88,7 @@ bool CONTACT::Aug::ParallelDistributionController::redistribute(
 {
   if (nlniter % interval_ == 0)
   {
-    const bool is_redis = strat_.RedistributeContact(dis, vel);
+    const bool is_redis = strat_.redistribute_contact(dis, vel);
     if (is_redis) sele_eval_times_ = Teuchos::null;
 
     return is_redis;

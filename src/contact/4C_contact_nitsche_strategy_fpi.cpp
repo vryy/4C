@@ -46,7 +46,7 @@ bool CONTACT::NitscheStrategyFpi::check_nitsche_contact_state(
 )
 {
   return CONTACT::UTILS::check_nitsche_contact_state(
-      *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
+      *contact_interfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
 
 FOUR_C_NAMESPACE_CLOSE

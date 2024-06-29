@@ -79,83 +79,95 @@ namespace CONTACT
     };
 
     //! return global Lagrange mult. dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& GLmDofRowMapPtr() { return glmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> GLmDofRowMapPtr() const { return glmdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& global_lm_dof_row_map_ptr() { return glmdofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> global_lm_dof_row_map_ptr() const { return glmdofrowmap_; };
 
     //! return global reference dof row map for self contact Lagr. multipliers (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& g_self_contact_ref_dof_row_map_ptr() { return gscrefdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> g_self_contact_ref_dof_row_map_ptr() const
+    Teuchos::RCP<Epetra_Map>& global_self_contact_ref_dof_row_map_ptr()
+    {
+      return gscrefdofrowmap_;
+    };
+    Teuchos::RCP<const Epetra_Map> global_self_contact_ref_dof_row_map_ptr() const
     {
       return gscrefdofrowmap_;
     };
 
     //! return global self-contact Lagrange mult. dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& g_self_contact_lm_dof_row_map_ptr() { return gsclmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> g_self_contact_lm_dof_row_map_ptr() const
+    Teuchos::RCP<Epetra_Map>& global_self_contact_lm_dof_row_map_ptr() { return gsclmdofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> global_self_contact_lm_dof_row_map_ptr() const
     {
       return gsclmdofrowmap_;
     };
 
     //! return global slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& GSlNodeRowMapPtr() { return gsnoderowmap_; };
-    Teuchos::RCP<const Epetra_Map> GSlNodeRowMapPtr() const { return gsnoderowmap_; };
+    Teuchos::RCP<Epetra_Map>& global_slave_node_row_map_ptr() { return gsnoderowmap_; };
+    Teuchos::RCP<const Epetra_Map> global_slave_node_row_map_ptr() const { return gsnoderowmap_; };
 
     //! return global master node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& GMaNodeRowMapPtr() { return gmnoderowmap_; };
-    Teuchos::RCP<const Epetra_Map> GMaNodeRowMapPtr() const { return gmnoderowmap_; };
+    Teuchos::RCP<Epetra_Map>& global_master_node_row_map_ptr() { return gmnoderowmap_; };
+    Teuchos::RCP<const Epetra_Map> global_master_node_row_map_ptr() const { return gmnoderowmap_; };
 
     //! return global slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& GSlDofRowMapPtr() { return gsdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> GSlDofRowMapPtr() const { return gsdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& global_slave_dof_row_map_ptr() { return gsdofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> global_slave_dof_row_map_ptr() const { return gsdofrowmap_; };
 
     //! return global master dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& GMaDofRowMapPtr() { return gmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> GMaDofRowMapPtr() const { return gmdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& global_master_dof_row_map_ptr() { return gmdofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> global_master_dof_row_map_ptr() const { return gmdofrowmap_; };
 
     //! return global internal dof row map
-    Teuchos::RCP<Epetra_Map>& g_internal_dof_row_map_ptr() { return gndofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> g_internal_dof_row_map_ptr() const { return gndofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& global_internal_dof_row_map_ptr() { return gndofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> global_internal_dof_row_map_ptr() const { return gndofrowmap_; };
 
     //! return global slave and master dof row map (s+m map)
-    Teuchos::RCP<Epetra_Map>& GSlMaDofRowMapPtr() { return gsmdofrowmap_; };
-    Teuchos::RCP<const Epetra_Map> GSlMaDofRowMapPtr() const { return gsmdofrowmap_; };
+    Teuchos::RCP<Epetra_Map>& global_slave_master_dof_row_map_ptr() { return gsmdofrowmap_; };
+    Teuchos::RCP<const Epetra_Map> global_slave_master_dof_row_map_ptr() const
+    {
+      return gsmdofrowmap_;
+    };
 
     //! return global displacement dof row map (s+m+n map)
-    Teuchos::RCP<Epetra_Map>& GDispDofRowMapPtr() { return gdisprowmap_; };
-    Teuchos::RCP<const Epetra_Map> GDispDofRowMapPtr() const { return gdisprowmap_; };
+    Teuchos::RCP<Epetra_Map>& global_disp_dof_row_map_ptr() { return gdisprowmap_; };
+    Teuchos::RCP<const Epetra_Map> global_disp_dof_row_map_ptr() const { return gdisprowmap_; };
 
     //! return global active slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& g_active_node_row_map_ptr() { return gactivenodes_; };
-    Teuchos::RCP<const Epetra_Map> g_active_node_row_map_ptr() const { return gactivenodes_; };
-    Epetra_Map& GActiveNodeRowMap()
+    Teuchos::RCP<Epetra_Map>& global_active_node_row_map_ptr() { return gactivenodes_; };
+    Teuchos::RCP<const Epetra_Map> global_active_node_row_map_ptr() const { return gactivenodes_; };
+    Epetra_Map& global_active_node_row_map()
     {
       if (gactivenodes_.is_null()) FOUR_C_THROW("The gactivenodes_ is not initialized!");
       return *gactivenodes_;
     }
 
     //! return global active slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& GActiveDofRowMapPtr() { return gactivedofs_; };
-    Teuchos::RCP<const Epetra_Map> GActiveDofRowMapPtr() const { return gactivedofs_; };
-    Epetra_Map& GActiveDofRowMap()
+    Teuchos::RCP<Epetra_Map>& global_active_dof_row_map_ptr() { return gactivedofs_; };
+    Teuchos::RCP<const Epetra_Map> global_active_dof_row_map_ptr() const { return gactivedofs_; };
+    Epetra_Map& global_active_dof_row_map()
     {
       if (gactivedofs_.is_null()) FOUR_C_THROW("The gAugActiveSlaveDofsPtr_ is not initialized!");
       return *gactivedofs_;
     }
 
 
-    //! return global active slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& g_in_active_node_row_map_ptr() { return ginactivenodes_; };
-    Teuchos::RCP<const Epetra_Map> g_in_active_node_row_map_ptr() const { return ginactivenodes_; };
-    Epetra_Map& GInActiveNodeRowMap()
+    //! return global inactive slave node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map>& global_inactive_node_row_map_ptr() { return ginactivenodes_; };
+    Teuchos::RCP<const Epetra_Map> global_inactive_node_row_map_ptr() const
+    {
+      return ginactivenodes_;
+    };
+    Epetra_Map& global_inactive_node_row_map()
     {
       if (ginactivenodes_.is_null()) FOUR_C_THROW("The ginactivenodes_ is not initialized!");
       return *ginactivenodes_;
     }
 
-    //! return global active slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& g_in_active_dof_row_map_ptr() { return ginactivedofs_; };
-    Teuchos::RCP<const Epetra_Map> g_in_active_dof_row_map_ptr() const { return ginactivedofs_; };
-    Epetra_Map& GInActiveDofRowMap()
+    //! return global inactive slave dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map>& global_inactive_dof_row_map_ptr() { return ginactivedofs_; };
+    Teuchos::RCP<const Epetra_Map> global_inactive_dof_row_map_ptr() const
+    {
+      return ginactivedofs_;
+    };
+    Epetra_Map& global_inactive_dof_row_map()
     {
       if (ginactivedofs_.is_null()) FOUR_C_THROW("The ginactivedofs_ is not initialized!");
       return *ginactivedofs_;
@@ -163,46 +175,55 @@ namespace CONTACT
 
 
     //! return global active slave dof row map in normal direction (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& g_active_n_dof_row_map_ptr() { return gactiven_; };
-    Teuchos::RCP<const Epetra_Map> g_active_n_dof_row_map_ptr() const { return gactiven_; };
-    Epetra_Map& GActiveNDofRowMap()
+    Teuchos::RCP<Epetra_Map>& global_active_n_dof_row_map_ptr() { return gactiven_; };
+    Teuchos::RCP<const Epetra_Map> global_active_n_dof_row_map_ptr() const { return gactiven_; };
+    Epetra_Map& global_active_n_dof_row_map()
     {
       if (gactiven_.is_null()) FOUR_C_THROW("The gactiven_ is not initialized!");
       return *gactiven_;
     }
 
     //! return global active slave dof row map in tangential direction (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& g_active_t_dof_row_map_ptr() { return gactivet_; };
-    Teuchos::RCP<const Epetra_Map> g_active_t_dof_row_map_ptr() const { return gactivet_; };
-    Epetra_Map& GActiveTDofRowMap()
+    Teuchos::RCP<Epetra_Map>& global_active_t_dof_row_map_ptr() { return gactivet_; };
+    Teuchos::RCP<const Epetra_Map> global_active_t_dof_row_map_ptr() const { return gactivet_; };
+    Epetra_Map& global_active_t_dof_row_map()
     {
       if (gactivet_.is_null()) FOUR_C_THROW("The gactivet_ is not initialized!");
       return *gactivet_;
     }
 
     //! return global slip slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& GSlipNodeRowMapPtr() { return gslipnodes_; };
-    Teuchos::RCP<const Epetra_Map> GSlipNodeRowMapPtr() const { return gslipnodes_; };
+    Teuchos::RCP<Epetra_Map>& global_slip_node_row_map_ptr() { return gslipnodes_; };
+    Teuchos::RCP<const Epetra_Map> global_slip_node_row_map_ptr() const { return gslipnodes_; };
 
     //! return global slip slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& GSlipDofRowMapPtr() { return gslipdofs_; };
-    Teuchos::RCP<const Epetra_Map> GSlipDofRowMapPtr() const { return gslipdofs_; };
+    Teuchos::RCP<Epetra_Map>& global_slip_dof_row_map_ptr() { return gslipdofs_; };
+    Teuchos::RCP<const Epetra_Map> global_slip_dof_row_map_ptr() const { return gslipdofs_; };
 
     //! return global slip slave dof row map in tangential direction (of all interfaces)
-    Teuchos::RCP<Epetra_Map>& GSlipTDofRowMapPtr() { return gslipt_; };
-    Teuchos::RCP<const Epetra_Map> GSlipTDofRowMapPtr() const { return gslipt_; };
+    Teuchos::RCP<Epetra_Map>& global_slip_t_dof_row_map_ptr() { return gslipt_; };
+    Teuchos::RCP<const Epetra_Map> global_slip_t_dof_row_map_ptr() const { return gslipt_; };
 
     //! return global slave dof row map associated with vertex nodes
-    Teuchos::RCP<Epetra_Map>& gs_dof_vertex_row_map_ptr() { return gsdof_vertex_; };
-    Teuchos::RCP<const Epetra_Map> gs_dof_vertex_row_map_ptr() const { return gsdof_vertex_; };
+    Teuchos::RCP<Epetra_Map>& global_slave_dof_vertex_row_map_ptr() { return gsdof_vertex_; };
+    Teuchos::RCP<const Epetra_Map> global_slave_dof_vertex_row_map_ptr() const
+    {
+      return gsdof_vertex_;
+    };
 
     //! return global slave dof row map associated with edge nodes
-    Teuchos::RCP<Epetra_Map>& GSDofEdgeRowMapPtr() { return gsdof_edge_; };
-    Teuchos::RCP<const Epetra_Map> GSDofEdgeRowMapPtr() const { return gsdof_edge_; };
+    Teuchos::RCP<Epetra_Map>& global_slave_dof_edge_row_map_ptr() { return gsdof_edge_; };
+    Teuchos::RCP<const Epetra_Map> global_slave_dof_edge_row_map_ptr() const
+    {
+      return gsdof_edge_;
+    };
 
     //! return global slave dof row map associated with surface nodes
-    Teuchos::RCP<Epetra_Map>& GSDofSurfRowMapPtr() { return gsdof_surf_; };
-    Teuchos::RCP<const Epetra_Map> GSDofSurfRowMapPtr() const { return gsdof_surf_; };
+    Teuchos::RCP<Epetra_Map>& global_slave_dof_surface_row_map_ptr() { return gsdof_surf_; };
+    Teuchos::RCP<const Epetra_Map> global_slave_dof_surface_row_map_ptr() const
+    {
+      return gsdof_surf_;
+    };
 
     //! return global LM dof row map (before parallel redistribution)
     Teuchos::RCP<Epetra_Map>& PGLmDofRowMapPtr() { return pglmdofrowmap_; };
@@ -374,32 +395,32 @@ namespace CONTACT
     int NlnIter() const { return iter_; };
 
     //! return flag indicating global contact status
-    bool& IsInContact() { return isincontact_; };
-    bool IsInContact() const { return isincontact_; };
+    bool& is_in_contact() { return isincontact_; };
+    bool is_in_contact() const { return isincontact_; };
 
     //! return flag indicating global contact status of this time step (history)
-    bool& WasInContact() { return wasincontact_; };
-    bool WasInContact() const { return wasincontact_; };
+    bool& was_in_contact() { return wasincontact_; };
+    bool was_in_contact() const { return wasincontact_; };
 
     //! return flag indicating global contact status of last time step
     bool& was_in_contact_last_time_step() { return wasincontactlts_; };
     bool was_in_contact_last_time_step() const { return wasincontactlts_; };
 
     //! return flag indicating potential self contact
-    bool& IsSelfContact() { return isselfcontact_; };
-    bool IsSelfContact() const { return isselfcontact_; };
+    bool& is_self_contact() { return isselfcontact_; };
+    bool is_self_contact() const { return isselfcontact_; };
 
     //! return flag for frictional contact
-    bool& IsFriction() { return friction_; };
-    bool IsFriction() const { return friction_; };
+    bool& is_friction() { return friction_; };
+    bool is_friction() const { return friction_; };
 
     //! return flag for nonsmooth contact
-    bool& IsNonSmoothContact() { return non_smooth_contact_; };
-    const bool& IsNonSmoothContact() const { return non_smooth_contact_; };
+    bool& is_non_smooth_contact() { return non_smooth_contact_; };
+    bool is_non_smooth_contact() const { return non_smooth_contact_; };
 
     //! return flag for regularized contact
-    bool& IsRegularized() { return regularized_; };
-    bool IsRegularized() const { return regularized_; };
+    bool& is_regularized() { return regularized_; };
+    bool is_regularized() const { return regularized_; };
 
     //! return flag indicating whether trafo should be applied
     bool& is_dual_quad_slave_trafo() { return dualquadslavetrafo_; };
@@ -488,10 +509,10 @@ namespace CONTACT
     //! global active slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gactivedofs_;
 
-    //! global active slave node row map (of all interfaces)
+    //! global inactive slave node row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> ginactivenodes_;
 
-    //! global active slave dof row map (of all interfaces)
+    //! global inactive slave dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> ginactivedofs_;
 
     //! global active slave dof row map in normal direction (of all interfaces)
@@ -767,15 +788,15 @@ namespace CONTACT
      *
      *  \date 04/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> LMDoFRowMapPtr(const bool& redist) const
+    virtual Teuchos::RCP<const Epetra_Map> lm_dof_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and ParRedist()) return data().PGLmDofRowMapPtr();
+      if ((not redist) and parallel_redistribution_status()) return data().PGLmDofRowMapPtr();
 
-      return data().GLmDofRowMapPtr();
+      return data().global_lm_dof_row_map_ptr();
     };
-    virtual const Epetra_Map& LMDoFRowMap(const bool& redist) const
+    virtual const Epetra_Map& lm_dof_row_map(const bool& redist) const
     {
-      return *LMDoFRowMapPtr(redist);
+      return *lm_dof_row_map_ptr(redist);
     }
 
     /*! \brief Return the Lagrange multiplier dof row map for the global linear
@@ -786,21 +807,22 @@ namespace CONTACT
      *
      *  \date 04/2018
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> lin_system_lm_do_f_row_map_ptr() const
+    virtual Teuchos::RCP<const Epetra_Map> lin_system_lm_dof_row_map_ptr() const
     {
       if (SystemType() != Inpar::CONTACT::system_saddlepoint) return Teuchos::null;
 
-      if (IsSelfContact())
+      if (is_self_contact())
       {
-        if (ParRedist()) FOUR_C_THROW("Parallel redistribution is not supported for self contact!");
-        return data().g_self_contact_lm_dof_row_map_ptr();
+        if (parallel_redistribution_status())
+          FOUR_C_THROW("Parallel redistribution is not supported for self contact!");
+        return data().global_self_contact_lm_dof_row_map_ptr();
       }
       else
-        return LMDoFRowMapPtr(false);
+        return lm_dof_row_map_ptr(false);
     };
-    virtual const Epetra_Map& lin_system_lm_do_f_row_map() const
+    virtual const Epetra_Map& lin_system_lm_dof_row_map() const
     {
-      return *lin_system_lm_do_f_row_map_ptr();
+      return *lin_system_lm_dof_row_map_ptr();
     }
 
     /*! \brief Return the slave dof row map
@@ -810,15 +832,15 @@ namespace CONTACT
      *
      *  \date 04/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> SlDoFRowMapPtr(const bool& redist) const
+    virtual Teuchos::RCP<const Epetra_Map> slave_dof_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and ParRedist()) return data().PGSlDofRowMapPtr();
+      if ((not redist) and parallel_redistribution_status()) return data().PGSlDofRowMapPtr();
 
-      return data().GSlDofRowMapPtr();
+      return data().global_slave_dof_row_map_ptr();
     };
-    virtual const Epetra_Map& SlDoFRowMap(const bool& redist) const
+    virtual const Epetra_Map& slave_dof_row_map(const bool& redist) const
     {
-      return *SlDoFRowMapPtr(redist);
+      return *slave_dof_row_map_ptr(redist);
     }
 
     /*! \brief Return the slave dof row map in normal direction
@@ -828,18 +850,18 @@ namespace CONTACT
      *
      *  \date 04/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> sl_normal_do_f_row_map_ptr(const bool& redist) const
+    virtual Teuchos::RCP<const Epetra_Map> slave_n_dof_row_map_ptr(const bool& redist) const
     {
       FOUR_C_THROW("Map not available in abstract strategy!");
-      if ((not redist) and ParRedist())
+      if ((not redist) and parallel_redistribution_status())
         FOUR_C_THROW("The original / not redistributed slave normal row map is not available!");
 
       return Teuchos::null;
     };
-    virtual const Epetra_Map& SlNormalDoFRowMap(const bool& redist) const
+    virtual const Epetra_Map& slave_n_dof_row_map(const bool& redist) const
     {
       // currently not supported for the abstract strategy
-      FOUR_C_THROW("SlNormalDoFRowMap() seems currently unsupported!");
+      FOUR_C_THROW("slave_n_dof_row_map() seems currently unsupported!");
       exit(EXIT_FAILURE);
     }
 
@@ -850,17 +872,14 @@ namespace CONTACT
      *
      *  \date 04/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> sl_tangential_do_f_row_map_ptr(const bool& redist) const
+    virtual Teuchos::RCP<const Epetra_Map> slave_t_dof_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and ParRedist())
+      if ((not redist) and parallel_redistribution_status())
         FOUR_C_THROW("The original / not redistributed slave tangential row map is not available!");
 
       return Teuchos::null;
     };
-    virtual const Epetra_Map& sl_tangential_do_f_row_map(const bool& redist) const
-    {
-      return *gslipdofs_;
-    }
+    virtual const Epetra_Map& slave_t_dof_row_map(const bool& redist) const { return *gslipdofs_; }
 
     /*! \brief Return the master dof row map
      *
@@ -869,15 +888,15 @@ namespace CONTACT
      *
      *  \date 04/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> MaDoFRowMapPtr(const bool& redist) const
+    virtual Teuchos::RCP<const Epetra_Map> master_dof_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and ParRedist()) return data().PGMaDofRowMapPtr();
+      if ((not redist) and parallel_redistribution_status()) return data().PGMaDofRowMapPtr();
 
-      return data().GMaDofRowMapPtr();
+      return data().global_master_dof_row_map_ptr();
     };
-    virtual const Epetra_Map& MaDoFRowMap(const bool& redist) const
+    virtual const Epetra_Map& master_dof_row_map(const bool& redist) const
     {
-      return *MaDoFRowMapPtr(redist);
+      return *master_dof_row_map_ptr(redist);
     }
 
     /*! \brief Return the combined slave/master dof row map
@@ -887,15 +906,15 @@ namespace CONTACT
      *
      *  \date 04/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Map> SlMaDoFRowMapPtr(const bool& redist) const
+    virtual Teuchos::RCP<const Epetra_Map> slave_master_dof_row_map_ptr(const bool& redist) const
     {
-      if ((not redist) and ParRedist()) return data().PGSlMaDofRowMapPtr();
+      if ((not redist) and parallel_redistribution_status()) return data().PGSlMaDofRowMapPtr();
 
-      return data().GSlMaDofRowMapPtr();
+      return data().global_slave_master_dof_row_map_ptr();
     };
-    virtual const Epetra_Map& SlMaDoFRowMap(const bool& redist) const
+    virtual const Epetra_Map& slave_master_dof_row_map(const bool& redist) const
     {
-      return *SlMaDoFRowMapPtr(redist);
+      return *slave_master_dof_row_map_ptr(redist);
     }
 
 
@@ -908,7 +927,7 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+    virtual Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const
     {
       FOUR_C_THROW("Not yet implemented!");
@@ -934,7 +953,7 @@ namespace CONTACT
     virtual Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr_for_norm_check(
         const enum CONTACT::VecBlockType& bt) const
     {
-      return GetRhsBlockPtr(bt);
+      return get_rhs_block_ptr(bt);
     }
 
     /*! Return the condensed right-hand-side (read-only)
@@ -944,7 +963,7 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<const Epetra_Vector> GetCondensedRhsPtr(
+    virtual Teuchos::RCP<const Epetra_Vector> get_condensed_rhs_ptr(
         Epetra_Vector& f, const double& timefac_np) const
     {
       FOUR_C_THROW("Not yet implemented!");
@@ -962,7 +981,7 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const
     {
@@ -993,48 +1012,69 @@ namespace CONTACT
     };
 
     //! Return global slave node row map
-    Teuchos::RCP<Epetra_Map> SlaveRowNodes() override { return data().GSlNodeRowMapPtr(); }
-    Teuchos::RCP<const Epetra_Map> SlRowNodesPtr() const { return data().GSlNodeRowMapPtr(); }
-    const Epetra_Map& SlRowNodes() const { return *data().GSlNodeRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> slave_row_nodes_ptr() override
+    {
+      return data().global_slave_node_row_map_ptr();
+    }
+    Teuchos::RCP<const Epetra_Map> slave_row_nodes_ptr() const
+    {
+      return data().global_slave_node_row_map_ptr();
+    }
+    const Epetra_Map& slave_row_nodes() const { return *data().global_slave_node_row_map_ptr(); }
 
     //! Return global slave node row map
-    Teuchos::RCP<const Epetra_Map> MaRowNodesPtr() const { return data().GMaNodeRowMapPtr(); }
-    const Epetra_Map& MaRowNodes() const { return *data().GMaNodeRowMapPtr(); }
+    Teuchos::RCP<const Epetra_Map> master_row_nodes_ptr() const
+    {
+      return data().global_master_node_row_map_ptr();
+    }
+    const Epetra_Map& master_row_nodes() const { return *data().global_master_node_row_map_ptr(); }
 
     //! Return global active node row map
-    Teuchos::RCP<Epetra_Map> ActiveRowNodes() override
+    Teuchos::RCP<Epetra_Map> active_row_nodes() override
     {
-      return data().g_active_node_row_map_ptr();
+      return data().global_active_node_row_map_ptr();
     };
-    virtual Teuchos::RCP<const Epetra_Map> ActiveRowNodes() const
+    virtual Teuchos::RCP<const Epetra_Map> active_row_nodes() const
     {
-      return data().g_active_node_row_map_ptr();
+      return data().global_active_node_row_map_ptr();
     };
 
     //! Return global slip node row map
-    Teuchos::RCP<Epetra_Map> SlipRowNodes() override { return data().GSlipNodeRowMapPtr(); };
-    Teuchos::RCP<const Epetra_Map> SlipRowNodes() const { return data().GSlipNodeRowMapPtr(); };
+    Teuchos::RCP<Epetra_Map> slip_row_nodes() override
+    {
+      return data().global_slip_node_row_map_ptr();
+    };
+    Teuchos::RCP<const Epetra_Map> slip_row_nodes() const
+    {
+      return data().global_slip_node_row_map_ptr();
+    };
 
     //! Return global slave dof row map
-    Teuchos::RCP<Epetra_Map> SlaveRowDofs() { return data().GSlDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> slave_row_dofs() { return data().global_slave_dof_row_map_ptr(); }
 
     //! Return global active dof row map
-    Teuchos::RCP<Epetra_Map> ActiveRowDofs() override { return data().GActiveDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> active_row_dofs() override
+    {
+      return data().global_active_dof_row_map_ptr();
+    }
 
     //! Return global master dof row map
-    Teuchos::RCP<Epetra_Map> MasterRowDofs() { return data().GMaDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> master_row_dofs() { return data().global_master_dof_row_map_ptr(); }
 
     //! Return global slave dof row map
-    Teuchos::RCP<Epetra_Map> SlaveMasterRowDofs() { return data().GSlMaDofRowMapPtr(); }
+    Teuchos::RCP<Epetra_Map> slave_master_row_dofs()
+    {
+      return data().global_slave_master_dof_row_map_ptr();
+    }
 
-    //! Return not redistributed global slave dof row map
-    Teuchos::RCP<Epetra_Map> not_re_dist_slave_row_dofs() override
+    //! Return non-redistributed global slave dof row map
+    Teuchos::RCP<Epetra_Map> non_redist_slave_row_dofs() override
     {
       return data().PGSlDofRowMapPtr();
     }
 
-    //! Return not redistributed global master dof row map
-    Teuchos::RCP<Epetra_Map> not_re_dist_master_row_dofs() override
+    //! Return non-redistributed global master dof row map
+    Teuchos::RCP<Epetra_Map> non_redist_master_row_dofs() override
     {
       return data().PGMaDofRowMapPtr();
     }
@@ -1052,7 +1092,7 @@ namespace CONTACT
         Teuchos::RCP<Epetra_Map>& ActiveDofMap) const override;
 
     //! Return Lagrange multiplier vector (\f$t_{n+1}\f$)
-    Teuchos::RCP<Epetra_Vector> LagrMult() override { return z_; }
+    Teuchos::RCP<Epetra_Vector> lagrange_multiplier() override { return z_; }
 
     /*! \brief Return Lagrange multiplier vector \f$(t_{n+1})\f$
      *
@@ -1064,10 +1104,10 @@ namespace CONTACT
      *
      *  \author hiermeier
      *  \date 05/16 */
-    virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultNp(const bool& redist) const;
+    virtual Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_np(const bool& redist) const;
 
     //! Return old Lagrange multiplier vector (\f$t_{n}\f$)
-    Teuchos::RCP<Epetra_Vector> LagrMultOld() override { return data().OldLmPtr(); }
+    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_old() override { return data().OldLmPtr(); }
 
     /*! \brief Return old Lagrange multiplier vector \f$(t_n)\f$
      *
@@ -1079,47 +1119,65 @@ namespace CONTACT
      *
      *  \author hiermeier
      *  \date 05/16 */
-    virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultN(const bool& redist) const;
+    virtual Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_n(const bool& redist) const;
 
     //! Return Lagrange multiplier vector from last Uzawa step
-    Teuchos::RCP<Epetra_Vector> LagrMultUzawa() { return data().LmUzawaPtr(); }
+    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_uzawa() { return data().LmUzawaPtr(); }
 
     //! Return constraint rhs vector (only in saddle-point formulation
-    Teuchos::RCP<Epetra_Vector> ConstrRhs() override { return data().ConstrRhsPtr(); }
+    Teuchos::RCP<Epetra_Vector> constraint_rhs() override { return data().ConstrRhsPtr(); }
 
     //! Returns increment of LagrangeMultiplier solution vector in SaddlePointSolve routine
-    Teuchos::RCP<Epetra_Vector> LagrMultSolveIncr() override { return data().LmIncrPtr(); }
-    Teuchos::RCP<const Epetra_Vector> get_lagr_mult_solve_incr() const
+    Teuchos::RCP<Epetra_Vector> lagrange_multiplier_increment() override
+    {
+      return data().LmIncrPtr();
+    }
+    Teuchos::RCP<const Epetra_Vector> lagrange_multiplier_increment() const
     {
       return data().LmIncrPtr();
     };
 
     //! Return mortar matrix D
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> DMatrix() override { return data().DMatrixPtr(); }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> d_matrix() override { return data().DMatrixPtr(); }
 
     //! Return mortar matrix M
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> MMatrix() override { return data().MMatrixPtr(); }
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> m_matrix() override { return data().MMatrixPtr(); }
 
     //! Return vector of normal contact stresses \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ContactNorStress() override { return data().StressNormalPtr(); }
-    Teuchos::RCP<const Epetra_Vector> ContactNorStress() const { return data().StressNormalPtr(); }
+    Teuchos::RCP<Epetra_Vector> contact_normal_stress() override
+    {
+      return data().StressNormalPtr();
+    }
+    Teuchos::RCP<const Epetra_Vector> contact_normal_stress() const
+    {
+      return data().StressNormalPtr();
+    }
     //! Return weighted gap
-    Teuchos::RCP<Epetra_Vector> ContactWGap() { return data().WGapPtr(); }
+    Teuchos::RCP<Epetra_Vector> contact_wgap() { return data().WGapPtr(); }
 
     //! Return vector of tangential contact stresses \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ContactTanStress() override { return data().StressTangentialPtr(); }
-    Teuchos::RCP<const Epetra_Vector> ContactTanStress() const
+    Teuchos::RCP<Epetra_Vector> contact_tangential_stress() override
+    {
+      return data().StressTangentialPtr();
+    }
+    Teuchos::RCP<const Epetra_Vector> contact_tangential_stress() const
     {
       return data().StressTangentialPtr();
     }
 
     //! Return vector of normal contact stresses \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ContactNorForce() override { return data().ForceNormalPtr(); }
-    Teuchos::RCP<const Epetra_Vector> ContactNorForce() const { return data().ForceNormalPtr(); }
+    Teuchos::RCP<Epetra_Vector> contact_normal_force() override { return data().ForceNormalPtr(); }
+    Teuchos::RCP<const Epetra_Vector> contact_normal_force() const
+    {
+      return data().ForceNormalPtr();
+    }
 
     //! Return vector of tangential contact stresses \f$t_{n+1}\f$
-    Teuchos::RCP<Epetra_Vector> ContactTanForce() override { return data().ForceTangentialPtr(); }
-    Teuchos::RCP<const Epetra_Vector> ContactTanForce() const
+    Teuchos::RCP<Epetra_Vector> contact_tangential_force() override
+    {
+      return data().ForceTangentialPtr();
+    }
+    Teuchos::RCP<const Epetra_Vector> contact_tangential_force() const
     {
       return data().ForceTangentialPtr();
     }
@@ -1132,13 +1190,13 @@ namespace CONTACT
     void Inttime_init() override { data().IntTime() = 0.0; };
 
     //! Return current global contact status
-    bool IsInContact() const override { return data().IsInContact(); }
+    bool is_in_contact() const override { return data().is_in_contact(); }
 
     /*! \brief Return old global contact status (this time step)
 
      True if there has been contact in any nonlinear iteration
      step of the current time step. */
-    bool WasInContact() const override { return data().WasInContact(); }
+    bool was_in_contact() const override { return data().was_in_contact(); }
 
     /*!
     \brief Return old global contact status (last time step)
@@ -1160,14 +1218,14 @@ namespace CONTACT
 
     TODO: automatically recognize ACTUAL self contact
     */
-    bool& IsSelfContact() { return data().IsSelfContact(); }
-    bool IsSelfContact() const { return data().IsSelfContact(); };
+    bool& is_self_contact() { return data().is_self_contact(); }
+    bool is_self_contact() const { return data().is_self_contact(); };
 
     //! Return global frictional status
-    bool Friction() const override { return data().IsFriction(); }
+    bool is_friction() const override { return data().is_friction(); }
 
     //! Return contact interfaces
-    const std::vector<Teuchos::RCP<CONTACT::Interface>>& ContactInterfaces() const
+    const std::vector<Teuchos::RCP<CONTACT::Interface>>& contact_interfaces() const
     {
       return interfaces();
     }
@@ -1178,34 +1236,37 @@ namespace CONTACT
     Returns TRUE if at least one higher-order 3d slave element with
     dual Lagrange mutliplier shape functions in any interface.
     */
-    virtual bool Dualquadslavetrafo() const { return data().is_dual_quad_slave_trafo(); };
+    virtual bool is_dual_quad_slave_trafo() const { return data().is_dual_quad_slave_trafo(); };
 
     //! Return parallel redistribution status (yes or no)
-    inline bool ParRedist() const
+    inline bool parallel_redistribution_status() const
     {
       return (data().ParType() != Inpar::Mortar::ParallelRedist::redist_none);
     }
 
 
     //! Return specific parallel redistribution status
-    inline Inpar::Mortar::ParallelRedist WhichParRedist() const { return data().ParType(); }
+    inline Inpar::Mortar::ParallelRedist which_parallel_redistribution() const
+    {
+      return data().ParType();
+    }
 
     //! Return matrix T
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> TMatrix() { return Teuchos::null; }
+    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> t_matrix() { return Teuchos::null; }
 
     //! Return number of active nodes
-    int NumberOfActiveNodes() const override
+    int number_of_active_nodes() const override
     {
-      if (not data().g_active_node_row_map_ptr().is_null())
-        return data().g_active_node_row_map_ptr()->NumGlobalElements();
+      if (not data().global_active_node_row_map_ptr().is_null())
+        return data().global_active_node_row_map_ptr()->NumGlobalElements();
       return 0;
     }
 
     //! Return number of frictional slip nodes
-    int NumberOfSlipNodes() const override
+    int number_of_slip_nodes() const override
     {
-      if (not data().GSlipNodeRowMapPtr().is_null())
-        return data().GSlipNodeRowMapPtr()->NumGlobalElements();
+      if (not data().global_slip_node_row_map_ptr().is_null())
+        return data().global_slip_node_row_map_ptr()->NumGlobalElements();
       return 0;
     }
 
@@ -1231,12 +1292,12 @@ namespace CONTACT
 
     \return TRUE if the interface has been redistributed. Return FALSE otherwise.
     */
-    bool RedistributeContact(
+    bool redistribute_contact(
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) override;
 
     /** \brief Redistribute all contact interfaces in parallel
      *
-     *  In contrast to RedistributeContact this routine takes place at a different
+     *  In contrast to redistribute_contact this routine takes place at a different
      *  point during the simulation. For example, the redistribution can be initiated
      *  each time a certain amount of Newton steps per load step has been reached.
      *  In this way an adaption can be made quicker directly after a large predictor
@@ -1267,7 +1328,7 @@ namespace CONTACT
     @param[in] nonlinearIteration Current nonlinear iteration step
     @param[in] predictor Is this called during the predictor?
     */
-    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int timeStep, const int nonlinearIteration, bool predictor = false) override;
 
@@ -1335,7 +1396,7 @@ namespace CONTACT
     /*! \brief Evaluate matrix of nodal normals
 
      This is needed for energy-conserving time integration (Velocity-Update) */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> EvaluateNormals(
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> evaluate_normals(
         Teuchos::RCP<Epetra_Vector> dis) override;
 
     //!@}
@@ -1344,7 +1405,7 @@ namespace CONTACT
     //!@{
 
     /// return the potential contributions of the active contact strategy
-    virtual double GetPotentialValue(
+    virtual double get_potential_value(
         const enum NOX::Nln::MeritFunction::MeritFctName mrt_type) const;
 
     /// return contributions of the active contact strategy to the linear model
@@ -1359,10 +1420,10 @@ namespace CONTACT
     //!@{
 
     //! Is this a saddle-point system?
-    bool IsSaddlePointSystem() const override;
+    bool is_saddle_point_system() const override;
 
     //! Is this a condensed system?
-    bool IsCondensedSystem() const override;
+    bool is_condensed_system() const override;
 
     /*! \brief Fill the maps vector for the linear solver preconditioner
 
@@ -1392,7 +1453,7 @@ namespace CONTACT
      "lmuzawa" exist. Note that "lmold" means the converged value LM_n
      of the last time / load step, whereas "lmcurrent" adresses the current
      (not necessarily converged) value of the LM_n+1. "lmupdate" is a special
-     option called only in Recover() after the update of the Lagr. multipliers.
+     option called only in recover() after the update of the Lagr. multipliers.
      It basically does the same as "lmcurrent", but also checks for D.B.C.
      problems. Finally, "lmuzawa" addresses the LM update within an
      Uzawa augmented Lagrangian scheme.
@@ -1417,8 +1478,8 @@ namespace CONTACT
      \param dbcmaps (in): MapExtractor carrying global dbc map */
     void store_dirichlet_status(Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmaps) override;
 
-    virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
-        const Teuchos::RCP<Core::FE::Discretization> dis){
+    virtual void set_parent_state(const std::string& statename,
+        const Teuchos::RCP<Epetra_Vector> vec, const Teuchos::RCP<Core::FE::Discretization> dis){
         /* standard contact methods don't need the corresponding bulk element */
     };
 
@@ -1479,13 +1540,13 @@ namespace CONTACT
      *
      *\param output (in): flag indicating whether force output shall be written
      */
-    void InterfaceForces(bool output = false) override;
+    void interface_forces(bool output = false) override;
 
     //! Print interfaces
     void print(std::ostream& os) const override;
 
     //! Print summary of active set status to screen
-    void PrintActiveSet() const override;
+    void print_active_set() const override;
 
     /*!
     \brief Write results for visualization separately for each meshtying/contact interface
@@ -1507,7 +1568,7 @@ namespace CONTACT
      \param step (in): current time step index
      \param iter (in): current iteration index
      */
-    void VisualizeGmsh(const int step, const int iter) override;
+    void visualize_gmsh(const int step, const int iter) override;
 
     //!@}
 
@@ -1521,33 +1582,33 @@ namespace CONTACT
     //!@{
 
     bool active_set_semi_smooth_converged() const override = 0;
-    bool ActiveSetConverged() override = 0;
-    virtual int ActiveSetSteps() = 0;
+    bool active_set_converged() override = 0;
+    virtual int active_set_steps() = 0;
     virtual Teuchos::RCP<const Epetra_Map> get_old_active_row_nodes() const = 0;
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const = 0;
-    double ConstraintNorm() const override = 0;
-    virtual void EvaluateContact(
+    virtual Teuchos::RCP<const Epetra_Map> get_old_slip_row_nodes() const = 0;
+    double constraint_norm() const override = 0;
+    virtual void evaluate_contact(
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
-    virtual void EvaluateFriction(
+    virtual void evaluate_friction(
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     void evaluate_rel_mov_predict() override = 0;
-    double InitialPenalty() override = 0;
+    double initial_penalty() override = 0;
     void initialize() override = 0;
-    void InitializeUzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override = 0;
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) override = 0;
-    void ResetActiveSet() override = 0;
-    void ResetPenalty() override = 0;
-    void ModifyPenalty() override = 0;
+    void recover(Teuchos::RCP<Epetra_Vector> disi) override = 0;
+    void reset_active_set() override = 0;
+    void reset_penalty() override = 0;
+    void modify_penalty() override = 0;
     void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
         Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
         Teuchos::RCP<Epetra_Vector>& blocksol, Teuchos::RCP<Epetra_Vector>& blockrhs) override = 0;
     void update_displacements_and_l_mincrements(
         Teuchos::RCP<Epetra_Vector> sold, Teuchos::RCP<const Epetra_Vector> blocksol) override = 0;
-    virtual void EvalConstrRHS() = 0;
-    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override = 0;
-    void UpdateActiveSet() override = 0;
+    virtual void evaluate_constr_rhs() = 0;
+    void save_reference_state(Teuchos::RCP<const Epetra_Vector> dis) override = 0;
+    void update_active_set() override = 0;
     void update_active_set_semi_smooth(const bool firstStepPredictor = false) override = 0;
     void update_uzawa_augmented_lagrange() override = 0;
     void update_constraint_norm(int uzawaiter = 0) override = 0;
@@ -1564,13 +1625,13 @@ namespace CONTACT
 
     void redistribute_meshtying() final {}
     void restrict_meshtying_zone() override {}
-    void EvaluateMeshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override
     {
     }
-    Teuchos::RCP<const Epetra_Vector> MeshInitialization() override { return Teuchos::null; };
+    Teuchos::RCP<const Epetra_Vector> mesh_initialization() override { return Teuchos::null; };
 
-    void MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis) override {}
+    void mortar_coupling(const Teuchos::RCP<const Epetra_Vector>& dis) override {}
 
     //!@}
 
@@ -1614,7 +1675,7 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    virtual void eval_force_stiff(CONTACT::ParamsInterface& cparams);
+    virtual void evaluate_force_stiff(CONTACT::ParamsInterface& cparams);
 
     /*! \brief Compute force terms
      *
@@ -1622,7 +1683,7 @@ namespace CONTACT
      * integration
      *
      *  \author hiermeier \date 03/2016 */
-    virtual void eval_force(CONTACT::ParamsInterface& cparams);
+    virtual void evaluate_force(CONTACT::ParamsInterface& cparams);
 
     /*! \brief Compute the constraint rhs
      *
@@ -1630,7 +1691,7 @@ namespace CONTACT
      *                      the structural time integrator
      *
      *  \author hiermeier \date 12/17 */
-    virtual void eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams);
+    virtual void evaluate_static_constraint_rhs(CONTACT::ParamsInterface& cparams);
 
     /** \brief Run at the very beginning of a call to STR::ModelEvaluator::Evalute*
      *
@@ -1650,7 +1711,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual void run_post_evaluate(CONTACT::ParamsInterface& cparams);
 
-    /*! \brief Recover the current state
+    /*! \brief recover the current state
      *
      *  The main task of this method is to recover the Lagrange multiplier solution.
      *  The Lagrange multiplier solution will be stored inside the corresponding strategy
@@ -1729,7 +1790,7 @@ namespace CONTACT
         const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew);
 
     //! Evaluate the weighted gap gradient error
-    virtual void eval_weighted_gap_gradient_error(CONTACT::ParamsInterface& cparams);
+    virtual void evaluate_weighted_gap_gradient_error(CONTACT::ParamsInterface& cparams);
 
     virtual void correct_parameters(
         CONTACT::ParamsInterface& cparams, const NOX::Nln::CorrectionType type);
@@ -1773,20 +1834,22 @@ namespace CONTACT
      or regarding the change of mortar projection. The second possibility
      is definitely objective whereas the first possibility is objective
      only when the gap is zero. */
-    void EvaluateRelMov() override;
+    void evaluate_relative_movement() override;
 
-    /*! \brief Initialize and evaluate Mortar stuff for the next Newton step
+    /*! \brief Initialize Mortar stuff for the next Newton step
 
      This method first checks if we are dealing with self contact and updates
      the interface slave and master sets if so. Then it resets the global
-     Mortar matrices D and M and the global gap vector g accordingly.
+     Mortar matrices D and M and the global gap vector g accordingly. */
+    void initialize_mortar() override;
 
-     The nodal quantities computed in InitEvalInterface() are then assembled
-     to global matrices and vectors respectively. No setup of the global system
-     is to be done here yet, so there is no need to pass in the effective
-     stiffness K or the effective load vector f. */
-    void InitMortar() override;
-    void AssembleMortar() override;
+    /*! \brief Evaluate Mortar stuff for the next Newton step
+
+        The nodal quantities computed in initialize_and_evaluate_interface() are then assembled
+        to global matrices and vectors respectively. No setup of the global system
+        is to be done here yet, so there is no need to pass in the effective
+            stiffness K or the effective load vector f. */
+    void assemble_mortar() override;
 
     /*! \brief Initialize and evaluate interface for the next Newton step
 
@@ -1800,8 +1863,12 @@ namespace CONTACT
      and overlap detection, integration of the  Mortar terms D, M and of the
      weighted gap. Additionally, the linearizations of geometric quantities
      (delta_n, delta_t, delta_D, delta_M) are calculated. */
-    void InitEvalInterface() override { InitEvalInterface(Teuchos::null); };
-    virtual void InitEvalInterface(Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
+    void initialize_and_evaluate_interface() override
+    {
+      initialize_and_evaluate_interface(Teuchos::null);
+    };
+    virtual void initialize_and_evaluate_interface(
+        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
 
     /*! check the parallel distribution and initialize a possible
      *  redistribution */
@@ -1837,19 +1904,19 @@ namespace CONTACT
      This becomes necessary for self contact simulations, because in a
      self contact interface master and slave status are assigned dynamically
      and thus the global maps change constantly.
-
      */
     void update_global_self_contact_state();
 
-    /// access global self contact lagrange multiplier map (read & write)
-    inline const Epetra_Map& g_self_contact_lm_map() const
+    /// access global self contact lagrange multiplier map (read only)
+    inline const Epetra_Map& global_self_contact_lm_map() const
     {
-      return *data().g_self_contact_lm_dof_row_map_ptr();
+      return *data().global_self_contact_lm_dof_row_map_ptr();
     }
 
-    inline const Epetra_Map& g_self_contact_ref_map() const
+    /// access global self contact reference map for Lagr. multipliers (read only)
+    inline const Epetra_Map& global_self_contact_ref_map() const
     {
-      return *data().g_self_contact_ref_dof_row_map_ptr();
+      return *data().global_self_contact_ref_dof_row_map_ptr();
     }
 
    private:

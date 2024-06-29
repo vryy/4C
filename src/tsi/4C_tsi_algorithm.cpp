@@ -534,13 +534,13 @@ void TSI::Algorithm::prepare_contact_strategy()
     Teuchos::RCP<Epetra_Vector> zero_disp =
         Teuchos::rcp(new Epetra_Vector(*structure_field()->dof_row_map(), true));
     contact_strategy_lagrange_->set_state(Mortar::state_new_displacement, *zero_disp);
-    contact_strategy_lagrange_->SaveReferenceState(zero_disp);
+    contact_strategy_lagrange_->save_reference_state(zero_disp);
     contact_strategy_lagrange_->evaluate_reference_state();
     contact_strategy_lagrange_->Inttime_init();
     contact_strategy_lagrange_->set_time_integration_info(structure_field()->TimIntParam(),
         Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(
             Global::Problem::Instance()->structural_dynamic_params(), "DYNAMICTYP"));
-    contact_strategy_lagrange_->RedistributeContact(
+    contact_strategy_lagrange_->redistribute_contact(
         structure_field()->Dispn(), structure_field()->Veln());
 
     if (contact_strategy_lagrange_ != Teuchos::null)

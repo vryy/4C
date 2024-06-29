@@ -1823,7 +1823,7 @@ void PoroElast::Monolithic::set_poro_contact_states()
 
           Teuchos::RCP<Epetra_Vector> dis =
               Teuchos::rcp(new Epetra_Vector(*structure_field()->Dispnp()));
-          costrategy.SetParentState("displacement", dis,
+          costrategy.set_parent_state("displacement", dis,
               structure_field()->discretization());  // add displacements of the parent element!!!
         }
         else
@@ -1913,7 +1913,7 @@ void PoroElast::Monolithic::eval_poro_mortar()
           systemmatrix_->Complete();
 
           Extractor()->add_vector(
-              *pstrat->GetRhsBlockPtr(CONTACT::VecBlockType::porofluid), 1, *rhs_);
+              *pstrat->get_rhs_block_ptr(CONTACT::VecBlockType::porofluid), 1, *rhs_);
         }
       }
       else if (structure_field()->meshtying_contact_bridge()->HaveMeshtying())

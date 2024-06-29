@@ -52,7 +52,7 @@ namespace CONTACT
          *  forces are considered.
          *
          *  \author hiermeier \date 03/17 */
-        void eval_str_contact_rhs() override;
+        void evaluate_str_contact_rhs() override;
 
       };  // class Strategy
     }     // namespace Lagrange

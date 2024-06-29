@@ -48,9 +48,9 @@ CONTACT::MtLagrangeStrategy::MtLagrangeStrategy(const Epetra_Map* dof_row_map,
 /*----------------------------------------------------------------------*
  |  do mortar coupling in reference configuration             popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra_Vector>& dis)
+void CONTACT::MtLagrangeStrategy::mortar_coupling(const Teuchos::RCP<const Epetra_Vector>& dis)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::MortarCoupling");
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::mortar_coupling");
 
   // print message
   if (Comm().MyPID() == 0)
@@ -64,7 +64,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   const double t_start = Teuchos::Time::wallTime();
 
   // refer call to parent class
-  MtAbstractStrategy::MortarCoupling(dis);
+  MtAbstractStrategy::mortar_coupling(dis);
 
   //----------------------------------------------------------------------
   // Multiply Mortar matrices: m^ = inv(d) * m
@@ -99,7 +99,7 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
   // D^(-1)    ---->   T * D^(-1)
   // \hat{M}   ---->   T * \hat{M}
   // These modifications are applied once right here, thus the
-  // following code (EvaluateMeshtying, Recover) remains unchanged.
+  // following code (evaluate_meshtying, recover) remains unchanged.
   //----------------------------------------------------------------------
   if (Dualquadslavetrafo())
   {
@@ -181,9 +181,9 @@ void CONTACT::MtLagrangeStrategy::MortarCoupling(const Teuchos::RCP<const Epetra
 /*----------------------------------------------------------------------*
  |  mesh initialization for rotational invariance             popp 12/09|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitialization()
+Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::mesh_initialization()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::MeshInitialization");
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::mesh_initialization");
 
   // get out of here if NTS algorithm is activated
   if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(Params(), "ALGORITHM") ==
@@ -299,7 +299,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
   // (3) perform mesh initialization node by node
   //**********************************************************************
   // this can be done in the AbstractStrategy now
-  MtAbstractStrategy::MeshInitialization(Xslavemod);
+  MtAbstractStrategy::mesh_initialization(Xslavemod);
 
   // time measurement
   Comm().Barrier();
@@ -348,7 +348,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::MeshInitializatio
 /*----------------------------------------------------------------------*
  |  evaluate meshtying (public)                               popp 12/09|
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::EvaluateMeshtying(
+void CONTACT::MtLagrangeStrategy::evaluate_meshtying(
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff,
     Teuchos::RCP<Epetra_Vector> dis)
 {
@@ -867,9 +867,9 @@ void CONTACT::MtLagrangeStrategy::update_displacements_and_l_mincrements(
 /*----------------------------------------------------------------------*
  | Recovery method                                            popp 04/08|
  *----------------------------------------------------------------------*/
-void CONTACT::MtLagrangeStrategy::Recover(Teuchos::RCP<Epetra_Vector> disi)
+void CONTACT::MtLagrangeStrategy::recover(Teuchos::RCP<Epetra_Vector> disi)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::Recover");
+  TEUCHOS_FUNC_TIME_MONITOR("CONTACT::MtLagrangeStrategy::recover");
 
   // system type, shape function type and type of LM interpolation for quadratic elements
   Inpar::CONTACT::SystemType systype =
