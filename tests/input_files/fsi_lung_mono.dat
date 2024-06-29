@@ -98,7 +98,7 @@ VSTAB                           no_vstab
 SOLVER                          Belos
 AZOUTPUT                        10
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID
+AZPREC                          MLFLUID2
 AZREUSE                         0
 AZTOL                           1.0E-8
 AZITER                          1000

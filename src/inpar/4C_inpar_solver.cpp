@@ -21,15 +21,12 @@ namespace Inpar::SOLVER
 {
   void SetValidSolverParameters(Teuchos::ParameterList& list)
   {
-    using Teuchos::setStringToIntegralParameter;
-    using Teuchos::tuple;
-
     // Solver options
     {
-      setStringToIntegralParameter<Core::LinearSolver::SolverType>("SOLVER", "undefined",
+      Teuchos::setStringToIntegralParameter<Core::LinearSolver::SolverType>("SOLVER", "undefined",
           "The solver to attack the system of linear equations arising of FE approach with.",
-          tuple<std::string>("UMFPACK", "Superlu", "Belos", "undefined"),
-          tuple<Core::LinearSolver::SolverType>(Core::LinearSolver::SolverType::umfpack,
+          Teuchos::tuple<std::string>("UMFPACK", "Superlu", "Belos", "undefined"),
+          Teuchos::tuple<Core::LinearSolver::SolverType>(Core::LinearSolver::SolverType::umfpack,
               Core::LinearSolver::SolverType::superlu, Core::LinearSolver::SolverType::belos,
               Core::LinearSolver::SolverType::undefined),
           &list);
@@ -37,9 +34,10 @@ namespace Inpar::SOLVER
 
     // Iterative solver options
     {
-      setStringToIntegralParameter<Core::LinearSolver::IterativeSolverType>("AZSOLVE", "GMRES",
-          "Type of linear solver algorithm to use.", tuple<std::string>("CG", "GMRES", "BiCGSTAB"),
-          tuple<Core::LinearSolver::IterativeSolverType>(
+      Teuchos::setStringToIntegralParameter<Core::LinearSolver::IterativeSolverType>("AZSOLVE",
+          "GMRES", "Type of linear solver algorithm to use.",
+          Teuchos::tuple<std::string>("CG", "GMRES", "BiCGSTAB"),
+          Teuchos::tuple<Core::LinearSolver::IterativeSolverType>(
               Core::LinearSolver::IterativeSolverType::cg,
               Core::LinearSolver::IterativeSolverType::gmres,
               Core::LinearSolver::IterativeSolverType::bicgstab),
@@ -48,46 +46,27 @@ namespace Inpar::SOLVER
 
     // Preconditioner options
     {
-      // this one is longer than 15 and the tuple<> function does not support this,
-      // so build the Tuple class directly (which can be any size)
-      Teuchos::Tuple<std::string, 14> name;
-      Teuchos::Tuple<Core::LinearSolver::PreconditionerType, 14> number;
-
-      name[0] = "ILU";
-      number[0] = Core::LinearSolver::PreconditionerType::ilu;
-      name[1] = "ICC";
-      number[1] = Core::LinearSolver::PreconditionerType::icc;
-      name[2] = "ML";
-      number[2] = Core::LinearSolver::PreconditionerType::multigrid_ml;
-      name[3] = "MLFLUID";
-      number[3] = Core::LinearSolver::PreconditionerType::multigrid_ml_fluid;
-      name[4] = "MLFLUID2";
-      number[4] = Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2;
-      name[5] = "MueLu";
-      number[5] = Core::LinearSolver::PreconditionerType::multigrid_muelu;
-      name[6] = "MueLu_fluid";
-      number[6] = Core::LinearSolver::PreconditionerType::multigrid_muelu_fluid;
-      name[7] = "MueLu_tsi";
-      number[7] = Core::LinearSolver::PreconditionerType::multigrid_muelu_tsi;
-      name[8] = "MueLu_contactSP";
-      number[8] = Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp;
-      name[9] = "MueLu_BeamSolid";
-      number[9] = Core::LinearSolver::PreconditionerType::multigrid_muelu_beamsolid;
-      name[10] = "MueLu_fsi";
-      number[10] = Core::LinearSolver::PreconditionerType::multigrid_muelu_fsi;
-      name[11] = "AMGnxn";
-      number[11] = Core::LinearSolver::PreconditionerType::multigrid_nxn;
-      name[12] = "BGS2x2";
-      number[12] = Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2;
-      name[13] = "CheapSIMPLE";
-      number[13] = Core::LinearSolver::PreconditionerType::cheap_simple;
-
-      setStringToIntegralParameter<Core::LinearSolver::PreconditionerType>("AZPREC", "ILU",
+      Teuchos::setStringToIntegralParameter<Core::LinearSolver::PreconditionerType>("AZPREC", "ILU",
           "Type of internal preconditioner to use.\n"
           "Note! this preconditioner will only be used if the input operator\n"
           "supports the Epetra_RowMatrix interface and the client does not pass\n"
           "in an external preconditioner!",
-          name, number, &list);
+          Teuchos::tuple<std::string>("ILU", "ML", "MLFLUID2", "MueLu", "MueLu_fluid", "MueLu_tsi",
+              "MueLu_contactSP", "MueLu_BeamSolid", "MueLu_fsi", "AMGnxn", "BGS2x2", "CheapSIMPLE"),
+          Teuchos::tuple<Core::LinearSolver::PreconditionerType>(
+              Core::LinearSolver::PreconditionerType::ilu,
+              Core::LinearSolver::PreconditionerType::multigrid_ml,
+              Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2,
+              Core::LinearSolver::PreconditionerType::multigrid_muelu,
+              Core::LinearSolver::PreconditionerType::multigrid_muelu_fluid,
+              Core::LinearSolver::PreconditionerType::multigrid_muelu_tsi,
+              Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp,
+              Core::LinearSolver::PreconditionerType::multigrid_muelu_beamsolid,
+              Core::LinearSolver::PreconditionerType::multigrid_muelu_fsi,
+              Core::LinearSolver::PreconditionerType::multigrid_nxn,
+              Core::LinearSolver::PreconditionerType::block_gauss_seidel_2x2,
+              Core::LinearSolver::PreconditionerType::cheap_simple),
+          &list);
     }
 
     // Ifpack options
@@ -98,9 +77,10 @@ namespace Inpar::SOLVER
       Core::UTILS::IntParameter("IFPACKGFILL", 0,
           "The amount of fill allowed for an internal \"ilu\" preconditioner.", &list);
 
-      setStringToIntegralParameter<int>("IFPACKCOMBINE", "Add",
-          "Combine mode for Ifpack Additive Schwarz", tuple<std::string>("Add", "Insert", "Zero"),
-          tuple<int>(0, 1, 2), &list);
+      Teuchos::setStringToIntegralParameter<int>("IFPACKCOMBINE", "Add",
+          "Combine mode for Ifpack Additive Schwarz",
+          Teuchos::tuple<std::string>("Add", "Insert", "Zero"), Teuchos::tuple<int>(0, 1, 2),
+          &list);
     }
 
     // Iterative solver options
@@ -112,10 +92,11 @@ namespace Inpar::SOLVER
       Core::UTILS::DoubleParameter("AZTOL", 1e-8,
           "The level the residual norms must reach to decide about successful convergence", &list);
 
-      setStringToIntegralParameter<Belos::ScaleType>("AZCONV", "AZ_r0",
+      Teuchos::setStringToIntegralParameter<Belos::ScaleType>("AZCONV", "AZ_r0",
           "The implicit residual norm scaling type to use for terminating the iterative solver.",
-          tuple<std::string>("AZ_r0", "AZ_noscaled"),
-          tuple<Belos::ScaleType>(Belos::ScaleType::NormOfInitRes, Belos::ScaleType::None), &list);
+          Teuchos::tuple<std::string>("AZ_r0", "AZ_noscaled"),
+          Teuchos::tuple<Belos::ScaleType>(Belos::ScaleType::NormOfInitRes, Belos::ScaleType::None),
+          &list);
 
       Core::UTILS::IntParameter("AZOUTPUT", 0,
           "The number of iterations between each output of the solver's progress is written to "
@@ -155,26 +136,27 @@ namespace Inpar::SOLVER
           "no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)",
           &list);
 
-      setStringToIntegralParameter<int>("ML_COARSEN", "UC", "",
-          tuple<std::string>("UC", "METIS", "VBMETIS", "MIS"), tuple<int>(0, 1, 2, 3), &list);
+      Teuchos::setStringToIntegralParameter<int>("ML_COARSEN", "UC", "",
+          Teuchos::tuple<std::string>("UC", "METIS", "VBMETIS", "MIS"),
+          Teuchos::tuple<int>(0, 1, 2, 3), &list);
 
       Core::UTILS::BoolParameter("ML_REBALANCE", "Yes",
           "Performe ML-internal rebalancing of coarse level operators.", &list);
 
-      setStringToIntegralParameter<int>("ML_SMOOTHERFINE", "ILU", "",
-          tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu", "GS",
-              "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
-          tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
+      Teuchos::setStringToIntegralParameter<int>("ML_SMOOTHERFINE", "ILU", "",
+          Teuchos::tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu",
+              "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
+          Teuchos::tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
 
-      setStringToIntegralParameter<int>("ML_SMOOTHERMED", "ILU", "",
-          tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu", "GS",
-              "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
-          tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
+      Teuchos::setStringToIntegralParameter<int>("ML_SMOOTHERMED", "ILU", "",
+          Teuchos::tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu",
+              "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
+          Teuchos::tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
 
-      setStringToIntegralParameter<int>("ML_SMOOTHERCOARSE", "Umfpack", "",
-          tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu", "GS",
-              "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
-          tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
+      Teuchos::setStringToIntegralParameter<int>("ML_SMOOTHERCOARSE", "Umfpack", "",
+          Teuchos::tuple<std::string>("SGS", "Jacobi", "Chebychev", "MLS", "ILU", "KLU", "Superlu",
+              "GS", "DGS", "Umfpack", "BS", "SIMPLE", "SIMPLEC", "IBD", "Uzawa"),
+          Teuchos::tuple<int>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14), &list);
 
       Core::UTILS::IntParameter("SUB_SOLVER1", -1,
           "sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable "
@@ -200,10 +182,10 @@ namespace Inpar::SOLVER
     // BGS2x2 options
     {
       // switch order of blocks in BGS2x2 preconditioner
-      setStringToIntegralParameter<int>("BGS2X2_FLIPORDER", "block0_block1_order",
+      Teuchos::setStringToIntegralParameter<int>("BGS2X2_FLIPORDER", "block0_block1_order",
           "BGS2x2 flip order parameter",
-          tuple<std::string>("block0_block1_order", "block1_block0_order"), tuple<int>(0, 1),
-          &list);
+          Teuchos::tuple<std::string>("block0_block1_order", "block1_block0_order"),
+          Teuchos::tuple<int>(0, 1), &list);
 
       // damping parameter for BGS2X2
       Core::UTILS::DoubleParameter(

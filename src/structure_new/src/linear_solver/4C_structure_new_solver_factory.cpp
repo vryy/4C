@@ -123,7 +123,6 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_structure_lin_sol
   switch (azprectype)
   {
     case Core::LinearSolver::PreconditionerType::multigrid_ml:
-    case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid:
     case Core::LinearSolver::PreconditionerType::multigrid_ml_fluid2:
     case Core::LinearSolver::PreconditionerType::multigrid_muelu:
     {
