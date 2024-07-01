@@ -37,7 +37,7 @@ EVALUATION_MAT                  integration_point
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
-MAT 11 MAT_matlist_reactions LOCAL No NUMMAT 3  MATIDS 12 13 14 NUMREAC 3 REACIDS 110 111 112 END
+MAT 11 MAT_matlist_reactions LOCAL No NUMMAT 3  MATIDS 12 13 14 NUMREAC 3 REACIDS 110 111 112
 MAT 12 MAT_scatra DIFFUSIVITY 0.0
 MAT 13 MAT_scatra DIFFUSIVITY 0.0
 MAT 14 MAT_scatra DIFFUSIVITY 0.0

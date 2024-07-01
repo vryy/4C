@@ -582,17 +582,6 @@ namespace Input
     definition->add_component(Teuchos::rcp(new Input::BoolComponent(name, defaultvalue, optional)));
   }
 
-  /// add a separator
-  /// add additional separator to indicate end of line which is important, e.g., for the validity
-  /// check of the std::vector<>
-  template <typename DefinitionType>
-  inline void add_named_separator(const Teuchos::RCP<DefinitionType>& definition,
-      const std::string& name, const std::string& description, const bool optional = false)
-  {
-    definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
-  }
-
   /*!
    * @brief Add a separator followed by a post processed component
    *

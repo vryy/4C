@@ -42,8 +42,8 @@ CHARELELENGTH                   root_of_volume
 NAME                            ScaTra_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 9 MATIDS 101 102 103 104 105 106 107 108 109 END   // surface scatra material (slave)(membrane)
-MAT 2 MAT_matlist LOCAL No NUMMAT 4 MATIDS 110 111 112 113 END      // volume scatra material (master)(cytosol)
+MAT 1 MAT_matlist LOCAL No NUMMAT 9 MATIDS 101 102 103 104 105 106 107 108 109   // surface scatra material (slave)(membrane)
+MAT 2 MAT_matlist LOCAL No NUMMAT 4 MATIDS 110 111 112 113      // volume scatra material (master)(cytosol)
 
 MAT 101 MAT_scatra DIFFUSIVITY 1//active, membrane bound Rac (diff=1 [micrometer^2 / second], this is ok since cell is in micrometer)
 MAT 102 MAT_scatra DIFFUSIVITY 1//inactive, membrane bound Rac (diff=1)
@@ -60,7 +60,7 @@ MAT 112 MAT_scatra DIFFUSIVITY 100//cytosolic Rho (diff=100)
 MAT 113 MAT_scatra DIFFUSIVITY 100//dummy, originally for reaction of PIP1 to unmodelled PI, does not appear anywhere anymore
                 //all MAT need to be used in the simulation, else errors occur in E_petra_vector)
 
-MAT 20 MAT_matlist_reactions LOCAL No NUMMAT 13 MATIDS 101 102 103 104 105 106 107 108 109 110 111 112 113 NUMREAC 17 REACIDS 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 END
+MAT 20 MAT_matlist_reactions LOCAL No NUMMAT 13 MATIDS 101 102 103 104 105 106 107 108 109 110 111 112 113 NUMREAC 17 REACIDS 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56
 
 MAT 40 MAT_scatra_reaction NUMSCAL 13 STOICH -1 1 0 0 0 0 0 0 0 0 0 0 0 REACCOEFF 1 COUPLING by_function ROLE 4 4 0 0 0 0 0 0 0 0 0 0 0 //Rac(a) to Rac(i)
 MAT 41 MAT_scatra_reaction NUMSCAL 13 STOICH 1 -1 0 0 0 0 0 0 0 0 0 0 0 REACCOEFF 1 COUPLING by_function ROLE 5 5 0 0 0 0 0 0 0 0 0 0 0 //Rac(i) to Rac(a)

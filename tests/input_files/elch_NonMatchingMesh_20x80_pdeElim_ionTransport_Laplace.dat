@@ -44,7 +44,7 @@ GHOSTING_STRATEGY               redundant_all
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT       1 MAT_ion DIFFUSIVITY 0.01 VALENCE 1.0 DENSIFICATION 0.0 ELIM_DIFFUSIVITY 0.02 ELIM_VALENCE -1.0
-MAT       2 MAT_matlist LOCAL No NUMMAT 1 MATIDS 1 END
+MAT       2 MAT_matlist LOCAL No NUMMAT 1 MATIDS 1
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0

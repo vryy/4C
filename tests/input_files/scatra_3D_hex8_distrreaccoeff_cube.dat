@@ -74,7 +74,7 @@ EVALUATION_MAT                  integration_point
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 2  MATIDS 2 2 NUMREAC 2 REACIDS 4 5 END //collect Concentrations
+MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 2  MATIDS 2 2 NUMREAC 2 REACIDS 4 5 //collect Concentrations
 MAT 2 MAT_scatra DIFFUSIVITY 0.0
 MAT 4 MAT_scatra_reaction NUMSCAL 2 STOICH  1 0 REACCOEFF 1.0              COUPLING simple_multiplicative ROLE 0 1 //dx/dt=y
 MAT 5 MAT_scatra_reaction NUMSCAL 2 STOICH  0 1 REACCOEFF -1.0 DISTRFUNCT 2 COUPLING simple_multiplicative ROLE 1 0 //dy/dt=-w^2*x

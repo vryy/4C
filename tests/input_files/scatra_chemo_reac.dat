@@ -87,10 +87,10 @@ AZPREC                          ILU
 AZTOL                           1e-12
 AZCONV                          AZ_r0
 ----------------------------------------------------------MATERIALS
-//MAT 1 MAT_matlist LOCAL No NUMMAT 4 MATIDS 101 102 103 104 END  //scalar transport list
-//MAT 1 MAT_matlist_chemotaxis LOCAL No NUMMAT 4 MATIDS 101 102 103 104 NUMPAIR 2 PAIRIDS 111 112 END //scalar transport list with reactions
-//MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 4 MATIDS 101 102 103 104 NUMREAC 2 REACIDS 121 122 END //scalar transport list with chemotaxis
-MAT 1 MAT_matlist_chemo_reac LOCAL No NUMMAT 4 MATIDS 101 102 103 104 NUMPAIR 2 PAIRIDS 111 112 NUMREAC 2 REACIDS 121 122 END //scalar transport list with chemotaxis and reactions
+//MAT 1 MAT_matlist LOCAL No NUMMAT 4 MATIDS 101 102 103 104  //scalar transport list
+//MAT 1 MAT_matlist_chemotaxis LOCAL No NUMMAT 4 MATIDS 101 102 103 104 NUMPAIR 2 PAIRIDS 111 112 //scalar transport list with reactions
+//MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 4 MATIDS 101 102 103 104 NUMREAC 2 REACIDS 121 122 //scalar transport list with chemotaxis
+MAT 1 MAT_matlist_chemo_reac LOCAL No NUMMAT 4 MATIDS 101 102 103 104 NUMPAIR 2 PAIRIDS 111 112 NUMREAC 2 REACIDS 121 122 //scalar transport list with chemotaxis and reactions
 MAT 101 MAT_scatra DIFFUSIVITY 0.0
 MAT 102 MAT_scatra DIFFUSIVITY 1.0
 MAT 103 MAT_scatra DIFFUSIVITY 1.0

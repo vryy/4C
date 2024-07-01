@@ -664,7 +664,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real_vector(m, "COND_TEMP_SCALE_FUNCT_PARA",
         "parameters for temperature scaling of conductivity", "COND_TEMP_SCALE_FUNCT_PARA_NUM", 0.0,
         true);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -720,7 +719,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real_vector(m, "COND_TEMP_SCALE_FUNCT_PARA",
         "parameters for temperature scaling of conductivity", "COND_TEMP_SCALE_FUNCT_PARA_NUM", 0.0,
         true);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -769,7 +767,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "BULK_CONC", "bulk ion concentration", 1.0);
     add_named_real(m, "SUSCEPT", "susceptibility", 1.0);
     add_named_real(m, "DELTA_NU", "difference of partial molar volumes (vacancy & cation)", 0.0);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -849,9 +846,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_string(matelectrode, "OCP_CSV",
         "\\*.csv file with data points for half cell open circuit potential", "", true);
 
-    // end of input line
-    add_named_separator(matelectrode, "END", "indicating end of line");
-
     // add electrode material to global list of valid materials
     Mat::AppendMaterialDefinition(matlist, matelectrode);
   }
@@ -868,7 +862,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     // scope");
     add_named_int(m, "NUMMAT", "number of materials in list");
     add_named_int_vector(m, "MATIDS", "the list material IDs", "NUMMAT");
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -886,7 +879,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int_vector(m, "MATIDS", "the list material IDs", "NUMMAT");
     add_named_int(m, "NUMREAC", "number of reactions for these elements", 0);
     add_named_int_vector(m, "REACIDS", "advanced reaction list", "NUMREAC", 0);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -904,7 +896,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int_vector(m, "MATIDS", "the list material IDs", "NUMMAT");
     add_named_int(m, "NUMPAIR", "number of pairs for these elements", 0);
     add_named_int_vector(m, "PAIRIDS", "chemotaxis pairs list", "NUMPAIR", 0);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -924,7 +915,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int_vector(m, "PAIRIDS", "chemotaxis pairs list", "NUMPAIR", 0);
     add_named_int(m, "NUMREAC", "number of reactions for these elements", 0);
     add_named_int_vector(m, "REACIDS", "advanced reaction list", "NUMREAC", 0);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -942,7 +932,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMSCAL", "number of transported scalars per node");
     add_named_int(m, "NUMPHASE", "number of phases in electrolyte");
     add_named_int_vector(m, "PHASEIDS", "the list phasel IDs", "NUMPHASE");
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -960,7 +949,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "TORTUOSITY", "inverse (!) of phase tortuosity");
     add_named_int(m, "NUMMAT", "number of materials in electrolyte");
     add_named_int_vector(m, "MATIDS", "the list phasel IDs", "NUMMAT");
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -2844,7 +2832,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMMAT", "number of materials in list");
     add_named_int_vector(m, "MATIDS", "the list material IDs", "NUMMAT");
     add_named_int(m, "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE", "number of fluid phases");
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -2864,7 +2851,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE", "number of fluid phases");
     add_named_int(m, "NUMREAC", "number of reactions for these elements", 0);
     add_named_int_vector(m, "REACIDS", "advanced reaction list", "NUMREAC", 0);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -2949,7 +2935,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "PHASELAWID", "ID of pressure-saturation law");
     add_named_int(m, "NUMDOF", "number of DoFs", 0);
     add_named_int_vector(m, "PRESCOEFF", "pressure IDs for differential pressure", "NUMDOF", 0);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -2988,7 +2973,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "SATURATION_0", "saturation at zero differential pressure");
     add_named_int(m, "NUMDOF", "number of DoFs", 0);
     add_named_int_vector(m, "PRESCOEFF", "Coefficients for pressure dependence", "NUMDOF", 0);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -3004,7 +2988,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_real(m, "SATURATION_0", "saturation at zero differential pressure");
     add_named_int(m, "NUMDOF", "number of DoFs", 0);
     add_named_int_vector(m, "PRESCOEFF", "Coefficients for pressure dependence", "NUMDOF", 0);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
@@ -3030,7 +3013,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> Input::ValidMat
     add_named_int(m, "FUNCTSAT", "ID of function for saturation", 0);
     add_named_int(m, "NUMDOF", "number of DoFs", 0);
     add_named_int_vector(m, "PRESCOEFF", "Coefficients for pressure dependence", "NUMDOF", 0);
-    add_named_separator(m, "END", "indicating end of line");
 
     Mat::AppendMaterialDefinition(matlist, m);
   }
