@@ -1,6 +1,6 @@
 <ParameterList name="MueLu">
   <!--
-      For 3D elasticity, these are the recommended settings for MueLu.
+      For 2D elasticity, these are the recommended settings for MueLu.
     -->
   <!-- ===========  GENERAL ================ -->
   <Parameter name="problem: type" type="string" value="Elasticity-2D"/>
