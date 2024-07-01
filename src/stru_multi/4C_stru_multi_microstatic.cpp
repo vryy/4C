@@ -1046,6 +1046,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
         break;
       }
       case Core::LinearSolver::SolverType::superlu:
+      case Core::LinearSolver::SolverType::umfpack:
       {
         // solve for 9 rhs iteratively
         for (int i = 0; i < rhs_->NumVectors(); i++)
@@ -1060,7 +1061,7 @@ void MultiScale::MicroStatic::static_homogenization(Core::LinAlg::Matrix<6, 1>* 
       }
       default:
       {
-        FOUR_C_THROW("You have to choose an iterative solver for micro structures!");
+        FOUR_C_THROW("You have to choose either belos, superlu or umfpack for micro structures!");
         break;
       }
     }

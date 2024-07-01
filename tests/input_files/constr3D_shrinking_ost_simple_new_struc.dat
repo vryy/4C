@@ -96,35 +96,17 @@ SOLVER                          Belos
 SUB_SOLVER1                     4
 SUB_SOLVER2                     3
 --------------------------------------------------------------------SOLVER 1
-NAME Struct Solver
-AZBDIAG                         0
-AZCONV                          AZ_r0
-IFPACKGFILL                     2
-AZGRAPH                         0
-AZITER                          1000
-AZOMEGA                         0
-AZOUTPUT                        0
-IFPACKOVERLAP                   0
-AZPREC                          ML
-AZREUSE                         0
-AZSOLVE                         GMRES
-AZSUB                           300
-AZTOL                           1e-08
-ML_AGG_SIZE                     27
-ML_COARSEN                      UC
-ML_DAMPCOARSE                   1
-ML_DAMPFINE                     1
-ML_DAMPMED                      1
-ML_MAXCOARSESIZE                5
-ML_MAXLEVEL                     2
-ML_PRINT                        0
-ML_PROLONG_SMO                  0
-ML_PROLONG_THRES                0
-ML_SMOOTHERCOARSE               KLU
-ML_SMOOTHERFINE                 ILU
-ML_SMOOTHERMED                  ILU
-ML_SMOTIMES                     1 1 1 1 1
+NAME                            Structure_Solver
 SOLVER                          Belos
+AZSOLVE                         GMRES
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/elasticity3D_template.xml
+AZREUSE                         0
+AZITER                          1000
+AZOUTPUT                        1000
+AZSUB                           50
+AZTOL                           1.0e-08
+AZCONV                          AZ_r0
 --------------------------------------------------------------------SOLVER 3
 NAME                            Contact SIMPLER solver (used for constraint simpler)
 AZBDIAG                         0
