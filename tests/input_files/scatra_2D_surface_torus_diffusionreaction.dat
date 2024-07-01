@@ -51,32 +51,11 @@ CONSISTENCY                     no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          Belos
-AZOUTPUT                        0
 AZSOLVE                         GMRES
-AZPREC                          MLFLUID2
-AZREUSE                         0
-IFPACKGFILL                     0
+AZPREC                          MueLu
+MUELU_XML_FILE                  xml/multigrid/scatra1D_template.xml
 AZTOL                           1.0E-9
-AZITER                          1000
-AZSUB                           25
-AZOMEGA                         1.0
-AZGRAPH                         1
-IFPACKOVERLAP                   0
 AZCONV                          AZ_r0
-ML_PRINT                        0
-ML_MAXCOARSESIZE                5000
-ML_MAXLEVEL                     5
-ML_COARSEN                      UC
-ML_AGG_SIZE                     27
-ML_PROLONG_SMO                  0.0
-ML_PROLONG_THRES                0.0
-ML_SMOOTHERFINE                 SGS
-ML_SMOOTHERMED                  ILU
-ML_SMOOTHERCOARSE               KLU
-ML_SMOTIMES                     2 0 0 0 1
-ML_DAMPFINE                     0.67
-ML_DAMPMED                      1.0
-ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 10 NUMREAC 2 REACIDS 20 21 END
 MAT 10 MAT_scatra DIFFUSIVITY 0.001
