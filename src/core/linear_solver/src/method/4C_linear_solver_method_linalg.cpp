@@ -587,10 +587,6 @@ Teuchos::ParameterList translate_four_c_to_muelu(
   std::string xmlfile = inparams.get<std::string>("MUELU_XML_FILE");
   if (xmlfile != "none") muelulist.set("MUELU_XML_FILE", xmlfile);
 
-  muelulist.set<bool>(
-      "MUELU_XML_ENFORCE", Core::UTILS::IntegralValue<bool>(inparams, "MUELU_XML_ENFORCE"));
-  muelulist.set<bool>("Core::LinAlg::MueLu_Preconditioner", true);
-
   return muelulist;
 }
 

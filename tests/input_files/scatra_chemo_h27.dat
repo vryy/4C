@@ -110,7 +110,6 @@ BGS2X2_FLIPORDER                block0_block1_order
 BGS2X2_GLOBAL_DAMPING           1
 BGS2X2_BLOCK1_DAMPING           1
 BGS2X2_BLOCK2_DAMPING           1
-MUELU_XML_ENFORCE               No
 NAME                            ScaTraSolver
 SIMPLE_DAMPING                  1
 --------------------------------------------------------------UMFPACK SOLVER
@@ -149,7 +148,6 @@ BGS2X2_FLIPORDER                block0_block1_order
 BGS2X2_GLOBAL_DAMPING           1
 BGS2X2_BLOCK1_DAMPING           1
 BGS2X2_BLOCK2_DAMPING           1
-MUELU_XML_ENFORCE               No
 NAME                            No_name
 SIMPLE_DAMPING                  1
 -------------------------------------------------------------------MATERIALS

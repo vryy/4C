@@ -63,7 +63,7 @@ namespace Core::LinearSolver
 
    private:
     //! system of equations used for preconditioning used by P_ only
-    Teuchos::RCP<Epetra_CrsMatrix> pmatrix_;
+    Teuchos::RCP<Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>> pmatrix_;
 
    protected:
     //! MueLu parameter list
