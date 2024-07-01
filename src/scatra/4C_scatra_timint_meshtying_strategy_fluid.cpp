@@ -50,7 +50,7 @@ void ScaTra::MeshtyingStrategyFluid::EvaluateMeshtying()
       scatratimint_->system_matrix_operator(), scatratimint_->Residual(), scatratimint_->Phinp());
 
   return;
-}  // ScaTra::MeshtyingStrategyFluid::EvaluateMeshtying
+}  // ScaTra::MeshtyingStrategyFluid::evaluate_meshtying
 
 
 /*----------------------------------------------------------------------*

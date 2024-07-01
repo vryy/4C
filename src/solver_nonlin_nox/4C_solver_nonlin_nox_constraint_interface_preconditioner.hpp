@@ -61,7 +61,7 @@ namespace NOX
            *
            *  \author Michael Hiermeier
            *  \date 04/2016 */
-          virtual bool IsSaddlePointSystem() const = 0;
+          virtual bool is_saddle_point_system() const = 0;
 
           /*! \brief Is the (CURRENT) system to solve a condensed system?
            *
@@ -74,7 +74,7 @@ namespace NOX
            *
            *  \author Michael Hiermeier
            *  \date 04/2016 */
-          virtual bool IsCondensedSystem() const = 0;
+          virtual bool is_condensed_system() const = 0;
 
           //! Get necessary maps for the preconditioner.
           virtual void fill_maps_for_preconditioner(

@@ -52,7 +52,7 @@ namespace CONTACT
 
        protected:
         // un-do changes from the base class
-        void eval_str_contact_rhs() override { Aug::Strategy::eval_str_contact_rhs(); }
+        void evaluate_str_contact_rhs() override { Aug::Strategy::evaluate_str_contact_rhs(); }
 
         /// derived
         Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr_for_norm_check(
@@ -62,7 +62,7 @@ namespace CONTACT
         void add_contributions_to_constr_rhs(Epetra_Vector& augConstrRhs) const override;
 
         /// derived
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(
+        Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
             const enum CONTACT::MatBlockType& bt,
             const CONTACT::ParamsInterface* cparams = nullptr) const override;
 

@@ -25,13 +25,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void CONTACT::NitscheStrategyPoro::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+void CONTACT::NitscheStrategyPoro::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
   if (predictor) return;
 
-  CONTACT::NitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
+  CONTACT::NitscheStrategy::apply_force_stiff_cmt(dis, kt, f, step, iter, predictor);
 
   // Evaluation for all interfaces
   fp_ = create_rhs_block_ptr(CONTACT::VecBlockType::porofluid);
@@ -72,7 +72,6 @@ void CONTACT::NitscheStrategyPoro::SetParentState(
 
     Teuchos::RCP<Epetra_Vector> global = Teuchos::rcp(new Epetra_Vector(*dis->DofColMap(), true));
     Core::LinAlg::Export(vec, *global);
-
 
     // set state on interfaces
     for (const auto& interface : interface_)
@@ -133,7 +132,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyPoro::setup_rhs_block_vec(
   }
 }
 
-Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyPoro::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyPoro::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bp) const
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
@@ -143,7 +142,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategyPoro::GetRhsBlockPtr(
     case CONTACT::VecBlockType::porofluid:
       return Teuchos::rcp(new Epetra_Vector(Copy, *(fp_), 0));
     default:
-      return CONTACT::NitscheStrategy::GetRhsBlockPtr(bp);
+      return CONTACT::NitscheStrategy::get_rhs_block_ptr(bp);
   }
 }
 
@@ -213,7 +212,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyPoro::GetMatrix
     case CONTACT::MatBlockType::displ_porofluid:
       return kdp_;
     default:
-      return CONTACT::NitscheStrategy::GetMatrixBlockPtr(bp, nullptr);
+      return CONTACT::NitscheStrategy::get_matrix_block_ptr(bp, nullptr);
   }
 }
 

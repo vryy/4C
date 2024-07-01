@@ -59,7 +59,7 @@ CONTACT::MeshtyingContactBridge::MeshtyingContactBridge(Core::FE::Discretization
     const bool writeInterfaceOutput =
         Core::UTILS::IntegralValue<bool>(GetStrategy().Params(), "OUTPUT_INTERFACES");
 
-    if (writeInterfaceOutput && HaveContact() && ContactManager()->GetStrategy().Friction())
+    if (writeInterfaceOutput && HaveContact() && ContactManager()->GetStrategy().is_friction())
       FOUR_C_THROW(
           "Output for each interface does not work yet, if friction is enabled. Switch off the "
           "interface-based output in the input file (or implement/fix it for frictional contact "
@@ -147,10 +147,10 @@ void CONTACT::MeshtyingContactBridge::postprocess_quantities_per_interface(
 void CONTACT::MeshtyingContactBridge::Recover(Teuchos::RCP<Epetra_Vector> disi)
 {
   // meshtying
-  if (HaveMeshtying()) MtManager()->GetStrategy().Recover(disi);
+  if (HaveMeshtying()) MtManager()->GetStrategy().recover(disi);
 
   // contact
-  if (HaveContact()) ContactManager()->GetStrategy().Recover(disi);
+  if (HaveContact()) ContactManager()->GetStrategy().recover(disi);
 
   return;
 }
@@ -205,10 +205,10 @@ void CONTACT::MeshtyingContactBridge::Update(Teuchos::RCP<Epetra_Vector> dis)
 void CONTACT::MeshtyingContactBridge::VisualizeGmsh(const int istep, const int iter)
 {
   // contact
-  if (HaveContact()) ContactManager()->GetStrategy().VisualizeGmsh(istep, iter);
+  if (HaveContact()) ContactManager()->GetStrategy().visualize_gmsh(istep, iter);
 
   // meshtying
-  if (HaveMeshtying()) MtManager()->GetStrategy().VisualizeGmsh(istep, iter);
+  if (HaveMeshtying()) MtManager()->GetStrategy().visualize_gmsh(istep, iter);
 
   return;
 }

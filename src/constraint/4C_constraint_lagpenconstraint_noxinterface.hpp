@@ -111,9 +111,9 @@ namespace LAGPENCONSTRAINT
     virtual void setup();
 
 
-    bool IsSaddlePointSystem() const override;
+    bool is_saddle_point_system() const override;
 
-    bool IsCondensedSystem() const override;
+    bool is_condensed_system() const override;
 
     void fill_maps_for_preconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override;
 

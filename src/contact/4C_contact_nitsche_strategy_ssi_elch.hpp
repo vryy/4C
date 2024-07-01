@@ -37,7 +37,7 @@ namespace CONTACT
     {
     }
 
-    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {

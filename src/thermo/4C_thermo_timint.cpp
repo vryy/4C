@@ -742,13 +742,13 @@ void THR::TimInt::apply_force_tang_internal(
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     if (fint->Update(
-            1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.))
+            1., *contact_strategy_nitsche_->get_rhs_block_ptr(CONTACT::VecBlockType::temp), 1.))
       FOUR_C_THROW("update failed");
     if (contact_params_interface_->get_coupling_scheme() ==
         Inpar::CONTACT::CouplingScheme::monolithic)
     {
       tang->UnComplete();
-      tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
+      tang->Add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_temp),
           false, p.get<double>("timefac"), 1.);
       tang->Complete();
     }
@@ -806,12 +806,13 @@ void THR::TimInt::apply_force_tang_internal(
   // apply contact terms
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
-    fint->Update(1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.);
+    fint->Update(
+        1., *contact_strategy_nitsche_->get_rhs_block_ptr(CONTACT::VecBlockType::temp), 1.);
     if (contact_params_interface_->get_coupling_scheme() ==
         Inpar::CONTACT::CouplingScheme::monolithic)
     {
       tang->UnComplete();
-      tang->Add(*contact_strategy_nitsche_->GetMatrixBlockPtr(CONTACT::MatBlockType::temp_temp),
+      tang->Add(*contact_strategy_nitsche_->get_matrix_block_ptr(CONTACT::MatBlockType::temp_temp),
           false, p.get<double>("timefac"), 1.);
       tang->Complete();
     }
@@ -855,7 +856,8 @@ void THR::TimInt::apply_force_internal(
 
   // apply contact terms
   if (contact_strategy_nitsche_ != Teuchos::null)
-    fint->Update(1., *contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::temp), 1.);
+    fint->Update(
+        1., *contact_strategy_nitsche_->get_rhs_block_ptr(CONTACT::VecBlockType::temp), 1.);
 
   // where the fun starts
   return;

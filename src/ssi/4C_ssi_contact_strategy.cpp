@@ -48,7 +48,7 @@ void SSI::ContactStrategyBase::apply_contact_to_scatra_residual(
     Teuchos::RCP<Epetra_Vector> scatra_residual)
 {
   scatra_residual->Update(
-      1.0, *nitsche_strategy_ssi()->GetRhsBlockPtr(CONTACT::VecBlockType::scatra), 1.0);
+      1.0, *nitsche_strategy_ssi()->get_rhs_block_ptr(CONTACT::VecBlockType::scatra), 1.0);
 }
 
 /*-------------------------------------------------------------------------*

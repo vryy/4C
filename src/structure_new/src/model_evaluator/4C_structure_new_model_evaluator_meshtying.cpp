@@ -104,13 +104,13 @@ void STR::MODELEVALUATOR::Meshtying::setup()
   // ---------------------------------------------------------------------
   strategy_ptr_->store_dirichlet_status(integrator().get_dbc().get_dbc_map_extractor());
   strategy_ptr_->set_state(Mortar::state_new_displacement, integrator().get_dbc().GetZeros());
-  strategy_ptr_->SaveReferenceState(integrator().get_dbc().GetZerosPtr());
+  strategy_ptr_->save_reference_state(integrator().get_dbc().GetZerosPtr());
   strategy_ptr_->evaluate_reference_state();
   strategy_ptr_->Inttime_init();
   set_time_integration_info(*strategy_ptr_);
-  strategy_ptr_->RedistributeContact(integrator().get_dbc().GetZerosPtr(),
+  strategy_ptr_->redistribute_contact(integrator().get_dbc().GetZerosPtr(),
       integrator().get_dbc().GetZerosPtr());  // ToDo redistribute_meshtying??
-  strategy_ptr_->MortarCoupling(integrator().get_dbc().GetZerosPtr());
+  strategy_ptr_->mortar_coupling(integrator().get_dbc().GetZerosPtr());
 
   strategy_ptr_->nox_interface_ptr()->init(global_state_ptr());
   strategy_ptr_->nox_interface_ptr()->setup();
@@ -124,19 +124,20 @@ void STR::MODELEVALUATOR::Meshtying::setup()
     if (mesh_relocation_parameter == Inpar::Mortar::relocation_initial)
     {
       Teuchos::RCP<const Epetra_Vector> Xslavemod =
-          dynamic_cast<Mortar::StrategyBase&>(*strategy_ptr_).MeshInitialization();
+          dynamic_cast<Mortar::StrategyBase&>(*strategy_ptr_).mesh_initialization();
       if (Xslavemod != Teuchos::null)
       {
         mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map()));
-        for (int i = 0; i < strategy_ptr_->SlaveRowNodes()->NumMyElements(); ++i)
+        for (int i = 0; i < strategy_ptr_->slave_row_nodes_ptr()->NumMyElements(); ++i)
           for (int d = 0; d < strategy_ptr_->Dim(); ++d)
           {
             int gid = global_state().get_discret()->Dof(
-                global_state().get_discret()->gNode(strategy_ptr_->SlaveRowNodes()->GID(i)), d);
+                global_state().get_discret()->gNode(strategy_ptr_->slave_row_nodes_ptr()->GID(i)),
+                d);
             mesh_relocation_->operator[](mesh_relocation_->Map().LID(gid)) =
                 global_state()
                     .get_discret()
-                    ->gNode(strategy_ptr_->SlaveRowNodes()->GID(i))
+                    ->gNode(strategy_ptr_->slave_row_nodes_ptr()->GID(i))
                     ->X()[d] -
                 Xslavemod->operator[](Xslavemod->Map().LID(gid));
           }
@@ -163,14 +164,14 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_force(
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
   if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
-      Strategy().IsPenalty())
+      Strategy().is_penalty())
   {
     block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
     FOUR_C_ASSERT(!block_vec_ptr.is_null(), "force not available");
     Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
-  else if (Strategy().IsCondensedSystem())
+  else if (Strategy().is_condensed_system())
   {
     // --- displ. - block ---------------------------------------------------
     block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
@@ -179,7 +180,7 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_force(
 
     Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
-  else if (Strategy().IsSaddlePointSystem())
+  else if (Strategy().is_saddle_point_system())
   {
     // --- displ. - block ---------------------------------------------------
     block_vec_ptr = Strategy().GetRhsBlockPtr(CONTACT::VecBlockType::displ);
@@ -204,17 +205,17 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
   // ---------------------------------------------------------------------
   if (Core::UTILS::IntegralValue<Inpar::Mortar::AlgorithmType>(Strategy().Params(), "ALGORITHM") ==
           Inpar::Mortar::algorithm_gpts ||
-      Strategy().IsPenalty())
+      Strategy().is_penalty())
   {
     block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
-    if (Strategy().IsPenalty() && block_ptr.is_null()) return true;
+    if (Strategy().is_penalty() && block_ptr.is_null()) return true;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd = global_state().extract_displ_block(jac);
     jac_dd->Add(*block_ptr, false, timefac_np, 1.0);
   }
   // ---------------------------------------------------------------------
   // condensed system of equations
   // ---------------------------------------------------------------------
-  else if (Strategy().IsCondensedSystem())
+  else if (Strategy().is_condensed_system())
   {
     // --- Kdd - block ---------------------------------------------------
     block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::displ_displ);
@@ -329,12 +330,12 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_current_so
   //  if (systype == Inpar::CONTACT::system_condensed)
   //    return Teuchos::null;
   //
-  //  if (Strategy().GetLagrMultNp(false)!=Teuchos::null)
+  //  if (Strategy().lagrange_multiplier_np(false)!=Teuchos::null)
   //  {
   //    Teuchos::RCP<Epetra_Vector> curr_lm_ptr =
-  //        Teuchos::rcp(new Epetra_Vector(*Strategy().GetLagrMultNp(false)));
+  //        Teuchos::rcp(new Epetra_Vector(*Strategy().lagrange_multiplier_np(false)));
   //    if (not curr_lm_ptr.is_null())
-  //      curr_lm_ptr->ReplaceMap(Strategy().LMDoFRowMap(false));
+  //      curr_lm_ptr->ReplaceMap(Strategy().lm_dof_row_map(false));
   //
   //    extend_lagrange_multiplier_domain( curr_lm_ptr );
   //
@@ -356,13 +357,13 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_last_time_
   //  if (systype == Inpar::CONTACT::system_condensed)
   //    return Teuchos::null;
   //
-  //  if (Strategy().GetLagrMultN(false).is_null())
+  //  if (Strategy().lagrange_multiplier_n(false).is_null())
   //    return Teuchos::null;
   //
   //  Teuchos::RCP<Epetra_Vector> old_lm_ptr =
-  //      Teuchos::rcp(new Epetra_Vector(*Strategy().GetLagrMultN(false)));
+  //      Teuchos::rcp(new Epetra_Vector(*Strategy().lagrange_multiplier_n(false)));
   //  if (not old_lm_ptr.is_null())
-  //    old_lm_ptr->ReplaceMap(Strategy().LMDoFRowMap(false));
+  //    old_lm_ptr->ReplaceMap(Strategy().lm_dof_row_map(false));
   //
   //  extend_lagrange_multiplier_domain( old_lm_ptr );
   //
@@ -426,7 +427,7 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
   if (Xslavemod == Teuchos::null) return;
 
   // create fully overlapping slave node map
-  Teuchos::RCP<Epetra_Map> slavemap = strategy_ptr_->SlaveRowNodes();
+  Teuchos::RCP<Epetra_Map> slavemap = strategy_ptr_->slave_row_nodes_ptr();
   Teuchos::RCP<Epetra_Map> allreduceslavemap = Core::LinAlg::AllreduceEMap(*slavemap);
 
   // export modified node positions to column map of problem discretization
@@ -516,7 +517,7 @@ void STR::MODELEVALUATOR::Meshtying::read_restart(Core::IO::DiscretizationReader
   ioreader.read_vector(mesh_relocation_, "mesh_relocation");
 
   strategy_ptr_->set_state(Mortar::state_new_displacement, *mesh_relocation_);
-  strategy_ptr_->MortarCoupling(mesh_relocation_);
+  strategy_ptr_->mortar_coupling(mesh_relocation_);
 }
 
 /*----------------------------------------------------------------------*

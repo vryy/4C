@@ -73,7 +73,7 @@ namespace Wear
     conditions can be checked, too.
 
     */
-    void Recover(Teuchos::RCP<Epetra_Vector> disi) override;
+    void recover(Teuchos::RCP<Epetra_Vector> disi) override;
 
     /*!
     \brief Redistribute all contact interfaces in parallel
@@ -89,7 +89,7 @@ namespace Wear
 
     \return TRUE if the interface has been redistributed. Return FALSE otherwise.
     */
-    bool RedistributeContact(
+    bool redistribute_contact(
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) final;
 
     /*!
@@ -287,7 +287,7 @@ namespace Wear
     \brief Evaluate frictional contact
 
     */
-    void EvaluateFriction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate_friction(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
         Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
@@ -297,14 +297,14 @@ namespace Wear
     the interface slave and master sets if so. Then it resets the global
     Mortar matrices D and M and the global gap vector g accordingly.
 
-    The nodal quantites computed in InitEvalInterface() are then assembled
+    The nodal quantites computed in initialize_and_evaluate_interface() are then assembled
     to global matrices and vectors respectively. No setup of the global system
     is to be done here yet, so there is no need to pass in the effective
     stiffness K or the effective load vector f.
 
     */
-    void InitMortar() override;
-    void AssembleMortar() override;
+    void initialize_mortar() override;
+    void assemble_mortar() override;
 
     /*!
     \brief Initialize general contact variables for next Newton step

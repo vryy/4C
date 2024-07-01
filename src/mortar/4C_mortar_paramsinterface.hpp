@@ -23,8 +23,8 @@ namespace Mortar
   {
     eval_none,        /*!< No evaluation type has been chosen */
     eval_force_stiff, /*!< Evaluation of the contact/meshtying right-hand-side and the
-                         eval_force_stiff contact/meshtying jacobian. We call this method also, when
-                         we are only interested in the jacobian, since the created overhead is
+                         evaluate_force_stiff contact/meshtying jacobian. We call this method also,
+                         when we are only interested in the jacobian, since the created overhead is
                          negligible. */
     eval_force,       /*!< Evaluation of the contact/meshtying right-hand-side only. Necessary and
                          meaningful for line search strategies for example. */

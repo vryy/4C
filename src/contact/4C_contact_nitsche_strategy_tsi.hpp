@@ -58,7 +58,7 @@ namespace CONTACT
     {
     }
 
-    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+    void apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
         const int step, const int iter, bool predictor) override
     {
@@ -79,18 +79,19 @@ namespace CONTACT
 
     void SetParentState(const enum Mortar::StateType& statename, const Epetra_Vector& vec) override;
 
-    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+    Teuchos::RCP<const Epetra_Vector> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> GetMatrixBlockPtr(const enum CONTACT::MatBlockType& bt,
+    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
+        const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     //! [derived]
-    bool RedistributeContact(
+    bool redistribute_contact(
         Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel) override
     {
       if (fix_redistribution_) return false;
-      return CONTACT::AbstractStrategy::RedistributeContact(dis, vel);
+      return CONTACT::AbstractStrategy::redistribute_contact(dis, vel);
     }
 
     void enable_redistribution() { fix_redistribution_ = false; }

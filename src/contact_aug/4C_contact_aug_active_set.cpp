@@ -43,7 +43,7 @@ bool CONTACT::Aug::ActiveSet::skip_update() const
 
   // get out of here if not in the semi-smooth Newton case
   // (but before doing this, check if there are invalid active nodes)
-  if (not data.IsSemiSmoothNewton())
+  if (not data.is_semi_smooth_newton())
   {
     // loop over all interfaces
     for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end();
@@ -85,7 +85,8 @@ void CONTACT::Aug::ActiveSet::post_update(
   DataContainer& data = strategy_.data();
 
   // check the convergence of the active set
-  data.is_active_set_converged() = data.GActiveNodeRowMap().SameAs(data.g_old_active_slave_nodes());
+  data.is_active_set_converged() =
+      data.global_active_node_row_map().SameAs(data.g_old_active_slave_nodes());
 
   sanity_check(cparams, gstatus);
 
@@ -105,26 +106,26 @@ void CONTACT::Aug::ActiveSet::post_update(
   if (cparams.is_default_step())
   {
     // update flag for the contact status of the last iterate (history information)
-    if (strategy_.IsInContact())
+    if (strategy_.is_in_contact())
       data.was_in_contact_last_iter() = true;
     else
       data.was_in_contact_last_iter() = false;
   }
   // update flag for global contact status
-  if (data.GActiveNodeRowMap().NumGlobalElements())
+  if (data.global_active_node_row_map().NumGlobalElements())
   {
-    data.IsInContact() = true;
-    data.WasInContact() = true;
+    data.is_in_contact() = true;
+    data.was_in_contact() = true;
   }
   else
-    data.IsInContact() = false;
+    data.is_in_contact() = false;
 
   //  int icount = 0;
   //  for ( plain_interface_set::const_iterator cit = interface_.begin();
   //        cit != interface_.end(); ++cit, ++icount )
   //  {
   //    Interface& interface = **cit;
-  //    interface.write_nodal_coordinates_to_file( icount, *Data().g_active_node_row_map_ptr(),
+  //    interface.write_nodal_coordinates_to_file( icount, *Data().global_active_node_row_map_ptr(),
   //        "../o/half_sphere/aug_nurbs_complete_active_slave_node_coordinates.data");
   //  }
 }
@@ -399,8 +400,9 @@ void CONTACT::Aug::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparam
   if (cparams.is_default_step())
   {
     // store the previous augmented active set
-    if (data.g_active_node_row_map_ptr() != Teuchos::null)
-      data.g_old_active_slave_nodes_ptr() = Teuchos::rcp(new Epetra_Map(data.GActiveNodeRowMap()));
+    if (data.global_active_node_row_map_ptr() != Teuchos::null)
+      data.g_old_active_slave_nodes_ptr() =
+          Teuchos::rcp(new Epetra_Map(data.global_active_node_row_map()));
     else
       data.g_old_active_slave_nodes_ptr() = Teuchos::rcp(new Epetra_Map(0, 0, strategy_.Comm()));
   }
@@ -409,10 +411,10 @@ void CONTACT::Aug::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparam
                    << Core::IO::endl;
 
   // (re)setup of the global Epetra_maps
-  data.g_active_node_row_map_ptr() = Teuchos::null;
-  data.GActiveDofRowMapPtr() = Teuchos::null;
-  data.g_active_n_dof_row_map_ptr() = Teuchos::null;
-  data.g_active_t_dof_row_map_ptr() = Teuchos::null;
+  data.global_active_node_row_map_ptr() = Teuchos::null;
+  data.global_active_dof_row_map_ptr() = Teuchos::null;
+  data.global_active_n_dof_row_map_ptr() = Teuchos::null;
+  data.global_active_t_dof_row_map_ptr() = Teuchos::null;
 
   // loop over all interfaces
   for (plain_interface_set::const_iterator cit = interfaces.begin(); cit != interfaces.end(); ++cit)
@@ -423,14 +425,14 @@ void CONTACT::Aug::ActiveSet::update_maps(const CONTACT::ParamsInterface& cparam
     interface.BuildActiveSet();
 
     // Update Active set
-    data.g_active_node_row_map_ptr() =
-        Core::LinAlg::MergeMap(data.g_active_node_row_map_ptr(), interface.ActiveNodes(), false);
-    data.GActiveDofRowMapPtr() =
-        Core::LinAlg::MergeMap(data.GActiveDofRowMapPtr(), interface.ActiveDofs(), false);
-    data.g_active_n_dof_row_map_ptr() =
-        Core::LinAlg::MergeMap(data.g_active_n_dof_row_map_ptr(), interface.ActiveNDofs(), false);
-    data.g_active_t_dof_row_map_ptr() =
-        Core::LinAlg::MergeMap(data.g_active_t_dof_row_map_ptr(), interface.ActiveTDofs(), false);
+    data.global_active_node_row_map_ptr() = Core::LinAlg::MergeMap(
+        data.global_active_node_row_map_ptr(), interface.ActiveNodes(), false);
+    data.global_active_dof_row_map_ptr() =
+        Core::LinAlg::MergeMap(data.global_active_dof_row_map_ptr(), interface.ActiveDofs(), false);
+    data.global_active_n_dof_row_map_ptr() = Core::LinAlg::MergeMap(
+        data.global_active_n_dof_row_map_ptr(), interface.ActiveNDofs(), false);
+    data.global_active_t_dof_row_map_ptr() = Core::LinAlg::MergeMap(
+        data.global_active_t_dof_row_map_ptr(), interface.ActiveTDofs(), false);
   }
 }
 
@@ -450,7 +452,7 @@ void CONTACT::Aug::ActiveSet::sanity_check(
   Core::IO::cout << "old number of active nodes:     "
                  << data.g_old_active_slave_nodes_ptr()->NumGlobalElements() << Core::IO::endl;
   Core::IO::cout << "current number of active nodes: "
-                 << data.g_active_node_row_map_ptr()->NumGlobalElements() << Core::IO::endl;
+                 << data.global_active_node_row_map_ptr()->NumGlobalElements() << Core::IO::endl;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -1806,9 +1806,9 @@ void CONTACT::Interface::store_lt_lvalues()
   //  typedef std::map<int,double>::const_iterator          CImap;
   //
   //  // loop over all possibly non smooth nodes
-  //  for(int i=0; i<SlaveRowNodes()->NumMyElements();++i)
+  //  for(int i=0; i<slave_row_nodes_ptr()->NumMyElements();++i)
   //  {
-  //    int gid = SlaveRowNodes()->GID(i);
+  //    int gid = slave_row_nodes_ptr()->GID(i);
   //    Core::Nodes::Node* node = idiscret_->gNode(gid);
   //    if (!node)
   //      FOUR_C_THROW("Cannot find node with gid %",gid);
@@ -3747,7 +3747,7 @@ void CONTACT::Interface::evaluate_sts(
   //    }
   //
   //    // concrete coupling evaluation routine
-  //    MortarCoupling(selement,melements,mparams_ptr);
+  //    mortar_coupling(selement,melements,mparams_ptr);
   //  }
 
   return;
@@ -7930,7 +7930,8 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod)
 {
   if (friction_ == false)
-    FOUR_C_THROW("Error in Interface::EvaluateRelMov(): Only evaluated for frictional contact");
+    FOUR_C_THROW(
+        "Error in Interface::evaluate_relative_movement(): Only evaluated for frictional contact");
 
   // parameters
   double pp = interface_params().get<double>("PENALTYPARAM");
@@ -7991,7 +7992,8 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       if (lmuzawan - kappa * pp * gap >= 0) activeinfuture = true;
     }
     else
-      FOUR_C_THROW("Error in Interface::EvaluateRelMov(): Solution strategy not known!");
+      FOUR_C_THROW(
+          "Error in Interface::evaluate_relative_movement(): Solution strategy not known!");
 
     if (activeinfuture == true)
     {
@@ -8001,7 +8003,8 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       std::set<int> snodes = cnode->FriData().GetSNodes();
 
       // check if there are entries in the old D map
-      if (dmapold.size() < 1) FOUR_C_THROW("Error in Interface::EvaluateRelMov(): No old D-Map!");
+      if (dmapold.size() < 1)
+        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No old D-Map!");
 
       std::map<int, double>::iterator colcurr;
       std::set<int>::iterator scurr;
@@ -8033,12 +8036,15 @@ void CONTACT::Interface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmod,
       const std::set<int>& mnodesold = cnode->FriData().GetMNodesOld();
 
       // check if there are entries in the M map
-      if (mmap.size() < 1) FOUR_C_THROW("Error in Interface::EvaluateRelMov(): No M-Map!");
+      if (mmap.size() < 1)
+        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No M-Map!");
 
       // check if there are entries in the old M map
-      if (mmapold.size() < 1) FOUR_C_THROW("Error in Interface::EvaluateRelMov(): No old M-Map!");
+      if (mmapold.size() < 1)
+        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No old M-Map!");
 
-      if (mnodesold.size() < 1) FOUR_C_THROW("Error in Interface::EvaluateRelMov(): No old M-Set!");
+      if (mnodesold.size() < 1)
+        FOUR_C_THROW("Error in Interface::evaluate_relative_movement(): No old M-Set!");
 
       std::set<int> mnodes;
       std::set<int>::iterator mcurr;

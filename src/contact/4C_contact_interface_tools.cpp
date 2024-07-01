@@ -6650,7 +6650,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     // contents of evaluate()
     // *******************************************************************
     evaluate();
-    // EvaluateRelMov();
+    // evaluate_relative_movement();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -6869,7 +6869,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
     // contents of evaluate()
     // *******************************************************************
     evaluate();
-    // EvaluateRelMov();
+    // evaluate_relative_movement();
 
     // compute finite difference derivative
     for (int k = 0; k < snoderowmap_->NumMyElements(); ++k)
@@ -7049,7 +7049,7 @@ void CONTACT::Interface::fd_check_penalty_trac_fric()
   // back to normal...
   initialize();
   evaluate();
-  // EvaluateRelMov();
+  // evaluate_relative_movement();
 
   return;
 }  // FDCheckPenaltyFricTrac

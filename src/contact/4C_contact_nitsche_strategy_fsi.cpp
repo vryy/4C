@@ -19,12 +19,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void CONTACT::NitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+void CONTACT::NitscheStrategyFsi::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
   if (predictor) return;
-  CONTACT::NitscheStrategy::ApplyForceStiffCmt(dis, kt, f, step, iter, predictor);
+  CONTACT::NitscheStrategy::apply_force_stiff_cmt(dis, kt, f, step, iter, predictor);
 }
 
 void CONTACT::NitscheStrategyFsi::set_state(
@@ -52,7 +52,7 @@ bool CONTACT::NitscheStrategyFsi::check_nitsche_contact_state(CONTACT::Element* 
     const Core::LinAlg::Matrix<2, 1>& xsi, const double& full_fsi_traction, double& gap)
 {
   return CONTACT::UTILS::check_nitsche_contact_state(
-      *ContactInterfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
+      *contact_interfaces()[0], pen_n_, weighting_, cele, xsi, full_fsi_traction, gap);
 }
 
 bool CONTACT::UTILS::check_nitsche_contact_state(CONTACT::Interface& contactinterface,

@@ -86,7 +86,7 @@ Wear::Algorithm::Algorithm(const Epetra_Comm& comm)
   dim_ = strategy.Dim();
 
   // get vector of contact interfaces
-  interfaces_ = cstrategy.ContactInterfaces();
+  interfaces_ = cstrategy.contact_interfaces();
 
   // create contact interfaces for material conf.
   create_material_interface();

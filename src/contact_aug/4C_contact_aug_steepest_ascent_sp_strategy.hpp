@@ -160,7 +160,7 @@ namespace CONTACT
          *  forces are considered.
          *
          *  \author hiermeier \date 03/17 */
-        void eval_str_contact_rhs() override;
+        void evaluate_str_contact_rhs() override;
 
         /// derived
         void post_setup(bool redistributed, bool init) override;

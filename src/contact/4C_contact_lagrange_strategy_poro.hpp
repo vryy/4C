@@ -174,7 +174,7 @@ namespace CONTACT
     */
     void set_state(const enum Mortar::StateType& statetype, const Epetra_Vector& vec) override;
 
-    void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
+    void set_parent_state(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
         const Teuchos::RCP<Core::FE::Discretization> dis) override;
 
     // Flag for Poro No Penetration Condition

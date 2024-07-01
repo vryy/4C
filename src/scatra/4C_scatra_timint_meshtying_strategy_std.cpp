@@ -42,7 +42,7 @@ const Epetra_Map& ScaTra::MeshtyingStrategyStd::dof_row_map() const
 void ScaTra::MeshtyingStrategyStd::EvaluateMeshtying()
 {
   return;
-}  // ScaTra::MeshtyingStrategyStd::EvaluateMeshtying
+}  // ScaTra::MeshtyingStrategyStd::evaluate_meshtying
 
 
 /*----------------------------------------------------------------------*

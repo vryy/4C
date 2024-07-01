@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator     seitz 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::NitscheStrategy::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, const int step,
     const int iter, bool predictor)
 {
@@ -192,9 +192,12 @@ void CONTACT::NitscheStrategy::SetParentState(
   }
 }
 
-void CONTACT::NitscheStrategy::eval_force(CONTACT::ParamsInterface& cparams) { Integrate(cparams); }
+void CONTACT::NitscheStrategy::evaluate_force(CONTACT::ParamsInterface& cparams)
+{
+  Integrate(cparams);
+}
 
-void CONTACT::NitscheStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::NitscheStrategy::evaluate_force_stiff(CONTACT::ParamsInterface& cparams)
 {
   Integrate(cparams);
 }
@@ -278,7 +281,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::create_rhs_block_ptr(
   return fc;
 }
 
-Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_)
@@ -292,7 +295,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::NitscheStrategy::GetRhsBlockPtr(
     case CONTACT::VecBlockType::constraint:
       return Teuchos::null;
     default:
-      FOUR_C_THROW("GetRhsBlockPtr: your type is no treated properly!");
+      FOUR_C_THROW("get_rhs_block_ptr: your type is no treated properly!");
       break;
   }
 
@@ -352,7 +355,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::create_matrix
   return kc;
 }
 
-Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::GetMatrixBlockPtr(
+Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::get_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
@@ -360,7 +363,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::GetMatrixBloc
   if (bt == CONTACT::MatBlockType::displ_displ)
     return kc_;
   else
-    FOUR_C_THROW("GetMatrixBlockPtr: your type is no treated properly!");
+    FOUR_C_THROW("get_matrix_block_ptr: your type is no treated properly!");
 
   return Teuchos::null;
 }
@@ -434,7 +437,7 @@ void CONTACT::NitscheStrategy::reconnect_parent_elements()
 {
   Teuchos::RCP<Core::FE::Discretization> voldis = Global::Problem::Instance()->GetDis("structure");
 
-  for (const auto& contact_interface : ContactInterfaces())
+  for (const auto& contact_interface : contact_interfaces())
   {
     const Epetra_Map* elecolmap = voldis->ElementColMap();
 

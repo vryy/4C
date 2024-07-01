@@ -2531,7 +2531,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_solution_depending_conditions(
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
     const auto fint_scatra =
-        contact_strategy_nitsche_->GetRhsBlockPtr(CONTACT::VecBlockType::scatra);
+        contact_strategy_nitsche_->get_rhs_block_ptr(CONTACT::VecBlockType::scatra);
     if (residual_->Update(1.0, *fint_scatra, 1.0)) FOUR_C_THROW("update failed");
   }
 

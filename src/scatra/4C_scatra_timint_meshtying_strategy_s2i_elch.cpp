@@ -151,7 +151,7 @@ void ScaTra::MeshtyingStrategyS2IElch::EvaluateMeshtying()
 
   // call base class routine
   ScaTra::MeshtyingStrategyS2I::EvaluateMeshtying();
-}  // ScaTra::MeshtyingStrategyS2IElch::EvaluateMeshtying
+}  // ScaTra::MeshtyingStrategyS2IElch::evaluate_meshtying
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/

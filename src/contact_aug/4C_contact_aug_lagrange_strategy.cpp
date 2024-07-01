@@ -37,9 +37,9 @@ CONTACT::Aug::Lagrange::Strategy::Strategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::Lagrange::Strategy::eval_str_contact_rhs()
+void CONTACT::Aug::Lagrange::Strategy::evaluate_str_contact_rhs()
 {
-  if (!IsInContact() and !WasInContact() and !was_in_contact_last_time_step())
+  if (!is_in_contact() and !was_in_contact() and !was_in_contact_last_time_step())
   {
     data().StrContactRhsPtr() = Teuchos::null;
     return;
@@ -48,7 +48,7 @@ void CONTACT::Aug::Lagrange::Strategy::eval_str_contact_rhs()
 
 
   // For self contact, slave and master sets may have changed,
-  if (IsSelfContact())
+  if (is_self_contact())
     FOUR_C_THROW(
         "ERROR: Augmented Lagrange Formulation: Self contact is not yet "
         "considered!");

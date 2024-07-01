@@ -2,7 +2,7 @@
 /*! \file
 \brief This class provides the functionality to use contact with Lagrangian
 multipliers for monolithical coupled multifield problems!
-Therefore ApplyForceStiffCmt() & Recover() are overloaded by this class and
+Therefore apply_force_stiff_cmt() & recover() are overloaded by this class and
 do nothing, as they are called directly in the structure. To use the contact
 the additional methods apply_force_stiff_cmt_coupled() & RecoverCoupled() have
 to be called!
@@ -49,7 +49,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
     Teuchos::RCP<Epetra_Vector>& rhs_s, const int step, const int iter, bool predictor)
 {
   // call the main routine for contact!!!
-  CONTACT::AbstractStrategy::ApplyForceStiffCmt(dis, k_ss, rhs_s, step, iter, predictor);
+  CONTACT::AbstractStrategy::apply_force_stiff_cmt(dis, k_ss, rhs_s, step, iter, predictor);
 
   // Take care of the alternative condensation of the off-diagonal blocks!!!
   std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>*>::iterator matiter;
@@ -71,7 +71,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
     const int step, const int iter, bool predictor)
 {
   // call the main routine for contact!!!
-  CONTACT::AbstractStrategy::ApplyForceStiffCmt(dis, k_ss, rhs_s, step, iter, predictor);
+  CONTACT::AbstractStrategy::apply_force_stiff_cmt(dis, k_ss, rhs_s, step, iter, predictor);
 
   // Take care of the alternative condensation of the off-diagonal blocks!!!
   evaluate_off_diag_contact(k_sx, 0);
@@ -88,7 +88,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
+  if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()) return;
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -139,9 +139,9 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
         Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteff);
 
-    if (ParRedist())  // TODO Check if how to modifiy
+    if (parallel_redistribution_status())  // TODO Check if how to modify
     {
-      FOUR_C_THROW("ParRedist(): CHECK ME!");
+      FOUR_C_THROW("parallel_redistribution_status(): CHECK ME!");
       // split and transform to redistributed maps
       //      Core::LinAlg::SplitMatrix2x2(kteffmatrix,pgsmdofrowmap_,gndofrowmap_,pgsmdofrowmap_,gndofrowmap_,ksmsm,ksmn,knsm,knn);
       //      ksmsm = Mortar::matrix_row_col_transform(ksmsm,gsmdofrowmap_,gsmdofrowmap_);
@@ -243,7 +243,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     // case, where the contact interfaces have been redistributed
     // independently of the underlying problem discretization.
 
-    if (ParRedist())  // check what to do
+    if (parallel_redistribution_status())  // check what to do
     {
       FOUR_C_THROW("not checked so far!!!");
       //----------------------------------------------------------- FIRST LINE
@@ -323,9 +323,9 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
+  if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()) return;
 
-  LagrangeStrategy::Recover(
+  LagrangeStrategy::recover(
       disi);  // Update Structural Part! --> Here just Part from Coupling Matrix will be added!
 
   if (inc.size() == 0 && csx_s_.size() == 0)
@@ -386,7 +386,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::RecoverCoupled(
       /**********************************************************************/
       // for self contact, slave and master sets may have changed,
       // thus we have to export the products Dold * zold and Mold^T * zold to fit
-      if (IsSelfContact())  // is not considered yet!
+      if (is_self_contact())  // is not considered yet!
       {
         FOUR_C_THROW(
             "Trying to make coupled selfcontact condensation... Check if this makes any sense!!!");

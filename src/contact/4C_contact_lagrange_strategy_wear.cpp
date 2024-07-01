@@ -329,7 +329,7 @@ void Wear::LagrangeStrategyWear::setup_wear(bool redistributed, bool init)
 /*----------------------------------------------------------------------*
  | initialize wear stuff for next Newton step                farah 11/13|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::InitMortar()
+void Wear::LagrangeStrategyWear::initialize_mortar()
 {
   // for self contact, slave and master sets may have changed,
   // thus we have to update them before initializing D,M etc.
@@ -360,7 +360,7 @@ void Wear::LagrangeStrategyWear::InitMortar()
   mmatrix_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*gsdofrowmap_, 100));
 
   // global gap
-  g_ = Core::LinAlg::CreateVector(*gsnoderowmap_, true);
+  wgap_ = Core::LinAlg::CreateVector(*gsnoderowmap_, true);
 
   /**********************************************************************/
   /* (re)setup global wear Epetra_Vector (for all wear problems)        */
@@ -370,7 +370,7 @@ void Wear::LagrangeStrategyWear::InitMortar()
   /**********************************************************************/
   /* in the case of dual quad 3D, the modified D matrices are setup     */
   /**********************************************************************/
-  if (friction_ && Dualquadslavetrafo())
+  if (friction_ && is_dual_quad_slave_trafo())
   {
     // initialize Dold and Mold if not done already
     if (doldmod_ == Teuchos::null)
@@ -389,10 +389,10 @@ void Wear::LagrangeStrategyWear::InitMortar()
 /*----------------------------------------------------------------------*
  | Assemble wear stuff for next Newton step                  farah 11/13|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::AssembleMortar()
+void Wear::LagrangeStrategyWear::assemble_mortar()
 {
   // call base routine
-  CONTACT::AbstractStrategy::AssembleMortar();
+  CONTACT::AbstractStrategy::assemble_mortar();
 
   // for all interfaces
   for (int i = 0; i < (int)interface_.size(); ++i)
@@ -421,7 +421,7 @@ void Wear::LagrangeStrategyWear::AssembleMortar()
   if (!wearimpl_ and !wearprimvar_ and
       Params().get<int>("PROBTYPE") != Inpar::CONTACT::structalewear)
   {
-    g_->Update(1.0, *wearvector_, 1.0);
+    wgap_->Update(1.0, *wearvector_, 1.0);
   }
   else
   {
@@ -434,7 +434,7 @@ void Wear::LagrangeStrategyWear::AssembleMortar()
       // after a time step!
       store_nodal_quantities(Mortar::StrategyBase::weightedwear);
       interface_[0]->AssembleWear(*wearvector_);
-      g_->Update(1.0, *wearvector_, 1.0);
+      wgap_->Update(1.0, *wearvector_, 1.0);
 
       // update alle gap function entries for slave nodes!
       for (int i = 0; i < (int)interface_.size(); ++i)
@@ -605,7 +605,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   /********************************************************************/
 
   // transform if necessary
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     lindmatrix_ = Mortar::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
     linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
@@ -636,7 +636,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // split into slave/master part + structure part
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
       Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteff);
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
     Core::LinAlg::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
@@ -671,7 +671,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   Teuchos::RCP<Epetra_Vector> fsm;
 
   // do the vector splitting smn -> sm+n
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
     Core::LinAlg::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
@@ -711,7 +711,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // D^(-1)    ---->   T * D^(-1)
   // \hat{M}   ---->   T * \hat{M}
   //--------------------------------------------------------------------
-  if (Dualquadslavetrafo())
+  if (is_dual_quad_slave_trafo())
   {
     // modify dmatrix_, invd_ and mhatmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
@@ -1133,7 +1133,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // fm: add alphaf * old contact forces (t_n)
   // for self contact, slave and master sets may have changed,
   // thus we have to export the product Mold^T * zold to fit
-  if (IsSelfContact())
+  if (is_self_contact())
   {
     Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
     Teuchos::RCP<Epetra_Vector> tempvecm2 = Teuchos::rcp(new Epetra_Vector(mold_->DomainMap()));
@@ -1156,7 +1156,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
 
   // for self contact, slave and master sets may have changed,
   // thus we have to export the product Dold^T * zold to fit
-  if (IsSelfContact())
+  if (is_self_contact())
   {
     Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(dold_->DomainMap()));
     Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->RowMap()));
@@ -1276,7 +1276,7 @@ void Wear::LagrangeStrategyWear::condense_wear_impl_expl(
   // case, where the contact interfaces have been redistributed
   // independently of the underlying problem discretization.
 
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     //----------------------------------------------------------- FIRST LINE
     // nothing to do (ndof-map independent of redistribution)
@@ -1590,7 +1590,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   /* (2) Add contact stiffness terms to kteff                         */
   /********************************************************************/
   // transform if necessary
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     lindmatrix_ = Mortar::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
     linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
@@ -1621,7 +1621,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   // split into slave/master part + structure part
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
       Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteff);
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
     Core::LinAlg::SplitMatrix2x2(kteffmatrix, pgsmdofrowmap_, gndofrowmap_, pgsmdofrowmap_,
@@ -1656,7 +1656,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   Teuchos::RCP<Epetra_Vector> fsm;
 
   // do the vector splitting smn -> sm+n
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     // split and transform to redistributed maps
     Core::LinAlg::split_vector(*ProblemDofs(), *feff, pgsmdofrowmap_, fsm, gndofrowmap_, fn);
@@ -1696,7 +1696,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   // D^(-1)    ---->   T * D^(-1)
   // \hat{M}   ---->   T * \hat{M}
   //--------------------------------------------------------------------
-  if (Dualquadslavetrafo())
+  if (is_dual_quad_slave_trafo())
   {
     // modify dmatrix_, invd_ and mhatmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
@@ -2234,7 +2234,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   // fm: add alphaf * old contact forces (t_n)
   // for self contact, slave and master sets may have changed,
   // thus we have to export the product Mold^T * zold to fit
-  if (IsSelfContact())
+  if (is_self_contact())
   {
     Teuchos::RCP<Epetra_Vector> tempvecm = Teuchos::rcp(new Epetra_Vector(*gmdofrowmap_));
     Teuchos::RCP<Epetra_Vector> tempvecm2 = Teuchos::rcp(new Epetra_Vector(mold_->DomainMap()));
@@ -2257,7 +2257,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
 
   // for self contact, slave and master sets may have changed,
   // thus we have to export the product Dold^T * zold to fit
-  if (IsSelfContact())
+  if (is_self_contact())
   {
     Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(dold_->DomainMap()));
     Teuchos::RCP<Epetra_Vector> zoldexp = Teuchos::rcp(new Epetra_Vector(dold_->RowMap()));
@@ -2370,7 +2370,7 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
   // case, where the contact interfaces have been redistributed
   // independently of the underlying problem discretization.
 
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     //----------------------------------------------------------- FIRST LINE
     // nothing to do (ndof-map independent of redistribution)
@@ -2617,12 +2617,12 @@ void Wear::LagrangeStrategyWear::CondenseWearDiscr(
 /*----------------------------------------------------------------------*
  | evaluate frictional wear contact (public)                 farah 10/13|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::EvaluateFriction(
+void Wear::LagrangeStrategyWear::evaluate_friction(
     Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
+  if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()) return;
 
   // complete stiffness matrix
   // (this is a prerequisite for the Split2x2 methods to be called later)
@@ -2643,7 +2643,7 @@ void Wear::LagrangeStrategyWear::EvaluateFriction(
   Teuchos::RCP<Epetra_Vector> gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
   if (gact->GlobalLength())
   {
-    Core::LinAlg::Export(*g_, *gact);
+    Core::LinAlg::Export(*wgap_, *gact);
     gact->ReplaceMap(*gactiven_);
   }
 
@@ -2818,7 +2818,7 @@ void Wear::LagrangeStrategyWear::EvaluateFriction(
   // Concretely, we apply the following transformations:
   // LinD      ---->   T^(-T) * LinD
   //----------------------------------------------------------------------
-  if (Dualquadslavetrafo())
+  if (is_dual_quad_slave_trafo())
   {
     // modify lindmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp1 =
@@ -3031,7 +3031,7 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
   // Concretely, we apply the following transformations:
   // D         ---->   D * T^(-1)
   //----------------------------------------------------------------------
-  if (Dualquadslavetrafo())
+  if (is_dual_quad_slave_trafo())
   {
     // modify dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
@@ -3040,7 +3040,7 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
   }
 
   // transform if necessary
-  if (ParRedist())
+  if (parallel_redistribution_status())
   {
     lindmatrix_ = Mortar::MatrixRowTransform(lindmatrix_, pgsdofrowmap_);
     linmmatrix_ = Mortar::MatrixRowTransform(linmmatrix_, pgmdofrowmap_);
@@ -3055,7 +3055,7 @@ void Wear::LagrangeStrategyWear::prepare_saddle_point_system(
   // for self contact, slave and master sets may have changed,
   // thus we have to export the products Dold^T * zold / D^T * z to fit
   // thus we have to export the products Mold^T * zold / M^T * z to fit
-  if (IsSelfContact())
+  if (is_self_contact())
   {
     // add contact force terms
     Teuchos::RCP<Epetra_Vector> fsexp = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
@@ -3223,7 +3223,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel row distribution of constraint matrix kdz
     // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkdz = Mortar::MatrixRowTransform(trkdz, ProblemDofs());
+    if (parallel_redistribution_status()) trkdz = Mortar::MatrixRowTransform(trkdz, ProblemDofs());
 
     // build constraint matrix kzd
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
@@ -3238,7 +3238,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkzd = Mortar::MatrixColTransform(trkzd, ProblemDofs());
+    if (parallel_redistribution_status()) trkzd = Mortar::MatrixColTransform(trkzd, ProblemDofs());
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::SplitMap(*gsdofrowmap_, *gactivedofs_);
@@ -3285,7 +3285,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<Epetra_Vector> gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
     Teuchos::RCP<Epetra_Vector> gactexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -3333,7 +3333,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel row distribution of constraint matrix kdz
     // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkdz = Mortar::MatrixRowTransform(trkdz, ProblemDofs());
+    if (parallel_redistribution_status()) trkdz = Mortar::MatrixRowTransform(trkdz, ProblemDofs());
 
     // build constraint matrix kzd
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
@@ -3348,7 +3348,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkzd = Mortar::MatrixColTransform(trkzd, ProblemDofs());
+    if (parallel_redistribution_status()) trkzd = Mortar::MatrixColTransform(trkzd, ProblemDofs());
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::SplitMap(*gsdofrowmap_, *gactivedofs_);
@@ -3395,7 +3395,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkwd = Mortar::MatrixColTransform(trkwd, ProblemDofs());
+    if (parallel_redistribution_status()) trkwd = Mortar::MatrixColTransform(trkwd, ProblemDofs());
 
     // *********************************
     // build wear matrix kwz
@@ -3468,7 +3468,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<Epetra_Vector> gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
     Teuchos::RCP<Epetra_Vector> gactexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -3535,7 +3535,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel row distribution of constraint matrix kdz
     // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkdz = Mortar::MatrixRowTransform(trkdz, ProblemDofs());
+    if (parallel_redistribution_status()) trkdz = Mortar::MatrixRowTransform(trkdz, ProblemDofs());
 
     // build constraint matrix kzd
     Teuchos::RCP<Core::LinAlg::SparseMatrix> kzd =
@@ -3550,7 +3550,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkzd = Mortar::MatrixColTransform(trkzd, ProblemDofs());
+    if (parallel_redistribution_status()) trkzd = Mortar::MatrixColTransform(trkzd, ProblemDofs());
 
     // build unity matrix for inactive dofs
     Teuchos::RCP<Epetra_Map> gidofs = Core::LinAlg::SplitMap(*gsdofrowmap_, *gactivedofs_);
@@ -3588,7 +3588,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkwd = Mortar::MatrixColTransform(trkwd, ProblemDofs());
+    if (parallel_redistribution_status()) trkwd = Mortar::MatrixColTransform(trkwd, ProblemDofs());
 
     // *********************************
     // build wear matrix kwz
@@ -3647,7 +3647,8 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
 
     // transform parallel column distribution of constraint matrix kzd
     // (only necessary in the parallel redistribution case)
-    if (ParRedist()) trkwmd = Mortar::MatrixColTransform(trkwmd, ProblemDofs());
+    if (parallel_redistribution_status())
+      trkwmd = Mortar::MatrixColTransform(trkwmd, ProblemDofs());
 
     // *********************************
     // build wear matrix kwmz
@@ -3694,7 +3695,7 @@ void Wear::LagrangeStrategyWear::build_saddle_point_system(
     Teuchos::RCP<Epetra_Vector> gact = Core::LinAlg::CreateVector(*gactivenodes_, true);
     if (gactiven_->NumGlobalElements())
     {
-      Core::LinAlg::Export(*g_, *gact);
+      Core::LinAlg::Export(*wgap_, *gact);
       gact->ReplaceMap(*gactiven_);
     }
     Teuchos::RCP<Epetra_Vector> gactexp = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -3998,7 +3999,7 @@ void Wear::LagrangeStrategyWear::update_displacements_and_l_mincrements(
     solwm->ReplaceMap(*gmdofnrowmap_);
   }
 
-  if (IsSelfContact())
+  if (is_self_contact())
   // for self contact, slave and master sets may have changed,
   // thus we have to reinitialize the LM vector map
   {
@@ -4297,11 +4298,11 @@ void Wear::LagrangeStrategyWear::DoWriteRestart(
 /*----------------------------------------------------------------------*
  | Recovery method                                           farah 10/13|
  *----------------------------------------------------------------------*/
-void Wear::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
+void Wear::LagrangeStrategyWear::recover(Teuchos::RCP<Epetra_Vector> disi)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
-  if (!IsInContact() && !WasInContact() && !was_in_contact_last_time_step()) return;
+  if (!is_in_contact() && !was_in_contact() && !was_in_contact_last_time_step()) return;
 
   // shape function and system types
   Inpar::Mortar::ShapeFcn shapefcn =
@@ -4467,7 +4468,7 @@ void Wear::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
 
     // for self contact, slave and master sets may have changed,
     // thus we have to export the products Dold * zold and Mold^T * zold to fit
-    if (IsSelfContact())
+    if (is_self_contact())
     {
       // approximate update
       // z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4544,12 +4545,12 @@ void Wear::LagrangeStrategyWear::Recover(Teuchos::RCP<Epetra_Vector> disi)
 /*----------------------------------------------------------------------*
  | parallel redistribution                                   popp 09/10 |
  *----------------------------------------------------------------------*/
-bool Wear::LagrangeStrategyWear::RedistributeContact(
+bool Wear::LagrangeStrategyWear::redistribute_contact(
     Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<const Epetra_Vector> vel)
 {
   // get out of here if parallel redistribution is switched off
   // or if this is a single processor (serial) job
-  if (!ParRedist() || Comm().NumProc() == 1) return false;
+  if (!parallel_redistribution_status() || Comm().NumProc() == 1) return false;
 
   for (int i = 0; i < (int)interface_.size(); ++i)
   {
@@ -4569,7 +4570,7 @@ bool Wear::LagrangeStrategyWear::RedistributeContact(
   // (1) static redistribution: ONLY at time t=0 or after restart
   // (both cases can be identified via empty unbalance vectors)
   //**********************************************************************
-  if (WhichParRedist() == Inpar::Mortar::ParallelRedist::redist_static)
+  if (which_parallel_redistribution() == Inpar::Mortar::ParallelRedist::redist_static)
   {
     // this is the first time step (t=0) or restart
     if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
@@ -4601,7 +4602,7 @@ bool Wear::LagrangeStrategyWear::RedistributeContact(
   //**********************************************************************
   // (2) dynamic redistribution: whenever system is out of balance
   //**********************************************************************
-  else if (WhichParRedist() == Inpar::Mortar::ParallelRedist::redist_dynamic)
+  else if (which_parallel_redistribution() == Inpar::Mortar::ParallelRedist::redist_dynamic)
   {
     // this is the first time step (t=0) or restart
     if ((int)unbalanceEvaluationTime_.size() == 0 && (int)unbalanceNumSlaveElements_.size() == 0)
@@ -4718,9 +4719,9 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
 
   // evaluate interface and restart mortar quantities
   // in the case of SELF CONTACT, also re-setup master/slave maps
-  InitMortar();
-  InitEvalInterface();
-  AssembleMortar();
+  initialize_mortar();
+  initialize_and_evaluate_interface();
+  assemble_mortar();
 
   //----------------------------------------------------------------------
   // CHECK IF WE NEED TRANSFORMATION MATRICES FOR SLAVE DISPLACEMENT DOFS
@@ -4728,7 +4729,7 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   // Concretely, we apply the following transformations:
   // D         ---->   D * T^(-1)
   //----------------------------------------------------------------------
-  if (Dualquadslavetrafo())
+  if (is_dual_quad_slave_trafo())
   {
     // modify dmatrix_
     Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
@@ -4801,8 +4802,8 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   // read restart information on Lagrange multipliers
   z_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
   zold_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-  if (!restartwithcontact) reader.read_vector(LagrMult(), "lagrmultold");
-  if (!restartwithcontact) reader.read_vector(LagrMultOld(), "lagrmultold");
+  if (!restartwithcontact) reader.read_vector(lagrange_multiplier(), "lagrmultold");
+  if (!restartwithcontact) reader.read_vector(lagrange_multiplier_old(), "lagrmultold");
 
   // Lagrange multiplier increment is always zero (no restart value to be read)
   zincr_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
@@ -4820,7 +4821,7 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   if (st == Inpar::CONTACT::solution_uzawa)
   {
     zuzawa_ = Teuchos::rcp(new Epetra_Vector(*gsdofrowmap_));
-    if (!restartwithcontact) reader.read_vector(LagrMultUzawa(), "lagrmultold");
+    if (!restartwithcontact) reader.read_vector(lagrange_multiplier_uzawa(), "lagrmultold");
     store_nodal_quantities(Mortar::StrategyBase::lmuzawa);
   }
 
@@ -4870,7 +4871,7 @@ void Wear::LagrangeStrategyWear::DoReadRestart(
   // evaluate relative movement (jump)
   // needed because it is not called in the predictor of the
   // lagrange multiplier strategy
-  EvaluateRelMov();
+  evaluate_relative_movement();
 
   // reset unbalance factors for redistribution
   // (during restart the interface has been evaluated once)

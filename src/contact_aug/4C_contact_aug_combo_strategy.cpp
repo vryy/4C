@@ -147,7 +147,7 @@ CONTACT::Aug::ComboStrategy::ComboStrategy(
        ++cit)
   {
     const CONTACT::AbstractStrategy& s = **cit;
-    const plain_interface_set& sinterfaces = s.ContactInterfaces();
+    const plain_interface_set& sinterfaces = s.contact_interfaces();
     const unsigned num_interfaces = sinterfaces.size();
 
     interface_sets_.push_back(plain_interface_set(num_interfaces, Teuchos::null));
@@ -225,37 +225,37 @@ void CONTACT::Aug::ComboStrategy::reset(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::Aug::ComboStrategy::IsSaddlePointSystem() const
+bool CONTACT::Aug::ComboStrategy::is_saddle_point_system() const
 {
-  return get().IsSaddlePointSystem();
+  return get().is_saddle_point_system();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::ResetActiveSet() { get().ResetActiveSet(); }
+void CONTACT::Aug::ComboStrategy::reset_active_set() { get().reset_active_set(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis)
+void CONTACT::Aug::ComboStrategy::save_reference_state(Teuchos::RCP<const Epetra_Vector> dis)
 {
-  get().SaveReferenceState(dis);
+  get().save_reference_state(dis);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::Aug::ComboStrategy::ConstraintNorm() const { return get().ConstraintNorm(); }
+double CONTACT::Aug::ComboStrategy::constraint_norm() const { return get().constraint_norm(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CONTACT::Aug::ComboStrategy::ActiveSetConverged() { return get().ActiveSetConverged(); }
+bool CONTACT::Aug::ComboStrategy::active_set_converged() { return get().active_set_converged(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int CONTACT::Aug::ComboStrategy::ActiveSetSteps() { return get().ActiveSetSteps(); }
+int CONTACT::Aug::ComboStrategy::active_set_steps() { return get().active_set_steps(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::UpdateActiveSet() { return get().UpdateActiveSet(); }
+void CONTACT::Aug::ComboStrategy::update_active_set() { return get().update_active_set(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -277,47 +277,47 @@ Teuchos::RCP<const Epetra_Map> CONTACT::Aug::ComboStrategy::get_old_active_row_n
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::Aug::ComboStrategy::GetOldSlipRowNodes() const
+Teuchos::RCP<const Epetra_Map> CONTACT::Aug::ComboStrategy::get_old_slip_row_nodes() const
 {
-  return get().GetOldSlipRowNodes();
+  return get().get_old_slip_row_nodes();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::Aug::ComboStrategy::sl_normal_do_f_row_map_ptr(
+Teuchos::RCP<const Epetra_Map> CONTACT::Aug::ComboStrategy::slave_n_dof_row_map_ptr(
     const bool& redist) const
 {
-  return get().sl_normal_do_f_row_map_ptr(redist);
+  return get().slave_n_dof_row_map_ptr(redist);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map& CONTACT::Aug::ComboStrategy::SlNormalDoFRowMap(const bool& redist) const
+const Epetra_Map& CONTACT::Aug::ComboStrategy::slave_n_dof_row_map(const bool& redist) const
 {
-  return get().SlNormalDoFRowMap(redist);
+  return get().slave_n_dof_row_map(redist);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::Aug::ComboStrategy::sl_tangential_do_f_row_map_ptr(
+Teuchos::RCP<const Epetra_Map> CONTACT::Aug::ComboStrategy::slave_t_dof_row_map_ptr(
     const bool& redist) const
 {
-  return get().sl_tangential_do_f_row_map_ptr(redist);
+  return get().slave_t_dof_row_map_ptr(redist);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map& CONTACT::Aug::ComboStrategy::sl_tangential_do_f_row_map(const bool& redist) const
+const Epetra_Map& CONTACT::Aug::ComboStrategy::slave_t_dof_row_map(const bool& redist) const
 {
-  return get().sl_tangential_do_f_row_map(redist);
+  return get().slave_t_dof_row_map(redist);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::ComboStrategy::GetRhsBlockPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::ComboStrategy::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
-  return get().GetRhsBlockPtr(bt);
+  return get().get_rhs_block_ptr(bt);
 }
 
 /*----------------------------------------------------------------------------*
@@ -330,18 +330,18 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::ComboStrategy::get_rhs_block_ptr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::ComboStrategy::GetCondensedRhsPtr(
+Teuchos::RCP<const Epetra_Vector> CONTACT::Aug::ComboStrategy::get_condensed_rhs_ptr(
     Epetra_Vector& f, const double& timefac_np) const
 {
-  return get().GetCondensedRhsPtr(f, timefac_np);
+  return get().get_condensed_rhs_ptr(f, timefac_np);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::Aug::ComboStrategy::GetMatrixBlockPtr(
-    const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
+Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::Aug::ComboStrategy::get_matrix_block_ptr(
+    const enum CONTACT::MatBlockType& bt, const ParamsInterface* cparams) const
 {
-  return get().GetMatrixBlockPtr(bt, cparams);
+  return get().get_matrix_block_ptr(bt, cparams);
 }
 
 /*----------------------------------------------------------------------------*
@@ -355,7 +355,10 @@ CONTACT::Aug::ComboStrategy::get_condensed_matrix_block_ptr(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> CONTACT::Aug::ComboStrategy::ConstrRhs() { return get().ConstrRhs(); }
+Teuchos::RCP<Epetra_Vector> CONTACT::Aug::ComboStrategy::constraint_rhs()
+{
+  return get().constraint_rhs();
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -363,7 +366,10 @@ void CONTACT::Aug::ComboStrategy::initialize() { FOUR_C_THROW("Unnecessary in th
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::EvalConstrRHS() { FOUR_C_THROW("Unnecessary in this Strategy."); }
+void CONTACT::Aug::ComboStrategy::evaluate_constr_rhs()
+{
+  FOUR_C_THROW("Unnecessary in this Strategy.");
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -425,7 +431,7 @@ void CONTACT::Aug::ComboStrategy::post_store_dirichlet_status(
 void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Assemble(
     const Epetra_Map& dbcmap, const CONTACT::Aug::DataContainer& data)
 {
-  const Epetra_Map& gSlMaDofRowMap = *data.GSlMaDofRowMapPtr();
+  const Epetra_Map& gSlMaDofRowMap = *data.global_slave_master_dof_row_map_ptr();
 
   Teuchos::RCP<Epetra_Map> gSlMaDbcDofRowMap = Core::LinAlg::IntersectMap(gSlMaDofRowMap, dbcmap);
 
@@ -438,8 +444,8 @@ void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Assemble(
  *----------------------------------------------------------------------------*/
 void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Redistribute(const CONTACT::Aug::DataContainer& data)
 {
-  slMaMap_ =
-      Core::Rebalance::RebalanceInAccordanceWithReference(*data.GSlMaDofRowMapPtr(), *slMaMap_);
+  slMaMap_ = Core::Rebalance::RebalanceInAccordanceWithReference(
+      *data.global_slave_master_dof_row_map_ptr(), *slMaMap_);
 
   reset(*slMaMap_, data);
 }
@@ -449,8 +455,8 @@ void CONTACT::Aug::ComboStrategy::GlobalNoDbc::Redistribute(const CONTACT::Aug::
 void CONTACT::Aug::ComboStrategy::GlobalNoDbc::reset(
     const Epetra_Map& slMaMap, const CONTACT::Aug::DataContainer& data)
 {
-  slMap_ = Core::LinAlg::IntersectMap(slMaMap, *data.GSlDofRowMapPtr());
-  maMap_ = Core::LinAlg::IntersectMap(slMaMap, *data.GMaDofRowMapPtr());
+  slMap_ = Core::LinAlg::IntersectMap(slMaMap, *data.global_slave_dof_row_map_ptr());
+  maMap_ = Core::LinAlg::IntersectMap(slMaMap, *data.global_master_dof_row_map_ptr());
 
   slMaForce_ = Teuchos::rcp(new Epetra_Vector(slMaMap, true));
   slForce_ = Teuchos::rcp(new Epetra_Vector(*slMap_, true));
@@ -459,13 +465,13 @@ void CONTACT::Aug::ComboStrategy::GlobalNoDbc::reset(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::eval_force(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::ComboStrategy::evaluate_force(CONTACT::ParamsInterface& cparams)
 {
   get().pre_eval_force(cparams);
 
   get().assemble_gap();
 
-  get().eval_augmented_forces();
+  get().evaluate_augmented_forces();
 
 #ifdef DEBUG_COMBO_STRATEGY
   std::cout << __LINE__ << " -- " << __PRETTY_FUNCTION__ << std::endl;
@@ -478,17 +484,17 @@ void CONTACT::Aug::ComboStrategy::eval_force(CONTACT::ParamsInterface& cparams)
 void CONTACT::Aug::ComboStrategy::run_post_eval_force(CONTACT::ParamsInterface& cparams)
 {
   get().assemble_contact_rhs();
-  get().eval_str_contact_rhs();
-  get().EvalConstrRHS();
+  get().evaluate_str_contact_rhs();
+  get().evaluate_constr_rhs();
 
   get().post_eval_force(cparams);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::eval_force_stiff(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::ComboStrategy::evaluate_force_stiff(CONTACT::ParamsInterface& cparams)
 {
-  eval_force(cparams);
+  evaluate_force(cparams);
 }
 
 /*----------------------------------------------------------------------------*
@@ -504,15 +510,15 @@ void CONTACT::Aug::ComboStrategy::run_post_eval_force_stiff(CONTACT::ParamsInter
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::Aug::ComboStrategy::eval_static_constraint_rhs(CONTACT::ParamsInterface& cparams)
+void CONTACT::Aug::ComboStrategy::evaluate_static_constraint_rhs(CONTACT::ParamsInterface& cparams)
 {
   get().set_current_eval_state(cparams);
-  get().InitEvalInterface(cparams);
+  get().initialize_and_evaluate_interface(cparams);
 
   get().initialize(cparams.get_action_type());
   get().assemble_gap();
 
-  get().eval_constraint_forces();
+  get().evaluate_constraint_forces();
   get().zeroize_lm_forces();
 }
 
@@ -524,8 +530,8 @@ void CONTACT::Aug::ComboStrategy::run_post_eval_static_constraint_rhs(
   //  switch_->Update( cparams );
 
   get().assemble_contact_rhs();
-  get().eval_str_contact_rhs();
-  get().EvalConstrRHS();
+  get().evaluate_str_contact_rhs();
+  get().evaluate_constr_rhs();
 }
 
 /*----------------------------------------------------------------------------*
@@ -632,10 +638,10 @@ const CONTACT::Aug::Strategy& CONTACT::Aug::ComboStrategy::get() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::Aug::ComboStrategy::GetPotentialValue(
+double CONTACT::Aug::ComboStrategy::get_potential_value(
     const enum NOX::Nln::MeritFunction::MeritFctName mrt_type) const
 {
-  return get().GetPotentialValue(mrt_type);
+  return get().get_potential_value(mrt_type);
 }
 
 /*----------------------------------------------------------------------------*
