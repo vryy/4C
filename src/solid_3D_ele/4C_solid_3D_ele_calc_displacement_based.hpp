@@ -113,9 +113,9 @@ namespace Discret::ELEMENTS
       Core::LinAlg::Matrix<Core::FE::dim<celltype>,
           Core::FE::DisTypeToNumDeriv2<celltype>::numderiv2>
           xXFsec(true);
-      xXF.update(1.0, element_nodes.reference_coordinates_, 0.0);
-      xXF.update(1.0, element_nodes.displacements_, 1.0);
-      xXF.multiply_nt(-1.0, element_nodes.reference_coordinates_, deformation_gradient, 1.0);
+      xXF.update(1.0, element_nodes.reference_coordinates, 0.0);
+      xXF.update(1.0, element_nodes.displacements, 1.0);
+      xXF.multiply_nt(-1.0, element_nodes.reference_coordinates, deformation_gradient, 1.0);
 
       Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<celltype>::numderiv2,
           Core::FE::num_nodes<celltype>>
@@ -173,7 +173,7 @@ namespace Discret::ELEMENTS
           Core::FE::num_nodes<celltype>>
           deriv2(true);
       Core::FE::shape_function_deriv2<celltype>(xi, deriv2);
-      Xsec.multiply(1.0, deriv2, element_nodes.reference_coordinates_, 0.0);
+      Xsec.multiply(1.0, deriv2, element_nodes.reference_coordinates, 0.0);
       N_XYZ_Xsec.multiply_tt(1.0, jacobian_mapping.N_XYZ_, Xsec, 0.0);
 
       for (int i = 0; i < Core::FE::dim<celltype>; ++i)

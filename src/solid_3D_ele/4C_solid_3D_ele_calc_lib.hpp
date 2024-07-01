@@ -89,12 +89,18 @@ namespace Discret::ELEMENTS
      * @brief Position of nodes in the reference configuration
      */
     Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
-        reference_coordinates_;
+        reference_coordinates;
+
+    /*!
+     * @brief Position of nodes in the current configuration
+     */
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
+        current_coordinates;
 
     /*!
      * @brief Displacements of the element nodes
      */
-    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements_;
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements;
   };
 
   template <Core::FE::CellType celltype>
@@ -104,22 +110,28 @@ namespace Discret::ELEMENTS
      * @brief Position of nodes in the reference configuration
      */
     Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
-        reference_coordinates_;
+        reference_coordinates;
+
+    /*!
+     * @brief Position of nodes in the current configuration
+     */
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>>
+        current_coordinates;
 
     /*!
      * @brief Displacements of the element nodes
      */
-    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements_;
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, DETAIL::num_dim<celltype>> displacements;
 
     /*!
      * @brief Knot span of a NURBS element
      */
-    std::vector<Core::LinAlg::SerialDenseVector> knots_;
+    std::vector<Core::LinAlg::SerialDenseVector> knots;
 
     /*!
      * @brief Weights of control points
      */
-    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1, double> weights_;
+    Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1, double> weights;
   };
 
   /*!
@@ -139,8 +151,10 @@ namespace Discret::ELEMENTS
     {
       for (int d = 0; d < DETAIL::num_dim<celltype>; ++d)
       {
-        element_nodes.reference_coordinates_(i, d) = ele.Nodes()[i]->X()[d];
-        element_nodes.displacements_(i, d) = disp[i * DETAIL::num_dim<celltype> + d];
+        element_nodes.reference_coordinates(i, d) = ele.Nodes()[i]->X()[d];
+        element_nodes.current_coordinates(i, d) =
+            ele.Nodes()[i]->X()[d] + disp[i * DETAIL::num_dim<celltype> + d];
+        element_nodes.displacements(i, d) = disp[i * DETAIL::num_dim<celltype> + d];
       }
     }
 
@@ -170,7 +184,7 @@ namespace Discret::ELEMENTS
     {
       // Obtain the information required for a NURBS element
       bool zero_size = Core::FE::Nurbs::GetMyNurbsKnotsAndWeights(
-          discretization, &ele, element_nodes.knots_, element_nodes.weights_);
+          discretization, &ele, element_nodes.knots, element_nodes.weights);
       if (zero_size)
         FOUR_C_THROW("GetMyNurbsKnotsAndWeights has to return a non zero size NURBS element.");
     }
@@ -311,7 +325,7 @@ namespace Discret::ELEMENTS
     Core::FE::shape_function<celltype>(xi_centroid, shape_functions_centroid);
 
     return EvaluateReferenceCoordinate<celltype>(
-        nodal_coordinates.reference_coordinates_, shape_functions_centroid);
+        nodal_coordinates.reference_coordinates, shape_functions_centroid);
   }
 
   template <Core::FE::CellType celltype, std::enable_if_t<Core::FE::is_nurbs<celltype>, int> = 0>
@@ -323,10 +337,10 @@ namespace Discret::ELEMENTS
 
     Core::LinAlg::Matrix<DETAIL::num_nodes<celltype>, 1> shape_functions_centroid(true);
     Core::FE::Nurbs::nurbs_shape_function_dim(shape_functions_centroid, xi_centroid,
-        nodal_coordinates.knots_, nodal_coordinates.weights_, celltype);
+        nodal_coordinates.knots, nodal_coordinates.weights, celltype);
 
     return EvaluateReferenceCoordinate<celltype>(
-        nodal_coordinates.reference_coordinates_, shape_functions_centroid);
+        nodal_coordinates.reference_coordinates, shape_functions_centroid);
   }
 
   /*!
@@ -372,7 +386,7 @@ namespace Discret::ELEMENTS
   {
     ShapeFunctionsAndDerivatives<celltype> shapefcns;
     Core::FE::Nurbs::nurbs_get_funct_deriv(shapefcns.shapefunctions_, shapefcns.derivatives_, xi,
-        nodal_coordinates.knots_, nodal_coordinates.weights_, celltype);
+        nodal_coordinates.knots, nodal_coordinates.weights, celltype);
 
     return shapefcns;
   }
@@ -412,7 +426,7 @@ namespace Discret::ELEMENTS
   {
     JacobianMapping<celltype> jacobian;
 
-    jacobian.jacobian_.multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates_);
+    jacobian.jacobian_.multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates);
     jacobian.inverse_jacobian_ = jacobian.jacobian_;
     jacobian.determinant_ = jacobian.inverse_jacobian_.invert();
     jacobian.N_XYZ_.multiply(jacobian.inverse_jacobian_, shapefcns.derivatives_);
@@ -434,7 +448,7 @@ namespace Discret::ELEMENTS
       const ElementNodes<celltype>& nodal_coordinates)
   {
     Core::LinAlg::Matrix<DETAIL::num_dim<celltype>, DETAIL::num_dim<celltype>> jacobian;
-    jacobian.multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates_);
+    jacobian.multiply(shapefcns.derivatives_, nodal_coordinates.reference_coordinates);
 
     return jacobian.determinant();
   }
@@ -524,13 +538,29 @@ namespace Discret::ELEMENTS
       const Inpar::STR::KinemType& kinematictype = Inpar::STR::KinemType::nonlinearTotLag)
   {
     SpatialMaterialMapping<celltype> spatial_material_mapping;
-    spatial_material_mapping.deformation_gradient_ =
-        Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
 
     if (kinematictype == Inpar::STR::KinemType::nonlinearTotLag)
     {
-      spatial_material_mapping.deformation_gradient_.multiply_tt(
-          scale_defgrd, nodal_coordinates.displacements_, jacobian_mapping.N_XYZ_, scale_defgrd);
+      if constexpr (celltype == Core::FE::CellType::hex8)
+      {
+        // For some reason, some contact tests with hex8 discretization don't like the computation
+        // of the deformation gradient based on the nodal displacements. They only converge if the
+        // deformation gradient ist computed based on the current coordinates. Similarly, there are
+        // ssi and ssti tests with an tet4 discretization that only converge when using the
+        // displacements. Until we found the problem, we compute the deformation gradient based on
+        // the current coordinates (F=(X+u)^T  dN/dX^T) for hex8 and based on the displacement (F=I
+        // + u^T dN/dX^T) for the other celltypes.
+        spatial_material_mapping.deformation_gradient_.multiply_tt(
+            scale_defgrd, nodal_coordinates.current_coordinates, jacobian_mapping.N_XYZ_);
+      }
+      else
+      {
+        spatial_material_mapping.deformation_gradient_ =
+            Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
+
+        spatial_material_mapping.deformation_gradient_.multiply_tt(
+            scale_defgrd, nodal_coordinates.displacements, jacobian_mapping.N_XYZ_, scale_defgrd);
+      }
     }
 
     spatial_material_mapping.inverse_deformation_gradient_.invert(
@@ -623,7 +653,7 @@ namespace Discret::ELEMENTS
         true);
     for (unsigned i = 0; i < Core::FE::num_nodes<celltype>; ++i)
       for (unsigned j = 0; j < Core::FE::dim<celltype>; ++j)
-        nodal_displs(i * Core::FE::dim<celltype> + j, 0) = nodal_coordinates.displacements_(i, j);
+        nodal_displs(i * Core::FE::dim<celltype> + j, 0) = nodal_coordinates.displacements(i, j);
 
     Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> gl_strain;
     gl_strain.multiply(linear_b_operator, nodal_displs);
@@ -942,7 +972,7 @@ namespace Discret::ELEMENTS
       Teuchos::ParameterList& params)
   {
     auto gp_ref_coord = EvaluateReferenceCoordinate<celltype>(
-        nodal_coordinates.reference_coordinates_, shape_functions_gp.shapefunctions_);
+        nodal_coordinates.reference_coordinates, shape_functions_gp.shapefunctions_);
     params.set("gp_coords_ref", gp_ref_coord);
   }
 
