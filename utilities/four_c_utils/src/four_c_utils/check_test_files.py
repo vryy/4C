@@ -1,11 +1,10 @@
-from codecs import namereplace_errors
+"""Check input test files for errors."""
+
 import os
 import sys
 import argparse
 import re
-import json
 from four_c_utils import common_utils as utils
-from typing import Optional, List
 
 
 # CHECK INPUT FILE TESTS
@@ -24,8 +23,7 @@ def check_inputtests(filenames, allerrors):
         if re.search(r"\b" + re.escape(expected_test_name) + r"\b", all_lines) is None:
             missing_input_tests.append(input_test)
 
-    # Currently disabled since this needs a few fixes
-    if False and len(missing_input_tests) > 0:
+    if len(missing_input_tests) > 0:
         errors += 1
         allerrors.append(
             "The following input files are missing in TestingFrameworkListOfTests.cmake:"
@@ -55,8 +53,7 @@ def check_inputtests(filenames, allerrors):
                 elif line.strip() != "":
                     num_current_section_non_empty_lines += 1
 
-    # Currently disabled since this needs a few fixes
-    if False and len(tests_empty_sections) > 0:
+    if len(tests_empty_sections) > 0:
         errors += 1
         allerrors.append(
             "The following input files have empty sections. Please delete them or correct your input file."

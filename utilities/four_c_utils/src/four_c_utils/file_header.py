@@ -1,9 +1,3 @@
-# HEADER
-import json
-import os
-import sys
-
-
 class Header(object):
     def __init__(self, filetext):
         self.header = False

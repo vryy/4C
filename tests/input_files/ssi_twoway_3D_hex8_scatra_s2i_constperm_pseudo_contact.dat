@@ -1,4 +1,3 @@
--------------------------------------------------------------TITLE
 - simple academic test case to test the s2i pseudo contact formulation
 - two blocks discretized with hex8 elements are subject to a bending mode around
   the z-axis to trigger compressive and tensile stresses at the interface

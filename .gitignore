@@ -74,6 +74,7 @@ modules/contact_module/src/
 # Python
 *.pyc
 utilities/python-venv/*
+*.egg-info/
 
 # VS Code
 *.vscode

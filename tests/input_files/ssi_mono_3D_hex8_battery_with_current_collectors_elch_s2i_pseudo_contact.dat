@@ -1,4 +1,3 @@
--------------------------------------------------------------TITLE
 - simple academic test scenario of a battery consisting of two current collectors,
   an anode, an electrolyte and a cathode
 - the blocks are discretized with hex8 elements and subject to a bending mode around
