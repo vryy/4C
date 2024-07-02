@@ -221,20 +221,20 @@ namespace NTS
   /*!
   \author farah
   */
-  template <Core::FE::CellType distypeM>
+  template <Core::FE::CellType distype_m>
   class MTInterpolatorCalc : public MTInterpolator
   {
    public:
     MTInterpolatorCalc();
 
     /// Singleton access method
-    static MTInterpolatorCalc<distypeM>* Instance(Core::UTILS::SingletonAction action);
+    static MTInterpolatorCalc<distype_m>* Instance(Core::UTILS::SingletonAction action);
 
     //! nm_: number of master element nodes
-    static constexpr int nm_ = Core::FE::num_nodes<distypeM>;
+    static constexpr int nm_ = Core::FE::num_nodes<distype_m>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static constexpr int ndim_ = Core::FE::dim<distypeM> + 1;
+    static constexpr int ndim_ = Core::FE::dim<distype_m> + 1;
 
     /*!
      \brief Interpolate for nts problems

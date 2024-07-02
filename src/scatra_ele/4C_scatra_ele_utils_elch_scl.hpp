@@ -23,7 +23,7 @@ namespace Discret
   namespace ELEMENTS
   {
     // forward declarations
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerScl;
     class ScaTraEleDiffManagerElchScl;
 

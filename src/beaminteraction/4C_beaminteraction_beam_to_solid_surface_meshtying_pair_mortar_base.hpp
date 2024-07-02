@@ -30,13 +30,13 @@ namespace BEAMINTERACTION
    * @tparam mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar
    * shape functions.
    */
-  template <typename scalar_type, typename beam, typename surface, typename mortar>
+  template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
   class BeamToSolidSurfaceMeshtyingPairMortarBase
-      : public BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
+      : public BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>
   {
    private:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>;
+    using base_class = BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>;
 
    public:
     /**

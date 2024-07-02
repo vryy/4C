@@ -88,7 +88,7 @@ namespace Mortar
          (which is equivalent to a 3D coupling problem)
 
   */
-  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+  template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
   class IntegratorCalc : public Integrator
   {
    public:
@@ -107,17 +107,17 @@ namespace Mortar
 
 
     /// Singleton access method
-    static IntegratorCalc<distypeS, distypeM>* Instance(
+    static IntegratorCalc<distype_s, distype_m>* Instance(
         Core::UTILS::SingletonAction action, const Teuchos::ParameterList& params);
 
     //! ns_: number of slave element nodes
-    static constexpr int ns_ = Core::FE::num_nodes<distypeS>;
+    static constexpr int ns_ = Core::FE::num_nodes<distype_s>;
 
     //! nm_: number of master element nodes
-    static constexpr int nm_ = Core::FE::num_nodes<distypeM>;
+    static constexpr int nm_ = Core::FE::num_nodes<distype_m>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static constexpr int ndim_ = Core::FE::dim<distypeS> + 1;
+    static constexpr int ndim_ = Core::FE::dim<distype_s> + 1;
 
     //@}
     //! @name 2D and 3D integration methods

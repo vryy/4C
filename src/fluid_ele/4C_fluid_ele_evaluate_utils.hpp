@@ -2006,7 +2006,7 @@ namespace FLD
   /*!
    \brief compute parameters of multifractal subgrid-scale model
   */
-  template <int NEN, int NSD, Core::FE::CellType DISTYPE>
+  template <int nen, int nsd, Core::FE::CellType distype>
   void f3_get_mf_params(Discret::ELEMENTS::Fluid* ele,
       Discret::ELEMENTS::FluidEleParameterStd* fldpara, Teuchos::ParameterList& params,
       Teuchos::RCP<Core::Mat::Material> mat, std::vector<double>& vel, std::vector<double>& fsvel)
@@ -2016,13 +2016,13 @@ namespace FLD
     bool withscatra = params.get<bool>("scalar");
 
     // allocate a fixed size array for nodal velocities
-    Core::LinAlg::Matrix<NSD, NEN> evel;
-    Core::LinAlg::Matrix<NSD, NEN> efsvel;
+    Core::LinAlg::Matrix<nsd, nen> evel;
+    Core::LinAlg::Matrix<nsd, nen> efsvel;
 
     // split velocity and throw away  pressure, insert into element array
-    for (int inode = 0; inode < NEN; inode++)
+    for (int inode = 0; inode < nen; inode++)
     {
-      for (int idim = 0; idim < NSD; idim++)
+      for (int idim = 0; idim < nsd; idim++)
       {
         evel(idim, inode) = vel[inode * 4 + idim];
         efsvel(idim, inode) = fsvel[inode * 4 + idim];
@@ -2046,52 +2046,52 @@ namespace FLD
     }
 
     // allocate array for gauss-point velocities and derivatives
-    Core::LinAlg::Matrix<NSD, 1> velint;
-    Core::LinAlg::Matrix<NSD, NSD> velintderxy;
-    Core::LinAlg::Matrix<NSD, 1> fsvelint;
-    Core::LinAlg::Matrix<NSD, NSD> fsvelintderxy;
+    Core::LinAlg::Matrix<nsd, 1> velint;
+    Core::LinAlg::Matrix<nsd, nsd> velintderxy;
+    Core::LinAlg::Matrix<nsd, 1> fsvelint;
+    Core::LinAlg::Matrix<nsd, nsd> fsvelintderxy;
 
     // allocate arrays for shape functions and derivatives
-    Core::LinAlg::Matrix<NEN, 1> funct;
-    Core::LinAlg::Matrix<NSD, NEN> deriv;
-    Core::LinAlg::Matrix<NSD, NEN> derxy;
+    Core::LinAlg::Matrix<nen, 1> funct;
+    Core::LinAlg::Matrix<nsd, nen> deriv;
+    Core::LinAlg::Matrix<nsd, nen> derxy;
     double vol = 0.0;
 
     // array for element coordinates in physical space
-    Core::LinAlg::Matrix<NSD, NEN> xyze;
+    Core::LinAlg::Matrix<nsd, nen> xyze;
     // this will be the y-coordinate of the element center
     double center = 0;
     // get node coordinates of element
-    for (int inode = 0; inode < NEN; inode++)
+    for (int inode = 0; inode < nen; inode++)
     {
-      for (int idim = 0; idim < NSD; idim++) xyze(idim, inode) = ele->Nodes()[inode]->X()[idim];
+      for (int idim = 0; idim < nsd; idim++) xyze(idim, inode) = ele->Nodes()[inode]->X()[idim];
 
       center += xyze(1, inode);
     }
-    center /= NEN;
+    center /= nen;
 
     // evaluate shape functions and derivatives at element center
-    Core::LinAlg::Matrix<NSD, NSD> xji;
+    Core::LinAlg::Matrix<nsd, nsd> xji;
     {
       // use one-point Gauss rule
-      Core::FE::IntPointsAndWeights<NSD> intpoints(
-          Discret::ELEMENTS::DisTypeToStabGaussRule<DISTYPE>::rule);
+      Core::FE::IntPointsAndWeights<nsd> intpoints(
+          Discret::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
 
       // coordinates of the current integration point
       const double* gpcoord = (intpoints.IP().qxg)[0];
-      Core::LinAlg::Matrix<NSD, 1> xsi;
-      for (int idim = 0; idim < NSD; idim++)
+      Core::LinAlg::Matrix<nsd, 1> xsi;
+      for (int idim = 0; idim < nsd; idim++)
       {
         xsi(idim) = gpcoord[idim];
       }
       const double wquad = intpoints.IP().qwgt[0];
 
       // shape functions and their first derivatives
-      Core::FE::shape_function<DISTYPE>(xsi, funct);
-      Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv);
+      Core::FE::shape_function<distype>(xsi, funct);
+      Core::FE::shape_function_deriv1<distype>(xsi, deriv);
 
       // get Jacobian matrix and determinant
-      Core::LinAlg::Matrix<NSD, NSD> xjm;
+      Core::LinAlg::Matrix<nsd, nsd> xjm;
       // Core::LinAlg::Matrix<NSD,NSD> xji;
       xjm.multiply_nt(deriv, xyze);
       double det = xji.invert(xjm);
@@ -2136,18 +2136,18 @@ namespace FLD
     //          +-                                 -+
     //
     velintderxy.multiply_nt(evel, derxy);
-    Core::LinAlg::Matrix<NSD, NSD> twoeps;
-    for (int idim = 0; idim < NSD; idim++)
+    Core::LinAlg::Matrix<nsd, nsd> twoeps;
+    for (int idim = 0; idim < nsd; idim++)
     {
-      for (int jdim = 0; jdim < NSD; jdim++)
+      for (int jdim = 0; jdim < nsd; jdim++)
       {
         twoeps(idim, jdim) = velintderxy(idim, jdim) + velintderxy(jdim, idim);
       }
     }
 
-    for (int idim = 0; idim < NSD; idim++)
+    for (int idim = 0; idim < nsd; idim++)
     {
-      for (int jdim = 0; jdim < NSD; jdim++)
+      for (int jdim = 0; jdim < nsd; jdim++)
       {
         strainnorm += twoeps(idim, jdim) * twoeps(idim, jdim);
       }
@@ -2191,7 +2191,7 @@ namespace FLD
         {
           // a) streamlength due to Tezduyar et al. (1992)
           // normed velocity vector
-          Core::LinAlg::Matrix<NSD, 1> velino(true);
+          Core::LinAlg::Matrix<nsd, 1> velino(true);
           if (vel_norm >= 1e-6)
             velino.update(1.0 / vel_norm, velint);
           else
@@ -2199,7 +2199,7 @@ namespace FLD
             velino.clear();
             velino(0, 0) = 1.0;
           }
-          Core::LinAlg::Matrix<NEN, 1> tmp;
+          Core::LinAlg::Matrix<nen, 1> tmp;
           tmp.multiply_tn(derxy, velino);
           const double val = tmp.norm1();
           hk = 2.0 / val;
@@ -2216,7 +2216,7 @@ namespace FLD
         case Inpar::FLUID::cube_edge:
         {
           // c) qubic element length
-          hk = std::pow(vol, (1.0 / (double(NSD))));
+          hk = std::pow(vol, (1.0 / (double(nsd))));
           break;
         }
         case Inpar::FLUID::metric_tensor:
@@ -2294,7 +2294,7 @@ namespace FLD
 
           // get length in this direction
           double val = 0.0;
-          for (int rr = 0; rr < NEN; ++rr) /* loop element nodes */
+          for (int rr = 0; rr < nen; ++rr) /* loop element nodes */
           {
             val += fabs(normed_velgrad(0) * derxy(0, rr) + normed_velgrad(1) * derxy(1, rr) +
                         normed_velgrad(2) * derxy(2, rr));
@@ -2443,14 +2443,14 @@ namespace FLD
       double N_re = log(scale_ratio) / log(2.0);
       if (N_re < 0.0) FOUR_C_THROW("Something went wrong when calculating N!");
 
-      for (int i = 0; i < NSD; i++) Nvel[i] = N_re;
+      for (int i = 0; i < nsd; i++) Nvel[i] = N_re;
     }
 
 
     // calculate coefficient of subgrid-velocity
     // allocate array for coefficient B
     // B may depend on the direction (if N depends on it)
-    Core::LinAlg::Matrix<NSD, 1> B(true);
+    Core::LinAlg::Matrix<nsd, 1> B(true);
     //                                  1
     //          |       1              |2
     //  kappa = | -------------------- |
@@ -2485,7 +2485,7 @@ namespace FLD
       Cai_phi = (1.0 - pow(Re_ele_str, -3.0 / 16.0));
     }
 
-    for (int dim = 0; dim < NSD; dim++)
+    for (int dim = 0; dim < nsd; dim++)
     {
       B(dim, 0) = Csgs * sqrt(kappa) * pow(2.0, -2.0 * Nvel[0] / 3.0) *
                   sqrt((pow(2.0, 4.0 * Nvel[0] / 3.0) - 1.0));
@@ -2610,7 +2610,7 @@ namespace FLD
     if (params.sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC", "No") != "No")
     {
       // get filter width and Smagorinsky-coefficient
-      const double hk_sgvisc = std::pow(vol, (1.0 / NSD));
+      const double hk_sgvisc = std::pow(vol, (1.0 / nsd));
       const double Cs = params.sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY");
 
       // compute rate of strain
@@ -2621,7 +2621,7 @@ namespace FLD
       //          |          \   / ij        \   / ij |
       //          +-                                 -+
       //
-      Core::LinAlg::Matrix<NSD, NSD> velderxy(true);
+      Core::LinAlg::Matrix<nsd, nsd> velderxy(true);
       velintderxy.multiply_nt(evel, derxy);
       fsvelintderxy.multiply_nt(efsvel, derxy);
 
@@ -2643,19 +2643,19 @@ namespace FLD
       velderxy = mffsvelintderxy;
 #endif
 
-      Core::LinAlg::Matrix<NSD, NSD> two_epsilon;
+      Core::LinAlg::Matrix<nsd, nsd> two_epsilon;
       double rateofstrain = 0.0;
-      for (int idim = 0; idim < NSD; idim++)
+      for (int idim = 0; idim < nsd; idim++)
       {
-        for (int jdim = 0; jdim < NSD; jdim++)
+        for (int jdim = 0; jdim < nsd; jdim++)
         {
           two_epsilon(idim, jdim) = velderxy(idim, jdim) + velderxy(jdim, idim);
         }
       }
 
-      for (int idim = 0; idim < NSD; idim++)
+      for (int idim = 0; idim < nsd; idim++)
       {
-        for (int jdim = 0; jdim < NSD; jdim++)
+        for (int jdim = 0; jdim < nsd; jdim++)
         {
           rateofstrain += two_epsilon(idim, jdim) * two_epsilon(jdim, idim);
         }
@@ -2748,57 +2748,57 @@ namespace FLD
   // calculate mean Cai of multifractal subgrid-scale modeling approach
   //                                                       rasthofer 08/12
   //----------------------------------------------------------------------
-  template <int NEN, int NSD, Core::FE::CellType DISTYPE>
+  template <int nen, int nsd, Core::FE::CellType distype>
   void f3_get_mf_nwc(Discret::ELEMENTS::Fluid* ele,
       Discret::ELEMENTS::FluidEleParameterStd* fldpara, double& Cai, double& vol,
       std::vector<double>& vel, std::vector<double>& sca, const double& thermpress)
   {
     // allocate a fixed size array for nodal velocities an scalars
-    Core::LinAlg::Matrix<NSD, NEN> evel;
-    Core::LinAlg::Matrix<1, NEN> esca;
+    Core::LinAlg::Matrix<nsd, nen> evel;
+    Core::LinAlg::Matrix<1, nen> esca;
 
     // split velocity and throw away  pressure, insert into element array
     // insert scalar
-    for (int inode = 0; inode < NEN; inode++)
+    for (int inode = 0; inode < nen; inode++)
     {
       esca(0, inode) = sca[inode];
-      for (int idim = 0; idim < NSD; idim++) evel(idim, inode) = vel[inode * 4 + idim];
+      for (int idim = 0; idim < nsd; idim++) evel(idim, inode) = vel[inode * 4 + idim];
     }
 
     if (fldpara->AdaptCsgsPhi())
     {
       // allocate array for gauss-point velocities and derivatives
-      Core::LinAlg::Matrix<NSD, 1> velint;
-      Core::LinAlg::Matrix<NSD, NSD> velintderxy;
+      Core::LinAlg::Matrix<nsd, 1> velint;
+      Core::LinAlg::Matrix<nsd, nsd> velintderxy;
 
       // allocate arrays for shapefunctions, derivatives and the transposed jacobian
-      Core::LinAlg::Matrix<NEN, 1> funct;
-      Core::LinAlg::Matrix<NSD, NSD> xjm;
-      Core::LinAlg::Matrix<NSD, NSD> xji;
-      Core::LinAlg::Matrix<NSD, NEN> deriv;
-      Core::LinAlg::Matrix<NSD, NEN> derxy;
+      Core::LinAlg::Matrix<nen, 1> funct;
+      Core::LinAlg::Matrix<nsd, nsd> xjm;
+      Core::LinAlg::Matrix<nsd, nsd> xji;
+      Core::LinAlg::Matrix<nsd, nen> deriv;
+      Core::LinAlg::Matrix<nsd, nen> derxy;
 
       // get node coordinates of element
-      Core::LinAlg::Matrix<NSD, NEN> xyze;
-      for (int inode = 0; inode < NEN; inode++)
+      Core::LinAlg::Matrix<nsd, nen> xyze;
+      for (int inode = 0; inode < nen; inode++)
       {
-        for (int idim = 0; idim < NSD; idim++) xyze(idim, inode) = ele->Nodes()[inode]->X()[idim];
+        for (int idim = 0; idim < nsd; idim++) xyze(idim, inode) = ele->Nodes()[inode]->X()[idim];
       }
 
       // use one-point Gauss rule
-      Core::FE::IntPointsAndWeights<NSD> intpoints(
-          Discret::ELEMENTS::DisTypeToStabGaussRule<DISTYPE>::rule);
+      Core::FE::IntPointsAndWeights<nsd> intpoints(
+          Discret::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
 
       // coordinates of the current integration point
       const double* gpcoord = (intpoints.IP().qxg)[0];
-      Core::LinAlg::Matrix<NSD, 1> xsi;
-      for (int idim = 0; idim < NSD; idim++) xsi(idim) = gpcoord[idim];
+      Core::LinAlg::Matrix<nsd, 1> xsi;
+      for (int idim = 0; idim < nsd; idim++) xsi(idim) = gpcoord[idim];
 
       double wquad = intpoints.IP().qwgt[0];
 
       // shape functions and their first derivatives
-      Core::FE::shape_function<DISTYPE>(xsi, funct);
-      Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv);
+      Core::FE::shape_function<distype>(xsi, funct);
+      Core::FE::shape_function_deriv1<distype>(xsi, deriv);
 
       // get Jacobian matrix and determinant
       xjm.multiply_nt(deriv, xyze);
@@ -2814,8 +2814,8 @@ namespace FLD
       // adopt integration points and weights for gauss point evaluation of B
       if (fldpara->BGp())
       {
-        Core::FE::IntPointsAndWeights<NSD> gauss_intpoints(
-            Discret::ELEMENTS::DisTypeToOptGaussRule<DISTYPE>::rule);
+        Core::FE::IntPointsAndWeights<nsd> gauss_intpoints(
+            Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
         intpoints = gauss_intpoints;
       }
 
@@ -2823,13 +2823,13 @@ namespace FLD
       {
         // coordinates of the current integration point
         const double* gpcoord_iquad = (intpoints.IP().qxg)[iquad];
-        for (int idim = 0; idim < NSD; idim++) xsi(idim) = gpcoord_iquad[idim];
+        for (int idim = 0; idim < nsd; idim++) xsi(idim) = gpcoord_iquad[idim];
 
         wquad = intpoints.IP().qwgt[iquad];
 
         // shape functions and their first derivatives
-        Core::FE::shape_function<DISTYPE>(xsi, funct);
-        Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv);
+        Core::FE::shape_function<distype>(xsi, funct);
+        Core::FE::shape_function_deriv1<distype>(xsi, deriv);
 
         // get Jacobian matrix and determinant
         xjm.multiply_nt(deriv, xyze);
@@ -2857,7 +2857,7 @@ namespace FLD
 
           // compute temperature at gauss point
           double temp = 0.0;
-          for (int rr = 0; rr < NEN; rr++) temp += funct(rr, 0) * esca(0, rr);
+          for (int rr = 0; rr < nen; rr++) temp += funct(rr, 0) * esca(0, rr);
 
           // compute density and viscosity based on temperature
           dens = actmat->ComputeDensity(temp, thermpress);
@@ -2885,7 +2885,7 @@ namespace FLD
             // get norm of velocity
             const double vel_norm = velint.norm2();
             // normed velocity vector
-            Core::LinAlg::Matrix<NSD, 1> velino(true);
+            Core::LinAlg::Matrix<nsd, 1> velino(true);
             if (vel_norm >= 1e-6)
               velino.update(1.0 / vel_norm, velint);
             else
@@ -2893,7 +2893,7 @@ namespace FLD
               velino.clear();
               velino(0, 0) = 1.0;
             }
-            Core::LinAlg::Matrix<NEN, 1> tmp;
+            Core::LinAlg::Matrix<nen, 1> tmp;
             tmp.multiply_tn(derxy, velino);
             const double val = tmp.norm1();
             hk = 2.0 / val;
@@ -2910,7 +2910,7 @@ namespace FLD
           case Inpar::FLUID::cube_edge:
           {
             // c) cubic element length
-            hk = std::pow(vol, (1.0 / (double(NSD))));
+            hk = std::pow(vol, (1.0 / (double(nsd))));
             break;
           }
           case Inpar::FLUID::metric_tensor:
@@ -2982,7 +2982,7 @@ namespace FLD
 
             // get length in this direction
             double val = 0.0;
-            for (int rr = 0; rr < NEN; ++rr)
+            for (int rr = 0; rr < nen; ++rr)
             {
               val += fabs(normed_velgrad(0) * derxy(0, rr) + normed_velgrad(1) * derxy(1, rr) +
                           normed_velgrad(2) * derxy(2, rr));
@@ -3007,15 +3007,15 @@ namespace FLD
         //          +-                                 -+
         //
         velintderxy.multiply_nt(evel, derxy);
-        Core::LinAlg::Matrix<NSD, NSD> twoeps;
-        for (int idim = 0; idim < NSD; idim++)
+        Core::LinAlg::Matrix<nsd, nsd> twoeps;
+        for (int idim = 0; idim < nsd; idim++)
         {
-          for (int jdim = 0; jdim < NSD; jdim++)
+          for (int jdim = 0; jdim < nsd; jdim++)
             twoeps(idim, jdim) = velintderxy(idim, jdim) + velintderxy(jdim, idim);
         }
-        for (int idim = 0; idim < NSD; idim++)
+        for (int idim = 0; idim < nsd; idim++)
         {
-          for (int jdim = 0; jdim < NSD; jdim++)
+          for (int jdim = 0; jdim < nsd; jdim++)
             strainnorm += twoeps(idim, jdim) * twoeps(idim, jdim);
         }
         strainnorm = (sqrt(strainnorm / 4.0));
@@ -3051,7 +3051,7 @@ namespace FLD
     \param elevec1 (out)      : grad(N) integrated over Element
     \param edispnp (in)       : Displacement-vector
   */
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   void ElementNodeNormal(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
       Core::FE::Discretization& discretization, std::vector<int>& lm,
       Core::LinAlg::SerialDenseVector& elevec1)
@@ -3062,10 +3062,10 @@ namespace FLD
     // point outwards on nodes at the rim of a basin (e.g. channel-flow).
 
     // get number of nodes
-    const int iel = Core::FE::num_nodes<DISTYPE>;
+    const int iel = Core::FE::num_nodes<distype>;
 
     // get number of dimensions
-    const int nsd = Core::FE::dim<DISTYPE>;
+    const int nsd = Core::FE::dim<distype>;
 
     // get number of dof's
     const int numdofpernode = nsd + 1;
@@ -3115,7 +3115,7 @@ namespace FLD
     // get node coordinates
     // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
     // element!)
-    Core::Geo::fillInitialPositionArray<DISTYPE, nsd, Core::LinAlg::Matrix<nsd, iel>>(ele, xyze);
+    Core::Geo::fillInitialPositionArray<distype, nsd, Core::LinAlg::Matrix<nsd, iel>>(ele, xyze);
 
     /*
     // get node coordinates
@@ -3184,7 +3184,7 @@ namespace FLD
 
     // get Gaussrule
     const Core::FE::IntPointsAndWeights<nsd> intpoints(
-        Discret::ELEMENTS::DisTypeToOptGaussRule<DISTYPE>::rule);
+        Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
     // gaussian points
     // const GaussRule3D          gaussrule = get_optimal_gaussrule(distype);
@@ -3223,15 +3223,15 @@ namespace FLD
           }
       */
 
-      if (not Discret::ELEMENTS::IsNurbs<DISTYPE>::isnurbs)
+      if (not Discret::ELEMENTS::IsNurbs<distype>::isnurbs)
       {
         // get values of shape functions and derivatives in the gausspoint
         // Core::FE::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);
         // Core::FE::shape_function_3D_deriv1(deriv,gp(0),gp(1),gp(2),distype);
 
         // shape function derivs of boundary element at gausspoint
-        Core::FE::shape_function<DISTYPE>(xsi, funct);
-        Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv);
+        Core::FE::shape_function<distype>(xsi, funct);
+        Core::FE::shape_function_deriv1<distype>(xsi, deriv);
       }
       else
         FOUR_C_THROW("Nurbs are not implemented yet");

@@ -249,10 +249,10 @@ void ParticleInteraction::DEMHistoryPairs::UpdateHistoryPairs()
     erase_untouched_history_pairs(particlewalladhesionhistorydata_);
 }
 
-template <typename historypairtype>
+template <typename Historypairtype>
 void ParticleInteraction::DEMHistoryPairs::communicate_specific_history_pairs(
     const std::vector<std::vector<int>>& particletargets,
-    std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>& historydata)
+    std::unordered_map<int, std::unordered_map<int, std::pair<bool, Historypairtype>>>& historydata)
 {
   // prepare buffer for sending and receiving
   std::map<int, std::vector<char>> sdata;
@@ -271,7 +271,7 @@ void ParticleInteraction::DEMHistoryPairs::communicate_specific_history_pairs(
       for (auto& it_j : historydata[globalid])
       {
         // get reference to history pair
-        const historypairtype& historypair = (it_j.second).second;
+        const Historypairtype& historypair = (it_j.second).second;
 
         // add history pair to buffer
         add_history_pair_to_buffer(sdata[torank], globalid, it_j.first, historypair);
@@ -286,9 +286,9 @@ void ParticleInteraction::DEMHistoryPairs::communicate_specific_history_pairs(
   for (auto& p : rdata) unpack_history_pairs(p.second, historydata);
 }
 
-template <typename historypairtype>
+template <typename Historypairtype>
 void ParticleInteraction::DEMHistoryPairs::erase_untouched_history_pairs(
-    std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>& historydata)
+    std::unordered_map<int, std::unordered_map<int, std::pair<bool, Historypairtype>>>& historydata)
 {
   // iterate over nested unordered maps of stored history pairs
   for (auto it_i = historydata.begin(); it_i != historydata.end();)
@@ -310,9 +310,9 @@ void ParticleInteraction::DEMHistoryPairs::erase_untouched_history_pairs(
   }
 }
 
-template <typename historypairtype>
+template <typename Historypairtype>
 void ParticleInteraction::DEMHistoryPairs::pack_all_history_pairs(std::vector<char>& buffer,
-    const std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
+    const std::unordered_map<int, std::unordered_map<int, std::pair<bool, Historypairtype>>>&
         historydata) const
 {
   // iterate over nested unordered maps of stored history pairs
@@ -321,7 +321,7 @@ void ParticleInteraction::DEMHistoryPairs::pack_all_history_pairs(std::vector<ch
     for (auto& it_j : it_i.second)
     {
       // get reference to history pair
-      const historypairtype& historypair = (it_j.second).second;
+      const Historypairtype& historypair = (it_j.second).second;
 
       // add history pair to buffer
       add_history_pair_to_buffer(buffer, it_i.first, it_j.first, historypair);
@@ -329,9 +329,9 @@ void ParticleInteraction::DEMHistoryPairs::pack_all_history_pairs(std::vector<ch
   }
 }
 
-template <typename historypairtype>
+template <typename Historypairtype>
 void ParticleInteraction::DEMHistoryPairs::unpack_history_pairs(const std::vector<char>& buffer,
-    std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>& historydata)
+    std::unordered_map<int, std::unordered_map<int, std::pair<bool, Historypairtype>>>& historydata)
 {
   std::vector<char>::size_type position = 0;
   while (position < buffer.size())
@@ -341,7 +341,7 @@ void ParticleInteraction::DEMHistoryPairs::unpack_history_pairs(const std::vecto
     int globalid_j = Core::Communication::ParObject::extract_int(position, buffer);
 
     // unpack history pair data
-    historypairtype historypair = historypairtype();
+    Historypairtype historypair = Historypairtype();
     historypair.unpack(position, buffer);
 
     // add history pair data
@@ -351,9 +351,9 @@ void ParticleInteraction::DEMHistoryPairs::unpack_history_pairs(const std::vecto
     FOUR_C_THROW("mismatch in size of data %d <-> %d", static_cast<int>(buffer.size()), position);
 }
 
-template <typename historypairtype>
+template <typename Historypairtype>
 void ParticleInteraction::DEMHistoryPairs::add_history_pair_to_buffer(std::vector<char>& buffer,
-    int globalid_i, int globalid_j, const historypairtype& historypair) const
+    int globalid_i, int globalid_j, const Historypairtype& historypair) const
 {
   Core::Communication::PackBuffer data;
   // add global ids

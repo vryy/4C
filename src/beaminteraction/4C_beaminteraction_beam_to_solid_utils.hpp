@@ -39,7 +39,7 @@ namespace Inpar
 }  // namespace Inpar
 namespace Core::LinAlg
 {
-  template <unsigned int rows, unsigned int cols, class value_type>
+  template <unsigned int rows, unsigned int cols, class ValueType>
   class Matrix;
   class SparseMatrix;
 }  // namespace Core::LinAlg
@@ -77,8 +77,8 @@ namespace BEAMINTERACTION
    * @param gap (in) Gap function value.
    * @return Penalty force.
    */
-  template <typename scalar_type>
-  scalar_type PenaltyForce(const scalar_type& gap,
+  template <typename ScalarType>
+  ScalarType PenaltyForce(const ScalarType& gap,
       const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params);
 
   /**
@@ -86,8 +86,8 @@ namespace BEAMINTERACTION
    * @param gap (in) Gap function value.
    * @return Penalty potential.
    */
-  template <typename scalar_type>
-  scalar_type PenaltyPotential(const scalar_type& gap,
+  template <typename ScalarType>
+  ScalarType PenaltyPotential(const ScalarType& gap,
       const Teuchos::RCP<const BeamToSolidSurfaceContactParams>& contact_params);
 
   /**
@@ -127,14 +127,14 @@ namespace BEAMINTERACTION
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
    */
-  template <typename solid, typename scalar_type>
+  template <typename Solid, typename ScalarType>
   void GetSolidRotationVector(
       const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
       const Core::LinAlg::Matrix<3, 1, double>& xi,
-      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
-      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
       const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& psi_solid);
+      Core::LinAlg::Matrix<3, 1, ScalarType>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
@@ -146,13 +146,13 @@ namespace BEAMINTERACTION
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
    */
-  template <typename solid, typename scalar_type>
+  template <typename Solid, typename ScalarType>
   void GetSolidRotationVectorDeformationGradient3DGeneral(
       const Core::LinAlg::Matrix<3, 1, double>& xi,
-      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
-      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
       const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& psi_solid);
+      Core::LinAlg::Matrix<3, 1, ScalarType>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
@@ -164,13 +164,13 @@ namespace BEAMINTERACTION
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
    */
-  template <typename solid, typename scalar_type>
+  template <typename Solid, typename ScalarType>
   void GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane(
       const Core::LinAlg::Matrix<3, 1, double>& xi,
-      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
-      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
       const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& psi_solid);
+      Core::LinAlg::Matrix<3, 1, ScalarType>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
@@ -180,11 +180,11 @@ namespace BEAMINTERACTION
    * @param beam_ref_triad (in) Reference triad of the beam.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
    */
-  template <typename scalar_type>
+  template <typename ScalarType>
   void GetSolidRotationVectorDeformationGradient3DGeneralInCrossSectionPlane(
-      const Core::LinAlg::Matrix<3, 3, scalar_type>& F,
+      const Core::LinAlg::Matrix<3, 3, ScalarType>& F,
       const Core::LinAlg::Matrix<3, 3, double>& beam_ref_triad,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& psi_solid);
+      Core::LinAlg::Matrix<3, 1, ScalarType>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
@@ -197,13 +197,13 @@ namespace BEAMINTERACTION
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
    */
-  template <typename solid, typename scalar_type>
+  template <typename Solid, typename ScalarType>
   void GetSolidRotationVectorDeformationGradient3DBase1(
       const Core::LinAlg::Matrix<3, 1, double>& xi,
-      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
-      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
       const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& psi_solid);
+      Core::LinAlg::Matrix<3, 1, ScalarType>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on the deformation gradient and return the rotation
@@ -216,14 +216,14 @@ namespace BEAMINTERACTION
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
    */
-  template <typename solid, typename scalar_type>
+  template <typename Solid, typename ScalarType>
   void GetSolidRotationVectorDeformationGradient3D(
       const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
       const Core::LinAlg::Matrix<3, 1, double>& xi,
-      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
-      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
       const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& psi_solid);
+      Core::LinAlg::Matrix<3, 1, ScalarType>& psi_solid);
 
   /**
    * \brief Perform a 2D polar decomposition of the deformation gradient and return the rotation
@@ -235,12 +235,12 @@ namespace BEAMINTERACTION
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
    */
-  template <typename solid, typename scalar_type>
+  template <typename Solid, typename ScalarType>
   void GetSolidRotationVectorPolarDecomposition2D(const Core::LinAlg::Matrix<3, 1, double>& xi,
-      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
-      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
       const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& psi_solid);
+      Core::LinAlg::Matrix<3, 1, ScalarType>& psi_solid);
 
   /**
    * \brief Construct a solid triad depending on a 2d deformation gradient and return the rotation
@@ -253,14 +253,14 @@ namespace BEAMINTERACTION
    * @param quaternion_beam_ref (in) Beam reference quaternion at the solid point.
    * @param psi_solid (out) Rotation vector of the constructed solid triad.
    */
-  template <typename solid, typename scalar_type>
+  template <typename Solid, typename ScalarType>
   void GetSolidRotationVectorDeformationGradient2D(
       const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
       const Core::LinAlg::Matrix<3, 1, double>& xi,
-      const GEOMETRYPAIR::ElementData<solid, double>& q_solid_ref,
-      const GEOMETRYPAIR::ElementData<solid, scalar_type>& q_solid,
+      const GEOMETRYPAIR::ElementData<Solid, double>& q_solid_ref,
+      const GEOMETRYPAIR::ElementData<Solid, ScalarType>& q_solid,
       const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& psi_solid);
+      Core::LinAlg::Matrix<3, 1, ScalarType>& psi_solid);
 
   /**
    * \brief Check if the given solid deformation gradient as well as the given beam cross section
@@ -268,8 +268,8 @@ namespace BEAMINTERACTION
    * @param deformation_gradient (in) Deformation gradient at a solid point solid.
    * @param quaternion_beam_ref (in) Quaternion of a beam cross section.
    */
-  template <typename scalar_type>
-  void CheckPlaneRotations(const Core::LinAlg::Matrix<3, 3, scalar_type> deformation_gradient,
+  template <typename ScalarType>
+  void CheckPlaneRotations(const Core::LinAlg::Matrix<3, 3, ScalarType> deformation_gradient,
       const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref);
 
   /**
@@ -298,7 +298,7 @@ namespace BEAMINTERACTION
    * @param local_constraint (in) Local constraint contributions of the pair.
    * @param n_mortar_rot (int) Number of total rotational Lagrange multiplier DOFs per beam.
    */
-  template <typename beam, typename other, typename mortar>
+  template <typename Beam, typename Other, typename Mortar>
   void AssembleLocalMortarContributions(const BEAMINTERACTION::BeamContactPair* pair,
       const Core::FE::Discretization& discret, const BeamToSolidMortarManager* mortar_manager,
       Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
@@ -306,10 +306,10 @@ namespace BEAMINTERACTION
       Core::LinAlg::SparseMatrix& global_force_beam_lin_lambda,
       Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
       Epetra_FEVector& global_kappa, Epetra_FEVector& global_lambda_active,
-      const Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-      const Core::LinAlg::Matrix<mortar::n_dof_, other::n_dof_, double>& local_M,
-      const Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-      const Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_constraint,
+      const Core::LinAlg::Matrix<Mortar::n_dof_, Beam::n_dof_, double>& local_D,
+      const Core::LinAlg::Matrix<Mortar::n_dof_, Other::n_dof_, double>& local_M,
+      const Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_kappa,
+      const Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_constraint,
       const unsigned int n_mortar_rot = 0);
 }  // namespace BEAMINTERACTION
 

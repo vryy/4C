@@ -37,7 +37,7 @@ namespace GEOMETRYPAIR
    * \brief Create the correct geometry pair for line to volume coupling.
    * @return RCP to created geometry pair.
    */
-  template <typename scalar_type, typename line, typename volume>
+  template <typename ScalarType, typename Line, typename Volume>
   Teuchos::RCP<GeometryPair> GeometryPairLineToVolumeFactory(
       const Core::Elements::Element* element1, const Core::Elements::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
@@ -46,7 +46,7 @@ namespace GEOMETRYPAIR
    * \brief Create the correct geometry pair for line to surface coupling.
    * @return RCP to created geometry pair.
    */
-  template <typename scalar_type, typename line, typename surface>
+  template <typename ScalarType, typename Line, typename Surface>
   Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactory(
       const Core::Elements::Element* element1, const Core::Elements::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);
@@ -59,7 +59,7 @@ namespace GEOMETRYPAIR
    *
    * @return RCP to created geometry pair.
    */
-  template <typename scalar_type, typename line, typename surface>
+  template <typename ScalarType, typename Line, typename Surface>
   Teuchos::RCP<GeometryPair> GeometryPairLineToSurfaceFactoryFAD(
       const Core::Elements::Element* element1, const Core::Elements::Element* element2,
       const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data_ptr);

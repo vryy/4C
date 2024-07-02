@@ -27,10 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename beam, typename fluid, typename mortar>
-BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid,
-    mortar>::BeamToFluidMeshtyingPairMortar()
-    : BeamToFluidMeshtyingPairBase<beam, fluid>()
+template <typename Beam, typename Fluid, typename Mortar>
+BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid,
+    Mortar>::BeamToFluidMeshtyingPairMortar()
+    : BeamToFluidMeshtyingPairBase<Beam, Fluid>()
 {
   // Empty constructor.
 }
@@ -39,8 +39,8 @@ BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid,
 /**
  *
  */
-template <typename beam, typename fluid, typename mortar>
-bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::EvaluateDM(
+template <typename Beam, typename Fluid, typename Mortar>
+bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::EvaluateDM(
     Core::LinAlg::SerialDenseMatrix& local_D, Core::LinAlg::SerialDenseMatrix& local_M,
     Core::LinAlg::SerialDenseVector& local_kappa,
     Core::LinAlg::SerialDenseVector& local_constraint_offset)
@@ -56,15 +56,15 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
   if (this->line_to_3D_segments_.size() == 0) return false;
 
   // Initialize variables for local mortar matrices.
-  local_D.shape(mortar::n_dof_, beam::n_dof_);
-  local_M.shape(mortar::n_dof_, fluid::n_dof_);
-  local_kappa.size(mortar::n_dof_);
+  local_D.shape(Mortar::n_dof_, Beam::n_dof_);
+  local_M.shape(Mortar::n_dof_, Fluid::n_dof_);
+  local_kappa.size(Mortar::n_dof_);
 
 
   // Initialize variables for shape function values.
-  Core::LinAlg::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
-  Core::LinAlg::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  Core::LinAlg::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
+  Core::LinAlg::Matrix<1, Mortar::n_nodes_ * Mortar::n_val_, double> N_mortar(true);
+  Core::LinAlg::Matrix<1, Beam::n_nodes_ * Beam::n_val_, double> N_beam(true);
+  Core::LinAlg::Matrix<1, Fluid::n_nodes_ * Fluid::n_val_, double> N_fluid(true);
 
   // Initialize variable for beam position derivative.
   Core::LinAlg::Matrix<3, 1, double> dr_beam_ref(true);
@@ -88,7 +88,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
@@ -98,42 +98,42 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
       N_mortar.clear();
       N_beam.clear();
       N_fluid.clear();
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<Mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<Beam>::evaluate(
           N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::evaluate(N_fluid, projected_gauss_point.GetXi());
+      GEOMETRYPAIR::EvaluateShapeFunction<Fluid>::evaluate(N_fluid, projected_gauss_point.GetXi());
 
       // Fill in the local templated mortar matrix D.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
-          for (unsigned int i_beam_node = 0; i_beam_node < beam::n_nodes_; i_beam_node++)
-            for (unsigned int i_beam_val = 0; i_beam_val < beam::n_val_; i_beam_val++)
+      for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
+          for (unsigned int i_beam_node = 0; i_beam_node < Beam::n_nodes_; i_beam_node++)
+            for (unsigned int i_beam_val = 0; i_beam_val < Beam::n_val_; i_beam_val++)
               for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-                local_D(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
-                    i_beam_node * beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
-                    N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
-                    N_beam(i_beam_node * beam::n_val_ + i_beam_val) *
+                local_D(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
+                    i_beam_node * Beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
+                    N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
+                    N_beam(i_beam_node * Beam::n_val_ + i_beam_val) *
                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
 
       // Fill in the local templated mortar matrix M.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
-          for (unsigned int i_fluid_node = 0; i_fluid_node < fluid::n_nodes_; i_fluid_node++)
-            for (unsigned int i_fluid_val = 0; i_fluid_val < fluid::n_val_; i_fluid_val++)
+      for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
+          for (unsigned int i_fluid_node = 0; i_fluid_node < Fluid::n_nodes_; i_fluid_node++)
+            for (unsigned int i_fluid_val = 0; i_fluid_val < Fluid::n_val_; i_fluid_val++)
               for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-                local_M(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
-                    i_fluid_node * fluid::n_val_ * 3 + i_fluid_val * 3 + i_dim) +=
-                    N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
-                    N_fluid(i_fluid_node * fluid::n_val_ + i_fluid_val) *
+                local_M(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
+                    i_fluid_node * Fluid::n_val_ * 3 + i_fluid_val * 3 + i_dim) +=
+                    N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
+                    N_fluid(i_fluid_node * Fluid::n_val_ + i_fluid_val) *
                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
 
       // Fill in the local templated mortar scaling vector kappa.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
+      for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-            local_kappa(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
-                N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
+            local_kappa(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
+                N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
                 projected_gauss_point.GetGaussWeight() * segment_jacobian;
     }
   }
@@ -145,13 +145,13 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::Evalu
 /**
  *
  */
-template <typename beam, typename fluid, typename mortar>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_pair_visualization(
+template <typename Beam, typename Fluid, typename Mortar>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::get_pair_visualization(
     Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base method.
-  BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visualization(
+  BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visualization(
       visualization_writer, visualization_params);
 
 
@@ -162,7 +162,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
   if (visualization_discret != Teuchos::null || visualization_continuous != Teuchos::null)
   {
     // Setup variables.
-    auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::initialize(nullptr);
+    auto q_lambda = GEOMETRYPAIR::InitializeElementData<Mortar, double>::initialize(nullptr);
     Core::LinAlg::Matrix<3, 1, scalar_type> current_beamposition;
     Core::LinAlg::Matrix<3, 1, scalar_type> ref_beamposition;
     Core::LinAlg::Matrix<3, 1, scalar_type> beamdisplacement;
@@ -183,7 +183,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
     std::vector<double> lambda_pair;
     mortar_manager->LocationVector(this_rcp, lambda_row);
     Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row);
-    for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
+    for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
     // Add the discrete values of the Lagrange multipliers.
@@ -195,21 +195,21 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
       std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
       std::vector<double>& lambda_vis = visualization_data.GetPointData<double>("lambda");
 
-      for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
+      for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
       {
         // Get the local coordinate of this node.
-        xi_mortar_node = Core::FE::GetNodeCoordinates(i_node, mortar::discretization_);
+        xi_mortar_node = Core::FE::GetNodeCoordinates(i_node, Mortar::discretization_);
 
         // Get position and displacement of the mortar node.
-        GEOMETRYPAIR::EvaluatePosition<beam>(
+        GEOMETRYPAIR::EvaluatePosition<Beam>(
             xi_mortar_node(0), this->ele1pos_, current_beamposition);
-        GEOMETRYPAIR::EvaluatePosition<beam>(
+        GEOMETRYPAIR::EvaluatePosition<Beam>(
             xi_mortar_node(0), this->ele1posref_, ref_beamposition);
         beamdisplacement = current_beamposition;
         beamdisplacement -= ref_beamposition;
 
         // Get the discrete Lagrangian multiplier.
-        GEOMETRYPAIR::EvaluatePosition<mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
+        GEOMETRYPAIR::EvaluatePosition<Mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
 
         // Add to output data.
         for (unsigned int dim = 0; dim < 3; dim++)
@@ -249,11 +249,11 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
           // Get the position, displacement and lambda value at the current point.
           xi = segment.GetEtadata() + i_curve_segment * (segment.GetEtaB() - segment.GetEtadata()) /
                                           (double)mortar_segments;
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, current_beamposition);
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, ref_beamposition);
+          GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1pos_, current_beamposition);
+          GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1posref_, ref_beamposition);
           beamdisplacement = current_beamposition;
           beamdisplacement -= ref_beamposition;
-          GEOMETRYPAIR::EvaluatePosition<mortar>(xi, q_lambda, lambda_discret);
+          GEOMETRYPAIR::EvaluatePosition<Mortar>(xi, q_lambda, lambda_discret);
 
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
@@ -272,8 +272,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::get_p
   }
 }
 
-template <typename beam, typename fluid, typename mortar>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::evaluate_penalty_force(
+template <typename Beam, typename Fluid, typename Mortar>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<Beam, Fluid, Mortar>::evaluate_penalty_force(
     Core::LinAlg::Matrix<3, 1, scalar_type>& force,
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& projected_gauss_point,
     Core::LinAlg::Matrix<3, 1, scalar_type> v_beam) const

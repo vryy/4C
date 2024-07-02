@@ -20,12 +20,12 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename line, typename volume>
-GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line,
-    volume>::GeometryPairLineToVolumeSegmentation(const Core::Elements::Element* element1,
+template <typename ScalarType, typename Line, typename Volume>
+GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<ScalarType, Line,
+    Volume>::GeometryPairLineToVolumeSegmentation(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
-    : GeometryPairLineToVolume<scalar_type, line, volume>(element1, element2, evaluation_data)
+    : GeometryPairLineToVolume<ScalarType, Line, Volume>(element1, element2, evaluation_data)
 {
   // Check if a segment tracker exists for this line element. If not a new one is created.
   int line_element_id = this->Element1()->Id();
@@ -44,14 +44,14 @@ GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line,
 /**
  *
  */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>::evaluate(
-    const ElementData<line, scalar_type>& element_data_line,
-    const ElementData<volume, scalar_type>& element_data_volume,
-    std::vector<LineSegment<scalar_type>>& segments) const
+template <typename ScalarType, typename Line, typename Volume>
+void GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<ScalarType, Line, Volume>::evaluate(
+    const ElementData<Line, ScalarType>& element_data_line,
+    const ElementData<Volume, ScalarType>& element_data_volume,
+    std::vector<LineSegment<ScalarType>>& segments) const
 {
   // Call the pre_evaluate method of the general Gauss point projection class.
-  LineTo3DSegmentation<GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>>::evaluate(
+  LineTo3DSegmentation<GeometryPairLineToVolumeSegmentation<ScalarType, Line, Volume>>::evaluate(
       this, element_data_line, element_data_volume, segments);
 }
 

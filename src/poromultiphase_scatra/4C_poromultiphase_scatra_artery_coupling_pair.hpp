@@ -160,7 +160,7 @@ namespace PoroMultiPhaseScaTra
   };
 
   //! the coupling pair
-  template <Core::FE::CellType distypeArt, Core::FE::CellType distypeCont, int dim>
+  template <Core::FE::CellType distype_art, Core::FE::CellType distype_cont, int dim>
   class PoroMultiPhaseScatraArteryCouplingPair : public PoroMultiPhaseScatraArteryCouplingPairBase
   {
    public:
@@ -249,11 +249,11 @@ namespace PoroMultiPhaseScaTra
    private:
     // static variables
     //! number of nodes of 1D artery element
-    static constexpr unsigned numnodesart_ = Core::FE::num_nodes<distypeArt>;
+    static constexpr unsigned numnodesart_ = Core::FE::num_nodes<distype_art>;
     //! number of nodes of 2D/3D continuous element
-    static constexpr unsigned numnodescont_ = Core::FE::num_nodes<distypeCont>;
+    static constexpr unsigned numnodescont_ = Core::FE::num_nodes<distype_cont>;
     //! number of nodes of spatial dimensions
-    static constexpr unsigned numdim_ = Core::FE::dim<distypeCont>;
+    static constexpr unsigned numdim_ = Core::FE::dim<distype_cont>;
 
     //! set time factor needed for evaluation of right hand side (function coupling) terms
     void set_time_fac_rhs(const double& arterydensity, Teuchos::RCP<Mat::MatList> contscatramat,

@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, beam,
-    surface>::BeamToSolidSurfaceMeshtyingPairGaussPointFAD()
+template <typename ScalarType, typename Beam, typename Surface>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
+    Surface>::BeamToSolidSurfaceMeshtyingPairGaussPointFAD()
     : base_class()
 {
   // Empty constructor.
@@ -33,9 +33,9 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, beam,
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, beam,
-    surface>::EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<ScalarType, Beam,
+    Surface>::EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointFAD<scalar_type, 
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Get the penalty potential.
-  scalar_type potential = this->get_penalty_potential();
+  ScalarType potential = this->get_penalty_potential();
 
   // Get the pair GIDs.
   std::vector<int> pair_gid = this->get_pair_gid(*discret);

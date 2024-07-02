@@ -194,7 +194,7 @@ void Discret::ELEMENTS::SoHex8fbarThermoType::setup_element_definition(
   // original definition
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex8fbar;
 
-  // call setup of so3_ele
+  // call setup of So3Ele
   SoHex8fbarType::setup_element_definition(definitions_hex8fbar);
 
   std::map<std::string, Input::LineDefinition>& defs_hex8fbar =

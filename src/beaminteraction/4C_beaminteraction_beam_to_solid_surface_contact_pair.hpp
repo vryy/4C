@@ -30,13 +30,13 @@ namespace BEAMINTERACTION
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
-  template <typename scalar_type, typename beam, typename surface>
+  template <typename ScalarType, typename Beam, typename Surface>
   class BeamToSolidSurfaceContactPairGapVariation
-      : public BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>
+      : public BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>;
+    using base_class = BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>;
 
    public:
     /**
@@ -61,13 +61,13 @@ namespace BEAMINTERACTION
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
-  template <typename scalar_type, typename beam, typename surface>
+  template <typename ScalarType, typename Beam, typename Surface>
   class BeamToSolidSurfaceContactPairPotential
-      : public BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>
+      : public BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>;
+    using base_class = BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>;
 
    public:
     /**

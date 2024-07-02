@@ -24,7 +24,7 @@ namespace Discret
 {
   namespace ELEMENTS
   {
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerArtery;
 
     template <Core::FE::CellType distype, int probdim>
@@ -135,39 +135,39 @@ namespace Discret
       Core::LinAlg::Matrix<nen_, 1> earterypressurenp_;
     };
 
-    template <int NSD, int NEN>
-    class ScaTraEleInternalVariableManagerArtery : public ScaTraEleInternalVariableManager<NSD, NEN>
+    template <int nsd, int nen>
+    class ScaTraEleInternalVariableManagerArtery : public ScaTraEleInternalVariableManager<nsd, nen>
     {
-      typedef ScaTraEleInternalVariableManager<NSD, NEN> my;
+      typedef ScaTraEleInternalVariableManager<nsd, nen> my;
 
      public:
       ScaTraEleInternalVariableManagerArtery(int numscal)
-          : ScaTraEleInternalVariableManager<NSD, NEN>(numscal), materialset_(false)
+          : ScaTraEleInternalVariableManager<nsd, nen>(numscal), materialset_(false)
       {
         return;
       }
 
       // compute and set internal variables -- no L2-projection but evaluation at GP
       void set_internal_variables_artery(
-          const Core::LinAlg::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+          const Core::LinAlg::Matrix<nsd, nen>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nsd, nen>&
               deriv,  //! global derivatives of shape functions w.r.t r,s,t
-          const Core::LinAlg::Matrix<NSD, NSD>& xjm,
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ephin,  //! scalar at t_(n)
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ehist,  //! history vector of transported scalars
-          const Core::LinAlg::Matrix<NEN, 1>& earterypressure)
+          const Core::LinAlg::Matrix<nen, 1>& earterypressure)
       {
         // call base class (scatra) with dummy variable econvelnp
-        const Core::LinAlg::Matrix<NSD, NEN> econvelnp(true);
-        const Core::LinAlg::Matrix<NSD, NEN> eforcevelocity(true);
+        const Core::LinAlg::Matrix<nsd, nen> econvelnp(true);
+        const Core::LinAlg::Matrix<nsd, nen> eforcevelocity(true);
         my::set_internal_variables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
 
-        static Core::LinAlg::Matrix<NSD, 1> pressuregrad(true);
+        static Core::LinAlg::Matrix<nsd, 1> pressuregrad(true);
         pressuregrad.multiply(derxy, earterypressure);
 
         for (int k = 0; k < my::numscal_; ++k)

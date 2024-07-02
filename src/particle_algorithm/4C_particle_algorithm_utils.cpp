@@ -17,9 +17,9 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-template <typename valtype>
+template <typename Valtype>
 void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::ParameterList& params,
-    const std::string& name, std::map<PARTICLEENGINE::TypeEnum, valtype>& typetovalmap)
+    const std::string& name, std::map<PARTICLEENGINE::TypeEnum, Valtype>& typetovalmap)
 {
   // read from input file
   std::vector<std::string> typetoval;
@@ -46,7 +46,7 @@ void PARTICLEALGORITHM::UTILS::ReadParamsTypesRelatedToValues(const Teuchos::Par
     PARTICLEENGINE::TypeEnum particleType = PARTICLEENGINE::EnumFromTypeName(typestring);
 
     // get numeric value
-    valtype val;
+    Valtype val;
     try
     {
       // standard conversion (double to valtype) via assignment

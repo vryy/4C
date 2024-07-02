@@ -41,7 +41,7 @@ namespace Discret
 {
   namespace ELEMENTS
   {
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerMultiPoro;
 
     template <Core::FE::CellType distype>
@@ -381,15 +381,15 @@ namespace Discret
     };
 
 
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerMultiPoro
-        : public ScaTraEleInternalVariableManager<NSD, NEN>
+        : public ScaTraEleInternalVariableManager<nsd, nen>
     {
-      typedef ScaTraEleInternalVariableManager<NSD, NEN> my;
+      typedef ScaTraEleInternalVariableManager<nsd, nen> my;
 
      public:
       ScaTraEleInternalVariableManagerMultiPoro(int numscal)
-          : ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
+          : ScaTraEleInternalVariableManager<nsd, nen>(numscal),
             pressure_(0),
             saturation_(0),
             density_(0),
@@ -411,32 +411,32 @@ namespace Discret
 
       // compute and set internal variables -- no L2-projection but evaluation at GP
       void set_internal_variables_multi_poro(
-          const Core::LinAlg::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+          const Core::LinAlg::Matrix<nsd, nen>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nsd, nen>&
               deriv,  //! global derivatives of shape functions w.r.t r,s,t
-          const Core::LinAlg::Matrix<NSD, NSD>& xjm, const Core::LinAlg::Matrix<NSD, NEN>& xyze0,
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const Core::LinAlg::Matrix<nsd, nsd>& xjm, const Core::LinAlg::Matrix<nsd, nen>& xyze0,
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ephin,  //! scalar at t_(n)
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ehist,  //! history vector of transported scalars
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nsd, nen>&
               eforcevelocity  //! nodal velocity due to external force
       )
       {
         // call base class (scatra) with dummy variable
-        const Core::LinAlg::Matrix<NSD, NEN> dummy_econv(true);
+        const Core::LinAlg::Matrix<nsd, nen> dummy_econv(true);
         my::set_internal_variables(funct, derxy, ephinp, ephin, dummy_econv, ehist, dummy_econv);
 
         // velocity due to the external force
-        Core::LinAlg::Matrix<NSD, 1> force_velocity;
+        Core::LinAlg::Matrix<nsd, 1> force_velocity;
         force_velocity.multiply(eforcevelocity, funct);
 
         //------------------------get determinant of Jacobian dX / ds
         // transposed jacobian "dX/ds"
-        Core::LinAlg::Matrix<NSD, NSD> xjm0;
+        Core::LinAlg::Matrix<nsd, nsd> xjm0;
         xjm0.multiply_nt(deriv, xyze0);
 
         // inverse of transposed jacobian "ds/dX"
@@ -471,23 +471,23 @@ namespace Discret
         volfracpressure_.resize(numvolfrac);
         relative_mobility_funct_id_.resize(my::numscal_);
 
-        const std::vector<Core::LinAlg::Matrix<NSD, 1>>& fluidgradphi =
+        const std::vector<Core::LinAlg::Matrix<nsd, 1>>& fluidgradphi =
             *(variablemanager_->GradPhinp());
 
         volfrac_ = phasemanager_->VolFrac();
         volfracpressure_ = phasemanager_->VolFracPressure();
 
         //! convective velocity
-        std::vector<Core::LinAlg::Matrix<NSD, 1>> phase_fluid_velocity(0.0);
+        std::vector<Core::LinAlg::Matrix<nsd, 1>> phase_fluid_velocity(0.0);
         phase_fluid_velocity.resize(numfluidphases + numvolfrac);
         //! convective part in convective form: u_x*N,x + u_y*N,y
-        std::vector<Core::LinAlg::Matrix<NEN, 1>> phase_fluid_velocity_conv(0.0);
+        std::vector<Core::LinAlg::Matrix<nen, 1>> phase_fluid_velocity_conv(0.0);
         phase_fluid_velocity_conv.resize(numfluidphases + numvolfrac);
 
         //! temperature convective velocity
-        Core::LinAlg::Matrix<NSD, 1> temperatureconvelint(true);
+        Core::LinAlg::Matrix<nsd, 1> temperatureconvelint(true);
         //! temperature convective part in convective form
-        Core::LinAlg::Matrix<NEN, 1> temperatureconv(true);
+        Core::LinAlg::Matrix<nen, 1> temperatureconv(true);
 
         for (int i_phase = 0; i_phase < numfluidphases; ++i_phase)
         {
@@ -504,7 +504,7 @@ namespace Discret
 
           // compute the absolute value of the pressure gradient from the phi gradients
           abspressuregrad_[i_phase] = 0.0;
-          for (int i = 0; i < NSD; i++)
+          for (int i = 0; i < nsd; i++)
             abspressuregrad_[i_phase] += pressuregrad_[i_phase](i) * pressuregrad_[i_phase](i);
           abspressuregrad_[i_phase] = sqrt(abspressuregrad_[i_phase]);
 
@@ -583,8 +583,8 @@ namespace Discret
               break;
 
             case Mat::ScaTraMatMultiPoro::SpeciesType::species_in_solid:
-              my::convelint_[k] = Core::LinAlg::Matrix<NSD, 1>(0.0);
-              my::conv_[k] = Core::LinAlg::Matrix<NEN, 1>(0.0);
+              my::convelint_[k] = Core::LinAlg::Matrix<nsd, 1>(0.0);
+              my::conv_[k] = Core::LinAlg::Matrix<nen, 1>(0.0);
               my::conv_phi_[k] = 0;
               break;
 
@@ -606,20 +606,20 @@ namespace Discret
 
       // adapt convective term in case of L2-projection
       void adapt_convective_term_for_l2(
-          const Core::LinAlg::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+          const Core::LinAlg::Matrix<nsd, nen>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const std::vector<Core::LinAlg::Matrix<NSD, NEN>>&
+          const std::vector<Core::LinAlg::Matrix<nsd, nen>>&
               efluxnp  //! nodal flux values at t_(n+1) or t_(n+alpha_F)
       )
       {
         const int numfluidphases = efluxnp.size();
 
-        std::vector<Core::LinAlg::Matrix<NSD, 1>> flux(0.0);
+        std::vector<Core::LinAlg::Matrix<nsd, 1>> flux(0.0);
         flux.resize(numfluidphases);
 
         // in convective form: q_x*N,x + q_y*N,y
-        std::vector<Core::LinAlg::Matrix<NEN, 1>> flux_conv(0.0);
+        std::vector<Core::LinAlg::Matrix<nen, 1>> flux_conv(0.0);
         flux_conv.resize(numfluidphases);
 
         for (int i_phase = 0; i_phase < numfluidphases; ++i_phase)
@@ -1026,9 +1026,9 @@ namespace Discret
 
       //! get pre-factor needed for OD-fluid-linearization of convective term
       void get_pre_fac_lin_conv_od_fluid(const int k, const unsigned ui,
-          std::vector<double>* prefaclinconvodfluid, const Core::LinAlg::Matrix<NSD, 1>& gradphi,
-          const Core::LinAlg::Matrix<1, NSD>& gradphiTdifftensor,
-          const Core::LinAlg::Matrix<NEN, 1>& funct, const Core::LinAlg::Matrix<NSD, NEN>& derxy,
+          std::vector<double>* prefaclinconvodfluid, const Core::LinAlg::Matrix<nsd, 1>& gradphi,
+          const Core::LinAlg::Matrix<1, nsd>& gradphiTdifftensor,
+          const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
           const int phase)
       {
         // reset to zero
@@ -1036,7 +1036,7 @@ namespace Discret
 
         // get correct factor
         double laplawf(0.0);
-        for (unsigned j = 0; j < NSD; j++) laplawf += derxy(j, ui) * gradphiTdifftensor(0, j);
+        for (unsigned j = 0; j < nsd; j++) laplawf += derxy(j, ui) * gradphiTdifftensor(0, j);
 
         const int numfluidphases = phasemanager_->NumFluidPhases();
         const int numvolfrac = phasemanager_->NumVolFrac();
@@ -1051,19 +1051,19 @@ namespace Discret
           // derivative after relative permeabilty
           if (not phasemanager_->has_constant_rel_permeability(phase))
           {
-            const Core::LinAlg::Matrix<NSD, 1> gradpres = PressureGradient(phase);
+            const Core::LinAlg::Matrix<nsd, 1> gradpres = PressureGradient(phase);
             const double abspressgrad = AbsPressureGradient(phase);
 
-            static Core::LinAlg::Matrix<NSD, NSD> difftensor(true);
+            static Core::LinAlg::Matrix<nsd, nsd> difftensor(true);
             phasemanager_->PermeabilityTensor(phase, difftensor);
             difftensor.scale(phasemanager_->rel_permeability_deriv(phase) /
                              phasemanager_->DynViscosity(phase, abspressgrad, 2));
 
-            static Core::LinAlg::Matrix<1, NSD> gradphiTdifftensor(true);
+            static Core::LinAlg::Matrix<1, nsd> gradphiTdifftensor(true);
             gradphiTdifftensor.multiply_tn(gradphi, difftensor);
 
             double laplawf(0.0);
-            for (unsigned j = 0; j < NSD; j++) laplawf += gradpres(j) * gradphiTdifftensor(0, j);
+            for (unsigned j = 0; j < nsd; j++) laplawf += gradpres(j) * gradphiTdifftensor(0, j);
 
             for (int idof = 0; idof < numfluidphases; ++idof)
               (*prefaclinconvodfluid)[idof] +=
@@ -1273,7 +1273,7 @@ namespace Discret
 
       //! get difftensor of fluid phases (permeability*relpermeability/mu)
       void GetDiffTensorFluid(
-          const int k, Core::LinAlg::Matrix<NSD, NSD>& difftensor, const int phase)
+          const int k, Core::LinAlg::Matrix<nsd, nsd>& difftensor, const int phase)
       {
         switch (scalartophasemap_[k].species_type)
         {
@@ -1295,8 +1295,8 @@ namespace Discret
       }
 
       //! compute gradient of pressure in reference configuration
-      void GetRefGradPres(const int k, const Core::LinAlg::Matrix<NSD, NSD>& xjm,
-          Core::LinAlg::Matrix<NSD, 1>& refgradpres, const int phase)
+      void GetRefGradPres(const int k, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
+          Core::LinAlg::Matrix<nsd, 1>& refgradpres, const int phase)
       {
         refgradpres.clear();
 
@@ -1306,12 +1306,12 @@ namespace Discret
         // fluid phase
         if (phase >= 0 && phase < numfluidphases)
         {
-          const std::vector<Core::LinAlg::Matrix<NSD, 1>>& fluidgradphi =
+          const std::vector<Core::LinAlg::Matrix<nsd, 1>>& fluidgradphi =
               *(variablemanager_->GradPhinp());
 
           // gradient of phi w.r.t. reference coordinates
-          std::vector<Core::LinAlg::Matrix<NSD, 1>> reffluidgradphi(
-              numfluidphases, Core::LinAlg::Matrix<NSD, 1>(true));
+          std::vector<Core::LinAlg::Matrix<nsd, 1>> reffluidgradphi(
+              numfluidphases, Core::LinAlg::Matrix<nsd, 1>(true));
           for (int idof = 0; idof < numfluidphases; ++idof)
             reffluidgradphi[idof].multiply(xjm, fluidgradphi[idof]);
 
@@ -1456,7 +1456,7 @@ namespace Discret
       };
 
       //! return pressure gradient of current phase
-      const Core::LinAlg::Matrix<NSD, 1>& PressureGradient(const int curphase) const
+      const Core::LinAlg::Matrix<nsd, 1>& PressureGradient(const int curphase) const
       {
         return pressuregrad_[curphase];
       };
@@ -1485,7 +1485,7 @@ namespace Discret
         // create phase-manager
         phasemanager_ =
             Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::CreatePhaseManager(*para,
-                NSD, MultiphaseMat()->MaterialType(),
+                nsd, MultiphaseMat()->MaterialType(),
                 POROFLUIDMULTIPHASE::Action::get_access_from_scatra, totalnummultiphasedofpernode,
                 numfluidphases);
 
@@ -1493,8 +1493,8 @@ namespace Discret
         phasemanager_->setup(ele, ndsscatra_porofluid_);
 
         // create variablemanager
-        variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<NSD,
-            NEN>::create_variable_manager(*para,
+        variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd,
+            nen>::create_variable_manager(*para,
             POROFLUIDMULTIPHASE::Action::get_access_from_scatra, MultiphaseMat(),
             totalnummultiphasedofpernode, numfluidphases);
 
@@ -1505,7 +1505,7 @@ namespace Discret
       // variablemanager
       void extract_element_and_node_values_of_poro_fluid(Core::Elements::Element* ele,
           Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
-          Core::LinAlg::Matrix<NSD, NEN>& xyze)
+          Core::LinAlg::Matrix<nsd, nen>& xyze)
       {
         // access from outside to the variablemananger: scatra-discretization has fluid-dis on
         // dofset 2
@@ -1522,7 +1522,7 @@ namespace Discret
       }
 
       // get the variablemanager of the fluid
-      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<NSD, NEN>>
+      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>>
       FluidVarManager()
       {
         return variablemanager_;
@@ -1538,9 +1538,9 @@ namespace Discret
       //! solid pressure
       double solidpressure_;
       //! pressure gradient
-      std::vector<Core::LinAlg::Matrix<NSD, 1>> pressuregrad_;
+      std::vector<Core::LinAlg::Matrix<nsd, 1>> pressuregrad_;
       //! pressure gradient
-      std::vector<Core::LinAlg::Matrix<NSD, NSD>> difftensorsfluid_;
+      std::vector<Core::LinAlg::Matrix<nsd, nsd>> difftensorsfluid_;
       //! norm of pressure-gradient
       std::vector<double> abspressuregrad_;
       //! volume fraction
@@ -1581,7 +1581,7 @@ namespace Discret
       Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface> phasemanager_;
 
       //! variable manager of the fluid
-      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<NSD, NEN>>
+      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>>
           variablemanager_;
 
       //! dofset of fluid field on scatra dis

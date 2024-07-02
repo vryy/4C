@@ -45,7 +45,7 @@ namespace Discret
 
 namespace Core::FE
 {
-  template <const int NSD>
+  template <const int nsd>
   class IntPointsAndWeights;
 }
 
@@ -802,12 +802,12 @@ namespace ScaTra
   };
 
 
-  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+  template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
   class MortarCellCalc : public MortarCellInterface
   {
    public:
     //! singleton access method
-    static MortarCellCalc<distypeS, distypeM>* Instance(
+    static MortarCellCalc<distype_s, distype_m>* Instance(
         const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const Inpar::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -867,16 +867,16 @@ namespace ScaTra
 
    protected:
     //! number of slave element nodes
-    static constexpr int nen_slave_ = Core::FE::num_nodes<distypeS>;
+    static constexpr int nen_slave_ = Core::FE::num_nodes<distype_s>;
 
     //! number of master element nodes
-    static constexpr int nen_master_ = Core::FE::num_nodes<distypeM>;
+    static constexpr int nen_master_ = Core::FE::num_nodes<distype_m>;
 
     //! spatial dimensionality of slave elements
-    static constexpr int nsd_slave_ = Core::FE::dim<distypeS>;
+    static constexpr int nsd_slave_ = Core::FE::dim<distype_s>;
 
     //! spatial dimensionality of master elements
-    static constexpr int nsd_master_ = Core::FE::dim<distypeM>;
+    static constexpr int nsd_master_ = Core::FE::dim<distype_m>;
 
     //! protected constructor for singletons
     MortarCellCalc(const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
@@ -1058,7 +1058,7 @@ namespace ScaTra
    private:
     //! provide instance of mortar cell evaluation class of particular slave-side and master-side
     //! discretization types
-    template <Core::FE::CellType distypeS>
+    template <Core::FE::CellType distype_s>
     static MortarCellInterface* mortar_cell_calc(
         const Inpar::ScaTra::ImplType&
             impltype,  //!< physical implementation type of mortar integration cell
@@ -1071,7 +1071,7 @@ namespace ScaTra
     );
 
     //! provide specific instance of mortar cell evaluation class
-    template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+    template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
     static MortarCellInterface* mortar_cell_calc(
         const Inpar::ScaTra::ImplType&
             impltype,  //!< physical implementation type of mortar integration cell

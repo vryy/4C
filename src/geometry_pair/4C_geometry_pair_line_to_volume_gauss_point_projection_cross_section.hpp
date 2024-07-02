@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 // Forward declaration.
 namespace GEOMETRYPAIR
 {
-  template <typename scalar_type>
+  template <typename ScalarType>
   class ProjectionPointVolumeToVolume;
 }  // namespace GEOMETRYPAIR
 namespace LargeRotations
@@ -42,9 +42,9 @@ namespace GEOMETRYPAIR
    * @param line Type of line element.
    * @param volume Type of volume element.
    */
-  template <typename scalar_type, typename line, typename volume>
+  template <typename ScalarType, typename Line, typename Volume>
   class GeometryPairLineToVolumeGaussPointProjectionCrossSection
-      : public GeometryPairLineToVolume<scalar_type, line, volume>
+      : public GeometryPairLineToVolume<ScalarType, Line, Volume>
   {
    public:
     /**
@@ -62,9 +62,9 @@ namespace GEOMETRYPAIR
      * @param segments (out) Vector with the segments of this line to volume pair.
      * @param line_triad_interpolation (in) Triad interpolation along the line.
      */
-    void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<volume, scalar_type>& element_data_volume,
-        std::vector<LineSegment<scalar_type>>& segments,
+    void pre_evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Volume, ScalarType>& element_data_volume,
+        std::vector<LineSegment<ScalarType>>& segments,
         const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>*
             line_triad_interpolation = nullptr) const;
 
@@ -75,9 +75,9 @@ namespace GEOMETRYPAIR
      * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<volume, scalar_type>& element_data_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const override;
+    void evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Volume, ScalarType>& element_data_volume,
+        std::vector<LineSegment<ScalarType>>& segments) const override;
 
    private:
     /**

@@ -181,7 +181,7 @@ namespace Discret
 
 
     // implementation of ScaTraEleInternalVariableManagerSTIThermo
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerSTIThermo
     {
      public:
@@ -190,9 +190,9 @@ namespace Discret
 
       //! set internal variables for element evaluation
       void set_internal_variables_sti_thermo(
-          const Core::LinAlg::Matrix<NEN, 1>& funct,    //!< shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
-          const Core::LinAlg::Matrix<NEN, 1>&
+          const Core::LinAlg::Matrix<nen, 1>& funct,    //!< shape functions
+          const Core::LinAlg::Matrix<nsd, nen>& derxy,  //!< spatial derivatives of shape functions
+          const Core::LinAlg::Matrix<nen, 1>&
               etempnp  //!< nodal temperature values at time t_(n+1) or t_(n+alpha_F)
       )
       {
@@ -205,14 +205,14 @@ namespace Discret
       const double& Temp() const { return temp_; };
 
       //! return gradient of temperature
-      const Core::LinAlg::Matrix<NSD, 1>& GradTemp() const { return gradtemp_; };
+      const Core::LinAlg::Matrix<nsd, 1>& GradTemp() const { return gradtemp_; };
 
      protected:
       //! temperature
       double temp_;
 
       //! gradient of temperature
-      Core::LinAlg::Matrix<NSD, 1> gradtemp_;
+      Core::LinAlg::Matrix<nsd, 1> gradtemp_;
     };
   }  // namespace ELEMENTS
 }  // namespace Discret

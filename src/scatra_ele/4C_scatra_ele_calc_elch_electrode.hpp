@@ -24,7 +24,7 @@ namespace Discret
   {
     // forward declarations
     class ScaTraEleDiffManagerElchElectrode;
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElchElectrode;
     template <Core::FE::CellType distype>
     class ScaTraEleUtilsElchElectrode;
@@ -380,18 +380,18 @@ namespace Discret
     /*!
       This class keeps all internal electrode-specific variables.
     */
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElchElectrode
-        : public ScaTraEleInternalVariableManagerElch<NSD, NEN>
+        : public ScaTraEleInternalVariableManagerElch<nsd, nen>
     {
      public:
-      using vm = ScaTraEleInternalVariableManager<NSD, NEN>;
-      using vmelch = ScaTraEleInternalVariableManagerElch<NSD, NEN>;
+      using vm = ScaTraEleInternalVariableManager<nsd, nen>;
+      using vmelch = ScaTraEleInternalVariableManagerElch<nsd, nen>;
 
       //! constructor
       ScaTraEleInternalVariableManagerElchElectrode(
           int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
-          : ScaTraEleInternalVariableManagerElch<NSD, NEN>(numscal, elchpara),
+          : ScaTraEleInternalVariableManagerElch<nsd, nen>(numscal, elchpara),
             invf_(1. / vmelch::parameters_->Faraday())
       {
       }
@@ -399,16 +399,16 @@ namespace Discret
 
       //! compute and set internal electrode-specific variables
       void set_internal_variables_elch_electrode(
-          const Core::LinAlg::Matrix<NEN, 1>& funct,  //!< array for shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nen, 1>& funct,  //!< array for shape functions
+          const Core::LinAlg::Matrix<nsd, nen>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephinp,  //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephin,  //!< nodal state variables at t_(n)
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nsd, nen>&
               econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ehist  //!< history vector of transported scalars
       )
       {
@@ -418,16 +418,16 @@ namespace Discret
 
       //! compute and set internal electrode-specific variables for evaluation of SOC and Crate
       void set_internal_variables_elch_electrode_soc_and_c_rate(
-          const Core::LinAlg::Matrix<NEN, 1>& funct,  //!< array for shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nen, 1>& funct,  //!< array for shape functions
+          const Core::LinAlg::Matrix<nsd, nen>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephinp,  //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephin,  //!< nodal state variables at t_(n)
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nsd, nen>&
               econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ehist  //!< history vector of transported scalars
       )
       {

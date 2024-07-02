@@ -45,7 +45,7 @@ namespace GEOMETRYPAIR
    * structure (can be volume, as well as surface including normal direction).
    * @tparam scalar_type Scalar type of the parameter coordinate values.
    */
-  template <typename scalar_type>
+  template <typename ScalarType>
   class ProjectionPoint1DTo3D
   {
    public:
@@ -56,7 +56,7 @@ namespace GEOMETRYPAIR
      * @param gauss_weight Gauss weight for this point.
      */
     ProjectionPoint1DTo3D(
-        scalar_type eta, Core::LinAlg::Matrix<3, 1, scalar_type> xi, double gauss_weight)
+        ScalarType eta, Core::LinAlg::Matrix<3, 1, ScalarType> xi, double gauss_weight)
         : eta_(eta),
           xi_(xi),
           projection_result_(ProjectionResult::none),
@@ -70,15 +70,15 @@ namespace GEOMETRYPAIR
      * @param eta Parameter coordinate on line.
      * @param xi Parameter coordinates in volume.
      */
-    ProjectionPoint1DTo3D(scalar_type eta, Core::LinAlg::Matrix<3, 1, scalar_type> xi)
+    ProjectionPoint1DTo3D(ScalarType eta, Core::LinAlg::Matrix<3, 1, ScalarType> xi)
         : ProjectionPoint1DTo3D(eta, xi, -1.){};
 
     /**
      * \brief Constructor.
      * @param eta Parameter coordinate on the line.
      */
-    ProjectionPoint1DTo3D(scalar_type eta)
-        : ProjectionPoint1DTo3D(eta, Core::LinAlg::Matrix<3, 1, scalar_type>(true), -1.){};
+    ProjectionPoint1DTo3D(ScalarType eta)
+        : ProjectionPoint1DTo3D(eta, Core::LinAlg::Matrix<3, 1, ScalarType>(true), -1.){};
 
     /**
      * \brief Empty constructor.
@@ -94,9 +94,9 @@ namespace GEOMETRYPAIR
      * \brief Construct the point from another point where all scalar values are cast to double.
      * @param point_double Projection point with scalar type double.
      */
-    template <typename scalar_type_other>
+    template <typename ScalarTypeOther>
     inline void set_from_other_point_double(
-        const ProjectionPoint1DTo3D<scalar_type_other>& point_other)
+        const ProjectionPoint1DTo3D<ScalarTypeOther>& point_other)
     {
       eta_ = Core::FADUtils::CastToDouble(point_other.GetEta());
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -109,37 +109,37 @@ namespace GEOMETRYPAIR
     /**
      * \brief Set the parameter coordinate on the line.
      */
-    inline void SetEta(const scalar_type& eta) { eta_ = eta; };
+    inline void SetEta(const ScalarType& eta) { eta_ = eta; };
 
     /**
      * \brief Get the parameter coordinate on the line.
      */
-    inline const scalar_type& GetEta() const { return eta_; };
+    inline const ScalarType& GetEta() const { return eta_; };
 
     /**
      * \brief Get a mutable reference to the parameter coordinate on the line.
      */
-    inline scalar_type& GetEta() { return eta_; };
+    inline ScalarType& GetEta() { return eta_; };
 
     /**
      * \brief Set the parameter coordinates in the volume.
      */
-    inline void SetXi(const Core::LinAlg::Matrix<3, 1, scalar_type>& xi) { xi_ = xi; };
+    inline void SetXi(const Core::LinAlg::Matrix<3, 1, ScalarType>& xi) { xi_ = xi; };
 
     /**
      * \brief Get the parameter coordinates in the volume.
      */
-    inline const Core::LinAlg::Matrix<3, 1, scalar_type>& GetXi() const { return xi_; };
+    inline const Core::LinAlg::Matrix<3, 1, ScalarType>& GetXi() const { return xi_; };
 
     /**
      * \brief Get the parameter coordinates in the volume as a reference.
      */
-    inline Core::LinAlg::Matrix<3, 1, scalar_type>& GetXi() { return xi_; };
+    inline Core::LinAlg::Matrix<3, 1, ScalarType>& GetXi() { return xi_; };
 
     /**
      * \brief Set the parameter coordinates in the cross section.
      */
-    inline void SetEtaCrossSection(Core::LinAlg::Matrix<2, 1, scalar_type> eta_cross_section)
+    inline void SetEtaCrossSection(Core::LinAlg::Matrix<2, 1, ScalarType> eta_cross_section)
     {
       eta_cross_section_ = eta_cross_section;
       is_cross_section_point_ = true;
@@ -148,7 +148,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the parameter coordinates in the cross section.
      */
-    inline Core::LinAlg::Matrix<2, 1, scalar_type> GetEtaCrossSection() const
+    inline Core::LinAlg::Matrix<2, 1, ScalarType> GetEtaCrossSection() const
     {
       if (!is_cross_section_point_) FOUR_C_THROW("The cross section coordinate has not been set!");
       return eta_cross_section_;
@@ -214,8 +214,8 @@ namespace GEOMETRYPAIR
      * @param rhs
      * @return True if smaller, false if larger.
      */
-    friend bool operator<(const ProjectionPoint1DTo3D<scalar_type>& lhs,
-        const ProjectionPoint1DTo3D<scalar_type>& rhs)
+    friend bool operator<(
+        const ProjectionPoint1DTo3D<ScalarType>& lhs, const ProjectionPoint1DTo3D<ScalarType>& rhs)
     {
       if (lhs.GetEta() < rhs.GetEta() - Constants::projection_xi_eta_tol)
         return true;
@@ -229,8 +229,8 @@ namespace GEOMETRYPAIR
      * @param rhs
      * @return False if smaller, true if larger.
      */
-    friend bool operator>(const ProjectionPoint1DTo3D<scalar_type>& lhs,
-        const ProjectionPoint1DTo3D<scalar_type>& rhs)
+    friend bool operator>(
+        const ProjectionPoint1DTo3D<ScalarType>& lhs, const ProjectionPoint1DTo3D<ScalarType>& rhs)
     {
       if (lhs.GetEta() > rhs.GetEta() + Constants::projection_xi_eta_tol)
         return true;
@@ -240,10 +240,10 @@ namespace GEOMETRYPAIR
 
    private:
     //! Parameter coordinate on line.
-    scalar_type eta_;
+    ScalarType eta_;
 
     //! Parameter coordinates in volume.
-    Core::LinAlg::Matrix<3, 1, scalar_type> xi_;
+    Core::LinAlg::Matrix<3, 1, ScalarType> xi_;
 
     //! Projection result.
     ProjectionResult projection_result_;
@@ -256,7 +256,7 @@ namespace GEOMETRYPAIR
     int intersection_face_;
 
     //! Parameter coordinates in the cross section.
-    Core::LinAlg::Matrix<2, 1, scalar_type> eta_cross_section_;
+    Core::LinAlg::Matrix<2, 1, ScalarType> eta_cross_section_;
 
     //! Flag if this is a point on a cross section.
     bool is_cross_section_point_;
@@ -266,22 +266,22 @@ namespace GEOMETRYPAIR
    * \brief Class to manage a segment on a line.
    * @tparam scalar_type Scalar type of the parameter coordinate values.
    */
-  template <typename scalar_type>
+  template <typename ScalarType>
   class LineSegment
   {
    public:
     /**
      * \brief Default constructor, the segment is from -1 to 1.
      */
-    LineSegment() : LineSegment(scalar_type(-1.0), scalar_type(1.0)){};
+    LineSegment() : LineSegment(ScalarType(-1.0), ScalarType(1.0)){};
 
     /**
      * \brief Constructor. Set the range of the segment.
      * @param start_point
      * @param end_point
      */
-    LineSegment(ProjectionPoint1DTo3D<scalar_type> start_point,
-        ProjectionPoint1DTo3D<scalar_type> end_point)
+    LineSegment(
+        ProjectionPoint1DTo3D<ScalarType> start_point, ProjectionPoint1DTo3D<ScalarType> end_point)
         : start_point_(start_point), end_point_(end_point), segment_projection_points_()
     {
       // Sanity check that eta_a is larger than eta_b.
@@ -297,43 +297,43 @@ namespace GEOMETRYPAIR
      * \brief Get the length of the segment in parameter coordinates.
      * @return Segment length.
      */
-    inline scalar_type GetSegmentLength() const { return GetEtaB() - GetEtadata(); }
+    inline ScalarType GetSegmentLength() const { return GetEtaB() - GetEtadata(); }
 
     /**
      * \brief Return a const reference to eta start.
      */
-    inline const scalar_type& GetEtadata() const { return start_point_.GetEta(); };
+    inline const ScalarType& GetEtadata() const { return start_point_.GetEta(); };
 
     /**
      * \brief Return a const reference to eta end.
      */
-    inline const scalar_type& GetEtaB() const { return end_point_.GetEta(); };
+    inline const ScalarType& GetEtaB() const { return end_point_.GetEta(); };
 
     /**
      * \brief Return a const reference to the start point.
      */
-    inline const ProjectionPoint1DTo3D<scalar_type>& GetStartPoint() const { return start_point_; };
+    inline const ProjectionPoint1DTo3D<ScalarType>& GetStartPoint() const { return start_point_; };
 
     /**
      * \brief Return a mutable reference to the start point.
      */
-    inline ProjectionPoint1DTo3D<scalar_type>& GetStartPoint() { return start_point_; };
+    inline ProjectionPoint1DTo3D<ScalarType>& GetStartPoint() { return start_point_; };
 
     /**
      * \brief Return a const reference to the end point.
      */
-    inline const ProjectionPoint1DTo3D<scalar_type>& GetEndPoint() const { return end_point_; };
+    inline const ProjectionPoint1DTo3D<ScalarType>& GetEndPoint() const { return end_point_; };
 
     /**
      * \brief Return a mutable reference to the end point.
      */
-    inline ProjectionPoint1DTo3D<scalar_type>& GetEndPoint() { return end_point_; };
+    inline ProjectionPoint1DTo3D<ScalarType>& GetEndPoint() { return end_point_; };
 
     /**
      * \brief Add a projection point to the projection point vector.
      * @param projection_point projection point to add to the end of the vector.
      */
-    inline void AddProjectionPoint(ProjectionPoint1DTo3D<scalar_type> projection_point)
+    inline void AddProjectionPoint(ProjectionPoint1DTo3D<ScalarType> projection_point)
     {
       segment_projection_points_.push_back(projection_point);
     }
@@ -351,7 +351,7 @@ namespace GEOMETRYPAIR
      * \brief Return a const reference to the projection points in this segment.
      * @return Reference to projection point vector.
      */
-    inline const std::vector<ProjectionPoint1DTo3D<scalar_type>>& GetProjectionPoints() const
+    inline const std::vector<ProjectionPoint1DTo3D<ScalarType>>& GetProjectionPoints() const
     {
       return segment_projection_points_;
     }
@@ -360,7 +360,7 @@ namespace GEOMETRYPAIR
      * \brief Return a mutable reference to the projection points in this segment.
      * @return Reference to projection point vector.
      */
-    inline std::vector<ProjectionPoint1DTo3D<scalar_type>>& GetProjectionPoints()
+    inline std::vector<ProjectionPoint1DTo3D<ScalarType>>& GetProjectionPoints()
     {
       return segment_projection_points_;
     }
@@ -371,7 +371,7 @@ namespace GEOMETRYPAIR
      * @param rhs
      * @return True if smaller, false if larger. Throw error if the segments are overlapping.
      */
-    friend bool operator<(const LineSegment<scalar_type>& lhs, const LineSegment<scalar_type>& rhs)
+    friend bool operator<(const LineSegment<ScalarType>& lhs, const LineSegment<ScalarType>& rhs)
     {
       if (lhs.GetEtaB() < rhs.GetEtadata() + Constants::projection_xi_eta_tol)
         return true;
@@ -396,7 +396,7 @@ namespace GEOMETRYPAIR
      * @param rhs
      * @return False if smaller, true if larger. Throw error if the segments are overlapping.
      */
-    friend bool operator>(const LineSegment<scalar_type>& lhs, const LineSegment<scalar_type>& rhs)
+    friend bool operator>(const LineSegment<ScalarType>& lhs, const LineSegment<ScalarType>& rhs)
     {
       if (lhs.GetEtadata() > rhs.GetEtaB() - Constants::projection_xi_eta_tol)
         return true;
@@ -417,13 +417,13 @@ namespace GEOMETRYPAIR
 
    private:
     //! Start point of the segment.
-    ProjectionPoint1DTo3D<scalar_type> start_point_;
+    ProjectionPoint1DTo3D<ScalarType> start_point_;
 
     //! Endpoint of the segment.
-    ProjectionPoint1DTo3D<scalar_type> end_point_;
+    ProjectionPoint1DTo3D<ScalarType> end_point_;
 
     //! Vector to store projection points for this segment.
-    std::vector<ProjectionPoint1DTo3D<scalar_type>> segment_projection_points_;
+    std::vector<ProjectionPoint1DTo3D<ScalarType>> segment_projection_points_;
   };
 }  // namespace GEOMETRYPAIR
 

@@ -39,7 +39,7 @@ namespace Discret
     class ScaTraEleDiffManager;
     class ScaTraEleReaManager;
 
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManager;
 
     /// Scatra element implementation
@@ -1317,7 +1317,7 @@ namespace Discret
       All formulation-specific internal variables are stored and managed by a class derived from
       this class.
     */
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManager
     {
      public:
@@ -1338,26 +1338,26 @@ namespace Discret
 
       // compute and set internal variables
       void set_internal_variables(
-          const Core::LinAlg::Matrix<NEN, 1>& funct,  //! array for shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+          const Core::LinAlg::Matrix<nsd, nen>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephinp,  //! scalar at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephin,  //! scalar at t_(n)
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ephin,  //! scalar at t_(n)
+          const Core::LinAlg::Matrix<nsd, nen>&
               econvelnp,  //! nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ehist,  //! history vector of transported scalars
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nsd, nen>&
               eforcevelocity  //! nodal velocity due to external force
       )
       {
         // fluid velocity
-        Core::LinAlg::Matrix<NSD, 1> convective_fluid_velocity;
+        Core::LinAlg::Matrix<nsd, 1> convective_fluid_velocity;
         convective_fluid_velocity.multiply(econvelnp, funct);
 
         // velocity due to the external force
-        Core::LinAlg::Matrix<NSD, 1> force_velocity;
+        Core::LinAlg::Matrix<nsd, 1> force_velocity;
         force_velocity.multiply(eforcevelocity, funct);
 
         for (int k = 0; k < numscal_; ++k)
@@ -1396,19 +1396,19 @@ namespace Discret
       //! return scalar value at t_(n)
       virtual const double& Phin(const int k) const { return phin_[k]; };
       //! return convective velocity
-      [[nodiscard]] virtual const Core::LinAlg::Matrix<NSD, 1>& ConVel(const int k) const
+      [[nodiscard]] virtual const Core::LinAlg::Matrix<nsd, 1>& ConVel(const int k) const
       {
         return convelint_[k];
       };
       //! return convective part in convective form
-      [[nodiscard]] virtual const Core::LinAlg::Matrix<NEN, 1>& Conv(const int k) const
+      [[nodiscard]] virtual const Core::LinAlg::Matrix<nen, 1>& Conv(const int k) const
       {
         return conv_[k];
       };
       //! return spatial gradient of all scalar values
-      virtual const std::vector<Core::LinAlg::Matrix<NSD, 1>>& GradPhi() const { return gradphi_; };
+      virtual const std::vector<Core::LinAlg::Matrix<nsd, 1>>& GradPhi() const { return gradphi_; };
       //! return spatial gradient of current scalar value
-      virtual const Core::LinAlg::Matrix<NSD, 1>& GradPhi(const int k) const
+      virtual const Core::LinAlg::Matrix<nsd, 1>& GradPhi(const int k) const
       {
         return gradphi_[k];
       };
@@ -1428,7 +1428,7 @@ namespace Discret
       // TODO: reduce number of set methods
 
       //! set spatial gradient of current scalar value
-      virtual void SetGradPhi(const int k, Core::LinAlg::Matrix<NSD, 1>& gradphi)
+      virtual void SetGradPhi(const int k, Core::LinAlg::Matrix<nsd, 1>& gradphi)
       {
         gradphi_[k] = gradphi;
       };
@@ -1454,11 +1454,11 @@ namespace Discret
       //! scalar at t_(n)
       std::vector<double> phin_;
       //! convective velocity
-      std::vector<Core::LinAlg::Matrix<NSD, 1>> convelint_;
+      std::vector<Core::LinAlg::Matrix<nsd, 1>> convelint_;
       //! convective part in convective form: rho*u_x*N,x+ rho*u_y*N,y
-      std::vector<Core::LinAlg::Matrix<NEN, 1>> conv_;
+      std::vector<Core::LinAlg::Matrix<nen, 1>> conv_;
       //! spatial gradient of current scalar value
-      std::vector<Core::LinAlg::Matrix<NSD, 1>> gradphi_;
+      std::vector<Core::LinAlg::Matrix<nsd, 1>> gradphi_;
       //! convective term
       std::vector<double> conv_phi_;
       //! history data (or acceleration)

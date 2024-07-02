@@ -32,13 +32,13 @@ namespace ParticleInteraction
     /**
      *  \brief provide an efficient method to determine the power with integer exponents
      */
-    template <class T, int N>
+    template <class T, int n>
     struct Helper
     {
-      static_assert(N >= 0, "The exponent must be positive!");
+      static_assert(n >= 0, "The exponent must be positive!");
       static constexpr T Pow(const T x)
       {
-        return ((N % 2) == 0 ? 1 : x) * Helper<T, (N / 2)>::Pow(x * x);
+        return ((n % 2) == 0 ? 1 : x) * Helper<T, (n / 2)>::Pow(x * x);
       }
     };
 
@@ -53,10 +53,10 @@ namespace ParticleInteraction
      *
      *  when you use this helper function there will be no need to explicitly insert the class type
      */
-    template <int N, class T>
+    template <int n, class T>
     T constexpr Pow(T const x)
     {
-      return Helper<T, N>::Pow(x);
+      return Helper<T, n>::Pow(x);
     }
 
     //! @name collection of three dimensional vector operations

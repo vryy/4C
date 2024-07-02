@@ -221,14 +221,14 @@ namespace Discret
       double porosity_;
     };
 
-    template <int NSD, int NEN>
-    class ScaTraEleInternalVariableManagerPoro : public ScaTraEleInternalVariableManager<NSD, NEN>
+    template <int nsd, int nen>
+    class ScaTraEleInternalVariableManagerPoro : public ScaTraEleInternalVariableManager<nsd, nen>
     {
-      typedef ScaTraEleInternalVariableManager<NSD, NEN> my;
+      typedef ScaTraEleInternalVariableManager<nsd, nen> my;
 
      public:
       ScaTraEleInternalVariableManagerPoro(int numscal)
-          : ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
+          : ScaTraEleInternalVariableManager<nsd, nen>(numscal),
             zeroconvel_(true),
             zeroconv_(true),
             zero_(0.0)
@@ -243,7 +243,7 @@ namespace Discret
       /*========================================================================*/
 
       //! return convective velocity
-      virtual const Core::LinAlg::Matrix<NSD, 1>& ConVel(const int k) const {
+      virtual const Core::LinAlg::Matrix<nsd, 1>& ConVel(const int k) const {
           //    if(k<NO_CONVECTION_NR)
           {return my::convelint_;
     }
@@ -251,7 +251,7 @@ namespace Discret
     //      return zeroconvel_;
   };  // namespace ELEMENTS
   //! return convective part in convective form
-  virtual const Core::LinAlg::Matrix<NEN, 1>& Conv(const int k) const
+  virtual const Core::LinAlg::Matrix<nen, 1>& Conv(const int k) const
   {  //    if(k<NO_CONVECTION_NR)
     {
       return my::conv_;
@@ -271,8 +271,8 @@ namespace Discret
   }
 
  private:
-  Core::LinAlg::Matrix<NSD, 1> zeroconvel_;
-  Core::LinAlg::Matrix<NEN, 1> zeroconv_;
+  Core::LinAlg::Matrix<nsd, 1> zeroconvel_;
+  Core::LinAlg::Matrix<nen, 1> zeroconv_;
   double zero_;
 };  // namespace Discret
 }

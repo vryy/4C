@@ -88,15 +88,15 @@ namespace Core::Communication
       Teuchos::RCP<Epetra_CrsMatrix> matrix, const char* name, double tol = 1.0e-14);
 
   //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
-  template <class datatype>
-  Teuchos::RCP<const Teuchos::Comm<datatype>> toTeuchosComm(const Epetra_Comm& comm)
+  template <class Datatype>
+  Teuchos::RCP<const Teuchos::Comm<Datatype>> toTeuchosComm(const Epetra_Comm& comm)
   {
     try
     {
       const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
-      Teuchos::RCP<Teuchos::MpiComm<datatype>> mpicomm =
-          Teuchos::rcp(new Teuchos::MpiComm<datatype>(Teuchos::opaqueWrapper(mpiComm.Comm())));
-      return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<datatype>>(mpicomm);
+      Teuchos::RCP<Teuchos::MpiComm<Datatype>> mpicomm =
+          Teuchos::rcp(new Teuchos::MpiComm<Datatype>(Teuchos::opaqueWrapper(mpiComm.Comm())));
+      return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<Datatype>>(mpicomm);
     }
     catch (std::bad_cast& b)
     {

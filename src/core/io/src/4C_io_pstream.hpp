@@ -270,15 +270,15 @@ namespace Core::IO
 
   /*====================================================================*/
   /// Handle streaming to Pstream objects
-  template <typename charT>
-  Pstream& operator<<(Pstream& out, const charT& s)
+  template <typename CharT>
+  Pstream& operator<<(Pstream& out, const CharT& s)
   {
     return out.stream(s);
   }
 
   /// Handle streaming to Level objects
-  template <typename charT>
-  Level& operator<<(Level& out, charT s)
+  template <typename CharT>
+  Level& operator<<(Level& out, CharT s)
   {
     return out.stream(s);
   }

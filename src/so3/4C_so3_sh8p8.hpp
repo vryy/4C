@@ -487,7 +487,7 @@ namespace Discret
       void eas_init();
 
       /// retrieve EAS parameters and incremental update of them
-      template <int NUMEAS_T>
+      template <int numeas_t>
       static void eas_update_incrementally(
           Core::LinAlg::SerialDenseMatrix*&
               oldfeas,  ///< EAS constraint \f$f_{EAS}^{k}\f$ of last iteration
@@ -508,7 +508,7 @@ namespace Discret
       );
 
       /// push parametric EAS GL strain to material/reference configuration
-      template <int NUMEAS_T>
+      template <int numeas_t>
       static void eas_materialise_shape_fcts(
           const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>&
               M,                ///< EAS shape functions in material configuration
@@ -521,7 +521,7 @@ namespace Discret
       );
 
       /// add EAS strain contribution
-      template <int NUMEAS_T>
+      template <int numeas_t>
       static void eas_add_strain(
           Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,  ///< Green-Lagrange strain vector
           const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>&
@@ -530,7 +530,7 @@ namespace Discret
       );
 
       /// build EAS constraint and its tangents
-      template <int NUMEAS_T>
+      template <int numeas_t>
       static void eas_constraint_and_tangent(
           Teuchos::RCP<Core::LinAlg::SerialDenseVector>&
               feas,  ///< current EAS constraint \f$f_{EAS}^{k+1}\f$
@@ -563,7 +563,7 @@ namespace Discret
       );
 
       /// static condensation
-      template <int NUMEAS_T>
+      template <int numeas_t>
       static void eas_condensation(
           Core::LinAlg::Matrix<NUMDISP_, 1>* force,               ///< element internal force vector
           Core::LinAlg::Matrix<NUMDISP_, NUMDISP_>* stiffmatrix,  ///< element stiffness matrix

@@ -144,7 +144,7 @@ int Discret::ELEMENTS::Wall1Scatra::evaluate(Teuchos::ParameterList& params,
       //  break;
     /*case Wall1_Scatra::calc_struct_update_istep:
     {
-      so3_ele::evaluate(params,
+      So3Ele::evaluate(params,
                         discretization,
                         la[0].lm_,
                         elemat1_epetra,

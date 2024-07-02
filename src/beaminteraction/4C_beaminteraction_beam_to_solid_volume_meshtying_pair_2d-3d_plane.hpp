@@ -28,13 +28,13 @@ namespace BEAMINTERACTION
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <typename beam, typename solid>
+  template <typename Beam, typename Solid>
   class BeamToSolidVolumeMeshtyingPair2D3DPlane
-      : public BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>
+      : public BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>
   {
    private:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;

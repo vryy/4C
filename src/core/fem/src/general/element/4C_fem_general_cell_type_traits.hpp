@@ -77,8 +77,8 @@ namespace Core::FE
    *
    * @tparam t
    */
-  template <typename... t>
-  using Join = typename Details::Join<t...>::type;
+  template <typename... T>
+  using Join = typename Details::Join<T...>::type;
   ///@}
 
   /*!
@@ -131,9 +131,9 @@ namespace Core::FE
    *
    * @tparam celltypes Integer sequence of cell types
    */
-  template <typename celltypes>
+  template <typename Celltypes>
   static constexpr std::array celltype_array =
-      Details::celltype_sequence_to_array<celltypes>::value;
+      Details::celltype_sequence_to_array<Celltypes>::value;
 
   /*!
    * @brief a Core::FE::celltype_sequence holding all @p CellTypes including @p none and @p max
@@ -229,103 +229,103 @@ namespace Core::FE
    * celltypes (default: all physical celltypes, i.e. all except none and max)
    * @return returns the invoked result of @p fct
    */
-  template <typename celltype_sequence = all_physical_celltypes, typename Function,
+  template <typename CelltypeSequence = all_physical_celltypes, typename Function,
       typename UnsupportedCellTypeCallable =
-          Details::ThrowUnsupportedCellTypeError<celltype_sequence>>
+          Details::ThrowUnsupportedCellTypeError<CelltypeSequence>>
   auto CellTypeSwitch(CellType celltype, Function fct,
       UnsupportedCellTypeCallable unsupported_celltype_callable = {})
   {
     switch (celltype)
     {
       case CellType::dis_none:
-        return Details::CellTypeSwitchItem<CellType::dis_none, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::dis_none, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad4:
-        return Details::CellTypeSwitchItem<CellType::quad4, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::quad4, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad6:
-        return Details::CellTypeSwitchItem<CellType::quad6, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::quad6, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad8:
-        return Details::CellTypeSwitchItem<CellType::quad8, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::quad8, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::quad9:
-        return Details::CellTypeSwitchItem<CellType::quad9, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::quad9, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::tri3:
-        return Details::CellTypeSwitchItem<CellType::tri3, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::tri3, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::tri6:
-        return Details::CellTypeSwitchItem<CellType::tri6, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::tri6, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex8:
-        return Details::CellTypeSwitchItem<CellType::hex8, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex8, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex16:
-        return Details::CellTypeSwitchItem<CellType::hex16, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex16, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex18:
-        return Details::CellTypeSwitchItem<CellType::hex18, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex18, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex20:
-        return Details::CellTypeSwitchItem<CellType::hex20, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex20, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::hex27:
-        return Details::CellTypeSwitchItem<CellType::hex27, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::hex27, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::tet4:
-        return Details::CellTypeSwitchItem<CellType::tet4, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::tet4, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::tet10:
-        return Details::CellTypeSwitchItem<CellType::tet10, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::tet10, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::wedge6:
-        return Details::CellTypeSwitchItem<CellType::wedge6, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::wedge6, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::wedge15:
-        return Details::CellTypeSwitchItem<CellType::wedge15, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::wedge15, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::pyramid5:
-        return Details::CellTypeSwitchItem<CellType::pyramid5, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::pyramid5, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line2:
-        return Details::CellTypeSwitchItem<CellType::line2, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line2, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line3:
-        return Details::CellTypeSwitchItem<CellType::line3, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line3, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line4:
-        return Details::CellTypeSwitchItem<CellType::line4, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line4, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line5:
-        return Details::CellTypeSwitchItem<CellType::line5, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line5, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::line6:
-        return Details::CellTypeSwitchItem<CellType::line6, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::line6, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::point1:
-        return Details::CellTypeSwitchItem<CellType::point1, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::point1, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs2:
-        return Details::CellTypeSwitchItem<CellType::nurbs2, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs2, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs3:
-        return Details::CellTypeSwitchItem<CellType::nurbs3, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs3, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs4:
-        return Details::CellTypeSwitchItem<CellType::nurbs4, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs4, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs9:
-        return Details::CellTypeSwitchItem<CellType::nurbs9, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs9, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs8:
-        return Details::CellTypeSwitchItem<CellType::nurbs8, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs8, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::nurbs27:
-        return Details::CellTypeSwitchItem<CellType::nurbs27, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::nurbs27, CelltypeSequence>(
             fct, unsupported_celltype_callable);
       case CellType::max_distype:
-        return Details::CellTypeSwitchItem<CellType::max_distype, celltype_sequence>(
+        return Details::CellTypeSwitchItem<CellType::max_distype, CelltypeSequence>(
             fct, unsupported_celltype_callable);
     }
     FOUR_C_THROW(

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename line, typename volume>
+template <typename ScalarType, typename Line, typename Volume>
 Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeFactory(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data)
@@ -42,10 +42,10 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToVolumeF
         gauss_point_projection_without_boundary_segmentation:
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
       return Teuchos::rcp(
-          new GeometryPairLineToVolumeGaussPointProjection<scalar_type, line, volume>(
+          new GeometryPairLineToVolumeGaussPointProjection<ScalarType, Line, Volume>(
               element1, element2, line_to_3d_evaluation_data));
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::segmentation:
-      return Teuchos::rcp(new GeometryPairLineToVolumeSegmentation<scalar_type, line, volume>(
+      return Teuchos::rcp(new GeometryPairLineToVolumeSegmentation<ScalarType, Line, Volume>(
           element1, element2, line_to_3d_evaluation_data));
     default:
     {
@@ -85,7 +85,7 @@ template Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLine
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
+template <typename ScalarType, typename Line, typename Surface>
 Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactory(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data)
@@ -104,10 +104,10 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
         gauss_point_projection_without_boundary_segmentation:
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::gauss_point_projection_boundary_segmentation:
       return Teuchos::rcp(
-          new GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>(
+          new GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line, Surface>(
               element1, element2, line_to_surface_evaluation_data));
     case Inpar::GEOMETRYPAIR::LineTo3DStrategy::segmentation:
-      return Teuchos::rcp(new GeometryPairLineToSurfaceSegmentation<scalar_type, line, surface>(
+      return Teuchos::rcp(new GeometryPairLineToSurfaceSegmentation<ScalarType, Line, Surface>(
           element1, element2, line_to_surface_evaluation_data));
     default:
     {
@@ -120,20 +120,20 @@ Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurface
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
+template <typename ScalarType, typename Line, typename Surface>
 Teuchos::RCP<GEOMETRYPAIR::GeometryPair> GEOMETRYPAIR::GeometryPairLineToSurfaceFactoryFAD(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GeometryEvaluationDataBase>& geometry_evaluation_data)
 {
   // Create the internal pair as double.
   auto internal_geometry_pair_double =
-      Teuchos::rcp_dynamic_cast<GeometryPairLineToSurface<double, line, surface>>(
-          GeometryPairLineToSurfaceFactory<double, line, surface>(
+      Teuchos::rcp_dynamic_cast<GeometryPairLineToSurface<double, Line, Surface>>(
+          GeometryPairLineToSurfaceFactory<double, Line, Surface>(
               element1, element2, geometry_evaluation_data),
           true);
 
   // Create the wrapper.
-  return Teuchos::rcp(new GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>(
+  return Teuchos::rcp(new GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface>(
       element1, element2, internal_geometry_pair_double));
 }
 

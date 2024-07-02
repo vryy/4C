@@ -37,8 +37,8 @@ namespace Discret
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, Core::FE::CellType distype>
-    class So3Scatra : public so3_ele
+    template <class So3Ele, Core::FE::CellType distype>
+    class So3Scatra : public So3Ele
     {
       //! @name Friends
       friend class SoTet4ScatraType;

@@ -252,7 +252,7 @@ namespace Core::Geo
      *  \author hiermeier
      *  \date 08/16 */
     template <unsigned probdim, Core::FE::CellType eletype,
-        unsigned numNodesElement = Core::FE::num_nodes<eletype>,
+        unsigned num_nodes_element = Core::FE::num_nodes<eletype>,
         unsigned dim = Core::FE::dim<eletype>, CutFloatType floattype = floattype_double>
     class PositionGeneric : public Position
     {
@@ -261,7 +261,7 @@ namespace Core::Geo
        *
        *  \param xyze (in) : Global nodal positions of the element.
        *  \param xyz  (in) : Global coordinates of the given point. */
-      PositionGeneric(const Core::LinAlg::Matrix<probdim, numNodesElement>& xyze,
+      PositionGeneric(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
           const Core::LinAlg::Matrix<probdim, 1>& xyz)
           : px_(xyz),
             xyze_(xyze),
@@ -344,7 +344,7 @@ namespace Core::Geo
 
         GetElementShift<probdim>(xyze_, shift_);
 
-        for (unsigned i = 0; i < numNodesElement; ++i)
+        for (unsigned i = 0; i < num_nodes_element; ++i)
         {
           Core::LinAlg::Matrix<probdim, 1> x1(&xyze_(0, i), true);
           x1.update(-1, shift_, 1);
@@ -364,7 +364,7 @@ namespace Core::Geo
       Core::LinAlg::Matrix<probdim, 1> px_;
 
       /// spatial nodal positions (scaled and shifted after constructor call)
-      Core::LinAlg::Matrix<probdim, numNodesElement> xyze_;
+      Core::LinAlg::Matrix<probdim, num_nodes_element> xyze_;
 
       /** initial scaling of the spatial nodal coordinates \c xyze_
        *  and the location vector \c px_ */
@@ -396,16 +396,16 @@ namespace Core::Geo
      *
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, Core::FE::CellType eletype,
-        unsigned numNodesElement = Core::FE::num_nodes<eletype>,
+        unsigned num_nodes_element = Core::FE::num_nodes<eletype>,
         unsigned dim = Core::FE::dim<eletype>, CutFloatType floattype = floattype_double>
     class ComputePosition
-        : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
+        : public PositionGeneric<probdim, eletype, num_nodes_element, dim, floattype>
     {
      public:
       /// constructor
-      ComputePosition(const Core::LinAlg::Matrix<probdim, numNodesElement>& xyze,
+      ComputePosition(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
           const Core::LinAlg::Matrix<probdim, 1>& xyz)
-          : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz){};
+          : PositionGeneric<probdim, eletype, num_nodes_element, dim, floattype>(xyze, xyz){};
 
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
@@ -441,16 +441,16 @@ namespace Core::Geo
      *
      *  \author hiermeier \date 08/16 */
     template <unsigned probdim, Core::FE::CellType eletype,
-        unsigned numNodesElement = Core::FE::num_nodes<eletype>,
+        unsigned num_nodes_element = Core::FE::num_nodes<eletype>,
         unsigned dim = Core::FE::dim<eletype>, CutFloatType floattype = floattype_double>
     class ComputeEmbeddedPosition
-        : public PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>
+        : public PositionGeneric<probdim, eletype, num_nodes_element, dim, floattype>
     {
      public:
       /// constructor
-      ComputeEmbeddedPosition(const Core::LinAlg::Matrix<probdim, numNodesElement>& xyze,
+      ComputeEmbeddedPosition(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
           const Core::LinAlg::Matrix<probdim, 1>& xyz)
-          : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz)
+          : PositionGeneric<probdim, eletype, num_nodes_element, dim, floattype>(xyze, xyz)
       {
         this->xsi_.set_view(xsi_aug_.data());
       };
@@ -590,11 +590,11 @@ namespace Core::Geo
      private:
       /// template class for the actual position creation
       template <bool isembedded, unsigned probdim, unsigned dim, Core::FE::CellType eletype,
-          unsigned numNodesElement = Core::FE::num_nodes<eletype>>
+          unsigned num_nodes_element = Core::FE::num_nodes<eletype>>
       class PositionCreator
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<probdim, numNodesElement>& xyze,
+        static Position* Create(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           return nullptr;
@@ -605,11 +605,11 @@ namespace Core::Geo
       ///       If more wrong combinations come up, add them here.            hiermeier 04/17
       /// @{
 
-      template <unsigned dim, Core::FE::CellType eletype, unsigned numNodesElement>
-      class PositionCreator<true, dim, dim, eletype, numNodesElement>
+      template <unsigned dim, Core::FE::CellType eletype, unsigned num_nodes_element>
+      class PositionCreator<true, dim, dim, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<dim, numNodesElement>& xyze,
+        static Position* Create(const Core::LinAlg::Matrix<dim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<dim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -619,11 +619,11 @@ namespace Core::Geo
         }
       };
 
-      template <Core::FE::CellType eletype, unsigned numNodesElement>
-      class PositionCreator<true, 1, 2, eletype, numNodesElement>
+      template <Core::FE::CellType eletype, unsigned num_nodes_element>
+      class PositionCreator<true, 1, 2, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<1, numNodesElement>& xyze,
+        static Position* Create(const Core::LinAlg::Matrix<1, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<1, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -633,11 +633,11 @@ namespace Core::Geo
         }
       };
 
-      template <Core::FE::CellType eletype, unsigned numNodesElement>
-      class PositionCreator<true, 1, 3, eletype, numNodesElement>
+      template <Core::FE::CellType eletype, unsigned num_nodes_element>
+      class PositionCreator<true, 1, 3, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<1, numNodesElement>& xyze,
+        static Position* Create(const Core::LinAlg::Matrix<1, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<1, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -647,11 +647,11 @@ namespace Core::Geo
         }
       };
 
-      template <Core::FE::CellType eletype, unsigned numNodesElement>
-      class PositionCreator<true, 2, 3, eletype, numNodesElement>
+      template <Core::FE::CellType eletype, unsigned num_nodes_element>
+      class PositionCreator<true, 2, 3, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<2, numNodesElement>& xyze,
+        static Position* Create(const Core::LinAlg::Matrix<2, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<2, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -662,11 +662,11 @@ namespace Core::Geo
       };
 
       template <unsigned probdim, unsigned dim, Core::FE::CellType eletype,
-          unsigned numNodesElement>
-      class PositionCreator<false, probdim, dim, eletype, numNodesElement>
+          unsigned num_nodes_element>
+      class PositionCreator<false, probdim, dim, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<probdim, numNodesElement>& xyze,
+        static Position* Create(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           FOUR_C_THROW(
@@ -680,24 +680,24 @@ namespace Core::Geo
 
       /// create an embedded position object ( dim < probdim )
       template <unsigned probdim, unsigned dim, Core::FE::CellType eletype,
-          unsigned numNodesElement>
-      class PositionCreator<true, probdim, dim, eletype, numNodesElement>
+          unsigned num_nodes_element>
+      class PositionCreator<true, probdim, dim, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<probdim, numNodesElement>& xyze,
+        static Position* Create(const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           switch (use_dist_floattype(floattype))
           {
             case floattype_double:
             {
-              return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
+              return new ComputeEmbeddedPosition<probdim, eletype, num_nodes_element,
                   Core::FE::dim<eletype>, floattype_double>(xyze, xyz);
               break;
             }
             case floattype_cln:
             {
-              return new ComputeEmbeddedPosition<probdim, eletype, numNodesElement,
+              return new ComputeEmbeddedPosition<probdim, eletype, num_nodes_element,
                   Core::FE::dim<eletype>, floattype_cln>(xyze, xyz);
               break;
             }
@@ -709,24 +709,24 @@ namespace Core::Geo
       };
 
       /// create a standard position object ( probdim == dim )
-      template <unsigned dim, Core::FE::CellType eletype, unsigned numNodesElement>
-      class PositionCreator<false, dim, dim, eletype, numNodesElement>
+      template <unsigned dim, Core::FE::CellType eletype, unsigned num_nodes_element>
+      class PositionCreator<false, dim, dim, eletype, num_nodes_element>
       {
        public:
-        static Position* Create(const Core::LinAlg::Matrix<dim, numNodesElement>& xyze,
+        static Position* Create(const Core::LinAlg::Matrix<dim, num_nodes_element>& xyze,
             const Core::LinAlg::Matrix<dim, 1>& xyz, CutFloatType floattype = floattype_double)
         {
           switch (use_pos_floattype(floattype))
           {
             case floattype_double:
             {
-              return new ComputePosition<dim, eletype, numNodesElement, Core::FE::dim<eletype>,
+              return new ComputePosition<dim, eletype, num_nodes_element, Core::FE::dim<eletype>,
                   floattype_double>(xyze, xyz);
               break;
             }
             case floattype_cln:
             {
-              return new ComputePosition<dim, eletype, numNodesElement, Core::FE::dim<eletype>,
+              return new ComputePosition<dim, eletype, num_nodes_element, Core::FE::dim<eletype>,
                   floattype_cln>(xyze, xyz);
               break;
             }
@@ -751,11 +751,11 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, Core::FE::CellType eletype, unsigned dim = Core::FE::dim<eletype>,
-          unsigned numNodesElement = Core::FE::num_nodes<eletype>>
+          unsigned num_nodes_element = Core::FE::num_nodes<eletype>>
       Teuchos::RCP<Position> build_position(const Element& element, const Point& point,
           CutFloatType floattype = floattype_double) const
       {
-        Core::LinAlg::Matrix<probdim, numNodesElement> xyze;
+        Core::LinAlg::Matrix<probdim, num_nodes_element> xyze;
         element.Coordinates(xyze);
         Core::LinAlg::Matrix<probdim, 1> px;
         point.Coordinates(px.data());
@@ -819,11 +819,11 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, Core::FE::CellType eletype, unsigned dim = Core::FE::dim<eletype>,
-          unsigned numNodesElement = Core::FE::num_nodes<eletype>>
+          unsigned num_nodes_element = Core::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> build_position(const Element& element,
           const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
       {
-        Core::LinAlg::Matrix<probdim, numNodesElement> xyze;
+        Core::LinAlg::Matrix<probdim, num_nodes_element> xyze;
         element.Coordinates(xyze);
 
         if (probdim > dim)
@@ -891,9 +891,9 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, Core::FE::CellType eletype, unsigned dim = Core::FE::dim<eletype>,
-          unsigned numNodesElement = Core::FE::num_nodes<eletype>>
+          unsigned num_nodes_element = Core::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> build_position(
-          const Core::LinAlg::Matrix<probdim, numNodesElement>& xyze,
+          const Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze,
           const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
       {
         if (probdim > dim)
@@ -957,18 +957,18 @@ namespace Core::Geo
        *
        *  \author hiermeier \date 08/16 */
       template <unsigned probdim, Core::FE::CellType eletype, unsigned dim = Core::FE::dim<eletype>,
-          unsigned numNodesElement = Core::FE::num_nodes<eletype>>
+          unsigned num_nodes_element = Core::FE::num_nodes<eletype>>
       static Teuchos::RCP<Position> build_position(const std::vector<Node*> nodes,
           const Core::LinAlg::Matrix<probdim, 1>& xyz, CutFloatType floattype = floattype_double)
       {
-        if (not(nodes.size() == numNodesElement))
+        if (not(nodes.size() == num_nodes_element))
           FOUR_C_THROW(
               "node number for this element is not correct\n"
               "numNodesElement = %d, nodes.size() = %d",
-              numNodesElement, nodes.size());
+              num_nodes_element, nodes.size());
 
-        Core::LinAlg::Matrix<probdim, numNodesElement> xyze;
-        for (unsigned i = 0; i < numNodesElement; ++i)
+        Core::LinAlg::Matrix<probdim, num_nodes_element> xyze;
+        for (unsigned i = 0; i < num_nodes_element; ++i)
         {
           Node* n = nodes[i];
           n->Coordinates(&xyze(0, i));

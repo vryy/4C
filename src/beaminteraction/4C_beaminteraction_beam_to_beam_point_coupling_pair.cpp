@@ -27,8 +27,8 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename beam>
-BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::BeamToBeamPointCouplingPair(
+template <typename Beam>
+BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::BeamToBeamPointCouplingPair(
     double penalty_parameter_rot, double penalty_parameter_pos,
     std::array<double, 2> pos_in_parameterspace)
     : BeamContactPair(),
@@ -42,8 +42,8 @@ BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::BeamToBeamPointCouplingPair(
 /**
  *
  */
-template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::setup()
+template <typename Beam>
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::setup()
 {
   // This pair only works for Simo Reissner beam elements.
   const auto check_simo_reissner_beam = [](auto element)
@@ -61,8 +61,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::setup()
 /**
  *
  */
-template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemble(
+template <typename Beam>
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::EvaluateAndAssemble(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -77,8 +77,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssemble(
 /**
  *
  */
-template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_positional_coupling(
+template <typename Beam>
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_positional_coupling(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -88,13 +88,13 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
       this->Element1(), this->Element2()};
 
   // Initialize variables for evaluation of the positional coupling terms.
-  std::array<Core::LinAlg::Matrix<beam::n_dof_, 1, int>, 2> gid_pos;
-  std::array<GEOMETRYPAIR::ElementData<beam, scalar_type_pos>, 2> beam_pos = {
-      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pos>::initialize(beam_ele[0]),
-      GEOMETRYPAIR::InitializeElementData<beam, scalar_type_pos>::initialize(beam_ele[1])};
+  std::array<Core::LinAlg::Matrix<Beam::n_dof_, 1, int>, 2> gid_pos;
+  std::array<GEOMETRYPAIR::ElementData<Beam, scalar_type_pos>, 2> beam_pos = {
+      GEOMETRYPAIR::InitializeElementData<Beam, scalar_type_pos>::initialize(beam_ele[0]),
+      GEOMETRYPAIR::InitializeElementData<Beam, scalar_type_pos>::initialize(beam_ele[1])};
   std::array<Core::LinAlg::Matrix<3, 1, scalar_type_pos>, 2> r;
   Core::LinAlg::Matrix<3, 1, scalar_type_pos> force;
-  std::array<Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type_pos>, 2> force_element;
+  std::array<Core::LinAlg::Matrix<Beam::n_dof_, 1, scalar_type_pos>, 2> force_element;
 
   // Evaluate individual positions in the two beams.
   for (unsigned int i_beam = 0; i_beam < 2; i_beam++)
@@ -103,22 +103,22 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
     std::vector<int> lm_beam, lm_solid, lmowner, lmstride;
     beam_ele[i_beam]->LocationVector(*discret, lm_beam, lmowner, lmstride);
     const std::array<int, 12> pos_dof_indices = {0, 1, 2, 6, 7, 8, 9, 10, 11, 15, 16, 17};
-    for (unsigned int i = 0; i < beam::n_dof_; i++)
+    for (unsigned int i = 0; i < Beam::n_dof_; i++)
       gid_pos[i_beam](i) = lm_beam[pos_dof_indices[i]];
 
     // Set current nodal positions (and tangents) for beam element
-    std::vector<double> element_posdofvec_absolutevalues(beam::n_dof_, 0.0);
-    std::vector<int> lm(beam::n_dof_);
-    for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++) lm[i_dof] = gid_pos[i_beam](i_dof);
+    std::vector<double> element_posdofvec_absolutevalues(Beam::n_dof_, 0.0);
+    std::vector<int> lm(Beam::n_dof_);
+    for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++) lm[i_dof] = gid_pos[i_beam](i_dof);
     BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(
         *discret, beam_ele[i_beam], displacement_vector, element_posdofvec_absolutevalues);
-    for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+    for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       beam_pos[i_beam].element_position_(i_dof) =
-          Core::FADUtils::HigherOrderFadValue<scalar_type_pos>::apply(2 * beam::n_dof_,
-              i_beam * beam::n_dof_ + i_dof, element_posdofvec_absolutevalues[i_dof]);
+          Core::FADUtils::HigherOrderFadValue<scalar_type_pos>::apply(2 * Beam::n_dof_,
+              i_beam * Beam::n_dof_ + i_dof, element_posdofvec_absolutevalues[i_dof]);
 
     // Evaluate the position of the coupling point.
-    GEOMETRYPAIR::EvaluatePosition<beam>(
+    GEOMETRYPAIR::EvaluatePosition<Beam>(
         position_in_parameterspace_[i_beam], beam_pos[i_beam], r[i_beam]);
   }
 
@@ -138,10 +138,10 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
     // The force vector is in R3, we need to calculate the equivalent nodal forces on the
     // element dof. This is done with the virtual work equation $F \delta r = f \delta q$.
     force_element[i_beam].put_scalar(0.0);
-    for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+    for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
         force_element[i_beam](i_dof) +=
-            factor * force(i_dir) * r[i_beam](i_dir).dx(i_beam * beam::n_dof_ + i_dof);
+            factor * force(i_dir) * r[i_beam](i_dir).dx(i_beam * Beam::n_dof_ + i_dof);
 
     // Add the coupling force to the global force vector.
     if (force_vector != Teuchos::null)
@@ -156,10 +156,10 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
     {
       for (unsigned int j_beam = 0; j_beam < 2; j_beam++)
       {
-        for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
-          for (unsigned int j_dof = 0; j_dof < beam::n_dof_; j_dof++)
+        for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
+          for (unsigned int j_dof = 0; j_dof < Beam::n_dof_; j_dof++)
             stiffness_matrix->FEAssemble(
-                force_element[i_beam](i_dof).dx(j_beam * beam::n_dof_ + j_dof),
+                force_element[i_beam](i_dof).dx(j_beam * Beam::n_dof_ + j_dof),
                 gid_pos[i_beam](i_dof), gid_pos[j_beam](j_dof));
       }
     }
@@ -169,8 +169,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_p
 /**
  *
  */
-template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_rotational_coupling(
+template <typename Beam>
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::evaluate_and_assemble_rotational_coupling(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -302,8 +302,8 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::evaluate_and_assemble_r
 /**
  *
  */
-template <typename beam>
-void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::print(std::ostream& out) const
+template <typename Beam>
+void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::print(std::ostream& out) const
 {
   check_init_setup();
 
@@ -317,9 +317,9 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::print(std::ostream& out
 /**
  *
  */
-template <typename beam>
+template <typename Beam>
 void BEAMINTERACTION::BeamToBeamPointCouplingPair<
-    beam>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
+    Beam>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   check_init_setup();
 

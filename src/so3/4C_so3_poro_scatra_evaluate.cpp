@@ -17,10 +17,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::pre_evaluate(
-    Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    Core::Elements::Element::LocationArray& la)
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
+    Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   if (la.Size() > 2)
   {
@@ -33,9 +32,9 @@ void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::pre_evaluate(
       std::vector<double> myscalar(la[2].lm_.size());
       Core::FE::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
 
-      if (so3_ele::NumMaterial() < 2)
+      if (So3Ele::NumMaterial() < 2)
         FOUR_C_THROW("no second material defined for Wall poro element!");
-      Teuchos::RCP<Core::Mat::Material> scatramat = so3_ele::Material(2);
+      Teuchos::RCP<Core::Mat::Material> scatramat = So3Ele::Material(2);
 
       int numscal = 1;
       if (scatramat->MaterialType() == Core::Materials::m_matlist or
@@ -80,8 +79,8 @@ void Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::pre_evaluate(
   }
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::evaluate(Teuchos::ParameterList& params,
+template <class So3Ele, Core::FE::CellType distype>
+int Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -92,14 +91,14 @@ int Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>::evaluate(Teuchos::Parame
   if (!my::init_) FOUR_C_THROW("internal element data not initialized!");
 
   // set the pointer to the parameter list in element
-  so3_ele::set_params_interface_ptr(params);
+  So3Ele::set_params_interface_ptr(params);
 
   // start with "none"
   Core::Elements::ActionType act = Core::Elements::none;
 
-  if (so3_ele::IsParamsInterface())
+  if (So3Ele::IsParamsInterface())
   {
-    act = so3_ele::params_interface().get_action_type();
+    act = So3Ele::params_interface().get_action_type();
   }
   else
   {

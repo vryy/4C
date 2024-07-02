@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            vuong 03/12|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-Discret::ELEMENTS::So3Scatra<so3_ele, distype>::So3Scatra(int id, int owner)
-    : so3_ele(id, owner),
+template <class So3Ele, Core::FE::CellType distype>
+Discret::ELEMENTS::So3Scatra<So3Ele, distype>::So3Scatra(int id, int owner)
+    : So3Ele(id, owner),
       impltype_(Inpar::ScaTra::impltype_undefined),
       intpoints_(distype == Core::FE::CellType::tet4
                      ? Core::FE::GaussRule3D::tet_1point
@@ -44,10 +44,10 @@ Discret::ELEMENTS::So3Scatra<so3_ele, distype>::So3Scatra(int id, int owner)
  |  copy-ctor (public)                                       vuong 03/12|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-Discret::ELEMENTS::So3Scatra<so3_ele, distype>::So3Scatra(
-    const Discret::ELEMENTS::So3Scatra<so3_ele, distype>& old)
-    : so3_ele(old),
+template <class So3Ele, Core::FE::CellType distype>
+Discret::ELEMENTS::So3Scatra<So3Ele, distype>::So3Scatra(
+    const Discret::ELEMENTS::So3Scatra<So3Ele, distype>& old)
+    : So3Ele(old),
       impltype_(old.impltype_),
       intpoints_(old.intpoints_),
       numgpt_(old.numgpt_),
@@ -62,10 +62,10 @@ Discret::ELEMENTS::So3Scatra<so3_ele, distype>::So3Scatra(
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Clone() const
+template <class So3Ele, Core::FE::CellType distype>
+Core::Elements::Element* Discret::ELEMENTS::So3Scatra<So3Ele, distype>::Clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::So3Scatra<so3_ele, distype>(*this);
+  auto* newelement = new Discret::ELEMENTS::So3Scatra<So3Ele, distype>(*this);
   return newelement;
 }
 
@@ -73,71 +73,71 @@ Core::Elements::Element* Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Clone()
  |  Pack data                                                  (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pack(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
   // pack type of this instance of ParObject
   int type = UniqueParObjectId();
-  so3_ele::add_to_pack(data, type);
+  So3Ele::add_to_pack(data, type);
 
   // pack scalar transport impltype
-  so3_ele::add_to_pack(data, impltype_);
+  So3Ele::add_to_pack(data, impltype_);
 
   // detJ_
-  so3_ele::add_to_pack(data, det_j_);
+  So3Ele::add_to_pack(data, det_j_);
 
   // invJ_
   auto size = (int)inv_j_.size();
-  so3_ele::add_to_pack(data, size);
-  for (int i = 0; i < size; ++i) so3_ele::add_to_pack(data, inv_j_[i]);
+  So3Ele::add_to_pack(data, size);
+  for (int i = 0; i < size; ++i) So3Ele::add_to_pack(data, inv_j_[i]);
 
   // xsi_
   size = (int)xsi_.size();
-  so3_ele::add_to_pack(data, size);
-  for (int i = 0; i < size; ++i) so3_ele::add_to_pack(data, xsi_[i]);
+  So3Ele::add_to_pack(data, size);
+  for (int i = 0; i < size; ++i) So3Ele::add_to_pack(data, xsi_[i]);
 
 
   // add base class Element
-  so3_ele::pack(data);
+  So3Ele::pack(data);
 }
 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::unpack(const std::vector<char>& data)
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
 
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // extract scalar transport impltype_
-  impltype_ = static_cast<Inpar::ScaTra::ImplType>(so3_ele::extract_int(position, data));
+  impltype_ = static_cast<Inpar::ScaTra::ImplType>(So3Ele::extract_int(position, data));
 
   // detJ_
-  so3_ele::extract_from_pack(position, data, det_j_);
+  So3Ele::extract_from_pack(position, data, det_j_);
 
   // invJ_
   int size = 0;
-  so3_ele::extract_from_pack(position, data, size);
+  So3Ele::extract_from_pack(position, data, size);
   inv_j_.resize(size, Core::LinAlg::Matrix<numdim_, numdim_>(true));
-  for (int i = 0; i < size; ++i) so3_ele::extract_from_pack(position, data, inv_j_[i]);
+  for (int i = 0; i < size; ++i) So3Ele::extract_from_pack(position, data, inv_j_[i]);
 
   // xsi_
   size = 0;
-  so3_ele::extract_from_pack(position, data, size);
+  So3Ele::extract_from_pack(position, data, size);
   xsi_.resize(size, Core::LinAlg::Matrix<numdim_, 1>(true));
-  for (int i = 0; i < size; ++i) so3_ele::extract_from_pack(position, data, xsi_[i]);
+  for (int i = 0; i < size; ++i) So3Ele::extract_from_pack(position, data, xsi_[i]);
 
   // extract base class Element
   std::vector<char> basedata(0);
-  so3_ele::extract_from_pack(position, data, basedata);
+  So3Ele::extract_from_pack(position, data, basedata);
 
-  so3_ele::unpack(basedata);
+  So3Ele::unpack(basedata);
 
   if (position != data.size())
     FOUR_C_THROW("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -146,8 +146,8 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::unpack(const std::vector<ch
 /*----------------------------------------------------------------------*
  |  print this element (public)                              vuong 03/12|
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::print(std::ostream& os) const
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::print(std::ostream& os) const
 {
   os << "So3_scatra ";
   os << " discretization type: " << Core::FE::CellTypeToString(distype).c_str();
@@ -158,11 +158,11 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::print(std::ostream& os) con
 /*----------------------------------------------------------------------*
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3Scatra<so3_ele, distype>::ReadElement(
+template <class So3Ele, Core::FE::CellType distype>
+bool Discret::ELEMENTS::So3Scatra<So3Ele, distype>::ReadElement(
     const std::string& eletype, const std::string& eledistype, Input::LineDefinition* linedef)
 {
-  so3_ele::ReadElement(eletype, eledistype, linedef);
+  So3Ele::ReadElement(eletype, eledistype, linedef);
 
   // read scalar transport implementation type
   std::string impltype;
@@ -196,39 +196,39 @@ bool Discret::ELEMENTS::So3Scatra<so3_ele, distype>::ReadElement(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-inline Core::Nodes::Node** Discret::ELEMENTS::So3Scatra<so3_ele, distype>::Nodes()
+template <class So3Ele, Core::FE::CellType distype>
+inline Core::Nodes::Node** Discret::ELEMENTS::So3Scatra<So3Ele, distype>::Nodes()
 {
-  return so3_ele::Nodes();
+  return So3Ele::Nodes();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-inline Teuchos::RCP<Core::Mat::Material> Discret::ELEMENTS::So3Scatra<so3_ele, distype>::material()
+template <class So3Ele, Core::FE::CellType distype>
+inline Teuchos::RCP<Core::Mat::Material> Discret::ELEMENTS::So3Scatra<So3Ele, distype>::material()
     const
 {
-  return so3_ele::Material();
+  return So3Ele::Material();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-inline int Discret::ELEMENTS::So3Scatra<so3_ele, distype>::id() const
+template <class So3Ele, Core::FE::CellType distype>
+inline int Discret::ELEMENTS::So3Scatra<So3Ele, distype>::id() const
 {
-  return so3_ele::Id();
+  return So3Ele::Id();
 }
 
 
 /*--------------------------------------------------------------------------*
  | set the material  (public)                                 schmidt 10/17 |
  *                                                                          */
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::SetMaterial(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::SetMaterial(
     int matnum, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // call base class
-  so3_ele::SetMaterial(0, mat);
+  So3Ele::SetMaterial(0, mat);
 
   // get the scatra structure control parameter list
   const Teuchos::ParameterList& ssicontrol = Global::Problem::Instance()->SSIControlParams();
@@ -242,7 +242,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::SetMaterial(
         "use another material feel free to implement it! ;-)");
 
   // call base class
-  so3_ele::SetMaterial(0, mat);
+  So3Ele::SetMaterial(0, mat);
 
   return;
 }

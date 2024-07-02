@@ -41,13 +41,13 @@ namespace Solid
     /*! \brief Helper for high order Adams-Bashforth
      *
      */
-    template <int TOrder>
+    template <int t_order>
     struct AdamsBashforthHelper;
 
     /*! \brief High order Adams-Bashforth time integration for solid dynamics
      *
      */
-    template <int TOrder>
+    template <int t_order>
     class AdamsBashforthX : public Generic
     {
      public:
@@ -96,13 +96,13 @@ namespace Solid
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a m-multistep method returns m
-      [[nodiscard]] int method_steps() const override { return TOrder; }
+      [[nodiscard]] int method_steps() const override { return t_order; }
 
       //! Give local order of accuracy of displacement part
-      [[nodiscard]] int method_order_of_accuracy_dis() const override { return TOrder; }
+      [[nodiscard]] int method_order_of_accuracy_dis() const override { return t_order; }
 
       //! Give local order of accuracy of velocity part
-      [[nodiscard]] int method_order_of_accuracy_vel() const override { return TOrder; }
+      [[nodiscard]] int method_order_of_accuracy_vel() const override { return t_order; }
 
       //! Return linear error coefficient of displacements
       [[nodiscard]] double method_lin_err_coeff_dis() const override

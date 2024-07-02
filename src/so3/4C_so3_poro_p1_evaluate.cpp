@@ -15,8 +15,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::compute_porosity_and_linearization(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::compute_porosity_and_linearization(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const Core::LinAlg::Matrix<Base::numnod_, 1>& shapfct,
     const Core::LinAlg::Matrix<Base::numnod_, 1>* myporosity,
@@ -31,8 +31,8 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::compute_porosity_and_linear
   dphi_dus.put_scalar(0.0);
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::compute_porosity_and_linearization_od(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::compute_porosity_and_linearization_od(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const Core::LinAlg::Matrix<Base::numnod_, 1>& shapfct,
     const Core::LinAlg::Matrix<Base::numnod_, 1>* myporosity, double& porosity, double& dphi_dp)
@@ -45,8 +45,8 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::compute_porosity_and_linear
     porosity = shapfct.dot(*myporosity);
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::evaluate(Teuchos::ParameterList& params,
+template <class So3Ele, Core::FE::CellType distype>
+int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -123,7 +123,7 @@ int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::evaluate(Teuchos::ParameterL
         for (int j = 0; j < Base::numdim_; j++) lm_sub.push_back(la[0].lm_[i * noddof_ + j]);
 
       // evaluate parent solid element
-      so3_ele::evaluate(params, discretization, lm_sub, elemat1_sub, elemat2_sub, elevec1_sub,
+      So3Ele::evaluate(params, discretization, lm_sub, elemat1_sub, elemat2_sub, elevec1_sub,
           elevec2_sub, elevec3_sub);
 
       if (elemat1_epetra.values())
@@ -189,8 +189,8 @@ int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::evaluate(Teuchos::ParameterL
   return 0;
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   Base::pre_evaluate(params, discretization, la);
@@ -204,8 +204,8 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::pre_evaluate(Teuchos::Param
   }
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::my_evaluate(Teuchos::ParameterList& params,
+template <class So3Ele, Core::FE::CellType distype>
+int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -383,15 +383,15 @@ int Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::my_evaluate(Teuchos::Paramet
   return 0;
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::InitElement()
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::InitElement()
 {
   // initialize base element
   Base::InitElement();
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::nonlinear_stiffness_poroelast(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::nonlinear_stiffness_poroelast(
     std::vector<int>& lm, Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& disp,
     Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& vel,
     Core::LinAlg::Matrix<Base::numnod_, 1>* porosity_dof,
@@ -513,8 +513,8 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::nonlinear_stiffness_poroela
   }
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
     Teuchos::ParameterList& params, const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& xcurr,
     const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
@@ -713,8 +713,8 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1(
   }
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::coupling_poroelast(std::vector<int>& lm,
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::coupling_poroelast(std::vector<int>& lm,
     Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& disp,
     Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& vel,
     Core::LinAlg::Matrix<Base::numnod_, 1>* porosity,
@@ -776,8 +776,8 @@ void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::coupling_poroelast(std::vec
   }
 }
 
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<so3_ele, distype>::gauss_point_loop_p1_od(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1_od(
     Teuchos::ParameterList& params, const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& xcurr,
     const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,

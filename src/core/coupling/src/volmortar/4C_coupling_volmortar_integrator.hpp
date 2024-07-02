@@ -43,7 +43,7 @@ namespace Core::VolMortar
 {
   class Cell;
 
-  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+  template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
   class VolMortarIntegrator
   {
    public:
@@ -54,13 +54,13 @@ namespace Core::VolMortar
     virtual ~VolMortarIntegrator() = default;
 
     //! ns_: number of slave element nodes
-    static constexpr int ns_ = Core::FE::num_nodes<distypeS>;
+    static constexpr int ns_ = Core::FE::num_nodes<distype_s>;
 
     //! nm_: number of master element nodes
-    static constexpr int nm_ = Core::FE::num_nodes<distypeM>;
+    static constexpr int nm_ = Core::FE::num_nodes<distype_m>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static constexpr int ndim_ = Core::FE::dim<distypeS>;
+    static constexpr int ndim_ = Core::FE::dim<distype_s>;
 
     /*!
     \brief Initialize Gauss rule (points, weights)
@@ -156,7 +156,7 @@ namespace Core::VolMortar
     Shapefcn shape_;     // type of test function
   };
 
-  template <Core::FE::CellType distypeS>
+  template <Core::FE::CellType distype_s>
   class VolMortarIntegratorEleBased
   {
    public:
@@ -167,10 +167,10 @@ namespace Core::VolMortar
     virtual ~VolMortarIntegratorEleBased() = default;
 
     //! ns_: number of slave element nodes
-    static constexpr int ns_ = Core::FE::num_nodes<distypeS>;
+    static constexpr int ns_ = Core::FE::num_nodes<distype_s>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static constexpr int ndim_ = Core::FE::dim<distypeS>;
+    static constexpr int ndim_ = Core::FE::dim<distype_s>;
 
     /*!
     \brief Initialize Gauss rule (points, weights)
@@ -210,14 +210,14 @@ namespace Core::VolMortar
   /*----------------------------------------------------------------------*
    |  Check paraspace mapping                                  farah 02/15|
    *----------------------------------------------------------------------*/
-  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+  template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
   bool CheckMapping(
       Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
   {
     // check GP projection (SLAVE)
     double tol = 1e-5;
-    if (distypeS == Core::FE::CellType::hex8 || distypeS == Core::FE::CellType::hex20 ||
-        distypeS == Core::FE::CellType::hex27)
+    if (distype_s == Core::FE::CellType::hex8 || distype_s == Core::FE::CellType::hex20 ||
+        distype_s == Core::FE::CellType::hex27)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[2] < -1.0 - tol || sxi[0] > 1.0 + tol ||
           sxi[1] > 1.0 + tol || sxi[2] > 1.0 + tol)
@@ -225,7 +225,7 @@ namespace Core::VolMortar
         return false;
       }
     }
-    else if (distypeS == Core::FE::CellType::pyramid5)
+    else if (distype_s == Core::FE::CellType::pyramid5)
     {
       if (sxi[2] < 0.0 - tol || -sxi[0] + sxi[2] > 1.0 + tol || sxi[0] + sxi[2] > 1.0 + tol ||
           -sxi[1] + sxi[2] > 1.0 + tol || sxi[1] + sxi[2] > 1.0 + tol)
@@ -233,7 +233,7 @@ namespace Core::VolMortar
         return false;
       }
     }
-    else if (distypeS == Core::FE::CellType::tet4 || distypeS == Core::FE::CellType::tet10)
+    else if (distype_s == Core::FE::CellType::tet4 || distype_s == Core::FE::CellType::tet10)
     {
       if (sxi[0] < 0.0 - tol || sxi[1] < 0.0 - tol || sxi[2] < 0.0 - tol ||
           (sxi[0] + sxi[1] + sxi[2]) > 1.0 + tol)
@@ -241,15 +241,15 @@ namespace Core::VolMortar
         return false;
       }
     }
-    else if (distypeS == Core::FE::CellType::tri3 || distypeS == Core::FE::CellType::tri6)
+    else if (distype_s == Core::FE::CellType::tri3 || distype_s == Core::FE::CellType::tri6)
     {
       if (sxi[0] < 0.0 - tol || sxi[1] < 0.0 - tol || (sxi[0] + sxi[1]) > 1.0 + tol)
       {
         return false;
       }
     }
-    else if (distypeS == Core::FE::CellType::quad4 || distypeS == Core::FE::CellType::quad8 ||
-             distypeS == Core::FE::CellType::quad9)
+    else if (distype_s == Core::FE::CellType::quad4 || distype_s == Core::FE::CellType::quad8 ||
+             distype_s == Core::FE::CellType::quad9)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
@@ -260,8 +260,8 @@ namespace Core::VolMortar
       FOUR_C_THROW("Wrong element type!");
 
     // check GP projection (MASTER)
-    if (distypeM == Core::FE::CellType::hex8 || distypeM == Core::FE::CellType::hex20 ||
-        distypeM == Core::FE::CellType::hex27)
+    if (distype_m == Core::FE::CellType::hex8 || distype_m == Core::FE::CellType::hex20 ||
+        distype_m == Core::FE::CellType::hex27)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[2] < -1.0 - tol || mxi[0] > 1.0 + tol ||
           mxi[1] > 1.0 + tol || mxi[2] > 1.0 + tol)
@@ -269,7 +269,7 @@ namespace Core::VolMortar
         return false;
       }
     }
-    else if (distypeM == Core::FE::CellType::pyramid5)
+    else if (distype_m == Core::FE::CellType::pyramid5)
     {
       if (mxi[2] < 0.0 - tol || -mxi[0] + mxi[2] > 1.0 + tol || mxi[0] + mxi[2] > 1.0 + tol ||
           -mxi[1] + mxi[2] > 1.0 + tol || mxi[1] + mxi[2] > 1.0 + tol)
@@ -277,7 +277,7 @@ namespace Core::VolMortar
         return false;
       }
     }
-    else if (distypeM == Core::FE::CellType::tet4 || distypeM == Core::FE::CellType::tet10)
+    else if (distype_m == Core::FE::CellType::tet4 || distype_m == Core::FE::CellType::tet10)
     {
       if (mxi[0] < 0.0 - tol || mxi[1] < 0.0 - tol || mxi[2] < 0.0 - tol ||
           (mxi[0] + mxi[1] + mxi[2]) > 1.0 + tol)
@@ -285,15 +285,15 @@ namespace Core::VolMortar
         return false;
       }
     }
-    else if (distypeM == Core::FE::CellType::tri3 || distypeM == Core::FE::CellType::tri6)
+    else if (distype_m == Core::FE::CellType::tri3 || distype_m == Core::FE::CellType::tri6)
     {
       if (mxi[0] < 0.0 - tol || mxi[1] < 0.0 - tol || (mxi[0] + mxi[1]) > 1.0 + tol)
       {
         return false;
       }
     }
-    else if (distypeM == Core::FE::CellType::quad4 || distypeM == Core::FE::CellType::quad8 ||
-             distypeM == Core::FE::CellType::quad9)
+    else if (distype_m == Core::FE::CellType::quad4 || distype_m == Core::FE::CellType::quad8 ||
+             distype_m == Core::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -364,7 +364,7 @@ namespace Core::VolMortar
   }
 
   //===================================
-  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+  template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
   bool VolMortarEleBasedGP(Core::Elements::Element& sele, Core::Elements::Element* mele,
       std::vector<int>& foundeles, int& found, int& gpid, double& jac, double& wgt, double& gpdist,
       double* Axi, double* AuxXi, double* globgp, DualQuad& dq, Shapefcn& shape,

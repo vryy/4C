@@ -18,35 +18,35 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <typename enum_class>
-CONTACT::Aug::TimeMonitor<enum_class>::TimeMonitor()
+template <typename EnumClass>
+CONTACT::Aug::TimeMonitor<EnumClass>::TimeMonitor()
 {
-  static_assert(std::is_same<unsigned, typename std::underlying_type<enum_class>::type>::value,
+  static_assert(std::is_same<unsigned, typename std::underlying_type<EnumClass>::type>::value,
       "The template ENUM_CLASS must use UNSIGNED INT as underlying type!");
 
-  timings_.resize(static_cast<unsigned>(enum_class::MAX_TIME_ID), std::make_pair(-1.0, 0.0));
+  timings_.resize(static_cast<unsigned>(EnumClass::MAX_TIME_ID), std::make_pair(-1.0, 0.0));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <typename enum_class>
-void CONTACT::Aug::TimeMonitor<enum_class>::TimeMonitor::reset()
+template <typename EnumClass>
+void CONTACT::Aug::TimeMonitor<EnumClass>::TimeMonitor::reset()
 {
   std::fill(timings_.begin(), timings_.end(), std::make_pair(-1.0, 0.0));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <typename enum_class>
-void CONTACT::Aug::TimeMonitor<enum_class>::start(const enum_class id)
+template <typename EnumClass>
+void CONTACT::Aug::TimeMonitor<EnumClass>::start(const EnumClass id)
 {
   timings_[static_cast<unsigned>(id)].first = Teuchos::Time::wallTime();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <typename enum_class>
-void CONTACT::Aug::TimeMonitor<enum_class>::stop(const enum_class id)
+template <typename EnumClass>
+void CONTACT::Aug::TimeMonitor<EnumClass>::stop(const EnumClass id)
 {
   std::pair<double, double>& begin_time = timings_[static_cast<unsigned>(id)];
   if (begin_time.first == -1.0) FOUR_C_THROW("Call start() first!");
@@ -60,8 +60,8 @@ void CONTACT::Aug::TimeMonitor<enum_class>::stop(const enum_class id)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <typename enum_class>
-double CONTACT::Aug::TimeMonitor<enum_class>::getMyTotalTime() const
+template <typename EnumClass>
+double CONTACT::Aug::TimeMonitor<EnumClass>::getMyTotalTime() const
 {
   double my_total_time = 0.0;
   for (auto& t : timings_) my_total_time += t.second;
@@ -71,8 +71,8 @@ double CONTACT::Aug::TimeMonitor<enum_class>::getMyTotalTime() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <typename enum_class>
-void CONTACT::Aug::TimeMonitor<enum_class>::write(std::ostream& os)
+template <typename EnumClass>
+void CONTACT::Aug::TimeMonitor<EnumClass>::write(std::ostream& os)
 {
   int mypid = 0;
   if (comm_) mypid = comm_->MyPID();
@@ -82,7 +82,7 @@ void CONTACT::Aug::TimeMonitor<enum_class>::write(std::ostream& os)
     os << std::string(100, '=') << std::endl;
     os << "CONTACT::Aug::TimeMonitor - Final Overview:\n";
   }
-  for (unsigned i = 0; i < static_cast<unsigned>(enum_class::MAX_TIME_ID); ++i)
+  for (unsigned i = 0; i < static_cast<unsigned>(EnumClass::MAX_TIME_ID); ++i)
   {
     double gtime = 0.0;
     if (comm_)
@@ -92,7 +92,7 @@ void CONTACT::Aug::TimeMonitor<enum_class>::write(std::ostream& os)
 
     if (gtime == 0.0) continue;
 
-    std::string name = TimeID2Str(static_cast<enum_class>(i));
+    std::string name = TimeID2Str(static_cast<EnumClass>(i));
     if (mypid == 0)
     {
       os << std::string(100, '-') << "\n";

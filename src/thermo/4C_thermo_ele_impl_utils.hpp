@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace THR
 {
   //! Template Meta Programming version of switch over discretization type
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToOptGaussRule
   {
   };
@@ -118,7 +118,7 @@ namespace THR
   };
 
   //! Template Meta Programming version of switch over discretization type
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToGaussRuleForExactSol
   {
   };
@@ -199,7 +199,7 @@ namespace THR
   };
 
   //! Template Meta Programming version of switch over discretization type
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToNumGaussPoints
   {
   };
@@ -285,7 +285,7 @@ namespace THR
   };
 
   //! Template Meta Programming version of switch over discretization type
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToSTRNumGaussPoints
   {
   };

@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename line, typename volume>
-GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::GeometryPairLineToVolumeGaussPointProjectionCrossSection(const Core::Elements::Element*
+template <typename ScalarType, typename Line, typename Volume>
+GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<ScalarType, Line,
+    Volume>::GeometryPairLineToVolumeGaussPointProjectionCrossSection(const Core::Elements::Element*
                                                                           element1,
     const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
-    : GeometryPairLineToVolume<scalar_type, line, volume>(element1, element2, evaluation_data)
+    : GeometryPairLineToVolume<ScalarType, Line, Volume>(element1, element2, evaluation_data)
 {
   // Check if a projection tracking vector exists for this line element. If not a new one is
   // created.
@@ -54,11 +54,11 @@ GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_ty
 /**
  *
  */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
-    const ElementData<volume, scalar_type>& element_data_volume,
-    std::vector<LineSegment<scalar_type>>& segments,
+template <typename ScalarType, typename Line, typename Volume>
+void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<ScalarType, Line,
+    Volume>::pre_evaluate(const ElementData<Line, ScalarType>& element_data_line,
+    const ElementData<Volume, ScalarType>& element_data_volume,
+    std::vector<LineSegment<ScalarType>>& segments,
     const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>*
         line_triad_interpolation) const
 {
@@ -74,19 +74,19 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
       this->line_to_3d_evaluation_data_->get_number_of_integration_points_circumference();
 
   // Initilaize variables for the projection.
-  scalar_type eta;
+  ScalarType eta;
   double alpha;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_line;
-  Core::LinAlg::Matrix<3, 3, scalar_type> triad;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_cross_section;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
-  Core::LinAlg::Matrix<3, 1, scalar_type> eta_cross_section(true);
-  Core::LinAlg::Matrix<2, 1, scalar_type> eta_cross_section_2d;
-  Core::LinAlg::Matrix<3, 1, scalar_type> xi_volume;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_line;
+  Core::LinAlg::Matrix<3, 3, ScalarType> triad;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_cross_section;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
+  Core::LinAlg::Matrix<3, 1, ScalarType> eta_cross_section(true);
+  Core::LinAlg::Matrix<2, 1, ScalarType> eta_cross_section_2d;
+  Core::LinAlg::Matrix<3, 1, ScalarType> xi_volume;
   ProjectionResult projection_result;
   segments.clear();
   bool one_projects = false;
-  LineSegment<scalar_type> projection_point_segment;
+  LineSegment<ScalarType> projection_point_segment;
 
   // Get the radius from the beam element.
   const double radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->Element1()))
@@ -102,10 +102,10 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
     if (line_triad_interpolation != nullptr)
       line_triad_interpolation->get_interpolated_triad_at_xi(triad, eta);
     else
-      GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<line>(eta, element_data_line, triad);
+      GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<Line>(eta, element_data_line, triad);
 
     // Get the position on the line.
-    GEOMETRYPAIR::EvaluatePosition<line>(eta, element_data_line, r_line);
+    GEOMETRYPAIR::EvaluatePosition<Line>(eta, element_data_line, r_line);
 
     for (unsigned int index_gp_circ = 0; index_gp_circ < n_integration_points_circ; index_gp_circ++)
     {
@@ -131,7 +131,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
         if (projection_result == ProjectionResult::projection_found_valid)
         {
           // Valid Gauss point was found, add to this segment and set tracking point to true.
-          ProjectionPoint1DTo3D<scalar_type> new_point(eta, xi_volume,
+          ProjectionPoint1DTo3D<ScalarType> new_point(eta, xi_volume,
               gauss_points_axis.qwgt[index_gp_axis] * 2.0 / double(n_integration_points_circ));
           for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
             eta_cross_section_2d(i_dim) = eta_cross_section(i_dim + 1);
@@ -157,11 +157,11 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
 /**
  *
  */
-template <typename scalar_type, typename line, typename volume>
-void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scalar_type, line,
-    volume>::evaluate(const ElementData<line, scalar_type>& element_data_line,
-    const ElementData<volume, scalar_type>& element_data_volume,
-    std::vector<LineSegment<scalar_type>>& segments) const
+template <typename ScalarType, typename Line, typename Volume>
+void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<ScalarType, Line,
+    Volume>::evaluate(const ElementData<Line, ScalarType>& element_data_line,
+    const ElementData<Volume, ScalarType>& element_data_volume,
+    std::vector<LineSegment<ScalarType>>& segments) const
 {
   // Only zero one segments are expected.
   if (segments.size() > 1)
@@ -194,9 +194,9 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
 /**
  *
  */
-template <typename scalar_type, typename line, typename volume>
+template <typename ScalarType, typename Line, typename Volume>
 std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<
-    scalar_type, line, volume>::get_line_projection_vector() const
+    ScalarType, Line, Volume>::get_line_projection_vector() const
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();

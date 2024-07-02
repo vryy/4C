@@ -54,13 +54,13 @@ namespace
      * @param q_volume_elements (in) Vector of DOF vectors for the positions of the volume element.
      * @param segments_vector (out) Vector with found segments for each pair.
      */
-    template <typename el1, typename el2>
+    template <typename El1, typename El2>
     void create_evaluate_pairs(
         std::vector<Teuchos::RCP<
-            GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>>>& geometry_pairs,
-        const std::vector<Core::LinAlg::Matrix<el1::n_dof_, 1, double>>& q_line_elements,
+            GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, El1, El2>>>& geometry_pairs,
+        const std::vector<Core::LinAlg::Matrix<El1::n_dof_, 1, double>>& q_line_elements,
         const std::vector<double>& line_ref_lengths,
-        const std::vector<Core::LinAlg::Matrix<el2::n_dof_, 1, double>>& q_volume_elements,
+        const std::vector<Core::LinAlg::Matrix<El2::n_dof_, 1, double>>& q_volume_elements,
         std::vector<std::vector<GEOMETRYPAIR::LineSegment<double>>>& segments_vector)
     {
       // Check that the vectors have the right size.
@@ -70,16 +70,16 @@ namespace
         FOUR_C_THROW("Size for volume elements and volume q does not match!");
 
       // Get the element data containers
-      std::vector<GEOMETRYPAIR::ElementData<el1, double>> q_line(q_line_elements.size());
+      std::vector<GEOMETRYPAIR::ElementData<El1, double>> q_line(q_line_elements.size());
       for (unsigned int i_beam = 0; i_beam < line_elements_.size(); i_beam++)
       {
         q_line[i_beam].element_position_ = q_line_elements[i_beam];
         q_line[i_beam].shape_function_data_.ref_length_ = line_ref_lengths[i_beam];
       }
-      std::vector<GEOMETRYPAIR::ElementData<el2, double>> q_volume(q_volume_elements.size());
+      std::vector<GEOMETRYPAIR::ElementData<El2, double>> q_volume(q_volume_elements.size());
       for (unsigned int i_volume = 0; i_volume < volume_elements_.size(); i_volume++)
       {
-        q_volume[i_volume] = GEOMETRYPAIR::InitializeElementData<el2, double>::initialize(
+        q_volume[i_volume] = GEOMETRYPAIR::InitializeElementData<El2, double>::initialize(
             volume_elements_[i_volume].get());
         q_volume[i_volume].element_position_ = q_volume_elements[i_volume];
       }
@@ -91,7 +91,7 @@ namespace
         for (auto& volume : volume_elements_)
         {
           geometry_pairs.push_back(
-              Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, el1, el2>(
+              Teuchos::rcp(new GEOMETRYPAIR::GeometryPairLineToVolumeSegmentation<double, El1, El2>(
                   line.get(), volume.get(), evaluation_data_)));
         }
       }

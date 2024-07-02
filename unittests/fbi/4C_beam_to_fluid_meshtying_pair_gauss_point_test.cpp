@@ -51,22 +51,22 @@ namespace
     /**
      * \brief Set up the pair so it can be evaluated and compare the results.
      */
-    template <typename beam_type, typename fluid_type>
+    template <typename BeamType, typename FluidType>
     void perform_gpts_pair_unit_test(
-        const Core::LinAlg::Matrix<beam_type::n_dof_, 1, double>& q_beam,
+        const Core::LinAlg::Matrix<BeamType::n_dof_, 1, double>& q_beam,
         const std::vector<double>& beam_dofvec,
-        const Core::LinAlg::Matrix<fluid_type::n_dof_, 1, double>& q_fluid,
+        const Core::LinAlg::Matrix<FluidType::n_dof_, 1, double>& q_fluid,
         const std::vector<double>& fluid_dofvec, Core::LinAlg::SerialDenseVector results_fs,
         Core::LinAlg::SerialDenseVector results_ff,
-        const Core::LinAlg::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf,
-        const Core::LinAlg::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs,
-        const Core::LinAlg::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff)
+        const Core::LinAlg::Matrix<BeamType::n_dof_, FluidType::n_dof_, double> results_ksf,
+        const Core::LinAlg::Matrix<FluidType::n_dof_, BeamType::n_dof_, double> results_kfs,
+        const Core::LinAlg::Matrix<FluidType::n_dof_, FluidType::n_dof_, double> results_kff)
     {
-      using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<beam_type, fluid_type>;
+      using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<BeamType, FluidType>;
 
       // Create the mesh tying mortar pair.
-      BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam_type, fluid_type> pair =
-          BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam_type, fluid_type>();
+      BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<BeamType, FluidType> pair =
+          BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<BeamType, FluidType>();
 
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
@@ -101,21 +101,21 @@ namespace
       pair.CreateGeometryPair(pair_elements[0], pair_elements[1], evaluation_data_);
       pair.init(intersection_params, pair_elements);
 
-      pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::initialize(
+      pair.ele1pos_ = GEOMETRYPAIR::InitializeElementData<BeamType, scalar_type>::initialize(
           beam_element.get());
       pair.ele1posref_ =
-          GEOMETRYPAIR::InitializeElementData<beam_type, double>::initialize(beam_element.get());
+          GEOMETRYPAIR::InitializeElementData<BeamType, double>::initialize(beam_element.get());
       pair.ele1poscur_ =
-          GEOMETRYPAIR::InitializeElementData<beam_type, double>::initialize(beam_element.get());
-      pair.ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam_type, scalar_type>::initialize(
+          GEOMETRYPAIR::InitializeElementData<BeamType, double>::initialize(beam_element.get());
+      pair.ele1vel_ = GEOMETRYPAIR::InitializeElementData<BeamType, scalar_type>::initialize(
           beam_element.get());
       pair.ele1posref_.element_position_ = q_beam;
       pair.ele2posref_.element_position_ = q_fluid;
 
       pair.ResetState(beam_dofvec, fluid_dofvec);
 
-      const int fluid_dofs = fluid_type::n_dof_;
-      const int beam_dofs = beam_type::n_dof_;
+      const int fluid_dofs = FluidType::n_dof_;
+      const int beam_dofs = BeamType::n_dof_;
 
       // Evaluate the local matrices.
       Core::LinAlg::SerialDenseMatrix local_kff;
@@ -145,7 +145,7 @@ namespace
           EXPECT_NEAR((local_kfs)(i_row, i_col), local_ksf(i_col, i_row), 1e-11)
               << " for i_row = " << i_row << ", i_col = " << i_col;
       }
-      for (unsigned int i_col = 0; i_col < beam_type::n_dof_; i_col++)
+      for (unsigned int i_col = 0; i_col < BeamType::n_dof_; i_col++)
         EXPECT_NEAR(local_fs(i_col), results_fs(i_col), 1e-11) << " for i_col = " << i_col;
     }
 

@@ -27,13 +27,13 @@ namespace BEAMINTERACTION
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <typename beam, typename solid>
+  template <typename Beam, typename Solid>
   class BeamToSolidVolumeMeshtyingPair2D3DFull
-      : public BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>
+      : public BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>
   {
    private:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;
@@ -43,11 +43,11 @@ namespace BEAMINTERACTION
     static constexpr unsigned int n_dof_rot_ = n_nodes_rot_ * 3;
 
     //! Number of DOFs for the pair.
-    static constexpr unsigned int n_dof_pair_ = beam::n_dof_ + solid::n_dof_ + n_dof_rot_;
+    static constexpr unsigned int n_dof_pair_ = Beam::n_dof_ + Solid::n_dof_ + n_dof_rot_;
 
     //! Number of dependent variables for the pair. The ordering is as follows: first the beam DOFs,
     //! then the solid DOFs, then the components of the cross section rotation vector.
-    static constexpr unsigned int n_dof_fad_ = beam::n_dof_ + solid::n_dof_ + n_dof_rot_ + 3;
+    static constexpr unsigned int n_dof_fad_ = Beam::n_dof_ + Solid::n_dof_ + n_dof_rot_ + 3;
 
     //! FAD type to evaluate the rotational coupling terms. The first ordering is as follows: beam
     //! DOFs, solid DOFs, 3 components of the rotation vector psi.

@@ -27,7 +27,7 @@ namespace CONTACT
 {
   namespace Aug
   {
-    template <typename enum_class>
+    template <typename EnumClass>
     class TimeMonitor;
   }  // namespace Aug
 }  // namespace CONTACT
@@ -58,8 +58,8 @@ namespace Core::Gen
     using Vec = std::vector<Ts...>;
 
     //! alias for the time monitor
-    template <typename enum_class>
-    using TimeMonitor = CONTACT::Aug::TimeMonitor<enum_class>;
+    template <typename EnumClass>
+    using TimeMonitor = CONTACT::Aug::TimeMonitor<EnumClass>;
 
     //! @}
 
@@ -180,23 +180,23 @@ namespace Core::Gen
     /// @name Time monitoring
     /// @{
 
-    template <typename enum_class>
-    void SetTimer(const CONTACT::Aug::TimeMonitor<enum_class>* timer, const unsigned id = 0)
+    template <typename EnumClass>
+    void SetTimer(const CONTACT::Aug::TimeMonitor<EnumClass>* timer, const unsigned id = 0)
     {
-      set_data<TimeMonitor<enum_class>, DataType::time_monitor>(timer, id);
+      set_data<TimeMonitor<EnumClass>, DataType::time_monitor>(timer, id);
     }
 
-    template <typename enum_class>
-    TimeMonitor<enum_class>* GetTimer(const unsigned id = 0)
+    template <typename EnumClass>
+    TimeMonitor<EnumClass>* GetTimer(const unsigned id = 0)
     {
-      return const_cast<TimeMonitor<enum_class>*>(
-          get_data<TimeMonitor<enum_class>, DataType::time_monitor>(id));
+      return const_cast<TimeMonitor<EnumClass>*>(
+          get_data<TimeMonitor<EnumClass>, DataType::time_monitor>(id));
     }
 
-    template <typename enum_class>
-    const TimeMonitor<enum_class>* GetTimer(const unsigned id = 0) const
+    template <typename EnumClass>
+    const TimeMonitor<EnumClass>* GetTimer(const unsigned id = 0) const
     {
-      return get_data<TimeMonitor<enum_class>, DataType::time_monitor>(id);
+      return get_data<TimeMonitor<EnumClass>, DataType::time_monitor>(id);
     }
 
     /// @}

@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 // Forward declarations.
 namespace Core::LinAlg
 {
-  template <unsigned int rows, unsigned int cols, class value_type>
+  template <unsigned int rows, unsigned int cols, class ValueType>
   class Matrix;
 }
 namespace Discret
@@ -47,10 +47,10 @@ namespace GEOMETRYPAIR
 
   enum class ProjectionResult;
 
-  template <typename scalar_type>
+  template <typename ScalarType>
   class ProjectionPoint1DTo3D;
 
-  template <typename scalar_type>
+  template <typename ScalarType>
   class LineSegment;
 
   class LineTo3DEvaluationData;
@@ -66,7 +66,7 @@ namespace GEOMETRYPAIR
    * @param line Type of line element.
    * @param volume Type of volume element.
    */
-  template <typename scalar_type, typename line, typename volume>
+  template <typename ScalarType, typename Line, typename Volume>
   class GeometryPairLineToVolume : public GeometryPair
   {
    public:
@@ -85,9 +85,9 @@ namespace GEOMETRYPAIR
      * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    virtual void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<volume, scalar_type>& element_data_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const {};
+    virtual void pre_evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Volume, ScalarType>& element_data_volume,
+        std::vector<LineSegment<ScalarType>>& segments) const {};
 
     /**
      * \brief Evaluate the geometry interaction of the line and the volume.
@@ -95,9 +95,9 @@ namespace GEOMETRYPAIR
      * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    virtual void evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<volume, scalar_type>& element_data_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const {};
+    virtual void evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Volume, ScalarType>& element_data_volume,
+        std::vector<LineSegment<ScalarType>>& segments) const {};
 
     /**
      * \brief Return the pointer to the evaluation data of this pair.
@@ -117,9 +117,9 @@ namespace GEOMETRYPAIR
      * @param projection_result (out) Flag for the result of the projection.
      * @return
      */
-    void ProjectPointToOther(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
-        const ElementData<volume, scalar_type>& element_data_volume,
-        Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
+    void ProjectPointToOther(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+        const ElementData<Volume, ScalarType>& element_data_volume,
+        Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result) const;
 
     /**
      * \brief Get the intersection between the line and a surface in the volume.
@@ -134,10 +134,10 @@ namespace GEOMETRYPAIR
      * values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the intersection.
      */
-    void intersect_line_with_surface(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<volume, scalar_type>& element_data_volume,
-        const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-        Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result) const;
+    void intersect_line_with_surface(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Volume, ScalarType>& element_data_volume,
+        const unsigned int& fixed_parameter, const double& fixed_value, ScalarType& eta,
+        Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result) const;
 
     /**
      * \brief Intersect a line with all surfaces of a volume.
@@ -147,11 +147,10 @@ namespace GEOMETRYPAIR
      * @param eta_start (in) start value for parameter coordinate on line.
      * @param xi_start (in) start values for parameter coordinates in volume.
      */
-    void intersect_line_with_other(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<volume, scalar_type>& element_data_volume,
-        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-        const scalar_type& eta_start,
-        const Core::LinAlg::Matrix<3, 1, scalar_type>& xi_start) const;
+    void intersect_line_with_other(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Volume, ScalarType>& element_data_volume,
+        std::vector<ProjectionPoint1DTo3D<ScalarType>>& intersection_points,
+        const ScalarType& eta_start, const Core::LinAlg::Matrix<3, 1, ScalarType>& xi_start) const;
 
    protected:
     //! Link to the geometry evaluation container.
@@ -166,10 +165,10 @@ namespace GEOMETRYPAIR
    * for the Newton iteration.
    * @param projection_result (out) Flag for the result of the projection.
    */
-  template <typename scalar_type, typename volume>
-  void ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
-      const ElementData<volume, scalar_type>& element_data_volume,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result);
+  template <typename ScalarType, typename Volume>
+  void ProjectPointToVolume(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+      const ElementData<Volume, ScalarType>& element_data_volume,
+      Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result);
 }  // namespace GEOMETRYPAIR
 
 FOUR_C_NAMESPACE_CLOSE

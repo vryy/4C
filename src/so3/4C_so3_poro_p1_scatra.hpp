@@ -38,10 +38,10 @@ namespace Discret
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, Core::FE::CellType distype>
-    class So3PoroP1Scatra : public So3PoroP1<so3_ele, distype>
+    template <class So3Ele, Core::FE::CellType distype>
+    class So3PoroP1Scatra : public So3PoroP1<So3Ele, distype>
     {
-      typedef So3PoroP1<so3_ele, distype> my;
+      typedef So3PoroP1<So3Ele, distype> my;
 
      public:
       //@}

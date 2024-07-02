@@ -44,7 +44,7 @@ namespace Core::IO
      * @tparam scalar_type type of the scalar values
      * @return std::string representation of the type name
      */
-    template <typename scalar_type>
+    template <typename ScalarType>
     std::string ScalarTypeToString()
     {
       FOUR_C_THROW("The scalar type in ScalarTypeToString is unknown");

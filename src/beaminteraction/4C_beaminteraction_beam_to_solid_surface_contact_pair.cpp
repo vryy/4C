@@ -32,9 +32,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, beam,
-    surface>::BeamToSolidSurfaceContactPairGapVariation()
+template <typename ScalarType, typename Beam, typename Surface>
+BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam,
+    Surface>::BeamToSolidSurfaceContactPairGapVariation()
     : base_class()
 {
   // Empty constructor.
@@ -43,9 +43,9 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, beam,
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, beam,
-    surface>::EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam,
+    Surface>::EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -64,18 +64,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 
   // Initialize variables for contact kinematics.
-  Core::LinAlg::Matrix<3, 1, scalar_type> dr_beam_ref;
-  Core::LinAlg::Matrix<3, 1, scalar_type> surface_normal;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_beam;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_rel;
-  Core::LinAlg::Matrix<1, beam::n_nodes_ * beam::n_val_, scalar_type> N_beam;
-  Core::LinAlg::Matrix<1, surface::n_nodes_ * surface::n_val_, scalar_type> N_surface;
-  Core::LinAlg::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> gap_variation_times_normal;
-  Core::LinAlg::Matrix<beam::n_dof_ + surface::n_dof_, 1, scalar_type> pair_force_vector;
-  scalar_type gap = 0.0;
-  scalar_type segment_jacobian = 0.0;
-  scalar_type beam_segmentation_factor = 0.0;
+  Core::LinAlg::Matrix<3, 1, ScalarType> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, ScalarType> surface_normal;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_beam;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_rel;
+  Core::LinAlg::Matrix<1, Beam::n_nodes_ * Beam::n_val_, ScalarType> N_beam;
+  Core::LinAlg::Matrix<1, Surface::n_nodes_ * Surface::n_val_, ScalarType> N_surface;
+  Core::LinAlg::Matrix<Beam::n_dof_ + Surface::n_dof_, 1, ScalarType> gap_variation_times_normal;
+  Core::LinAlg::Matrix<Beam::n_dof_ + Surface::n_dof_, 1, ScalarType> pair_force_vector;
+  ScalarType gap = 0.0;
+  ScalarType segment_jacobian = 0.0;
+  ScalarType beam_segmentation_factor = 0.0;
 
   // GIDs of the pair and the force vector acting on the pair.
   const std::vector<int> pair_gid = this->get_pair_gid(*discret);
@@ -99,18 +99,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       const auto& eta = projected_gauss_point.GetEta();
 
       // Get the Jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1posref_, dr_beam_ref);
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = Core::FADUtils::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
-      GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(
+      GEOMETRYPAIR::EvaluateSurfaceNormal<Surface>(
           xi, this->face_element_->GetFaceElementData(), surface_normal);
 
       // Evaluate the current position of beam and solid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(eta, this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<surface>(
+      GEOMETRYPAIR::EvaluatePosition<Beam>(eta, this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<Surface>(
           xi, this->face_element_->GetFaceElementData(), r_surface);
 
       // Evaluate the gap function.
@@ -119,9 +119,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       gap = r_rel.dot(surface_normal) - beam_cross_section_radius;
 
       // Get the shape function matrices.
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<Beam>::evaluate(
           N_beam, eta, this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<surface>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<Surface>::evaluate(
           N_surface, xi, this->face_element_->GetFaceElementData().shape_function_data_);
 
       // Calculate the variation of the gap function multiplied with the surface normal vector.
@@ -142,7 +142,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       }
 
       // Get the contact force.
-      scalar_type force = PenaltyForce(gap, this->Params()->beam_to_solid_surface_contact_params());
+      ScalarType force = PenaltyForce(gap, this->Params()->beam_to_solid_surface_contact_params());
 
       // Add the Gauss point contributions to the pair force vector.
       gap_variation_times_normal.scale(
@@ -173,9 +173,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
-    surface>::BeamToSolidSurfaceContactPairPotential()
+template <typename ScalarType, typename Beam, typename Surface>
+BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
+    Surface>::BeamToSolidSurfaceContactPairPotential()
     : base_class()
 {
   // Empty constructor.
@@ -184,9 +184,9 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
-    surface>::EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
+    Surface>::EvaluateAndAssemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Teuchos::RCP<const Epetra_Vector>& displacement_vector)
@@ -205,15 +205,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 
   // Initialize variables for contact kinematics.
-  Core::LinAlg::Matrix<3, 1, scalar_type> dr_beam_ref;
-  Core::LinAlg::Matrix<3, 1, scalar_type> surface_normal;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_beam;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_rel;
-  scalar_type potential = 0.0;
-  scalar_type gap = 0.0;
-  scalar_type segment_jacobian = 0.0;
-  scalar_type beam_segmentation_factor = 0.0;
+  Core::LinAlg::Matrix<3, 1, ScalarType> dr_beam_ref;
+  Core::LinAlg::Matrix<3, 1, ScalarType> surface_normal;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_beam;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_rel;
+  ScalarType potential = 0.0;
+  ScalarType gap = 0.0;
+  ScalarType segment_jacobian = 0.0;
+  ScalarType beam_segmentation_factor = 0.0;
 
   // GIDs of the pair and the force vector acting on the pair.
   const std::vector<int> pair_gid = this->get_pair_gid(*discret);
@@ -237,18 +237,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<scalar_type, beam,
       const auto& eta = projected_gauss_point.GetEta();
 
       // Get the Jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1posref_, dr_beam_ref);
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(eta, this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = Core::FADUtils::VectorNorm(dr_beam_ref) * beam_segmentation_factor;
 
       // Get the surface normal vector.
-      GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(
+      GEOMETRYPAIR::EvaluateSurfaceNormal<Surface>(
           xi, this->face_element_->GetFaceElementData(), surface_normal);
 
       // Evaluate the current position of beam and solid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(eta, this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<surface>(
+      GEOMETRYPAIR::EvaluatePosition<Beam>(eta, this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<Surface>(
           xi, this->face_element_->GetFaceElementData(), r_surface);
 
       // Evaluate the gap function.

@@ -30,21 +30,21 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename beam, typename solid, typename mortar, typename mortar_rot>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::BeamToSolidVolumeMeshtyingPairMortarRotation()
-    : BeamToSolidVolumeMeshtyingPairMortar<beam, solid, mortar>()
+template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
+    MortarRot>::BeamToSolidVolumeMeshtyingPairMortarRotation()
+    : BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>()
 {
   // Set the number of rotational mortar DOFs.
-  this->n_mortar_rot_ = mortar_rot::n_dof_;
+  this->n_mortar_rot_ = MortarRot::n_dof_;
 }
 
 /**
  *
  */
-template <typename beam, typename solid, typename mortar, typename mortar_rot>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
+template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
+    MortarRot>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
     Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
@@ -72,19 +72,19 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
   auto q_solid =
-      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_1st>::initialize(this->Element2());
-  for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
+      GEOMETRYPAIR::InitializeElementData<Solid, scalar_type_rot_1st>::initialize(this->Element2());
+  for (unsigned int i_solid = 0; i_solid < Solid::n_dof_; i_solid++)
     q_solid.element_position_(i_solid) =
-        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(3 + solid::n_dof_,
+        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(3 + Solid::n_dof_,
             3 + i_solid, Core::FADUtils::CastToDouble(this->ele2pos_.element_position_(i_solid)));
 
   // Initialize local matrices.
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, 1, double> local_g(true);
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, n_dof_rot_, double> local_G_B(true);
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> local_G_S(true);
-  Core::LinAlg::Matrix<n_dof_rot_, mortar_rot::n_dof_, double> local_FB_L(true);
-  Core::LinAlg::Matrix<solid::n_dof_, mortar_rot::n_dof_, double> local_FS_L(true);
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, 1, double> local_kappa(true);
+  Core::LinAlg::Matrix<MortarRot::n_dof_, 1, double> local_g(true);
+  Core::LinAlg::Matrix<MortarRot::n_dof_, n_dof_rot_, double> local_G_B(true);
+  Core::LinAlg::Matrix<MortarRot::n_dof_, Solid::n_dof_, double> local_G_S(true);
+  Core::LinAlg::Matrix<n_dof_rot_, MortarRot::n_dof_, double> local_FB_L(true);
+  Core::LinAlg::Matrix<Solid::n_dof_, MortarRot::n_dof_, double> local_FS_L(true);
+  Core::LinAlg::Matrix<MortarRot::n_dof_, 1, double> local_kappa(true);
 
   const auto rot_coupling_type =
       this->Params()->beam_to_solid_volume_meshtying_params()->get_rotational_coupling_type();
@@ -128,7 +128,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.data());
 
   // Assemble into global matrices.
-  for (unsigned int i_dof_lambda = 0; i_dof_lambda < mortar_rot::n_dof_; i_dof_lambda++)
+  for (unsigned int i_dof_lambda = 0; i_dof_lambda < MortarRot::n_dof_; i_dof_lambda++)
   {
     for (unsigned int i_dof_rot = 0; i_dof_rot < n_dof_rot_; i_dof_rot++)
     {
@@ -137,7 +137,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       global_force_beam_lin_lambda.FEAssemble(
           local_FB_L(i_dof_rot, i_dof_lambda), gid_rot(i_dof_rot), lambda_gid_rot[i_dof_lambda]);
     }
-    for (unsigned int i_dof_solid = 0; i_dof_solid < solid::n_dof_; i_dof_solid++)
+    for (unsigned int i_dof_solid = 0; i_dof_solid < Solid::n_dof_; i_dof_solid++)
     {
       global_constraint_lin_solid.FEAssemble(local_G_S(i_dof_lambda, i_dof_solid),
           lambda_gid_rot[i_dof_lambda], gid_solid[i_dof_solid]);
@@ -150,21 +150,21 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 /**
  *
  */
-template <typename beam, typename solid, typename mortar, typename mortar_rot>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::evaluate_rotational_coupling_terms(  //
+template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
+    MortarRot>::evaluate_rotational_coupling_terms(  //
     const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
-    const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_1st>& q_solid,
+    const GEOMETRYPAIR::ElementData<Solid, scalar_type_rot_1st>& q_solid,
     const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
         triad_interpolation_scheme,
     const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
         ref_triad_interpolation_scheme,
-    Core::LinAlg::Matrix<mortar_rot::n_dof_, 1, double>& local_g,
-    Core::LinAlg::Matrix<mortar_rot::n_dof_, n_dof_rot_, double>& local_G_B,
-    Core::LinAlg::Matrix<mortar_rot::n_dof_, solid::n_dof_, double>& local_G_S,
-    Core::LinAlg::Matrix<n_dof_rot_, mortar_rot::n_dof_, double>& local_FB_L,
-    Core::LinAlg::Matrix<solid::n_dof_, mortar_rot::n_dof_, double>& local_FS_L,
-    Core::LinAlg::Matrix<mortar_rot::n_dof_, 1, double>& local_kappa) const
+    Core::LinAlg::Matrix<MortarRot::n_dof_, 1, double>& local_g,
+    Core::LinAlg::Matrix<MortarRot::n_dof_, n_dof_rot_, double>& local_G_B,
+    Core::LinAlg::Matrix<MortarRot::n_dof_, Solid::n_dof_, double>& local_G_S,
+    Core::LinAlg::Matrix<n_dof_rot_, MortarRot::n_dof_, double>& local_FB_L,
+    Core::LinAlg::Matrix<Solid::n_dof_, MortarRot::n_dof_, double>& local_FS_L,
+    Core::LinAlg::Matrix<MortarRot::n_dof_, 1, double>& local_kappa) const
 {
   // Initialize variables.
   Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
@@ -183,22 +183,22 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   Core::LinAlg::Matrix<3, 3, double> T_solid_inv;
   Core::LinAlg::Matrix<3, 3, double> T_rel;
 
-  Core::LinAlg::Matrix<mortar_rot::n_nodes_, 1, double> lambda_shape_functions;
-  Core::LinAlg::Matrix<3, mortar_rot::n_dof_, double> lambda_shape_functions_full(true);
+  Core::LinAlg::Matrix<MortarRot::n_nodes_, 1, double> lambda_shape_functions;
+  Core::LinAlg::Matrix<3, MortarRot::n_dof_, double> lambda_shape_functions_full(true);
   Core::LinAlg::SerialDenseVector L_i(3);
   Core::LinAlg::Matrix<3, n_dof_rot_, double> L_full(true);
   std::vector<Core::LinAlg::Matrix<3, 3, double>> I_beam_tilde;
   Core::LinAlg::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
   Core::LinAlg::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
-  Core::LinAlg::Matrix<3, mortar_rot::n_dof_, double> T_rel_tr_times_lambda_shape;
-  Core::LinAlg::Matrix<3, mortar_rot::n_dof_, double> T_solid_mtr_times_T_rel_tr_times_lambda_shape;
-  Core::LinAlg::Matrix<n_dof_rot_, mortar_rot::n_dof_, double> d_fb_d_lambda_gp;
-  Core::LinAlg::Matrix<solid::n_dof_, mortar_rot::n_dof_, double> d_fs_d_lambda_gp;
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, 1, scalar_type_rot_1st> g_gp;
-  Core::LinAlg::Matrix<3, solid::n_dof_, double> d_psi_solid_d_q_solid;
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, 3, double> d_g_d_psi_beam;
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, n_dof_rot_, double> d_g_d_psi_beam_times_T_beam_I;
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> d_g_d_q_solid;
+  Core::LinAlg::Matrix<3, MortarRot::n_dof_, double> T_rel_tr_times_lambda_shape;
+  Core::LinAlg::Matrix<3, MortarRot::n_dof_, double> T_solid_mtr_times_T_rel_tr_times_lambda_shape;
+  Core::LinAlg::Matrix<n_dof_rot_, MortarRot::n_dof_, double> d_fb_d_lambda_gp;
+  Core::LinAlg::Matrix<Solid::n_dof_, MortarRot::n_dof_, double> d_fs_d_lambda_gp;
+  Core::LinAlg::Matrix<MortarRot::n_dof_, 1, scalar_type_rot_1st> g_gp;
+  Core::LinAlg::Matrix<3, Solid::n_dof_, double> d_psi_solid_d_q_solid;
+  Core::LinAlg::Matrix<MortarRot::n_dof_, 3, double> d_g_d_psi_beam;
+  Core::LinAlg::Matrix<MortarRot::n_dof_, n_dof_rot_, double> d_g_d_psi_beam_times_T_beam_I;
+  Core::LinAlg::Matrix<MortarRot::n_dof_, Solid::n_dof_, double> d_g_d_q_solid;
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -221,7 +221,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
@@ -233,14 +233,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       Core::LargeRotations::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_beam(i_dim) = Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(
-            3 + solid::n_dof_, i_dim, psi_beam_double(i_dim));
+            3 + Solid::n_dof_, i_dim, psi_beam_double(i_dim));
       Core::LargeRotations::angletoquaternion(psi_beam, quaternion_beam);
       quaternion_beam_inv = Core::LargeRotations::inversequaternion(quaternion_beam);
 
       // Get the solid rotation vector.
       ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
-      GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
+      GetSolidRotationVector<Solid>(rot_coupling_type, projected_gauss_point.GetXi(),
           this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
       Core::LargeRotations::angletoquaternion(psi_solid, quaternion_solid);
 
@@ -257,9 +257,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       Core::LinAlg::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<MortarRot>::evaluate(
           lambda_shape_functions, projected_gauss_point.GetEta());
-      for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
+      for (unsigned int i_node = 0; i_node < MortarRot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
 
@@ -278,7 +278,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
       // Solid angle derived w.r.t. the solid DOFs.
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
+        for (unsigned int i_solid = 0; i_solid < Solid::n_dof_; i_solid++)
           d_psi_solid_d_q_solid(i_dim, i_solid) = psi_solid(i_dim).dx(3 + i_solid);
 
       // Calculate the force terms derived w.r.t. the Lagrange multipliers.
@@ -294,7 +294,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
       // Constraint vector.
       g_gp.put_scalar(0.0);
-      for (unsigned int i_row = 0; i_row < mortar_rot::n_dof_; i_row++)
+      for (unsigned int i_row = 0; i_row < MortarRot::n_dof_; i_row++)
         for (unsigned int i_col = 0; i_col < 3; i_col++)
           g_gp(i_row) += lambda_shape_functions_full(i_col, i_row) * psi_rel(i_col);
       g_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
@@ -302,13 +302,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       // Derivatives of constraint vector.
       T_beam_times_I_beam_tilde_full.multiply(T_beam, I_beam_tilde_full);
 
-      for (unsigned int i_lambda = 0; i_lambda < mortar_rot::n_dof_; i_lambda++)
+      for (unsigned int i_lambda = 0; i_lambda < MortarRot::n_dof_; i_lambda++)
         for (unsigned int i_psi = 0; i_psi < 3; i_psi++)
           d_g_d_psi_beam(i_lambda, i_psi) = g_gp(i_lambda).dx(i_psi);
       d_g_d_psi_beam_times_T_beam_I.multiply(d_g_d_psi_beam, T_beam_times_I_beam_tilde_full);
 
-      for (unsigned int i_lambda = 0; i_lambda < mortar_rot::n_dof_; i_lambda++)
-        for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
+      for (unsigned int i_lambda = 0; i_lambda < MortarRot::n_dof_; i_lambda++)
+        for (unsigned int i_solid = 0; i_solid < Solid::n_dof_; i_solid++)
           d_g_d_q_solid(i_lambda, i_solid) = g_gp(i_lambda).dx(3 + i_solid);
 
       // Add to output matrices and vector.
@@ -319,7 +319,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       local_FS_L += d_fs_d_lambda_gp;
 
       // Calculate the scaling entries.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar_rot::n_nodes_; i_mortar_node++)
+      for (unsigned int i_mortar_node = 0; i_mortar_node < MortarRot::n_nodes_; i_mortar_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           local_kappa(i_mortar_node * 3 + i_dim) += lambda_shape_functions(i_mortar_node) *
                                                     projected_gauss_point.GetGaussWeight() *
@@ -331,9 +331,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 /**
  *
  */
-template <typename beam, typename solid, typename mortar, typename mortar_rot>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::EvaluateAndAssemble(const Core::FE::Discretization& discret,
+template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar,
+    MortarRot>::EvaluateAndAssemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -358,10 +358,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we only need first
   // order derivatives.
   auto q_solid =
-      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::initialize(this->Element2());
-  for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
+      GEOMETRYPAIR::InitializeElementData<Solid, scalar_type_rot_2nd>::initialize(this->Element2());
+  for (unsigned int i_solid = 0; i_solid < Solid::n_dof_; i_solid++)
     q_solid.element_position_(i_solid) =
-        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + solid::n_dof_,
+        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + Solid::n_dof_,
             3 + i_solid, Core::FADUtils::CastToDouble(this->ele2pos_.element_position_(i_solid)));
 
   // Get the rotational Lagrange multipliers for this pair.
@@ -369,15 +369,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
   std::vector<double> lambda_rot_double;
   Core::FE::ExtractMyValues(global_lambda, lambda_rot_double, lambda_gid_rot);
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, 1, double> lambda_rot;
-  for (unsigned int i_dof = 0; i_dof < mortar_rot::n_dof_; i_dof++)
+  Core::LinAlg::Matrix<MortarRot::n_dof_, 1, double> lambda_rot;
+  for (unsigned int i_dof = 0; i_dof < MortarRot::n_dof_; i_dof++)
     lambda_rot(i_dof) = lambda_rot_double[i_dof];
 
   // Initialize local matrices.
   Core::LinAlg::Matrix<n_dof_rot_, n_dof_rot_, double> local_stiff_BB(true);
-  Core::LinAlg::Matrix<n_dof_rot_, solid::n_dof_, double> local_stiff_BS(true);
-  Core::LinAlg::Matrix<solid::n_dof_, n_dof_rot_, double> local_stiff_SB(true);
-  Core::LinAlg::Matrix<solid::n_dof_, solid::n_dof_, double> local_stiff_SS(true);
+  Core::LinAlg::Matrix<n_dof_rot_, Solid::n_dof_, double> local_stiff_BS(true);
+  Core::LinAlg::Matrix<Solid::n_dof_, n_dof_rot_, double> local_stiff_SB(true);
+  Core::LinAlg::Matrix<Solid::n_dof_, Solid::n_dof_, double> local_stiff_SS(true);
 
   const auto rot_coupling_type =
       this->Params()->beam_to_solid_volume_meshtying_params()->get_rotational_coupling_type();
@@ -413,16 +413,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
     for (unsigned int j_dof_beam = 0; j_dof_beam < n_dof_rot_; j_dof_beam++)
       stiffness_matrix->FEAssemble(
           local_stiff_BB(i_dof_beam, j_dof_beam), gid_rot(i_dof_beam), gid_rot(j_dof_beam));
-    for (unsigned int j_dof_solid = 0; j_dof_solid < solid::n_dof_; j_dof_solid++)
+    for (unsigned int j_dof_solid = 0; j_dof_solid < Solid::n_dof_; j_dof_solid++)
       stiffness_matrix->FEAssemble(
           local_stiff_BS(i_dof_beam, j_dof_solid), gid_rot(i_dof_beam), gid_solid[j_dof_solid]);
   }
-  for (unsigned int i_dof_solid = 0; i_dof_solid < solid::n_dof_; i_dof_solid++)
+  for (unsigned int i_dof_solid = 0; i_dof_solid < Solid::n_dof_; i_dof_solid++)
   {
     for (unsigned int j_dof_beam = 0; j_dof_beam < n_dof_rot_; j_dof_beam++)
       stiffness_matrix->FEAssemble(
           local_stiff_SB(i_dof_solid, j_dof_beam), gid_solid[i_dof_solid], gid_rot(j_dof_beam));
-    for (unsigned int j_dof_solid = 0; j_dof_solid < solid::n_dof_; j_dof_solid++)
+    for (unsigned int j_dof_solid = 0; j_dof_solid < Solid::n_dof_; j_dof_solid++)
       stiffness_matrix->FEAssemble(
           local_stiff_SS(i_dof_solid, j_dof_solid), gid_solid[i_dof_solid], gid_solid[j_dof_solid]);
   }
@@ -431,21 +431,20 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 /**
  *
  */
-template <typename beam, typename solid, typename mortar, typename mortar_rot>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, mortar,
-    mortar_rot>::
+template <typename Beam, typename Solid, typename Mortar, typename MortarRot>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, Mortar, MortarRot>::
     evaluate_rotational_coupling_stiff_terms(
         const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
-        const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
-        Core::LinAlg::Matrix<mortar_rot::n_dof_, 1, double>& lambda_rot,
+        const GEOMETRYPAIR::ElementData<Solid, scalar_type_rot_2nd>& q_solid,
+        Core::LinAlg::Matrix<MortarRot::n_dof_, 1, double>& lambda_rot,
         const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
         const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
             ref_triad_interpolation_scheme,
         Core::LinAlg::Matrix<n_dof_rot_, n_dof_rot_, double>& local_stiff_BB,
-        Core::LinAlg::Matrix<n_dof_rot_, solid::n_dof_, double>& local_stiff_BS,
-        Core::LinAlg::Matrix<solid::n_dof_, n_dof_rot_, double>& local_stiff_SB,
-        Core::LinAlg::Matrix<solid::n_dof_, solid::n_dof_, double>& local_stiff_SS) const
+        Core::LinAlg::Matrix<n_dof_rot_, Solid::n_dof_, double>& local_stiff_BS,
+        Core::LinAlg::Matrix<Solid::n_dof_, n_dof_rot_, double>& local_stiff_SB,
+        Core::LinAlg::Matrix<Solid::n_dof_, Solid::n_dof_, double>& local_stiff_SS) const
 {
   // Initialize variables.
   Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
@@ -465,29 +464,28 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
   Core::LinAlg::Matrix<3, 3, scalar_type_rot_1st> T_solid_inv;
   Core::LinAlg::Matrix<3, 3, scalar_type_rot_1st> T_rel;
 
-  Core::LinAlg::Matrix<mortar_rot::n_nodes_, 1, double> lambda_shape_functions;
-  Core::LinAlg::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st> lambda_shape_functions_full(
-      true);
+  Core::LinAlg::Matrix<MortarRot::n_nodes_, 1, double> lambda_shape_functions;
+  Core::LinAlg::Matrix<3, MortarRot::n_dof_, scalar_type_rot_1st> lambda_shape_functions_full(true);
   Core::LinAlg::SerialDenseVector L_i(3);
   Core::LinAlg::Matrix<3, n_dof_rot_, scalar_type_rot_1st> L_full(true);
   std::vector<Core::LinAlg::Matrix<3, 3, double>> I_beam_tilde;
   Core::LinAlg::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
   Core::LinAlg::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
-  Core::LinAlg::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st> T_rel_tr_times_lambda_shape;
-  Core::LinAlg::Matrix<3, mortar_rot::n_dof_, scalar_type_rot_1st>
+  Core::LinAlg::Matrix<3, MortarRot::n_dof_, scalar_type_rot_1st> T_rel_tr_times_lambda_shape;
+  Core::LinAlg::Matrix<3, MortarRot::n_dof_, scalar_type_rot_1st>
       T_solid_mtr_times_T_rel_tr_times_lambda_shape;
-  Core::LinAlg::Matrix<n_dof_rot_, mortar_rot::n_dof_, scalar_type_rot_1st> d_fb_d_lambda_gp;
-  Core::LinAlg::Matrix<solid::n_dof_, mortar_rot::n_dof_, scalar_type_rot_1st> d_fs_d_lambda_gp;
-  Core::LinAlg::Matrix<3, solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, 3, double> d_g_d_psi_beam;
-  Core::LinAlg::Matrix<mortar_rot::n_dof_, solid::n_dof_, double> d_g_d_q_solid;
+  Core::LinAlg::Matrix<n_dof_rot_, MortarRot::n_dof_, scalar_type_rot_1st> d_fb_d_lambda_gp;
+  Core::LinAlg::Matrix<Solid::n_dof_, MortarRot::n_dof_, scalar_type_rot_1st> d_fs_d_lambda_gp;
+  Core::LinAlg::Matrix<3, Solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
+  Core::LinAlg::Matrix<MortarRot::n_dof_, 3, double> d_g_d_psi_beam;
+  Core::LinAlg::Matrix<MortarRot::n_dof_, Solid::n_dof_, double> d_g_d_q_solid;
   Core::LinAlg::Matrix<n_dof_rot_, 1, scalar_type_rot_1st> f_beam;
-  Core::LinAlg::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> f_solid;
+  Core::LinAlg::Matrix<Solid::n_dof_, 1, scalar_type_rot_1st> f_solid;
   Core::LinAlg::Matrix<n_dof_rot_, 3, double> d_f_beam_d_phi;
-  Core::LinAlg::Matrix<solid::n_dof_, 3, double> d_f_solid_d_phi;
+  Core::LinAlg::Matrix<Solid::n_dof_, 3, double> d_f_solid_d_phi;
   Core::LinAlg::Matrix<n_dof_rot_, n_dof_rot_, double>
       d_f_beam_d_phi_times_T_beam_times_I_beam_tilde_full;
-  Core::LinAlg::Matrix<solid::n_dof_, n_dof_rot_, double>
+  Core::LinAlg::Matrix<Solid::n_dof_, n_dof_rot_, double>
       d_f_solid_d_phi_times_T_beam_times_I_beam_tilde_full;
 
   // Initialize scalar variables.
@@ -510,7 +508,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
@@ -522,14 +520,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       Core::LargeRotations::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_beam(i_dim) = Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(
-            3 + solid::n_dof_, i_dim, psi_beam_double(i_dim));
+            3 + Solid::n_dof_, i_dim, psi_beam_double(i_dim));
       Core::LargeRotations::angletoquaternion(psi_beam, quaternion_beam);
       quaternion_beam_inv = Core::LargeRotations::inversequaternion(quaternion_beam);
 
       // Get the solid rotation vector.
       ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
-      GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
+      GetSolidRotationVector<Solid>(rot_coupling_type, projected_gauss_point.GetXi(),
           this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_solid_val(i_dim) = psi_solid(i_dim).val();
@@ -548,9 +546,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       Core::LinAlg::Inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar_rot>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<MortarRot>::evaluate(
           lambda_shape_functions, projected_gauss_point.GetEta());
-      for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
+      for (unsigned int i_node = 0; i_node < MortarRot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
 
@@ -569,7 +567,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
       // Solid angle derived w.r.t. the solid DOFs.
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
+        for (unsigned int i_solid = 0; i_solid < Solid::n_dof_; i_solid++)
           d_psi_solid_d_q_solid(i_dim, i_solid) = psi_solid(i_dim).dx(3 + i_solid);
 
       // Calculate the force terms derived w.r.t. the Lagrange multipliers.
@@ -586,18 +584,18 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       // Calculate the force vectors.
       f_beam.put_scalar(0.0);
       for (unsigned int i_row = 0; i_row < n_dof_rot_; i_row++)
-        for (unsigned int i_col = 0; i_col < mortar_rot::n_dof_; i_col++)
+        for (unsigned int i_col = 0; i_col < MortarRot::n_dof_; i_col++)
           f_beam(i_row) += d_fb_d_lambda_gp(i_row, i_col) * lambda_rot(i_col);
       f_solid.put_scalar(0.0);
-      for (unsigned int i_row = 0; i_row < solid::n_dof_; i_row++)
-        for (unsigned int i_col = 0; i_col < mortar_rot::n_dof_; i_col++)
+      for (unsigned int i_row = 0; i_row < Solid::n_dof_; i_row++)
+        for (unsigned int i_col = 0; i_col < MortarRot::n_dof_; i_col++)
           f_solid(i_row) += d_fs_d_lambda_gp(i_row, i_col) * lambda_rot(i_col);
 
       // Derivatives of the force vectors.
       for (unsigned int i_row = 0; i_row < n_dof_rot_; i_row++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           d_f_beam_d_phi(i_row, i_dim) = f_beam(i_row).dx(i_dim);
-      for (unsigned int i_row = 0; i_row < solid::n_dof_; i_row++)
+      for (unsigned int i_row = 0; i_row < Solid::n_dof_; i_row++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           d_f_solid_d_phi(i_row, i_dim) = f_solid(i_row).dx(i_dim);
 
@@ -610,11 +608,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
       // Add to output matrices and vector.
       local_stiff_BB += d_f_beam_d_phi_times_T_beam_times_I_beam_tilde_full;
       for (unsigned int i_beam = 0; i_beam < n_dof_rot_; i_beam++)
-        for (unsigned int j_solid = 0; j_solid < solid::n_dof_; j_solid++)
+        for (unsigned int j_solid = 0; j_solid < Solid::n_dof_; j_solid++)
           local_stiff_BS(i_beam, j_solid) += f_beam(i_beam).dx(3 + j_solid);
       local_stiff_SB += d_f_solid_d_phi_times_T_beam_times_I_beam_tilde_full;
-      for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
-        for (unsigned int j_solid = 0; j_solid < solid::n_dof_; j_solid++)
+      for (unsigned int i_solid = 0; i_solid < Solid::n_dof_; i_solid++)
+        for (unsigned int j_solid = 0; j_solid < Solid::n_dof_; j_solid++)
           local_stiff_SS(i_solid, j_solid) += f_solid(i_solid).dx(3 + j_solid);
     }
   }

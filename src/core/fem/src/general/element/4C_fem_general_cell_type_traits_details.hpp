@@ -26,10 +26,10 @@ namespace Core::FE::Details
 {
   //! @name helper functions for cell-type related type lists
   /// @{
-  template <typename... t>
+  template <typename... T>
   struct Join
   {
-    using type = decltype(std::tuple_cat(std::declval<t>()...));
+    using type = decltype(std::tuple_cat(std::declval<T>()...));
   };
 
 
@@ -94,13 +94,13 @@ namespace Core::FE::Details
 
   //! @name Helper functions for the celltype switch
   /// @{
-  template <CellType celltype, typename celltype_sequence, typename Function,
+  template <CellType celltype, typename CelltypeSequence, typename Function,
       typename UnsupportedCellTypeCallable>
   auto CellTypeSwitchItem([[maybe_unused]] Function fct,
       UnsupportedCellTypeCallable unsupported_celltype_callable) -> std::invoke_result_t<Function,
-      std::integral_constant<CellType, first_celltype_in_sequence<celltype_sequence>::value>>
+      std::integral_constant<CellType, first_celltype_in_sequence<CelltypeSequence>::value>>
   {
-    if constexpr (IsCellTypeInSequence(celltype, celltype_sequence{}))
+    if constexpr (IsCellTypeInSequence(celltype, CelltypeSequence{}))
     {
       return fct(std::integral_constant<CellType, celltype>{});
     }
@@ -108,8 +108,8 @@ namespace Core::FE::Details
     constexpr bool is_convertible = std::is_convertible_v<
         std::invoke_result_t<UnsupportedCellTypeCallable,
             std::integral_constant<CellType, celltype>>,
-        std::invoke_result_t<Function, std::integral_constant<CellType,
-                                           first_celltype_in_sequence<celltype_sequence>::value>>>;
+        std::invoke_result_t<Function,
+            std::integral_constant<CellType, first_celltype_in_sequence<CelltypeSequence>::value>>>;
     constexpr bool is_void = std::is_void_v<std::invoke_result_t<UnsupportedCellTypeCallable,
         std::integral_constant<CellType, celltype>>>;
     static_assert(is_convertible || is_void,
@@ -125,14 +125,14 @@ namespace Core::FE::Details
     FOUR_C_THROW("Your unsupported celltype callable does not throw or return a compatible type!");
   }
 
-  template <typename celltype_sequence>
+  template <typename CelltypeSequence>
   struct ThrowUnsupportedCellTypeError
   {
     template <typename CellTypeConstant>
     [[noreturn]] void operator()(CellTypeConstant celltype_t) const
     {
       constexpr std::array celltypes_str =
-          celltype_sequence_to_string_array<celltype_sequence>::value;
+          celltype_sequence_to_string_array<CelltypeSequence>::value;
 
       std::string celltypes_str_acc;
 

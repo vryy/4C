@@ -16,16 +16,13 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
-  template <class value_type, unsigned int brows, unsigned int bcols>
+  template <class ValueType, unsigned int brows, unsigned int bcols>
   class BlockMatrix
   {
    public:
-    typedef typename value_type::scalar_type scalar_type;
+    typedef typename ValueType::scalar_type scalar_type;
 
-    BlockMatrix()
-    {
-      std::fill(blocks_, blocks_ + brows * bcols, static_cast<value_type*>(nullptr));
-    }
+    BlockMatrix() { std::fill(blocks_, blocks_ + brows * bcols, static_cast<ValueType*>(nullptr)); }
 
     ~BlockMatrix()
     {
@@ -46,60 +43,60 @@ namespace Core::LinAlg
       blocks_[p] = nullptr;
     }
 
-    void AddView(unsigned row, unsigned col, value_type& matrix)
+    void AddView(unsigned row, unsigned col, ValueType& matrix)
     {
       Clear(row, col);
       int p = position(row, col);
-      blocks_[p] = new value_type(matrix, true);
+      blocks_[p] = new ValueType(matrix, true);
     }
 
-    value_type* operator()(unsigned row, unsigned col)
+    ValueType* operator()(unsigned row, unsigned col)
     {
       int p = position(row, col);
-      value_type* b = blocks_[p];
+      ValueType* b = blocks_[p];
       if (b == nullptr)
       {
-        b = new value_type(true);
+        b = new ValueType(true);
         blocks_[p] = b;
       }
       return b;
     }
 
-    const value_type* operator()(unsigned row, unsigned col) const
+    const ValueType* operator()(unsigned row, unsigned col) const
     {
-      const value_type* b = blocks_[position(row, col)];
+      const ValueType* b = blocks_[position(row, col)];
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (b == nullptr) FOUR_C_THROW("null block access");
 #endif
       return b;
     }
 
-    value_type* operator()(unsigned pos)
+    ValueType* operator()(unsigned pos)
     {
-      value_type* b = blocks_[pos];
+      ValueType* b = blocks_[pos];
       if (b == nullptr)
       {
-        b = new value_type(true);
+        b = new ValueType(true);
         blocks_[pos] = b;
       }
       return b;
     }
 
-    const value_type* operator()(unsigned pos) const
+    const ValueType* operator()(unsigned pos) const
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (pos >= brows * bcols) FOUR_C_THROW("block index out of range");
 #endif
-      const value_type* b = blocks_[pos];
+      const ValueType* b = blocks_[pos];
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (b == nullptr) FOUR_C_THROW("null block access");
 #endif
       return b;
     }
 
-    template <class lhs, class rhs, unsigned int inner>
+    template <class Lhs, class Rhs, unsigned int inner>
     inline void multiply(
-        const BlockMatrix<lhs, brows, inner>& left, const BlockMatrix<rhs, inner, bcols>& right)
+        const BlockMatrix<Lhs, brows, inner>& left, const BlockMatrix<Rhs, inner, bcols>& right)
     {
       put_scalar(0.);
       for (unsigned int ic = 0; ic < bcols; ++ic)
@@ -112,7 +109,7 @@ namespace Core::LinAlg
             {
               if (left.IsUsed(ir, i))
               {
-                value_type* b = (*this)(ir, ic);
+                ValueType* b = (*this)(ir, ic);
                 b->multiply(1, *left(ir, i), *right(i, ic), 1);
               }
             }
@@ -161,7 +158,7 @@ namespace Core::LinAlg
     }
 
     friend std::ostream& operator<<(
-        std::ostream& stream, const BlockMatrix<value_type, brows, bcols>& matrix)
+        std::ostream& stream, const BlockMatrix<ValueType, brows, bcols>& matrix)
     {
       stream << "BlockMatrix<" << brows << "," << bcols << ">\n";
       for (unsigned int ir = 0; ir < brows; ++ir)
@@ -169,7 +166,7 @@ namespace Core::LinAlg
         for (unsigned int ic = 0; ic < bcols; ++ic)
         {
           int p = matrix.position(ir, ic);
-          value_type* b = matrix.blocks_[p];
+          ValueType* b = matrix.blocks_[p];
           stream << "[" << ir << "," << ic << "] = ";
           if (b == nullptr)
           {
@@ -193,7 +190,7 @@ namespace Core::LinAlg
       return row + brows * col;
     }
 
-    value_type* blocks_[brows * bcols];
+    ValueType* blocks_[brows * bcols];
   };
 
 }  // namespace Core::LinAlg

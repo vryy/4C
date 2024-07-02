@@ -372,7 +372,7 @@ namespace Discret
     };  // class Fluid
 
     //! Template Meta Programming version of switch over enrichment type
-    template <Discret::ELEMENTS::Fluid::EnrichmentType ENRTYPE>
+    template <Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
     struct MultipleNumNode
     {
     };

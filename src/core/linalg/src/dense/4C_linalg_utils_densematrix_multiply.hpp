@@ -65,7 +65,7 @@ namespace Core::LinAlg::INTERNAL
   /*!
    \brief Utility function to get type string of transposition operation
    */
-  template <bool Transpose>
+  template <bool transpose>
   inline std::string GetTransposeString();
 
   template <>
@@ -83,7 +83,7 @@ namespace Core::LinAlg::INTERNAL
   /*!
    \brief Utility function to check for error code of LINALG multiplication
    */
-  template <bool Transpose1, bool Transpose2, typename VectorOrMatrix1, typename VectorOrMatrix2>
+  template <bool transpose1, bool transpose2, typename VectorOrMatrix1, typename VectorOrMatrix2>
   inline void CheckErrorCodeInDebug(
       int errorCode, const VectorOrMatrix1& a, const VectorOrMatrix2& b, const VectorOrMatrix2& c)
   {
@@ -94,8 +94,8 @@ namespace Core::LinAlg::INTERNAL
             GetMatrixOrVectorString<VectorOrMatrix1>() + "-" +
             GetMatrixOrVectorString<VectorOrMatrix2>() + " multiplication " +
             GetMatrixOrVectorCase<VectorOrMatrix2>('c') + " = " +
-            GetMatrixOrVectorCase<VectorOrMatrix1>('a') + GetTransposeString<Transpose1>() + " * " +
-            GetMatrixOrVectorCase<VectorOrMatrix2>('b') + GetTransposeString<Transpose2>() +
+            GetMatrixOrVectorCase<VectorOrMatrix1>('a') + GetTransposeString<transpose1>() + " * " +
+            GetMatrixOrVectorCase<VectorOrMatrix2>('b') + GetTransposeString<transpose2>() +
             ". Dimensions of " + GetMatrixOrVectorCase<VectorOrMatrix1>('a') + ", " +
             GetMatrixOrVectorCase<VectorOrMatrix2>('b') + " and " +
             GetMatrixOrVectorCase<VectorOrMatrix2>('c') + " are (" + std::to_string(a.numRows()) +

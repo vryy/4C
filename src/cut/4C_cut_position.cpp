@@ -134,14 +134,14 @@ Teuchos::RCP<Core::Geo::Cut::Position> Core::Geo::Cut::Position::Create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+template <unsigned probdim, Core::FE::CellType eletype, unsigned num_nodes_element, unsigned dim,
     Core::Geo::Cut::CutFloatType floattype>
-void Core::Geo::Cut::PositionGeneric<probdim, eletype, numNodesElement, dim,
+void Core::Geo::Cut::PositionGeneric<probdim, eletype, num_nodes_element, dim,
     floattype>::construct_bounding_box()
 {
   bbside_ = Teuchos::rcp(BoundingBox::Create());
 
-  for (unsigned i = 0; i < numNodesElement; ++i)
+  for (unsigned i = 0; i < num_nodes_element; ++i)
   {
     Core::LinAlg::Matrix<3, 1> x1(&this->xyze_(0, i), true);
     bbside_->AddPoint(x1);
@@ -150,9 +150,9 @@ void Core::Geo::Cut::PositionGeneric<probdim, eletype, numNodesElement, dim,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+template <unsigned probdim, Core::FE::CellType eletype, unsigned num_nodes_element, unsigned dim,
     Core::Geo::Cut::CutFloatType floattype>
-bool Core::Geo::Cut::ComputePosition<probdim, eletype, numNodesElement, dim, floattype>::Compute(
+bool Core::Geo::Cut::ComputePosition<probdim, eletype, num_nodes_element, dim, floattype>::Compute(
     const double& Tol)
 {
   /* If the given point is outside the element bounding box, no need
@@ -177,9 +177,9 @@ bool Core::Geo::Cut::ComputePosition<probdim, eletype, numNodesElement, dim, flo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+template <unsigned probdim, Core::FE::CellType eletype, unsigned num_nodes_element, unsigned dim,
     Core::Geo::Cut::CutFloatType floattype>
-bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
+bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element, dim,
     floattype>::is_given_point_within_element()
 {
   // If the given point is outside the side's bounding box, no need to perform
@@ -205,9 +205,9 @@ bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType eletype, unsigned numNodesElement, unsigned dim,
+template <unsigned probdim, Core::FE::CellType eletype, unsigned num_nodes_element, unsigned dim,
     Core::Geo::Cut::CutFloatType floattype>
-bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, numNodesElement, dim,
+bool Core::Geo::Cut::ComputeEmbeddedPosition<probdim, eletype, num_nodes_element, dim,
     floattype>::Compute(const double& Tol, const bool& allow_dist)
 {
   xsi_aug_ = 0.0;

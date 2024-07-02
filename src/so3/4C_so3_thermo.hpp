@@ -42,8 +42,8 @@ namespace Discret
     //!
     //! A structural 3 dimensional solid displacement element for large deformations
     //! and with small and large strains
-    template <class so3_ele, Core::FE::CellType distype>
-    class So3Thermo : public so3_ele
+    template <class So3Ele, Core::FE::CellType distype>
+    class So3Thermo : public So3Ele
     {
       //! @name Friends
       friend class SoHex8ThermoType;

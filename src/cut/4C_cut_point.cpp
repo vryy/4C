@@ -1100,8 +1100,8 @@ bool Core::Geo::Cut::IsCutPositionUnchanged(Point::PointPosition position, Point
     return true;
 }
 
-template <unsigned probDim>
-void Core::Geo::Cut::ConcretePoint<probDim>::MovePoint(const double* new_coord)
+template <unsigned prob_dim>
+void Core::Geo::Cut::ConcretePoint<prob_dim>::MovePoint(const double* new_coord)
 {
   Core::LinAlg::Matrix<3, 1> coordm(new_coord, true);
   if (Core::Geo::Cut::DistanceBetweenPoints(this, coordm) > BOXOVERLAP)
@@ -1112,7 +1112,7 @@ void Core::Geo::Cut::ConcretePoint<probDim>::MovePoint(const double* new_coord)
   info << "// This point was moved to the new coordinates " << coordm << std::endl;
   AddAdditionalCreationInfo(info.str());
 #endif
-  std::copy(new_coord, new_coord + probDim, this->x_);
+  std::copy(new_coord, new_coord + prob_dim, this->x_);
 }
 
 FOUR_C_NAMESPACE_CLOSE

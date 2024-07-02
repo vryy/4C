@@ -28,10 +28,10 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
-    solid>::BeamToSolidVolumeMeshtyingPairGaussPoint()
-    : BeamToSolidVolumeMeshtyingPairBase<beam, solid>()
+template <typename Beam, typename Solid>
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam,
+    Solid>::BeamToSolidVolumeMeshtyingPairGaussPoint()
+    : BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>()
 {
   // Empty constructor.
 }
@@ -40,8 +40,8 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
 /**
  *
  */
-template <typename beam, typename solid>
-bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::evaluate(
+template <typename Beam, typename Solid>
+bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -49,8 +49,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::eva
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
-    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<Beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<Solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     this->cast_geometry_pair()->evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -65,8 +65,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::eva
   Core::LinAlg::Matrix<3, 1, scalar_type> r_beam;
   Core::LinAlg::Matrix<3, 1, scalar_type> r_solid;
   Core::LinAlg::Matrix<3, 1, scalar_type> force;
-  Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
-  Core::LinAlg::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
+  Core::LinAlg::Matrix<Beam::n_dof_, 1, scalar_type> force_element_1(true);
+  Core::LinAlg::Matrix<Solid::n_dof_, 1, scalar_type> force_element_2(true);
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -91,15 +91,15 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::eva
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the current positions on beam and solid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
+      GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<Solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
 
       // Calculate the force in this Gauss point. The sign of the force calculated here is the one
       // that acts on the beam.
@@ -109,13 +109,13 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::eva
 
       // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
       // dof. This is done with the virtual work equation $F \delta r = f \delta q$.
-      for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
         for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
           force_element_1(i_dof) += force(i_dir) * r_beam(i_dir).dx(i_dof) *
                                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
-      for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
         for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-          force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + beam::n_dof_) *
+          force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + Beam::n_dof_) *
                                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
     }
   }
@@ -124,20 +124,20 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::eva
   // Fill in the entries for the local matrices and vectors.
   {
     // Resize and initialize the return variables.
-    if (forcevec1 != nullptr) forcevec1->size(beam::n_dof_);
-    if (forcevec2 != nullptr) forcevec2->size(solid::n_dof_);
-    if (stiffmat11 != nullptr) stiffmat11->shape(beam::n_dof_, beam::n_dof_);
-    if (stiffmat12 != nullptr) stiffmat12->shape(beam::n_dof_, solid::n_dof_);
-    if (stiffmat21 != nullptr) stiffmat21->shape(solid::n_dof_, beam::n_dof_);
-    if (stiffmat22 != nullptr) stiffmat22->shape(solid::n_dof_, solid::n_dof_);
+    if (forcevec1 != nullptr) forcevec1->size(Beam::n_dof_);
+    if (forcevec2 != nullptr) forcevec2->size(Solid::n_dof_);
+    if (stiffmat11 != nullptr) stiffmat11->shape(Beam::n_dof_, Beam::n_dof_);
+    if (stiffmat12 != nullptr) stiffmat12->shape(Beam::n_dof_, Solid::n_dof_);
+    if (stiffmat21 != nullptr) stiffmat21->shape(Solid::n_dof_, Beam::n_dof_);
+    if (stiffmat22 != nullptr) stiffmat22->shape(Solid::n_dof_, Solid::n_dof_);
 
     if (forcevec1 != nullptr && forcevec2 != nullptr)
     {
       // $f_1$
-      for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
         (*forcevec1)(i_dof) = Core::FADUtils::CastToDouble(force_element_1(i_dof));
       // $f_2$
-      for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
         (*forcevec2)(i_dof) = Core::FADUtils::CastToDouble(force_element_2(i_dof));
     }
 
@@ -145,28 +145,28 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::eva
         stiffmat22 != nullptr)
     {
       // $k_{11}$
-      for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
-        for (unsigned int i_dof_2 = 0; i_dof_2 < beam::n_dof_; i_dof_2++)
+      for (unsigned int i_dof_1 = 0; i_dof_1 < Beam::n_dof_; i_dof_1++)
+        for (unsigned int i_dof_2 = 0; i_dof_2 < Beam::n_dof_; i_dof_2++)
           (*stiffmat11)(i_dof_1, i_dof_2) =
               -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
 
       // $k_{12}, k_{21}$
-      for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
+      for (unsigned int i_dof_1 = 0; i_dof_1 < Beam::n_dof_; i_dof_1++)
       {
-        for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
+        for (unsigned int i_dof_2 = 0; i_dof_2 < Solid::n_dof_; i_dof_2++)
         {
           (*stiffmat12)(i_dof_1, i_dof_2) =
-              -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(Beam::n_dof_ + i_dof_2));
           (*stiffmat21)(i_dof_2, i_dof_1) =
               -Core::FADUtils::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
         }
       }
 
       // $k_{22}$
-      for (unsigned int i_dof_1 = 0; i_dof_1 < solid::n_dof_; i_dof_1++)
-        for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
+      for (unsigned int i_dof_1 = 0; i_dof_1 < Solid::n_dof_; i_dof_1++)
+        for (unsigned int i_dof_2 = 0; i_dof_2 < Solid::n_dof_; i_dof_2++)
           (*stiffmat22)(i_dof_1, i_dof_2) =
-              -Core::FADUtils::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_2(i_dof_1).dx(Beam::n_dof_ + i_dof_2));
     }
   }
 
@@ -178,8 +178,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::eva
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::EvaluateAndAssemble(
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam, Solid>::EvaluateAndAssemble(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -193,8 +193,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
-    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<Beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<Solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     this->cast_geometry_pair()->evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -212,10 +212,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
 
   // Set the FAD variables for the solid DOFs.
   auto q_solid =
-      GEOMETRYPAIR::InitializeElementData<solid, scalar_type_rot_2nd>::initialize(this->Element2());
-  for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
+      GEOMETRYPAIR::InitializeElementData<Solid, scalar_type_rot_2nd>::initialize(this->Element2());
+  for (unsigned int i_solid = 0; i_solid < Solid::n_dof_; i_solid++)
     q_solid.element_position_(i_solid) =
-        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + solid::n_dof_,
+        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + Solid::n_dof_,
             3 + i_solid, Core::FADUtils::CastToDouble(this->ele2pos_.element_position_(i_solid)));
 
 
@@ -249,7 +249,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   std::array<int, 9> rot_dof_indices = {3, 4, 5, 12, 13, 14, 18, 19, 20};
   Core::LinAlg::Matrix<n_dof_pair_, 1, int> gid_pair;
   for (unsigned int i = 0; i < n_dof_rot_; i++) gid_pair(i) = lm_beam[rot_dof_indices[i]];
-  for (unsigned int i = 0; i < solid::n_dof_; i++) gid_pair(i + n_dof_rot_) = lm_solid[i];
+  for (unsigned int i = 0; i < Solid::n_dof_; i++) gid_pair(i + n_dof_rot_) = lm_solid[i];
 
 
   // If given, assemble force terms into the global force vector.
@@ -267,11 +267,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
-    solid>::evaluate_rotational_coupling_terms(  //
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<Beam,
+    Solid>::evaluate_rotational_coupling_terms(  //
     const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
-    const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
+    const GEOMETRYPAIR::ElementData<Solid, scalar_type_rot_2nd>& q_solid,
     const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
         triad_interpolation_scheme,
     const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
@@ -297,18 +297,18 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
   Core::LinAlg::Matrix<3, 3, scalar_type_rot_1st> T_solid_inv;
   Core::LinAlg::Matrix<3, 1, scalar_type_rot_1st> potential_variation;
   Core::LinAlg::Matrix<n_dof_rot_, 1, scalar_type_rot_1st> fc_beam_gp;
-  Core::LinAlg::Matrix<3, solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
+  Core::LinAlg::Matrix<3, Solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
   Core::LinAlg::Matrix<3, 1, scalar_type_rot_1st> Tinv_solid_times_potential_variation;
-  Core::LinAlg::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> fc_solid_gp;
+  Core::LinAlg::Matrix<Solid::n_dof_, 1, scalar_type_rot_1st> fc_solid_gp;
   Core::LinAlg::SerialDenseVector L_i(3);
   Core::LinAlg::Matrix<n_dof_rot_, 3, double> d_fc_beam_d_psi_beam;
-  Core::LinAlg::Matrix<solid::n_dof_, 3, double> d_fc_solid_d_psi_beam;
+  Core::LinAlg::Matrix<Solid::n_dof_, 3, double> d_fc_solid_d_psi_beam;
   std::vector<Core::LinAlg::Matrix<3, 3, double>> I_beam_tilde;
   Core::LinAlg::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
   Core::LinAlg::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
   Core::LinAlg::Matrix<n_dof_rot_, n_dof_rot_, double> stiff_beam_beam_gp;
-  Core::LinAlg::Matrix<solid::n_dof_, n_dof_rot_, double> stiff_solid_beam_gp;
-  Core::LinAlg::Matrix<n_dof_rot_, solid::n_dof_, double> stiff_beam_solid_gp;
+  Core::LinAlg::Matrix<Solid::n_dof_, n_dof_rot_, double> stiff_solid_beam_gp;
+  Core::LinAlg::Matrix<n_dof_rot_, Solid::n_dof_, double> stiff_beam_solid_gp;
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -334,7 +334,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
@@ -346,14 +346,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       Core::LargeRotations::quaterniontoangle(quaternion_beam_double, psi_beam_double);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_beam(i_dim) = Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(
-            3 + solid::n_dof_, i_dim, psi_beam_double(i_dim));
+            3 + Solid::n_dof_, i_dim, psi_beam_double(i_dim));
       Core::LargeRotations::angletoquaternion(psi_beam, quaternion_beam);
       quaternion_beam_inv = Core::LargeRotations::inversequaternion(quaternion_beam);
 
       // Get the solid rotation vector.
       ref_triad_interpolation_scheme.get_interpolated_quaternion_at_xi(
           quaternion_beam_ref, projected_gauss_point.GetEta());
-      GetSolidRotationVector<solid>(rot_coupling_type, projected_gauss_point.GetXi(),
+      GetSolidRotationVector<Solid>(rot_coupling_type, projected_gauss_point.GetXi(),
           this->ele2posref_, q_solid, quaternion_beam_ref, psi_solid);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         psi_solid_val(i_dim) = psi_solid(i_dim).val();
@@ -381,14 +381,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
         local_force(i_dof) += Core::FADUtils::CastToDouble(fc_beam_gp(i_dof));
 
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-        for (unsigned int i_solid = 0; i_solid < solid::n_dof_; i_solid++)
+        for (unsigned int i_solid = 0; i_solid < Solid::n_dof_; i_solid++)
           d_psi_solid_d_q_solid(i_dim, i_solid) = psi_solid(i_dim).dx(3 + i_solid);
       T_solid_inv = T_solid;
       Core::LinAlg::Inverse(T_solid_inv);
       Tinv_solid_times_potential_variation.multiply_tn(T_solid_inv, potential_variation);
       fc_solid_gp.multiply_tn(d_psi_solid_d_q_solid, Tinv_solid_times_potential_variation);
       fc_solid_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
-      for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
         local_force(n_dof_rot_ + i_dof) += Core::FADUtils::CastToDouble(fc_solid_gp(i_dof));
 
 
@@ -396,7 +396,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
       for (unsigned int i_beam_dof = 0; i_beam_dof < n_dof_rot_; i_beam_dof++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           d_fc_beam_d_psi_beam(i_beam_dof, i_dim) = fc_beam_gp(i_beam_dof).dx(i_dim);
-      for (unsigned int i_solid_dof = 0; i_solid_dof < solid::n_dof_; i_solid_dof++)
+      for (unsigned int i_solid_dof = 0; i_solid_dof < Solid::n_dof_; i_solid_dof++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           d_fc_solid_d_psi_beam(i_solid_dof, i_dim) = fc_solid_gp(i_solid_dof).dx(i_dim);
 
@@ -416,16 +416,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
           local_stiff(i_dof, j_dof) += stiff_beam_beam_gp(i_dof, j_dof);
 
       stiff_solid_beam_gp.multiply(d_fc_solid_d_psi_beam, T_beam_times_I_beam_tilde_full);
-      for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
         for (unsigned int j_dof = 0; j_dof < n_dof_rot_; j_dof++)
           local_stiff(i_dof + n_dof_rot_, j_dof) += stiff_solid_beam_gp(i_dof, j_dof);
 
       for (unsigned int i_dof = 0; i_dof < n_dof_rot_; i_dof++)
-        for (unsigned int j_dof = 0; j_dof < solid::n_dof_; j_dof++)
+        for (unsigned int j_dof = 0; j_dof < Solid::n_dof_; j_dof++)
           local_stiff(i_dof, j_dof + n_dof_rot_) += fc_beam_gp(i_dof).dx(3 + j_dof);
 
-      for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
-        for (unsigned int j_dof = 0; j_dof < solid::n_dof_; j_dof++)
+      for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
+        for (unsigned int j_dof = 0; j_dof < Solid::n_dof_; j_dof++)
           local_stiff(i_dof + n_dof_rot_, j_dof + n_dof_rot_) += fc_solid_gp(i_dof).dx(3 + j_dof);
     }
   }

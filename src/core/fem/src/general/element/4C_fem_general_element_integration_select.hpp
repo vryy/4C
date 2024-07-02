@@ -154,7 +154,7 @@ namespace Discret
     //! Otherwise, it is assumed as an accurate enough approximation
 
     //! Template Meta Programming version of switch over discretization type
-    template <Core::FE::CellType DISTYPE>
+    template <Core::FE::CellType distype>
     struct DisTypeToStabGaussRule
     {
     };
@@ -477,7 +477,7 @@ namespace Discret
     };
 
 
-    template <Core::FE::CellType DISTYPE>
+    template <Core::FE::CellType distype>
     struct DisTypeToGaussRuleForExactSol
     {
     };
@@ -583,10 +583,10 @@ namespace Discret
     };
     //! provide parameter m_k for each distype required for certain stabilization parameter
     //! definitions
-    template <Core::FE::CellType DISTYPE>
+    template <Core::FE::CellType distype>
     inline double MK()
     {
-      switch (DISTYPE)
+      switch (distype)
       {
         case Core::FE::CellType::tet4:
         case Core::FE::CellType::pyramid5:

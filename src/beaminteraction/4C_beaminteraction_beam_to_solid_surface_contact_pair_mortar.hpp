@@ -33,17 +33,17 @@ namespace BEAMINTERACTION
    * @tparam mortar Type from GEOMETRYPAIR::ElementDiscretization... representing the interpolation
    * of the Lagrange multiplier.
    */
-  template <typename scalar_type, typename beam, typename surface, typename mortar>
+  template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
   class BeamToSolidSurfaceContactPairMortar
-      : public BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>
+      : public BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>;
+    using base_class = BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>;
 
     // Type from GEOMETRYPAIR::ElementDiscretization... representing the interpolation of the
     // Lagrange multiplier variations. For now this is always equal to the primal interpolation.
-    using mortar_trial = mortar;
+    using mortar_trial = Mortar;
 
    public:
     /**
@@ -84,18 +84,18 @@ namespace BEAMINTERACTION
     /**
      * @brief Get the Jacobian for the configuration the Lagrange multipliers are defined in
      */
-    scalar_type get_jacobian_for_configuration(const scalar_type& eta,
+    ScalarType get_jacobian_for_configuration(const ScalarType& eta,
         const Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn mortar_configuration)
         const;
 
    private:
     //! Integral of the shape function matrix of the beam (transposed) multiplied with the normal
     //! vector multiplied with the shape function matrix of the Lagrange multipliers
-    Core::LinAlg::Matrix<beam::n_dof_, mortar::n_dof_, scalar_type>
+    Core::LinAlg::Matrix<Beam::n_dof_, Mortar::n_dof_, ScalarType>
         beam_shape_times_normal_times_lambda_shape_;
     //! Integral of the shape function matrix of the surface (transposed) multiplied with the normal
     //! vector multiplied with the shape function matrix of the Lagrange multipliers
-    Core::LinAlg::Matrix<surface::n_dof_, mortar::n_dof_, scalar_type>
+    Core::LinAlg::Matrix<Surface::n_dof_, Mortar::n_dof_, ScalarType>
         surface_shape_times_normal_times_lambda_shape_;
   };
 

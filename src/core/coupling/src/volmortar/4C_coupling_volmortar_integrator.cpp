@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 02/15|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS>
-Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBased(
+template <Core::FE::CellType distype_s>
+Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::VolMortarIntegratorEleBased(
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
@@ -44,11 +44,11 @@ Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::VolMortarIntegratorEleBa
 /*----------------------------------------------------------------------*
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS>
-void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::initialize_gp()
+template <Core::FE::CellType distype_s>
+void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::initialize_gp()
 {
   // init shape of integration domain
-  Core::FE::CellType intshape = distypeS;
+  Core::FE::CellType intshape = distype_s;
 
   //*******************************
   // choose Gauss rule accordingly
@@ -259,8 +259,8 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::initialize_gp()
 /*----------------------------------------------------------------------*
  |  Initialize gauss points for ele-based integration        farah 02/15|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS>
-void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D(
+template <Core::FE::CellType distype_s>
+void Core::VolMortar::VolMortarIntegratorEleBased<distype_s>::IntegrateEleBased3D(
     Core::Elements::Element& sele, std::vector<int>& foundeles, Core::LinAlg::SparseMatrix& D,
     Core::LinAlg::SparseMatrix& M, Teuchos::RCP<const Core::FE::Discretization> Adis,
     Teuchos::RCP<const Core::FE::Discretization> Bdis, int dofseta, int dofsetb,
@@ -287,14 +287,14 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
     double AuxXi[3] = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
-    jac = UTILS::Jacobian<distypeS>(eta, sele);
+    jac = UTILS::Jacobian<distype_s>(eta, sele);
 
     // get global Gauss point coordinates
-    UTILS::LocalToGlobal<distypeS>(sele, eta, globgp);
+    UTILS::LocalToGlobal<distype_s>(sele, eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distypeS>(sele, globgp, Axi);
+    Mortar::UTILS::GlobalToLocal<distype_s>(sele, globgp, Axi);
 
     // loop over beles
     for (int found = 0; found < (int)foundeles.size(); ++found)
@@ -312,7 +312,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         //************************************************
         case Core::FE::CellType::tri3:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::tri3>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::tri3>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -320,7 +320,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         case Core::FE::CellType::tri6:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::tri6>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::tri6>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -328,7 +328,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         case Core::FE::CellType::quad4:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::quad4>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::quad4>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -336,7 +336,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         case Core::FE::CellType::quad8:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::quad8>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::quad8>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -344,7 +344,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         case Core::FE::CellType::quad9:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::quad9>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::quad9>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
           break;
@@ -354,7 +354,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         //************************************************
         case Core::FE::CellType::hex8:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::hex8>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::hex8>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -362,7 +362,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         case Core::FE::CellType::hex20:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::hex20>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::hex20>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -370,7 +370,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         case Core::FE::CellType::hex27:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::hex27>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::hex27>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -378,7 +378,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         case Core::FE::CellType::tet4:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::tet4>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::tet4>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -386,7 +386,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         case Core::FE::CellType::tet10:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::tet10>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::tet10>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -394,7 +394,7 @@ void Core::VolMortar::VolMortarIntegratorEleBased<distypeS>::IntegrateEleBased3D
         }
         case Core::FE::CellType::pyramid5:
         {
-          proj = VolMortarEleBasedGP<distypeS, Core::FE::CellType::pyramid5>(sele, Bele, foundeles,
+          proj = VolMortarEleBasedGP<distype_s, Core::FE::CellType::pyramid5>(sele, Bele, foundeles,
               found, gpid, jac, wgt, gpdist, Axi, AuxXi, globgp, dualquad_, shape_, D, M, Adis,
               Bdis, dofseta, dofsetb, PAB_dofrowmap, PAB_dofcolmap);
 
@@ -441,7 +441,7 @@ template class Core::VolMortar::VolMortarIntegratorEleBased<Core::FE::CellType::
 /*----------------------------------------------------------------------*
  |  gp evaluation                                            farah 02/15|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
     Core::Elements::Element* mele, std::vector<int>& foundeles, int& found, int& gpid, double& jac,
     double& wgt, double& gpdist, double* Axi, double* AuxXi, double* globgp, DualQuad& dq,
@@ -452,10 +452,10 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
     const Teuchos::RCP<const Epetra_Map>& PAB_dofcolmap)
 {
   //! ns_: number of slave element nodes
-  static const int ns_ = Core::FE::num_nodes<distypeS>;
+  static const int ns_ = Core::FE::num_nodes<distype_s>;
 
   //! nm_: number of master element nodes
-  static const int nm_ = Core::FE::num_nodes<distypeM>;
+  static const int nm_ = Core::FE::num_nodes<distype_m>;
 
   // create empty vectors for shape fct. evaluation
   Core::LinAlg::Matrix<ns_, 1> sval_A;
@@ -465,7 +465,7 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
   double Bxi[3] = {0.0, 0.0, 0.0};
 
   bool converged = true;
-  Mortar::UTILS::GlobalToLocal<distypeM>(*mele, globgp, Bxi, converged);
+  Mortar::UTILS::GlobalToLocal<distype_m>(*mele, globgp, Bxi, converged);
   if (!converged and found != ((int)foundeles.size() - 1)) return false;
 
   // save distance of gp
@@ -480,7 +480,7 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
   }
 
   // Check parameter space mapping
-  bool proj = CheckMapping<distypeS, distypeM>(sele, *mele, Axi, Bxi);
+  bool proj = CheckMapping<distype_s, distype_m>(sele, *mele, Axi, Bxi);
 
   // if gp outside continue or eval nearest gp
   if (!proj and (found != ((int)foundeles.size() - 1)))
@@ -494,11 +494,11 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
   }
 
   // for "master" side
-  UTILS::shape_function<distypeS>(sval_A, Axi, dq);
-  UTILS::shape_function<distypeM>(mval_A, Bxi);
+  UTILS::shape_function<distype_s>(sval_A, Axi, dq);
+  UTILS::shape_function<distype_m>(mval_A, Bxi);
 
   // evaluate Lagrange multiplier shape functions (on slave element)
-  UTILS::dual_shape_function<distypeS>(lmval_A, Axi, sele, dq);
+  UTILS::dual_shape_function<distype_s>(lmval_A, Axi, sele, dq);
 
   // compute cell D/M matrix ****************************************
   // dual shape functions
@@ -680,8 +680,8 @@ bool Core::VolMortar::VolMortarEleBasedGP(Core::Elements::Element& sele,
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::VolMortarIntegrator(
     Teuchos::ParameterList& params)
 {
   // get type of quadratic modification
@@ -698,8 +698,8 @@ Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::VolMortarIntegrator(
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                  farah 01/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::initialize_gp(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::initialize_gp(
     bool integrateele, int domain, Core::FE::CellType shape)
 {
   // init shape of integration domain
@@ -708,9 +708,9 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::initialize_gp(
   if (integrateele)
   {
     if (domain == 0)
-      intshape = distypeS;
+      intshape = distype_s;
     else if (domain == 1)
-      intshape = distypeM;
+      intshape = distype_m;
     else
       FOUR_C_THROW("integration domain not specified!");
   }
@@ -861,8 +861,8 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::initialize_gp(
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells2D(
     Core::Elements::Element& sele, Core::Elements::Element& mele,
     Teuchos::RCP<Mortar::IntCell> cell, Core::LinAlg::SparseMatrix& dmatrix,
     Core::LinAlg::SparseMatrix& mmatrix, Teuchos::RCP<const Core::FE::Discretization> slavedis,
@@ -889,20 +889,20 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
     // map gp into slave and master para space
     double sxi[3] = {0.0, 0.0, 0.0};
     double mxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distypeS>(sele, globgp, sxi);
-    Mortar::UTILS::GlobalToLocal<distypeM>(mele, globgp, mxi);
+    Mortar::UTILS::GlobalToLocal<distype_s>(sele, globgp, sxi);
+    Mortar::UTILS::GlobalToLocal<distype_m>(mele, globgp, mxi);
 
     // Check parameter space mapping
     bool proj = check_mapping2_d(sele, mele, sxi, mxi);
     if (proj == false) FOUR_C_THROW("ERROR: Mapping failed!");
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::shape_function<distypeS>(sval, sxi);
-    UTILS::shape_function<distypeM>(mval, mxi);
+    UTILS::shape_function<distype_s>(sval, sxi);
+    UTILS::shape_function<distype_m>(mval, mxi);
 
     // evaluate Lagrange mutliplier shape functions (on slave element)
     // UTILS::volmortar_shape_function_2D(lmval, sxi[0],sxi[1],distypeS);
-    UTILS::dual_shape_function<distypeS>(lmval, sxi, sele);
+    UTILS::dual_shape_function<distype_s>(lmval, sxi, sele);
 
     // evaluate the integration cell Jacobian
     double jac = cell->Jacobian();
@@ -1023,8 +1023,8 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells2D(
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateCells3D(
     Core::Elements::Element& Aele, Core::Elements::Element& Bele,
     Teuchos::RCP<Core::VolMortar::Cell> cell, Core::LinAlg::SparseMatrix& dmatrix_A,
     Core::LinAlg::SparseMatrix& mmatrix_A, Core::LinAlg::SparseMatrix& dmatrix_B,
@@ -1056,8 +1056,8 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distypeS>(Aele, globgp, Axi);
-    Mortar::UTILS::GlobalToLocal<distypeM>(Bele, globgp, Bxi);
+    Mortar::UTILS::GlobalToLocal<distype_s>(Aele, globgp, Axi);
+    Mortar::UTILS::GlobalToLocal<distype_m>(Bele, globgp, Bxi);
 
     // evaluate the integration cell Jacobian
     double jac = 0.0;
@@ -1075,12 +1075,12 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
     if (!check) continue;
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::shape_function<distypeS>(sval_A, Axi);
-    UTILS::shape_function<distypeM>(mval_A, Bxi);
+    UTILS::shape_function<distype_s>(sval_A, Axi);
+    UTILS::shape_function<distype_m>(mval_A, Bxi);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::dual_shape_function<distypeS>(lmval_A, Axi, Aele, dualquad_);
-    UTILS::dual_shape_function<distypeM>(lmval_B, Bxi, Bele, dualquad_);
+    UTILS::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
+    UTILS::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
 
     // compute cell D/M matrix ****************************************
     // dual shape functions
@@ -1162,9 +1162,9 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateCells3D(
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Core::VolMortar::VolMortarIntegrator<distypeS,
-    distypeM>::integrate_cells3_d_direct_diveregence(Core::Elements::Element& Aele,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Core::VolMortar::VolMortarIntegrator<distype_s,
+    distype_m>::integrate_cells3_d_direct_diveregence(Core::Elements::Element& Aele,
     Core::Elements::Element& Bele, Core::Geo::Cut::VolumeCell& vc,
     Teuchos::RCP<Core::FE::GaussPoints> intpoints, bool switched_conf,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
@@ -1193,15 +1193,15 @@ void Core::VolMortar::VolMortarIntegrator<distypeS,
     double globgp[3] = {0.0, 0.0, 0.0};
 
     if (switched_conf)
-      UTILS::LocalToGlobal<distypeS>(Aele, eta, globgp);
+      UTILS::LocalToGlobal<distype_s>(Aele, eta, globgp);
     else
-      UTILS::LocalToGlobal<distypeM>(Bele, eta, globgp);
+      UTILS::LocalToGlobal<distype_m>(Bele, eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distypeS>(Aele, globgp, Axi);
-    Mortar::UTILS::GlobalToLocal<distypeM>(Bele, globgp, Bxi);
+    Mortar::UTILS::GlobalToLocal<distype_s>(Aele, globgp, Axi);
+    Mortar::UTILS::GlobalToLocal<distype_m>(Bele, globgp, Bxi);
 
     //      std::cout << "-------------------------------------" << std::endl;
     //      std::cout << "globgp= " << globgp[0] << "  " << globgp[1] << "  " << globgp[2] <<
@@ -1214,20 +1214,20 @@ void Core::VolMortar::VolMortarIntegrator<distypeS,
     double jac = 0.0;
 
     if (switched_conf)
-      jac = UTILS::Jacobian<distypeS>(Axi, Aele);
+      jac = UTILS::Jacobian<distype_s>(Axi, Aele);
     else
-      jac = UTILS::Jacobian<distypeM>(Bxi, Bele);
+      jac = UTILS::Jacobian<distype_m>(Bxi, Bele);
 
     // Check parameter space mapping
     // check_mapping3_d(Aele,Bele,Axi,Bxi);
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::shape_function<distypeS>(sval_A, Axi);
-    UTILS::shape_function<distypeM>(mval_A, Bxi);
+    UTILS::shape_function<distype_s>(sval_A, Axi);
+    UTILS::shape_function<distype_m>(mval_A, Bxi);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::dual_shape_function<distypeS>(lmval_A, Axi, Aele, dualquad_);
-    UTILS::dual_shape_function<distypeM>(lmval_B, Bxi, Bele, dualquad_);
+    UTILS::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
+    UTILS::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
 
     // compute cell D/M matrix ****************************************
     // dual shape functions
@@ -1312,8 +1312,8 @@ void Core::VolMortar::VolMortarIntegrator<distypeS,
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_based3_d_a_dis(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based3_d_a_dis(
     Core::Elements::Element& Aele, std::vector<int>& foundeles,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Teuchos::RCP<const Core::FE::Discretization> Adis,
@@ -1343,14 +1343,14 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
     std::array<double, 3> AuxXi = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
-    jac = UTILS::Jacobian<distypeS>(eta, Aele);
+    jac = UTILS::Jacobian<distype_s>(eta, Aele);
 
     // get global Gauss point coordinates
-    UTILS::LocalToGlobal<distypeS>(Aele, eta, globgp);
+    UTILS::LocalToGlobal<distype_s>(Aele, eta, globgp);
 
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distypeS>(Aele, globgp, Axi);
+    Mortar::UTILS::GlobalToLocal<distype_s>(Aele, globgp, Axi);
 
     // loop over beles
     for (int found = 0; found < (int)foundeles.size(); ++found)
@@ -1360,7 +1360,7 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
       double Bxi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
-      Mortar::UTILS::GlobalToLocal<distypeM>(*Bele, globgp, Bxi, converged);
+      Mortar::UTILS::GlobalToLocal<distype_m>(*Bele, globgp, Bxi, converged);
       if (!converged and found != ((int)foundeles.size() - 1)) continue;
 
       // save distance of gp
@@ -1389,11 +1389,11 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
       }
 
       // for "master" side
-      UTILS::shape_function<distypeS>(sval_A, Axi, dualquad_);
-      UTILS::shape_function<distypeM>(mval_A, Bxi);
+      UTILS::shape_function<distype_s>(sval_A, Axi, dualquad_);
+      UTILS::shape_function<distype_m>(mval_A, Bxi);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::dual_shape_function<distypeS>(lmval_A, Axi, Aele, dualquad_);
+      UTILS::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
 
       // compute cell D/M matrix ****************************************
       // dual shape functions
@@ -1438,8 +1438,8 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 04/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_based3_d_b_dis(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::integrate_ele_based3_d_b_dis(
     Core::Elements::Element& Bele, std::vector<int>& foundeles,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
     Teuchos::RCP<const Core::FE::Discretization> Adis,
@@ -1469,14 +1469,14 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
     double AuxXi[3] = {0.0, 0.0, 0.0};
 
     // evaluate the integration cell Jacobian
-    jac = UTILS::Jacobian<distypeM>(eta, Bele);
+    jac = UTILS::Jacobian<distype_m>(eta, Bele);
 
     // get global Gauss point coordinates
-    UTILS::LocalToGlobal<distypeM>(Bele, eta, globgp);
+    UTILS::LocalToGlobal<distype_m>(Bele, eta, globgp);
 
     // map gp into A and B para space
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distypeM>(Bele, globgp, Bxi);
+    Mortar::UTILS::GlobalToLocal<distype_m>(Bele, globgp, Bxi);
 
     // loop over beles
     for (int found = 0; found < (int)foundeles.size(); ++found)
@@ -1486,7 +1486,7 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
       double Axi[3] = {0.0, 0.0, 0.0};
 
       bool converged = true;
-      Mortar::UTILS::GlobalToLocal<distypeS>(*Aele, globgp, Axi, converged);
+      Mortar::UTILS::GlobalToLocal<distype_s>(*Aele, globgp, Axi, converged);
       if (!converged and found != ((int)foundeles.size() - 1)) continue;
 
       // save distance of gp
@@ -1515,11 +1515,11 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
       }
 
       // evaluate trace space shape functions (on both elements)
-      UTILS::shape_function<distypeM>(sval_B, Bxi, dualquad_);
-      UTILS::shape_function<distypeS>(mval_A, Axi);
+      UTILS::shape_function<distype_m>(sval_B, Bxi, dualquad_);
+      UTILS::shape_function<distype_s>(mval_A, Axi);
 
       // evaluate Lagrange multiplier shape functions (on slave element)
-      UTILS::dual_shape_function<distypeM>(lmval_B, Bxi, Bele, dualquad_);
+      UTILS::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
       // compute cell D/M matrix ****************************************
       // dual shape functions
       for (int j = 0; j < nm_; ++j)
@@ -1565,8 +1565,8 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::integrate_ele_bas
  |  This function is for element-wise integration when an               |
  |  element is completely located within an other element               |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(int domain,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::IntegrateEle3D(int domain,
     Core::Elements::Element& Aele, Core::Elements::Element& Bele,
     Core::LinAlg::SparseMatrix& dmatrix_A, Core::LinAlg::SparseMatrix& mmatrix_A,
     Core::LinAlg::SparseMatrix& dmatrix_B, Core::LinAlg::SparseMatrix& mmatrix_B,
@@ -1597,18 +1597,18 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
     if (domain == 0)
     {
       // evaluate the integration cell Jacobian
-      jac = UTILS::Jacobian<distypeS>(eta, Aele);
+      jac = UTILS::Jacobian<distype_s>(eta, Aele);
 
       // get global Gauss point coordinates
-      UTILS::LocalToGlobal<distypeS>(Aele, eta, globgp);
+      UTILS::LocalToGlobal<distype_s>(Aele, eta, globgp);
     }
     else if (domain == 1)
     {
       // evaluate the integration cell Jacobian
-      jac = UTILS::Jacobian<distypeM>(eta, Bele);
+      jac = UTILS::Jacobian<distype_m>(eta, Bele);
 
       // get global Gauss point coordinates
-      UTILS::LocalToGlobal<distypeM>(Bele, eta, globgp);
+      UTILS::LocalToGlobal<distype_m>(Bele, eta, globgp);
     }
     else
       FOUR_C_THROW("wrong domain for integration!");
@@ -1617,19 +1617,19 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
     // map gp into A and B para space
     double Axi[3] = {0.0, 0.0, 0.0};
     double Bxi[3] = {0.0, 0.0, 0.0};
-    Mortar::UTILS::GlobalToLocal<distypeS>(Aele, globgp, Axi);
-    Mortar::UTILS::GlobalToLocal<distypeM>(Bele, globgp, Bxi);
+    Mortar::UTILS::GlobalToLocal<distype_s>(Aele, globgp, Axi);
+    Mortar::UTILS::GlobalToLocal<distype_m>(Bele, globgp, Bxi);
 
     // Check parameter space mapping
     check_mapping3_d(Aele, Bele, Axi, Bxi);
 
     // evaluate trace space shape functions (on both elements)
-    UTILS::shape_function<distypeS>(sval_A, Axi);
-    UTILS::shape_function<distypeM>(mval_A, Bxi);
+    UTILS::shape_function<distype_s>(sval_A, Axi);
+    UTILS::shape_function<distype_m>(mval_A, Bxi);
 
     // evaluate Lagrange multiplier shape functions (on slave element)
-    UTILS::dual_shape_function<distypeS>(lmval_A, Axi, Aele, dualquad_);
-    UTILS::dual_shape_function<distypeM>(lmval_B, Bxi, Bele, dualquad_);
+    UTILS::dual_shape_function<distype_s>(lmval_A, Axi, Aele, dualquad_);
+    UTILS::dual_shape_function<distype_m>(lmval_B, Bxi, Bele, dualquad_);
 
     // compute cell D/M matrix ****************************************
     // dual shape functions
@@ -1712,14 +1712,14 @@ void Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::IntegrateEle3D(in
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping2_d(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping2_d(
     Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
   const double tol = 1e-10;
-  if (distypeS == Core::FE::CellType::quad4 || distypeS == Core::FE::CellType::quad8 ||
-      distypeS == Core::FE::CellType::quad9)
+  if (distype_s == Core::FE::CellType::quad4 || distype_s == Core::FE::CellType::quad8 ||
+      distype_s == Core::FE::CellType::quad9)
   {
     if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
     {
@@ -1729,7 +1729,7 @@ bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping2_d(
       return false;
     }
   }
-  else if (distypeS == Core::FE::CellType::tri3 || distypeS == Core::FE::CellType::tri6)
+  else if (distype_s == Core::FE::CellType::tri3 || distype_s == Core::FE::CellType::tri6)
   {
     if (sxi[0] < -tol || sxi[1] < -tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol ||
         sxi[0] + sxi[1] > 1.0 + 2 * tol)
@@ -1744,8 +1744,8 @@ bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping2_d(
     FOUR_C_THROW("Wrong element type!");
 
   // check GP projection (MASTER)
-  if (distypeM == Core::FE::CellType::quad4 || distypeM == Core::FE::CellType::quad8 ||
-      distypeM == Core::FE::CellType::quad9)
+  if (distype_m == Core::FE::CellType::quad4 || distype_m == Core::FE::CellType::quad8 ||
+      distype_m == Core::FE::CellType::quad9)
   {
     if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
     {
@@ -1755,7 +1755,7 @@ bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping2_d(
       return false;
     }
   }
-  else if (distypeS == Core::FE::CellType::tri3 || distypeS == Core::FE::CellType::tri6)
+  else if (distype_s == Core::FE::CellType::tri3 || distype_s == Core::FE::CellType::tri6)
   {
     if (mxi[0] < -tol || mxi[1] < -tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol ||
         mxi[0] + mxi[1] > 1.0 + 2 * tol)
@@ -1776,14 +1776,14 @@ bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping2_d(
 /*----------------------------------------------------------------------*
  |  Compute D/M entries for Volumetric Mortar                farah 01/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping3_d(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+bool Core::VolMortar::VolMortarIntegrator<distype_s, distype_m>::check_mapping3_d(
     Core::Elements::Element& sele, Core::Elements::Element& mele, double* sxi, double* mxi)
 {
   // check GP projection (SLAVE)
   double tol = 1e-5;
-  if (distypeS == Core::FE::CellType::hex8 || distypeS == Core::FE::CellType::hex20 ||
-      distypeS == Core::FE::CellType::hex27)
+  if (distype_s == Core::FE::CellType::hex8 || distype_s == Core::FE::CellType::hex20 ||
+      distype_s == Core::FE::CellType::hex27)
   {
     if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[2] < -1.0 - tol || sxi[0] > 1.0 + tol ||
         sxi[1] > 1.0 + tol || sxi[2] > 1.0 + tol)
@@ -1808,7 +1808,7 @@ bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping3_d(
       return false;
     }
   }
-  else if (distypeS == Core::FE::CellType::tet4 || distypeS == Core::FE::CellType::tet10)
+  else if (distype_s == Core::FE::CellType::tet4 || distype_s == Core::FE::CellType::tet10)
   {
     if (sxi[0] < 0.0 - tol || sxi[1] < 0.0 - tol || sxi[2] < 0.0 - tol ||
         (sxi[0] + sxi[1] + sxi[2]) > 1.0 + tol)
@@ -1830,7 +1830,7 @@ bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping3_d(
       return false;
     }
   }
-  else if (distypeS == Core::FE::CellType::pyramid5)
+  else if (distype_s == Core::FE::CellType::pyramid5)
   {
     if (sxi[2] < 0.0 - tol || -sxi[0] + sxi[2] > 1.0 + tol || sxi[0] + sxi[2] > 1.0 + tol ||
         -sxi[1] + sxi[2] > 1.0 + tol || sxi[1] + sxi[2] > 1.0 + tol)
@@ -1856,8 +1856,8 @@ bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping3_d(
     FOUR_C_THROW("Wrong element type!");
 
   // check GP projection (MASTER)
-  if (distypeM == Core::FE::CellType::hex8 || distypeM == Core::FE::CellType::hex20 ||
-      distypeM == Core::FE::CellType::hex27)
+  if (distype_m == Core::FE::CellType::hex8 || distype_m == Core::FE::CellType::hex20 ||
+      distype_m == Core::FE::CellType::hex27)
   {
     if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[2] < -1.0 - tol || mxi[0] > 1.0 + tol ||
         mxi[1] > 1.0 + tol || mxi[2] > 1.0 + tol)
@@ -1879,7 +1879,7 @@ bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping3_d(
       return false;
     }
   }
-  else if (distypeM == Core::FE::CellType::tet4 || distypeM == Core::FE::CellType::tet10)
+  else if (distype_m == Core::FE::CellType::tet4 || distype_m == Core::FE::CellType::tet10)
   {
     if (mxi[0] < 0.0 - tol || mxi[1] < 0.0 - tol || mxi[2] < 0.0 - tol ||
         (mxi[0] + mxi[1] + mxi[2]) > 1.0 + tol)
@@ -1901,7 +1901,7 @@ bool Core::VolMortar::VolMortarIntegrator<distypeS, distypeM>::check_mapping3_d(
       return false;
     }
   }
-  else if (distypeM == Core::FE::CellType::pyramid5)
+  else if (distype_m == Core::FE::CellType::pyramid5)
   {
     if (mxi[2] < 0.0 - tol || -mxi[0] + mxi[2] > 1.0 + tol || mxi[0] + mxi[2] > 1.0 + tol ||
         -mxi[1] + mxi[2] > 1.0 + tol || mxi[1] + mxi[2] > 1.0 + tol)

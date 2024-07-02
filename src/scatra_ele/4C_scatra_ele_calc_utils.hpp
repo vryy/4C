@@ -29,7 +29,7 @@ namespace ScaTra
    *  to evaluate the laplacian operator for the residual-based stabilization.
    *  Hence, unlike to the Navier-Stokes equations, hex8, wedge6 and pyramid5
    *  return false although they have non-zero MIXED second derivatives.*/
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct Use2ndDerivs
   {
   };
@@ -135,7 +135,7 @@ namespace ScaTra
   };
 
   //! Template Meta Programming version of switch over discretization type
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToOptGaussRule
   {
   };
@@ -241,7 +241,7 @@ namespace ScaTra
   };
 
   //! Template Meta Programming version of switch over discretization type
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToMatGaussRule
   {
   };
@@ -895,7 +895,7 @@ namespace ScaTra
 
 
   //! Template Meta Programming version of switch over discretization type
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToGaussRuleForExactSol
   {
   };
@@ -1001,10 +1001,10 @@ namespace ScaTra
   };
 
   //! for each distype provide the m_k needed for stabilization computation
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   inline double MK()
   {
-    switch (DISTYPE)
+    switch (distype)
     {
       case Core::FE::CellType::tet4:
       case Core::FE::CellType::pyramid5:
@@ -1049,7 +1049,7 @@ namespace ScaTra
   }
 
   //! Template Meta Programming version of switch over discretization type
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToStabGaussRule
   {
   };

@@ -1775,21 +1775,21 @@ NTS::MTInterpolator* NTS::MTInterpolator::Impl(std::vector<Mortar::Element*> mel
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeM>
-NTS::MTInterpolatorCalc<distypeM>::MTInterpolatorCalc()
+template <Core::FE::CellType distype_m>
+NTS::MTInterpolatorCalc<distype_m>::MTInterpolatorCalc()
 {
   //...
 }
 
-template <Core::FE::CellType distypeM>
-NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
+template <Core::FE::CellType distype_m>
+NTS::MTInterpolatorCalc<distype_m>* NTS::MTInterpolatorCalc<distype_m>::Instance(
     Core::UTILS::SingletonAction action)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       []()
       {
-        return std::unique_ptr<NTS::MTInterpolatorCalc<distypeM>>(
-            new NTS::MTInterpolatorCalc<distypeM>());
+        return std::unique_ptr<NTS::MTInterpolatorCalc<distype_m>>(
+            new NTS::MTInterpolatorCalc<distype_m>());
       });
 
   return singleton_owner.Instance(action);
@@ -1799,8 +1799,8 @@ NTS::MTInterpolatorCalc<distypeM>* NTS::MTInterpolatorCalc<distypeM>::Instance(
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 10/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeM>
-void NTS::MTInterpolatorCalc<distypeM>::Interpolate(
+template <Core::FE::CellType distype_m>
+void NTS::MTInterpolatorCalc<distype_m>::Interpolate(
     Mortar::Node& snode, std::vector<Mortar::Element*> meles)
 {
   if (ndim_ == 2)
@@ -1817,8 +1817,8 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate(
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 10/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeM>
-void NTS::MTInterpolatorCalc<distypeM>::interpolate2_d(
+template <Core::FE::CellType distype_m>
+void NTS::MTInterpolatorCalc<distype_m>::interpolate2_d(
     Mortar::Node& snode, std::vector<Mortar::Element*> meles)
 {
   // ********************************************************************
@@ -1879,8 +1879,8 @@ void NTS::MTInterpolatorCalc<distypeM>::interpolate2_d(
 /*----------------------------------------------------------------------*
  |  interpolate (public)                                     farah 10/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeM>
-void NTS::MTInterpolatorCalc<distypeM>::interpolate3_d(
+template <Core::FE::CellType distype_m>
+void NTS::MTInterpolatorCalc<distype_m>::interpolate3_d(
     Mortar::Node& snode, std::vector<Mortar::Element*> meles)
 {
   // ********************************************************************
@@ -2015,8 +2015,8 @@ void NTS::MTInterpolatorCalc<distypeM>::interpolate3_d(
 
     // check GP projection
     const double tol = 0.00;
-    if (distypeM == Core::FE::CellType::quad4 || distypeM == Core::FE::CellType::quad8 ||
-        distypeM == Core::FE::CellType::quad9)
+    if (distype_m == Core::FE::CellType::quad4 || distype_m == Core::FE::CellType::quad8 ||
+        distype_m == Core::FE::CellType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {

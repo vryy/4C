@@ -24,27 +24,27 @@ namespace Discret
   namespace ELEMENTS
   {
     // forward declarations
-    template <int NSD>
+    template <int nsd>
     class ScaTraEleDiffManagerLsReinit;
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerLsReinit;
     class ScaTraEleParameterLsReinit;
 
-    template <Core::FE::CellType distype, unsigned probDim>
-    class ScaTraEleCalcLsReinit : public ScaTraEleCalc<distype, probDim>
+    template <Core::FE::CellType distype, unsigned prob_dim>
+    class ScaTraEleCalcLsReinit : public ScaTraEleCalc<distype, prob_dim>
     {
      private:
       //! private constructor for singletons
       ScaTraEleCalcLsReinit(const int numdofpernode, const int numscal, const std::string& disname);
 
-      typedef ScaTraEleCalc<distype, probDim> my;
+      typedef ScaTraEleCalc<distype, prob_dim> my;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
 
      public:
       //! Singleton access method
-      static ScaTraEleCalcLsReinit<distype, probDim>* Instance(
+      static ScaTraEleCalcLsReinit<distype, prob_dim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /*========================================================================*/
@@ -252,7 +252,7 @@ namespace Discret
       - enables crosswind diffusion
       - allows for negative diffusivity
     */
-    template <int NSD>
+    template <int nsd>
     class ScaTraEleDiffManagerLsReinit : public ScaTraEleDiffManager
     {
      public:
@@ -270,9 +270,9 @@ namespace Discret
         return;
       }
 
-      void set_velocity_for_cross_wind_diff(const Core::LinAlg::Matrix<NSD, 1> velocity)
+      void set_velocity_for_cross_wind_diff(const Core::LinAlg::Matrix<nsd, 1> velocity)
       {
-        if (NSD != 3) FOUR_C_THROW("Currently only 3d problems supported for crosswind diffusion");
+        if (nsd != 3) FOUR_C_THROW("Currently only 3d problems supported for crosswind diffusion");
 
         // compute tensor for anisotropic artificial diffusion
         // i.e., crosswind diffusion
@@ -315,13 +315,13 @@ namespace Discret
         return;
       }
 
-      Core::LinAlg::Matrix<NSD, NSD> GetCrosswindTensor() { return diffdirectiontensor_; }
+      Core::LinAlg::Matrix<nsd, nsd> GetCrosswindTensor() { return diffdirectiontensor_; }
 
       bool HaveCrossWindDiff() { return have_cross_wind_diff_; }
 
      private:
       //! velocity for crosswind diffusion
-      Core::LinAlg::Matrix<NSD, NSD> diffdirectiontensor_;
+      Core::LinAlg::Matrix<nsd, nsd> diffdirectiontensor_;
 
       //! flag for crosswind diffusion
       bool have_cross_wind_diff_;
@@ -333,15 +333,15 @@ namespace Discret
       advanced form for reinitialization: does not allow for setting all values at once and,
       therefore, provides set functions
     */
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerLsReinit
-        : public ScaTraEleInternalVariableManager<NSD, NEN>
+        : public ScaTraEleInternalVariableManager<nsd, nen>
     {
-      typedef ScaTraEleInternalVariableManager<NSD, NEN> my;
+      typedef ScaTraEleInternalVariableManager<nsd, nen> my;
 
      public:
       ScaTraEleInternalVariableManagerLsReinit(int numscal)
-          : ScaTraEleInternalVariableManager<NSD, NEN>(numscal)
+          : ScaTraEleInternalVariableManager<nsd, nen>(numscal)
       {
         return;
       }
@@ -354,12 +354,12 @@ namespace Discret
        * \param ephin      (in) : scalar at t_(n)
        * \param econvelnp  (in) : nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
        * \param ehist      (in) : history vector of transported scalars */
-      void set_internal_variables(const Core::LinAlg::Matrix<NEN, 1>& funct,
-          const Core::LinAlg::Matrix<NSD, NEN>& derxy,
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephinp,
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephin,
-          const Core::LinAlg::Matrix<NSD, NEN>& econvelnp,
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ehist)
+      void set_internal_variables(const Core::LinAlg::Matrix<nen, 1>& funct,
+          const Core::LinAlg::Matrix<nsd, nen>& derxy,
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ephinp,
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ephin,
+          const Core::LinAlg::Matrix<nsd, nen>& econvelnp,
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ehist)
       {
         FOUR_C_THROW("Setting all members at once is not allowed for reinitialization!");
         return;
@@ -387,7 +387,7 @@ namespace Discret
         return;
       };
       //! set spatial gradient of current scalar value
-      void SetGradPhi(const int k, Core::LinAlg::Matrix<NSD, 1>& gradphi) override
+      void SetGradPhi(const int k, Core::LinAlg::Matrix<nsd, 1>& gradphi) override
       {
         my::gradphi_[k] = gradphi;
         return;
@@ -399,7 +399,7 @@ namespace Discret
         return;
       };
       //! set convective velocity
-      void SetConVel(const int k, Core::LinAlg::Matrix<NSD, 1>& convel)
+      void SetConVel(const int k, Core::LinAlg::Matrix<nsd, 1>& convel)
       {
         my::convelint_[k] = convel;
       };
@@ -410,7 +410,7 @@ namespace Discret
         return;
       };
       //! set convective part in convective form
-      virtual void SetConv(const int k, Core::LinAlg::Matrix<NEN, 1>& conv)
+      virtual void SetConv(const int k, Core::LinAlg::Matrix<nen, 1>& conv)
       {
         my::conv_[k] = conv;
       };
@@ -463,7 +463,7 @@ namespace Discret
 
 namespace ScaTra
 {
-  template <Core::FE::CellType CELLDISTYPE>
+  template <Core::FE::CellType celldistype>
   struct CellTypeToOptGaussRule
   {
   };

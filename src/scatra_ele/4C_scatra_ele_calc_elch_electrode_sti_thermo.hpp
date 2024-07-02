@@ -26,7 +26,7 @@ namespace Discret
   namespace ELEMENTS
   {
     // forward declaration
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElchElectrodeSTIThermo;
 
     // class implementation
@@ -123,38 +123,38 @@ namespace Discret
 
 
     //! implementation of ScaTraEleInternalVariableManagerElchElectrodeSTIThermo
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElchElectrodeSTIThermo
-        : public ScaTraEleInternalVariableManagerElchElectrode<NSD, NEN>,
-          public ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN>
+        : public ScaTraEleInternalVariableManagerElchElectrode<nsd, nen>,
+          public ScaTraEleInternalVariableManagerSTIThermo<nsd, nen>
     {
      public:
       //! abbreviations
-      using vmelch = ScaTraEleInternalVariableManagerElch<NSD, NEN>;
-      using vmelchelectrode = ScaTraEleInternalVariableManagerElchElectrode<NSD, NEN>;
-      using vmthermo = ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN>;
+      using vmelch = ScaTraEleInternalVariableManagerElch<nsd, nen>;
+      using vmelchelectrode = ScaTraEleInternalVariableManagerElchElectrode<nsd, nen>;
+      using vmthermo = ScaTraEleInternalVariableManagerSTIThermo<nsd, nen>;
 
       //! constructor
       ScaTraEleInternalVariableManagerElchElectrodeSTIThermo(
           int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
           :  // call base class constructors
-            ScaTraEleInternalVariableManagerElchElectrode<NSD, NEN>(numscal, elchpara),
-            ScaTraEleInternalVariableManagerSTIThermo<NSD, NEN>(){};
+            ScaTraEleInternalVariableManagerElchElectrode<nsd, nen>(numscal, elchpara),
+            ScaTraEleInternalVariableManagerSTIThermo<nsd, nen>(){};
 
 
       //! set internal variables for element evaluation
-      void set_internal_variables(const Core::LinAlg::Matrix<NEN, 1>& funct,  //!< shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+      void set_internal_variables(const Core::LinAlg::Matrix<nen, 1>& funct,  //!< shape functions
+          const Core::LinAlg::Matrix<nsd, nen>& derxy,  //!< spatial derivatives of shape functions
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephinp,  //!< nodal concentration and electric potential values at time t_(n+1) or
                        //!< t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephin,  //!< nodal concentration and electric potential values at time t_(n)
-          const Core::LinAlg::Matrix<NEN, 1>&
+          const Core::LinAlg::Matrix<nen, 1>&
               etempnp,  //!< nodal temperature values at time t_(n+1) or t_(n+alpha_F)
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nsd, nen>&
               econvelnp,  //!< nodal convective velocity values at time t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ehist  //!< nodal history values
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ehist  //!< nodal history values
       )
       {
         // set thermo variables

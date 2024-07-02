@@ -50,13 +50,14 @@ namespace Core::Geo
   namespace Cut
   {
     /// sorted vector that emulates a set (and is supposed to be much more efficient)
-    template <class K, bool bNoDuplicates = true, class Pr = std::less<K>,
+    template <class K, bool b_no_duplicates = true, class Pr = std::less<K>,
         class A = std::allocator<K>>
-    class SortedVector : public boost::less_than_comparable<SortedVector<K, bNoDuplicates, Pr, A>>,
-                         boost::equality_comparable<SortedVector<K, bNoDuplicates, Pr, A>>
+    class SortedVector
+        : public boost::less_than_comparable<SortedVector<K, b_no_duplicates, Pr, A>>,
+          boost::equality_comparable<SortedVector<K, b_no_duplicates, Pr, A>>
     {
      public:
-      typedef SortedVector<K, bNoDuplicates, Pr, A> Myt_;
+      typedef SortedVector<K, b_no_duplicates, Pr, A> Myt_;
       typedef std::vector<K, A> Cont;
       typedef typename Cont::allocator_type allocator_type;
       typedef typename Cont::size_type size_type;
@@ -135,7 +136,7 @@ namespace Core::Geo
       /// insert members
       Pairib_ insert(const value_type& x)
       {
-        if (bNoDuplicates)
+        if (b_no_duplicates)
         {
           iterator p = lower_bound(x);
           if (p == end() or less_(x, *p))
@@ -239,7 +240,7 @@ namespace Core::Geo
       void sort()
       {
         std::sort(vec_.begin(), vec_.end(), less_);
-        if (bNoDuplicates)
+        if (b_no_duplicates)
         {
           vec_.erase(unique(), vec_.end());
         }
@@ -249,18 +250,21 @@ namespace Core::Geo
       void stable_sort()
       {
         std::stable_sort(vec_.begin(), vec_.end(), less_);
-        if (bNoDuplicates)
+        if (b_no_duplicates)
         {
           erase(unique(), end());
         }
       }
 
-      bool operator==(const SortedVector<K, bNoDuplicates, Pr, A>& other) const
+      bool operator==(const SortedVector<K, b_no_duplicates, Pr, A>& other) const
       {
         return eq(other);
       }
 
-      bool operator<(const SortedVector<K, bNoDuplicates, Pr, A>& other) const { return lt(other); }
+      bool operator<(const SortedVector<K, b_no_duplicates, Pr, A>& other) const
+      {
+        return lt(other);
+      }
 
      protected:
       iterator unique()

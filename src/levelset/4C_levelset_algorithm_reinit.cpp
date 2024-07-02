@@ -1277,7 +1277,7 @@ void ScaTra::LevelSetAlgorithm::compute_normal_vector_to_interface(
 /*-------------------------------------------------------------------------------------*
  | project node into the boundary cell space                               henke 08/09 |
  *------------------------------------------------- ---------------------------------- */
-template <Core::FE::CellType DISTYPE>
+template <Core::FE::CellType distype>
 bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix<3, 1>& node,
     const Core::Geo::BoundaryIntCell& patch, const Core::LinAlg::SerialDenseMatrix& patchcoord,
     const Core::LinAlg::Matrix<3, 1>& normal, Core::LinAlg::Matrix<2, 1>& eta, double& alpha)
@@ -1287,7 +1287,7 @@ bool ScaTra::LevelSetAlgorithm::project_node_on_patch(const Core::LinAlg::Matrix
   // number space dimensions for 3d combustion problems
   const size_t nsd = 3;
   // here, a triangular boundary integration cell is assumed (numvertices = 3)
-  const size_t numvertices = Core::FE::num_nodes<DISTYPE>;
+  const size_t numvertices = Core::FE::num_nodes<distype>;
 
   // get coordinates of vertices of flame front patch
   // remark: here we only get a view (bool true) on the SerialDenseMatrix returned by

@@ -720,7 +720,7 @@ namespace Core::FE
   in form of member variables of the class.
 
   */
-  template <const int NSD>
+  template <const int nsd>
   class IntPointsAndWeights
   {
    public:

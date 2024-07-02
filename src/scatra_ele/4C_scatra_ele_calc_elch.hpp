@@ -24,7 +24,7 @@ namespace Discret
   {
     // forward declarations
     class ScaTraEleDiffManagerElch;
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElch;
     template <Core::FE::CellType distype>
     class ScaTraEleUtilsElch;
@@ -323,15 +323,15 @@ namespace Discret
       ScaTraEleInternalVariableManagerElchElectrode, and class
       ScaTraEleInternalVariableManagerElchDiffCond).
     */
-    template <int NSD, int NEN>
-    class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableManager<NSD, NEN>
+    template <int nsd, int nen>
+    class ScaTraEleInternalVariableManagerElch : public ScaTraEleInternalVariableManager<nsd, nen>
     {
-      using my = ScaTraEleInternalVariableManager<NSD, NEN>;
+      using my = ScaTraEleInternalVariableManager<nsd, nen>;
 
      public:
       ScaTraEleInternalVariableManagerElch(
           int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
-          : ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
+          : ScaTraEleInternalVariableManager<nsd, nen>(numscal),
             parameters_(elchpara),
             frt_(0.),
             // internal variables evaluated at the Gauss point
@@ -355,15 +355,15 @@ namespace Discret
        * @param ehist          history vector of transported scalars
        * @param do_setfrt      should FRT be set?
        */
-      void set_internal_variables_elch(const Core::LinAlg::Matrix<NEN, 1>& funct,
-          const Core::LinAlg::Matrix<NSD, NEN>& derxy,
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephinp,
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ephin,
-          const Core::LinAlg::Matrix<NSD, NEN>& econvelnp,
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ehist, bool do_setfrt = true)
+      void set_internal_variables_elch(const Core::LinAlg::Matrix<nen, 1>& funct,
+          const Core::LinAlg::Matrix<nsd, nen>& derxy,
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ephinp,
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ephin,
+          const Core::LinAlg::Matrix<nsd, nen>& econvelnp,
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ehist, bool do_setfrt = true)
       {
         // call base class (scatra)
-        const Core::LinAlg::Matrix<NSD, NEN> eforcevelocity(true);
+        const Core::LinAlg::Matrix<nsd, nen> eforcevelocity(true);
         my::set_internal_variables(funct, derxy, ephinp, ephin, econvelnp, ehist, eforcevelocity);
 
         // loop over all transported scalars
@@ -402,10 +402,10 @@ namespace Discret
       const std::vector<double>& ConIntInv() const { return conintinv_; };
 
       //! return gradient of electric potential
-      const Core::LinAlg::Matrix<NSD, 1>& GradPot() const { return gradpot_; };
+      const Core::LinAlg::Matrix<nsd, 1>& GradPot() const { return gradpot_; };
 
       //! return subgrid velocity
-      const Core::LinAlg::Matrix<NEN, 1>& SGConv() const { return sgconv_; };
+      const Core::LinAlg::Matrix<nen, 1>& SGConv() const { return sgconv_; };
 
       //! set factor F/RT
       virtual void SetFRT() { frt_ = parameters_->FRT(); }
@@ -432,9 +432,9 @@ namespace Discret
       //! 1/concentration at GP
       std::vector<double> conintinv_;
       //! gradient of electric potential
-      Core::LinAlg::Matrix<NSD, 1> gradpot_;
+      Core::LinAlg::Matrix<nsd, 1> gradpot_;
       // subgrid velocity
-      Core::LinAlg::Matrix<NEN, 1> sgconv_;
+      Core::LinAlg::Matrix<nen, 1> sgconv_;
     };
   }  // namespace ELEMENTS
 }  // namespace Discret

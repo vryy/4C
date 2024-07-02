@@ -35,10 +35,10 @@ namespace Mortar
   /*!
   \brief Template to swap 2 instances of type kind
   */
-  template <typename kind>
-  void Swap(kind& a, kind& b)
+  template <typename Kind>
+  void Swap(Kind& a, Kind& b)
   {
-    kind tmp = a;
+    Kind tmp = a;
     a = b;
     b = tmp;
     return;

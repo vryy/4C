@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line,
-    surface>::GeometryPairLineToSurfaceSegmentation(const Core::Elements::Element* element1,
+template <typename ScalarType, typename Line, typename Surface>
+GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<ScalarType, Line,
+    Surface>::GeometryPairLineToSurfaceSegmentation(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& line_to_surface_evaluation_data)
-    : GeometryPairLineToSurface<scalar_type, line, surface>(
+    : GeometryPairLineToSurface<ScalarType, Line, Surface>(
           element1, element2, line_to_surface_evaluation_data)
 {
   // Check if a segment tracker exists for this line element. If not a new one is created.
@@ -43,14 +43,14 @@ GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line,
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line, surface>::evaluate(
-    const ElementData<line, scalar_type>& element_data_line,
-    const ElementData<surface, scalar_type>& element_data_surface,
-    std::vector<LineSegment<scalar_type>>& segments) const
+template <typename ScalarType, typename Line, typename Surface>
+void GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<ScalarType, Line, Surface>::evaluate(
+    const ElementData<Line, ScalarType>& element_data_line,
+    const ElementData<Surface, ScalarType>& element_data_surface,
+    std::vector<LineSegment<ScalarType>>& segments) const
 {
   // Call the pre_evaluate method of the general Gauss point projection class.
-  LineTo3DSegmentation<GeometryPairLineToSurfaceSegmentation<scalar_type, line, surface>>::evaluate(
+  LineTo3DSegmentation<GeometryPairLineToSurfaceSegmentation<ScalarType, Line, Surface>>::evaluate(
       this, element_data_line, element_data_surface, segments);
 }
 

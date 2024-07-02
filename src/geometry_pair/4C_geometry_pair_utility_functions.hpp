@@ -73,13 +73,13 @@ namespace GEOMETRYPAIR
   /**
    * @brief Add the current displacement state of a pair to an output stream
    */
-  template <typename pair_type, typename scalar_type, typename... optional_type>
-  void PrintPairInformation(std::ostream& out, const pair_type* pair,
-      const ElementData<typename pair_type::t_line, scalar_type>& element_data_line,
-      const ElementData<typename pair_type::t_other, scalar_type>& element_data_other)
+  template <typename PairType, typename ScalarType, typename... OptionalType>
+  void PrintPairInformation(std::ostream& out, const PairType* pair,
+      const ElementData<typename PairType::t_line, ScalarType>& element_data_line,
+      const ElementData<typename PairType::t_other, ScalarType>& element_data_other)
   {
-    using line = typename pair_type::t_line;
-    using other = typename pair_type::t_other;
+    using line = typename PairType::t_line;
+    using other = typename PairType::t_other;
 
     constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
     out << std::setprecision(max_precision);

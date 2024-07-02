@@ -96,10 +96,10 @@ namespace Core::IO
       }
     }
 
-    template <std::size_t rank, typename TypeArr, std::size_t DimArr>
-    constexpr char GetSeparatorAtRank(const std::array<TypeArr, DimArr> &sep_list)
+    template <std::size_t rank, typename TypeArr, std::size_t dim_arr>
+    constexpr char GetSeparatorAtRank(const std::array<TypeArr, dim_arr> &sep_list)
     {
-      static_assert(rank <= DimArr,
+      static_assert(rank <= dim_arr,
           "Requesting a separator of too high rank. Your data structure is too deeply nested.");
       return sep_list[rank - 1];
     }
@@ -189,8 +189,8 @@ namespace Core::IO
     {
     };
 
-    template <typename T, std::size_t N>
-    struct StringPatternTraits<std::array<T, N>> : ListTrait<T>
+    template <typename T, std::size_t n>
+    struct StringPatternTraits<std::array<T, n>> : ListTrait<T>
     {
     };
 
@@ -236,11 +236,11 @@ namespace Core::IO
      *
      * A check is performed to ensure the number of elements found in the split string is N.
      */
-    template <typename ValueType, std::size_t N>
-    void ParseSplitString(std::array<ValueType, N> &t, const std::vector<std::string> &split_str)
+    template <typename ValueType, std::size_t n>
+    void ParseSplitString(std::array<ValueType, n> &t, const std::vector<std::string> &split_str)
     {
-      CheckDimension(split_str, N);
-      for (unsigned int i = 0; i < N; ++i)
+      CheckDimension(split_str, n);
+      for (unsigned int i = 0; i < n; ++i)
         t[i] = Core::IO::StringConverter<ValueType>::Parse(split_str[i]);
     }
 

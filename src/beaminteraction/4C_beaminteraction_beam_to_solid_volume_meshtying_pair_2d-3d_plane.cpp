@@ -28,14 +28,14 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::pre_evaluate()
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
   {
-    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
-    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<Beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<Solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     this->cast_geometry_pair()->pre_evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -45,8 +45,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::pre_
 /**
  *
  */
-template <typename beam, typename solid>
-bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::evaluate(
+template <typename Beam, typename Solid>
+bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -54,8 +54,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
   {
-    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
-    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<Beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<Solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     this->cast_geometry_pair()->evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -84,8 +84,8 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
   Core::LinAlg::Matrix<3, 1, scalar_type> r_cross_section;
   Core::LinAlg::Matrix<3, 1, scalar_type> r_solid;
   Core::LinAlg::Matrix<3, 1, scalar_type> force;
-  Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
-  Core::LinAlg::Matrix<solid::n_dof_, 1, scalar_type> force_element_2(true);
+  Core::LinAlg::Matrix<Beam::n_dof_, 1, scalar_type> force_element_1(true);
+  Core::LinAlg::Matrix<Solid::n_dof_, 1, scalar_type> force_element_2(true);
 
   // Initialize scalar variables.
   double beam_jacobian;
@@ -102,20 +102,20 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
         projection_points[i_integration_point];
 
     // Get the jacobian in the reference configuration.
-    GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+    GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
         projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
     beam_jacobian = 0.5 * dr_beam_ref.norm2();
 
     // Get the current positions on beam and solid.
-    GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
-    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(
+    GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
+    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<Beam>(
         projected_gauss_point.GetEta(), this->ele1pos_, triad);
     r_cross_section_ref(0) = 0.0;
     r_cross_section_ref(1) = projected_gauss_point.GetEtaCrossSection()(0);
     r_cross_section_ref(2) = projected_gauss_point.GetEtaCrossSection()(1);
     r_cross_section.multiply(triad, r_cross_section_ref);
     r_beam += r_cross_section;
-    GEOMETRYPAIR::EvaluatePosition<solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
+    GEOMETRYPAIR::EvaluatePosition<Solid>(projected_gauss_point.GetXi(), this->ele2pos_, r_solid);
 
     // Calculate the force in this Gauss point. The sign of the force calculated here is the one
     // that acts on the beam.
@@ -125,13 +125,13 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
 
     // The force vector is in R3, we need to calculate the equivalent nodal forces on the element
     // dof. This is done with the virtual work equation $F \delta r = f \delta q$.
-    for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+    for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
         force_element_1(i_dof) += force(i_dir) * r_beam(i_dir).dx(i_dof) *
                                   projected_gauss_point.GetGaussWeight() * beam_jacobian;
-    for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+    for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
       for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-        force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + beam::n_dof_) *
+        force_element_2(i_dof) -= force(i_dir) * r_solid(i_dir).dx(i_dof + Beam::n_dof_) *
                                   projected_gauss_point.GetGaussWeight() * beam_jacobian;
   }
 
@@ -139,20 +139,20 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
   // Fill in the entries for the local matrices and vectors.
   {
     // Resize and initialize the return variables.
-    if (forcevec1 != nullptr) forcevec1->size(beam::n_dof_);
-    if (forcevec2 != nullptr) forcevec2->size(solid::n_dof_);
-    if (stiffmat11 != nullptr) stiffmat11->shape(beam::n_dof_, beam::n_dof_);
-    if (stiffmat12 != nullptr) stiffmat12->shape(beam::n_dof_, solid::n_dof_);
-    if (stiffmat21 != nullptr) stiffmat21->shape(solid::n_dof_, beam::n_dof_);
-    if (stiffmat22 != nullptr) stiffmat22->shape(solid::n_dof_, solid::n_dof_);
+    if (forcevec1 != nullptr) forcevec1->size(Beam::n_dof_);
+    if (forcevec2 != nullptr) forcevec2->size(Solid::n_dof_);
+    if (stiffmat11 != nullptr) stiffmat11->shape(Beam::n_dof_, Beam::n_dof_);
+    if (stiffmat12 != nullptr) stiffmat12->shape(Beam::n_dof_, Solid::n_dof_);
+    if (stiffmat21 != nullptr) stiffmat21->shape(Solid::n_dof_, Beam::n_dof_);
+    if (stiffmat22 != nullptr) stiffmat22->shape(Solid::n_dof_, Solid::n_dof_);
 
     if (forcevec1 != nullptr && forcevec2 != nullptr)
     {
       // $f_1$
-      for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
         (*forcevec1)(i_dof) = Core::FADUtils::CastToDouble(force_element_1(i_dof));
       // $f_2$
-      for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+      for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
         (*forcevec2)(i_dof) = Core::FADUtils::CastToDouble(force_element_2(i_dof));
     }
 
@@ -160,28 +160,28 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
         stiffmat22 != nullptr)
     {
       // $k_{11}$
-      for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
-        for (unsigned int i_dof_2 = 0; i_dof_2 < beam::n_dof_; i_dof_2++)
+      for (unsigned int i_dof_1 = 0; i_dof_1 < Beam::n_dof_; i_dof_1++)
+        for (unsigned int i_dof_2 = 0; i_dof_2 < Beam::n_dof_; i_dof_2++)
           (*stiffmat11)(i_dof_1, i_dof_2) =
               -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(i_dof_2));
 
       // $k_{12}, k_{21}$
-      for (unsigned int i_dof_1 = 0; i_dof_1 < beam::n_dof_; i_dof_1++)
+      for (unsigned int i_dof_1 = 0; i_dof_1 < Beam::n_dof_; i_dof_1++)
       {
-        for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
+        for (unsigned int i_dof_2 = 0; i_dof_2 < Solid::n_dof_; i_dof_2++)
         {
           (*stiffmat12)(i_dof_1, i_dof_2) =
-              -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_1(i_dof_1).dx(Beam::n_dof_ + i_dof_2));
           (*stiffmat21)(i_dof_2, i_dof_1) =
               -Core::FADUtils::CastToDouble(force_element_2(i_dof_2).dx(i_dof_1));
         }
       }
 
       // $k_{22}$
-      for (unsigned int i_dof_1 = 0; i_dof_1 < solid::n_dof_; i_dof_1++)
-        for (unsigned int i_dof_2 = 0; i_dof_2 < solid::n_dof_; i_dof_2++)
+      for (unsigned int i_dof_1 = 0; i_dof_1 < Solid::n_dof_; i_dof_1++)
+        for (unsigned int i_dof_2 = 0; i_dof_2 < Solid::n_dof_; i_dof_2++)
           (*stiffmat22)(i_dof_1, i_dof_2) =
-              -Core::FADUtils::CastToDouble(force_element_2(i_dof_1).dx(beam::n_dof_ + i_dof_2));
+              -Core::FADUtils::CastToDouble(force_element_2(i_dof_1).dx(Beam::n_dof_ + i_dof_2));
     }
   }
 
@@ -192,21 +192,21 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::eval
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<beam, solid>::get_triad_at_xi_double(
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::get_triad_at_xi_double(
     const double xi, Core::LinAlg::Matrix<3, 3, double>& triad, const bool reference) const
 {
   if (reference)
   {
-    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
-    GEOMETRYPAIR::ElementData<solid, double> dummy;
+    GEOMETRYPAIR::ElementData<Beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<Solid, double> dummy;
     this->get_coupling_reference_position(beam_coupling_ref, dummy);
-    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(xi, beam_coupling_ref, triad);
+    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<Beam>(xi, beam_coupling_ref, triad);
   }
   else
   {
-    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<beam>(
-        xi, GEOMETRYPAIR::ElementDataToDouble<beam>::ToDouble(this->ele1pos_), triad);
+    GEOMETRYPAIR::EvaluateTriadAtPlaneCurve<Beam>(
+        xi, GEOMETRYPAIR::ElementDataToDouble<Beam>::ToDouble(this->ele1pos_), triad);
   }
 }
 

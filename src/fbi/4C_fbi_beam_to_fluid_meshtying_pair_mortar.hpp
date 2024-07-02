@@ -28,12 +28,12 @@ namespace BEAMINTERACTION
    * @param mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar shape
    * functions.
    */
-  template <typename beam, typename fluid, typename mortar>
-  class BeamToFluidMeshtyingPairMortar : public BeamToFluidMeshtyingPairBase<beam, fluid>
+  template <typename Beam, typename Fluid, typename Mortar>
+  class BeamToFluidMeshtyingPairMortar : public BeamToFluidMeshtyingPairBase<Beam, Fluid>
   {
    private:
     //! Shortcut to base class.
-    using base_class = BeamToFluidMeshtyingPairBase<beam, fluid>;
+    using base_class = BeamToFluidMeshtyingPairBase<Beam, Fluid>;
 
     //! Scalar type for FAD variables.
     using scalar_type = typename base_class::scalar_type;

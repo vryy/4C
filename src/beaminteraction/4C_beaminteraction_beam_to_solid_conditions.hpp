@@ -258,12 +258,12 @@ namespace BEAMINTERACTION
 
   /**
    * \brief Create a beam-to-solid volume pair depending on the solid volume shape.
-   * @tparam bts_class Beam-to-solid class to create
+   * @tparam BtsClass Beam-to-solid class to create
    * @tparam bts_template_arguments Template arguments when creating the class
    * @param shape (in) Shape of the solid volume
    * @return The created beam-to-solid pair
    */
-  template <template <typename...> class bts_class, typename... bts_template_arguments>
+  template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairShape(
       const Core::FE::CellType shape);
 
@@ -272,19 +272,19 @@ namespace BEAMINTERACTION
    *
    * This is for pairs which are not compatible with nurbs discretizations.
    *
-   * @tparam bts_class Beam-to-solid class to create
+   * @tparam BtsClass Beam-to-solid class to create
    * @tparam bts_template_arguments Template arguments when creating the class
    * @param shape
    * @return The created beam-to-solid pair
    */
-  template <template <typename...> class bts_class, typename... bts_template_arguments>
+  template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairShapeNoNurbs(
       const Core::FE::CellType shape);
 
   /**
    * \brief Create a beam-to-solid volume mortar pair depending on the solid volume shape and mortar
    * shape function(s).
-   * @tparam bts_class Beam-to-solid class to create
+   * @tparam BtsClass Beam-to-solid class to create
    * @tparam bts_mortar_template_arguments
    * @tparam bts_mortar_shape Template collection of type of optional given (e.g. rotational) mortar
    * shape functions
@@ -294,22 +294,22 @@ namespace BEAMINTERACTION
    * @param other_mortar_shape_function (in) Other mortar shape functions
    * @return The created beam-to-solid pair
    */
-  template <template <typename...> class bts_class, typename... bts_mortar_template_arguments,
-      typename... bts_mortar_shape>
+  template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments,
+      typename... BtsMortarShape>
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairMortar(
       const Core::FE::CellType shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
-      bts_mortar_shape... other_mortar_shape_function);
+      BtsMortarShape... other_mortar_shape_function);
 
   /**
    * \brief Call the pair creation based on the shape once all mortar shape functions have been
    * converted to template arguments.
-   * @tparam bts_class Beam-to-solid class to create
+   * @tparam BtsClass Beam-to-solid class to create
    * @tparam bts_mortar_template_arguments Template arguments when creating the class
    * @param shape (in) Shape of the solid volume
    * @return The created beam-to-solid pair
    */
-  template <template <typename...> class bts_class, typename... bts_mortar_template_arguments>
+  template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments>
   Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateBeamToSolidVolumePairMortar(
       const Core::FE::CellType shape);
 }  // namespace BEAMINTERACTION

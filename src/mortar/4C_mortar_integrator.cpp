@@ -317,8 +317,8 @@ Mortar::Integrator* Mortar::Integrator::Impl(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 01/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-Mortar::IntegratorCalc<distypeS, distypeM>::IntegratorCalc(const Teuchos::ParameterList& params)
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+Mortar::IntegratorCalc<distype_s, distype_m>::IntegratorCalc(const Teuchos::ParameterList& params)
     : imortar_(params),
       shapefcn_(Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(params, "LM_SHAPEFCN")),
       lmquadtype_(Core::UTILS::IntegralValue<Inpar::Mortar::LagMultQuad>(params, "LM_QUAD"))
@@ -326,15 +326,16 @@ Mortar::IntegratorCalc<distypeS, distypeM>::IntegratorCalc(const Teuchos::Parame
   initialize_gp();
 }
 
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-Mortar::IntegratorCalc<distypeS, distypeM>* Mortar::IntegratorCalc<distypeS, distypeM>::Instance(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+Mortar::IntegratorCalc<distype_s, distype_m>*
+Mortar::IntegratorCalc<distype_s, distype_m>::Instance(
     Core::UTILS::SingletonAction action, const Teuchos::ParameterList& params)
 {
   static auto singleton_owner = Core::UTILS::MakeSingletonOwner(
       [](const Teuchos::ParameterList& p)
       {
-        return std::unique_ptr<Mortar::IntegratorCalc<distypeS, distypeM>>(
-            new Mortar::IntegratorCalc<distypeS, distypeM>(p));
+        return std::unique_ptr<Mortar::IntegratorCalc<distype_s, distype_m>>(
+            new Mortar::IntegratorCalc<distype_s, distype_m>(p));
       });
 
   return singleton_owner.Instance(action, params);
@@ -344,8 +345,8 @@ Mortar::IntegratorCalc<distypeS, distypeM>* Mortar::IntegratorCalc<distypeS, dis
 /*----------------------------------------------------------------------*
  |  Initialize gauss points                                   popp 06/09|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Mortar::IntegratorCalc<distypeS, distypeM>::initialize_gp()
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Mortar::IntegratorCalc<distype_s, distype_m>::initialize_gp()
 {
   // get numgp (for element-based integration)
   int numgp = imortar_.get<int>("NUMGP_PER_DIM");
@@ -366,7 +367,7 @@ void Mortar::IntegratorCalc<distypeS, distypeM>::initialize_gp()
       FOUR_C_THROW("wrong dimension!");
   }
   else
-    intshape = distypeS;
+    intshape = distype_s;
 
   //**********************************************************************
   // choose Gauss rule according to (a) element type (b) input parameter
@@ -707,8 +708,8 @@ void Mortar::IntegratorCalc<distypeS, distypeM>::initialize_gp()
  | Integration over the entire Slave-Element: no mapping sxi->eta                       |
  | required                                                                             |
  *--------------------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Mortar::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(Mortar::Element& sele,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Mortar::IntegratorCalc<distype_s, distype_m>::IntegrateEleBased2D(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
 {
   // check for problem dimension
@@ -831,8 +832,8 @@ void Mortar::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased2D(Mortar::Ele
  |  and stores it in mseg and gseg respectively. Moreover, derivatives  |
  |  LinD/M and Ling are built and stored directly into adjacent nodes.  |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Mortar::IntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(Mortar::Element& sele,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Mortar::IntegratorCalc<distype_s, distype_m>::IntegrateSegment2D(Mortar::Element& sele,
     double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib,
     const Epetra_Comm& comm)
 {
@@ -978,8 +979,8 @@ void Mortar::IntegratorCalc<distypeS, distypeM>::IntegrateSegment2D(Mortar::Elem
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP                 farah 12/13|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void inline Mortar::IntegratorCalc<distypeS, distypeM>::gp_dm(Mortar::Element& sele,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_dm(Mortar::Element& sele,
     Mortar::Element& mele, Core::LinAlg::Matrix<ns_, 1>& lmval, Core::LinAlg::Matrix<ns_, 1>& sval,
     Core::LinAlg::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& ncol, int& ndof,
     bool& bound, const Epetra_Comm& comm)
@@ -1110,8 +1111,8 @@ void inline Mortar::IntegratorCalc<distypeS, distypeM>::gp_dm(Mortar::Element& s
 /*----------------------------------------------------------------------*
  |  Compute entries for D and M matrix at GP (3D Quad)       farah 12/13|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void inline Mortar::IntegratorCalc<distypeS, distypeM>::gp_3_d_dm_quad(Mortar::Element& sele,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_3_d_dm_quad(Mortar::Element& sele,
     Mortar::Element& mele, Mortar::IntElement& sintele, Core::LinAlg::SerialDenseVector& lmval,
     Core::LinAlg::SerialDenseVector& lmintval, Core::LinAlg::Matrix<ns_, 1>& sval,
     Core::LinAlg::Matrix<nm_, 1>& mval, double& jac, double& wgt, int& nrow, int& nintrow,
@@ -1251,9 +1252,9 @@ void inline Mortar::IntegratorCalc<distypeS, distypeM>::gp_3_d_dm_quad(Mortar::E
  |  element coordinates given by mxia and mxib                          |
  |  Output is an LinAlg::SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>
-Mortar::IntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(Mortar::Element& sele, double& sxia,
+Mortar::IntegratorCalc<distype_s, distype_m>::IntegrateMmod2D(Mortar::Element& sele, double& sxia,
     double& sxib, Mortar::Element& mele, double& mxia, double& mxib)
 {
   //**********************************************************************
@@ -1379,8 +1380,8 @@ Mortar::IntegratorCalc<distypeS, distypeM>::IntegrateMmod2D(Mortar::Element& sel
 /*----------------------------------------------------------------------*
  |  Integrate and linearize without segmentation             farah 01/13|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Mortar::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(Mortar::Element& sele,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Mortar::IntegratorCalc<distype_s, distype_m>::IntegrateEleBased3D(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
@@ -1507,9 +1508,9 @@ void Mortar::IntegratorCalc<distypeS, distypeM>::IntegrateEleBased3D(Mortar::Ele
  |  IntegrateM3D, IntegrateG3D, DerivM3D and DerivG3D!)                 |
  |  This is the auxiliary plane coupling version!!!                     |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Mortar::IntegratorCalc<distypeS, distypeM>::integrate_cell3_d_aux_plane(Mortar::Element& sele,
-    Mortar::Element& mele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane(
+    Mortar::Element& sele, Mortar::Element& mele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
     const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
@@ -1687,8 +1688,8 @@ void Mortar::IntegratorCalc<distypeS, distypeM>::integrate_cell3_d_aux_plane(Mor
  |  and stores it in mseg and dseg respectively.                        |
  |  This is the QUADRATIC auxiliary plane coupling version!!!           |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void Mortar::IntegratorCalc<distypeS, distypeM>::integrate_cell3_d_aux_plane_quad(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell3_d_aux_plane_quad(
     Mortar::Element& sele, Mortar::Element& mele, Mortar::IntElement& sintele,
     Mortar::IntElement& mintele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn)
 {

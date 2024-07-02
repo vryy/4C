@@ -30,7 +30,7 @@ namespace BEAMINTERACTION
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
+  template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
   class BeamToSolidPairBase : public BeamContactPair
   {
    public:
@@ -180,13 +180,13 @@ namespace BEAMINTERACTION
 
    protected:
     //! Vector with the segments of the line to 3D pair.
-    std::vector<GEOMETRYPAIR::LineSegment<segments_scalar_type>> line_to_3D_segments_;
+    std::vector<GEOMETRYPAIR::LineSegment<SegmentsScalarType>> line_to_3D_segments_;
 
     //! Current nodal positions (and tangents) of the beam.
-    GEOMETRYPAIR::ElementData<beam, scalar_type> ele1pos_;
+    GEOMETRYPAIR::ElementData<Beam, ScalarType> ele1pos_;
 
     //! Reference nodal positions (and tangents) of the beam.
-    GEOMETRYPAIR::ElementData<beam, double> ele1posref_;
+    GEOMETRYPAIR::ElementData<Beam, double> ele1posref_;
   };
 }  // namespace BEAMINTERACTION
 

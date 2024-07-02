@@ -116,11 +116,11 @@ namespace TESTING::INTERNAL
    *
    * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
-  template <unsigned int M, unsigned int N, typename T>
+  template <unsigned int m, unsigned int n, typename T>
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
-      const char* toleranceExpr, const Core::LinAlg::Matrix<M, N, T>& mat1,
-      const Core::LinAlg::Matrix<M, N, T>& mat2, T tolerance)
+      const char* toleranceExpr, const Core::LinAlg::Matrix<m, n, T>& mat1,
+      const Core::LinAlg::Matrix<m, n, T>& mat2, T tolerance)
   {
     // argument is required for the EXPECT_PRED_FORMAT3 macro of GoogleTest for pretty printing
     (void)toleranceExpr;
@@ -130,9 +130,9 @@ namespace TESTING::INTERNAL
         {
           std::stringstream ss;
           ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
-          for (unsigned i = 0; i < M; ++i)
+          for (unsigned i = 0; i < m; ++i)
           {
-            for (unsigned j = 0; j < N; ++j)
+            for (unsigned j = 0; j < n; ++j)
             {
               if (std::fabs(mat1(i, j) - mat2(i, j)) > tolerance)
               {
@@ -154,11 +154,11 @@ namespace TESTING::INTERNAL
    *
    * @note This function is not intended to be used directly. Use FOUR_C_EXPECT_NEAR.
    */
-  template <unsigned int M, unsigned int N, typename T>
+  template <unsigned int m, unsigned int n, typename T>
   inline ::testing::AssertionResult AssertNear(const char* mat1Expr,
       const char* mat2Expr,  // NOLINT
-      const char* toleranceExpr, const Core::LinAlg::Matrix<M, N, T>& mat,
-      const std::array<T, static_cast<std::size_t>(M) * N>& array, T tolerance)
+      const char* toleranceExpr, const Core::LinAlg::Matrix<m, n, T>& mat,
+      const std::array<T, static_cast<std::size_t>(m) * n>& array, T tolerance)
   {
     // argument is required for the EXPECT_PRED_FORMAT3 macro of GoogleTest for pretty printing
     (void)toleranceExpr;
@@ -168,11 +168,11 @@ namespace TESTING::INTERNAL
         {
           std::stringstream ss;
           ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
-          for (unsigned i = 0; i < M; ++i)
+          for (unsigned i = 0; i < m; ++i)
           {
-            for (unsigned j = 0; j < N; ++j)
+            for (unsigned j = 0; j < n; ++j)
             {
-              const std::size_t arr_index = i * N + j;
+              const std::size_t arr_index = i * n + j;
               if (std::fabs(mat(i, j) - array[arr_index]) > tolerance)
               {
                 ss << "(" << i << "," << j << ") vs. [" << arr_index << "]: " << mat(i, j)

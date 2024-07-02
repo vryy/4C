@@ -46,16 +46,16 @@ namespace
     /**
      * \brief Set up the contact pair so it can be evaluated and compare the results.
      */
-    template <typename beam_type, typename solid_type, typename lambda_type>
+    template <typename BeamType, typename SolidType, typename LambdaType>
     void perform_mortar_pair_unit_test(
-        BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<beam_type, solid_type, lambda_type>&
+        BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortar<BeamType, SolidType, LambdaType>&
             contact_pair,
-        const GEOMETRYPAIR::ElementData<beam_type, double>& q_beam,
+        const GEOMETRYPAIR::ElementData<BeamType, double>& q_beam,
         const Core::LinAlg::Matrix<9, 1, double>& q_beam_rot,
-        const GEOMETRYPAIR::ElementData<solid_type, double>& q_solid,
-        const Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double>& result_local_D,
-        const Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double>& result_local_M,
-        const Core::LinAlg::Matrix<lambda_type::n_dof_, 1, double>& result_local_kappa)
+        const GEOMETRYPAIR::ElementData<SolidType, double>& q_solid,
+        const Core::LinAlg::Matrix<LambdaType::n_dof_, BeamType::n_dof_, double>& result_local_D,
+        const Core::LinAlg::Matrix<LambdaType::n_dof_, SolidType::n_dof_, double>& result_local_M,
+        const Core::LinAlg::Matrix<LambdaType::n_dof_, 1, double>& result_local_kappa)
     {
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
@@ -88,10 +88,10 @@ namespace
       contact_pair.init(Teuchos::null, pair_elements);
 
       // Evaluate the local matrices.
-      Core::LinAlg::Matrix<lambda_type::n_dof_, beam_type::n_dof_, double> local_D(false);
-      Core::LinAlg::Matrix<lambda_type::n_dof_, solid_type::n_dof_, double> local_M(false);
-      Core::LinAlg::Matrix<lambda_type::n_dof_, 1, double> local_kappa(false);
-      Core::LinAlg::Matrix<lambda_type::n_dof_, 1, double> local_constraint(false);
+      Core::LinAlg::Matrix<LambdaType::n_dof_, BeamType::n_dof_, double> local_D(false);
+      Core::LinAlg::Matrix<LambdaType::n_dof_, SolidType::n_dof_, double> local_M(false);
+      Core::LinAlg::Matrix<LambdaType::n_dof_, 1, double> local_kappa(false);
+      Core::LinAlg::Matrix<LambdaType::n_dof_, 1, double> local_constraint(false);
       contact_pair.ele1posref_ = q_beam;
       contact_pair.ele1pos_.shape_function_data_ = q_beam.shape_function_data_;
       contact_pair.ele2posref_ = q_solid;
@@ -101,21 +101,21 @@ namespace
       contact_pair.evaluate_dm(local_D, local_M, local_kappa, local_constraint);
 
       // Check the results for D.
-      for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
-        for (unsigned int i_col = 0; i_col < beam_type::n_dof_; i_col++)
+      for (unsigned int i_row = 0; i_row < LambdaType::n_dof_; i_row++)
+        for (unsigned int i_col = 0; i_col < BeamType::n_dof_; i_col++)
           EXPECT_NEAR(local_D(i_row, i_col), result_local_D(i_row, i_col), 1e-11);
 
       // Check the results for M.
-      for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
-        for (unsigned int i_col = 0; i_col < solid_type::n_dof_; i_col++)
+      for (unsigned int i_row = 0; i_row < LambdaType::n_dof_; i_row++)
+        for (unsigned int i_col = 0; i_col < SolidType::n_dof_; i_col++)
           EXPECT_NEAR(local_M(i_row, i_col), result_local_M(i_row, i_col), 1e-11);
 
       // Check the results for kappa.
-      for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
+      for (unsigned int i_row = 0; i_row < LambdaType::n_dof_; i_row++)
         EXPECT_NEAR(local_kappa(i_row), result_local_kappa(i_row), 1e-11);
 
       // Check the results for the local constraint offset vector.
-      for (unsigned int i_row = 0; i_row < lambda_type::n_dof_; i_row++)
+      for (unsigned int i_row = 0; i_row < LambdaType::n_dof_; i_row++)
         EXPECT_NEAR(local_constraint(i_row), 0.0, 1e-11);
     }
 

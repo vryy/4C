@@ -64,8 +64,8 @@ namespace Core::FADUtils
   /*!
   \brief Cast of a FAD matrix to a double matrix
   */
-  template <typename type, unsigned int dim1, unsigned int dim2>
-  Core::LinAlg::Matrix<dim1, dim2, double> CastToDouble(Core::LinAlg::Matrix<dim1, dim2, type> a)
+  template <typename Type, unsigned int dim1, unsigned int dim2>
+  Core::LinAlg::Matrix<dim1, dim2, double> CastToDouble(Core::LinAlg::Matrix<dim1, dim2, Type> a)
   {
     Core::LinAlg::Matrix<dim1, dim2, double> b(true);
 
@@ -82,8 +82,8 @@ namespace Core::FADUtils
   /*!
   \brief Calculate signum function of FAD or double quantity
   */
-  template <typename type>
-  double Signum(type a)
+  template <typename Type>
+  double Signum(Type a)
   {
     if (a >= 0.0)
       return 1.0;
@@ -96,8 +96,8 @@ namespace Core::FADUtils
   this function, check if the template argument is explicitly stated in the function call, i.e.
   Core::FADUtils::sqrt<my_AD_type>(...)
   */
-  template <typename scalar_type>
-  inline scalar_type sqrt(scalar_type a)
+  template <typename ScalarType>
+  inline ScalarType sqrt(ScalarType a)
   {
     // avoid non-differentiable point of square root function by using conditional
     /* Todo should we use a tolerance/threshold here? */
@@ -117,25 +117,25 @@ namespace Core::FADUtils
   function, check if the template argument is explicitly stated in the function call, i.e.
   Core::FADUtils::Norm<my_AD_type>(...)
   */
-  template <typename scalar_type>
-  inline scalar_type Norm(scalar_type a)
+  template <typename ScalarType>
+  inline ScalarType Norm(ScalarType a)
   {
-    return Core::FADUtils::sqrt<scalar_type>(a * a);
+    return Core::FADUtils::sqrt<ScalarType>(a * a);
   }
 
   /*!
   \brief Calculate Norm of a FAD vector
   */
-  template <typename scalar_type, unsigned int length>
-  scalar_type VectorNorm(Core::LinAlg::Matrix<length, 1, scalar_type> v)
+  template <typename ScalarType, unsigned int length>
+  ScalarType VectorNorm(Core::LinAlg::Matrix<length, 1, ScalarType> v)
   {
-    scalar_type norm_squared = 0.0;
+    ScalarType norm_squared = 0.0;
     for (unsigned int i = 0; i < length; i++)
     {
       norm_squared += v(i) * v(i);
     }
 
-    return Core::FADUtils::sqrt<scalar_type>(norm_squared);
+    return Core::FADUtils::sqrt<ScalarType>(norm_squared);
   }
 
   /*!
@@ -165,8 +165,8 @@ namespace Core::FADUtils
   \brief Calculate inner product of two FAD or double vectors
   */
   // Todo this function is obsolete, use Dot of Core::LinAlg::Matrix instead
-  template <typename type>
-  type ScalarProduct(Core::LinAlg::Matrix<3, 1, type> a, Core::LinAlg::Matrix<3, 1, type> b)
+  template <typename Type>
+  Type ScalarProduct(Core::LinAlg::Matrix<3, 1, Type> a, Core::LinAlg::Matrix<3, 1, Type> b)
   {
     return a(0) * b(0) + a(1) * b(1) + a(2) * b(2);
   }
@@ -175,11 +175,11 @@ namespace Core::FADUtils
   \brief Calculate difference of two FAD or double vectors
   */
   // Todo this function is obsolete, use Update of Core::LinAlg::Matrix instead
-  template <typename type>
-  Core::LinAlg::Matrix<3, 1, type> DiffVector(
-      Core::LinAlg::Matrix<3, 1, type> a, Core::LinAlg::Matrix<3, 1, type> b)
+  template <typename Type>
+  Core::LinAlg::Matrix<3, 1, Type> DiffVector(
+      Core::LinAlg::Matrix<3, 1, Type> a, Core::LinAlg::Matrix<3, 1, Type> b)
   {
-    Core::LinAlg::Matrix<3, 1, type> c(true);
+    Core::LinAlg::Matrix<3, 1, Type> c(true);
     for (int i = 0; i < 3; i++) c(i) = a(i) - b(i);
 
     return c;
@@ -189,13 +189,13 @@ namespace Core::FADUtils
   \brief Calculate vector product of two FAD or double vectors
   */
   // Todo this function is obsolete, use cross_product of Core::LinAlg::Matrix instead
-  template <typename type>
-  Core::LinAlg::Matrix<3, 1, type> VectorProduct(
-      Core::LinAlg::Matrix<3, 1, type> first_vector, Core::LinAlg::Matrix<3, 1, type> second_vector)
+  template <typename Type>
+  Core::LinAlg::Matrix<3, 1, Type> VectorProduct(
+      Core::LinAlg::Matrix<3, 1, Type> first_vector, Core::LinAlg::Matrix<3, 1, Type> second_vector)
   {
-    Core::LinAlg::Matrix<3, 1, type> result_vector;
+    Core::LinAlg::Matrix<3, 1, Type> result_vector;
     result_vector.clear();
-    Core::LinAlg::Matrix<3, 3, type> S_first_vector;
+    Core::LinAlg::Matrix<3, 3, Type> S_first_vector;
     S_first_vector.clear();
 
     S_first_vector(0, 0) = 0.0;
@@ -223,11 +223,11 @@ namespace Core::FADUtils
    * @tparam N Number of nested derivatives, i.e. order of derivatives to compute.
    * @tparam BaseFadType Basic Fad type of this nested type.
    */
-  template <int N, typename BaseFadType>
+  template <int n, typename BaseFadType>
   struct HigherOrderFadType
   {
     //! Nested type of this Fad type.
-    typedef typename HigherOrderFadType<N - 1, BaseFadType>::type nested_type;
+    typedef typename HigherOrderFadType<n - 1, BaseFadType>::type nested_type;
 
     //! Fad type of this object.
     typedef typename Sacado::mpl::apply<BaseFadType, nested_type>::type type;

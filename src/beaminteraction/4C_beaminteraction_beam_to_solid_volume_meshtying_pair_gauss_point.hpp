@@ -42,26 +42,26 @@ namespace BEAMINTERACTION
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <typename beam, typename solid>
+  template <typename Beam, typename Solid>
   class BeamToSolidVolumeMeshtyingPairGaussPoint
-      : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
+      : public BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>;
 
     //! Type to be used for scalar AD variables.
     using scalar_type = typename base_class::scalar_type;
 
     //! FAD type to evaluate the rotational coupling terms. The first 3 entries are the values of
     //! psi_beam, the following entries are the discrete solid DOFs.
-    using scalar_type_rot_1st = typename Sacado::Fad::SLFad<double, 3 + solid::n_dof_>;
+    using scalar_type_rot_1st = typename Sacado::Fad::SLFad<double, 3 + Solid::n_dof_>;
     using scalar_type_rot_2nd =
         typename Core::FADUtils::HigherOrderFadType<2, scalar_type_rot_1st>::type;
 
     //! Number of rotational DOF for the SR beams;
     static constexpr unsigned int n_dof_rot_ = 9;
-    static constexpr unsigned int n_dof_pair_ = n_dof_rot_ + solid::n_dof_;
+    static constexpr unsigned int n_dof_pair_ = n_dof_rot_ + Solid::n_dof_;
 
    public:
     /**
@@ -108,7 +108,7 @@ namespace BEAMINTERACTION
      */
     void evaluate_rotational_coupling_terms(
         const Inpar::BeamToSolid::BeamToSolidRotationCoupling& rot_coupling_type,
-        const GEOMETRYPAIR::ElementData<solid, scalar_type_rot_2nd>& q_solid,
+        const GEOMETRYPAIR::ElementData<Solid, scalar_type_rot_2nd>& q_solid,
         const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&
             triad_interpolation_scheme,
         const LargeRotations::TriadInterpolationLocalRotationVectors<3, double>&

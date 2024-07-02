@@ -40,18 +40,18 @@ namespace BEAMINTERACTION
    * @tparam mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar
    * shape functions.
    */
-  template <typename beam, typename surface, typename mortar>
+  template <typename Beam, typename Surface, typename Mortar>
   class BeamToSolidSurfaceMeshtyingPairMortar
       : public BeamToSolidSurfaceMeshtyingPairMortarBase<
-            GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>, beam, surface, mortar>
+            GEOMETRYPAIR::line_to_surface_scalar_type<Beam, Surface>, Beam, Surface, Mortar>
   {
    private:
     //! Type to be used for scalar AD variables.
-    using scalar_type = GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>;
+    using scalar_type = GEOMETRYPAIR::line_to_surface_scalar_type<Beam, Surface>;
 
     //! Shortcut to the base class.
     using base_class =
-        BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, surface, mortar>;
+        BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, Beam, Surface, Mortar>;
 
    public:
     /**
@@ -78,10 +78,10 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the local mortar matrices for this contact element pair.
      */
-    void evaluate_dm(Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-        Core::LinAlg::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
-        Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-        Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_constraint) const;
+    void evaluate_dm(Core::LinAlg::Matrix<Mortar::n_dof_, Beam::n_dof_, double>& local_D,
+        Core::LinAlg::Matrix<Mortar::n_dof_, Surface::n_dof_, double>& local_M,
+        Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_kappa,
+        Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_constraint) const;
   };
 
   /**

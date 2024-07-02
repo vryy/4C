@@ -350,14 +350,14 @@ template Teuchos::RCP<Epetra_MultiVector> ScaTra::ScaTraUtils::ComputeGradientAt
 
 
 
-template <const int dim, Core::FE::CellType DISTYPE>
+template <const int dim, Core::FE::CellType distype>
 Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementGradientNode(
     Teuchos::RCP<Core::FE::Discretization> discret,
     std::vector<const Core::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,
     const int nodegid, const int scatra_dofid)
 {
   // number of nodes of this element for interpolation
-  const int numnode = Core::FE::num_nodes<DISTYPE>;
+  const int numnode = Core::FE::num_nodes<distype>;
   Core::LinAlg::Matrix<dim, 1> node_gradphi_smoothed(true);
 
   // number of elements located around this node
@@ -427,18 +427,18 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
         case 3:
         {
           Core::FE::shape_function_3D_deriv1(deriv3Dele, node_Xicoordinates(0),
-              node_Xicoordinates(1), node_Xicoordinates(2), DISTYPE);
+              node_Xicoordinates(1), node_Xicoordinates(2), distype);
           break;
         }
         case 2:
         {
           Core::FE::shape_function_2D_deriv1(
-              deriv3Dele, node_Xicoordinates(0), node_Xicoordinates(1), DISTYPE);
+              deriv3Dele, node_Xicoordinates(0), node_Xicoordinates(1), distype);
           break;
         }
         case 1:
         {
-          Core::FE::shape_function_1D_deriv1(deriv3Dele, node_Xicoordinates(0), DISTYPE);
+          Core::FE::shape_function_1D_deriv1(deriv3Dele, node_Xicoordinates(0), distype);
           break;
         }
         default:
@@ -448,7 +448,7 @@ Core::LinAlg::Matrix<dim, 1> ScaTra::ScaTraUtils::DoMeanValueAveragingOfElementG
       // reconstruct XYZ-gradient
       // get node coordinates of this element
       static Core::LinAlg::Matrix<dim, numnode> xyze_adj;
-      Core::Geo::fillInitialPositionArray<DISTYPE>(ele_adj, xyze_adj);
+      Core::Geo::fillInitialPositionArray<distype>(ele_adj, xyze_adj);
 
       // get Jacobi-Matrix for transformation
       static Core::LinAlg::Matrix<dim, dim> xjm_ele_XiToXYZ;

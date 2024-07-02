@@ -26,9 +26,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, surface,
-    mortar>::BeamToSolidSurfaceMeshtyingPairMortarBase()
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Surface,
+    Mortar>::BeamToSolidSurfaceMeshtyingPairMortarBase()
     : base_class(), n_mortar_rot_(0)
 {
   // Empty constructor.
@@ -37,9 +37,9 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, su
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, surface,
-    mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Surface,
+    Mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
                                         visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -65,9 +65,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
       visualization_nodal_forces != Teuchos::null)
   {
     // Setup variables.
-    Core::LinAlg::Matrix<3, 1, scalar_type> X;
-    Core::LinAlg::Matrix<3, 1, scalar_type> r;
-    Core::LinAlg::Matrix<3, 1, scalar_type> u;
+    Core::LinAlg::Matrix<3, 1, ScalarType> X;
+    Core::LinAlg::Matrix<3, 1, ScalarType> r;
+    Core::LinAlg::Matrix<3, 1, ScalarType> u;
     Core::LinAlg::Matrix<3, 1, double> lambda_discret;
     Core::LinAlg::Matrix<3, 1, double> xi_mortar_node;
 
@@ -80,11 +80,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
         visualization_params.get<Teuchos::RCP<Epetra_Vector>>("lambda");
 
     // Get the lambda GIDs of this pair.
-    auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::initialize(nullptr);
+    auto q_lambda = GEOMETRYPAIR::InitializeElementData<Mortar, double>::initialize(nullptr);
     const auto& [lambda_row_pos, _] = mortar_manager->LocationVector(*this);
     std::vector<double> lambda_pair;
     Core::FE::ExtractMyValues(*lambda, lambda_pair, lambda_row_pos);
-    for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
+    for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
       q_lambda.element_position_(i_dof) = lambda_pair[i_dof];
 
     // Add the discrete values of the Lagrange multipliers.
@@ -116,19 +116,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
           pair_solid_id = &(visualization_data.GetPointData<double>("uid_1_pair_solid_id"));
         }
 
-        for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
+        for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
         {
           // Get the local coordinate of this node.
-          xi_mortar_node = Core::FE::GetNodeCoordinates(i_node, mortar::discretization_);
+          xi_mortar_node = Core::FE::GetNodeCoordinates(i_node, Mortar::discretization_);
 
           // Get position and displacement of the mortar node.
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi_mortar_node(0), this->ele1pos_, r);
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi_mortar_node(0), this->ele1posref_, X);
+          GEOMETRYPAIR::EvaluatePosition<Beam>(xi_mortar_node(0), this->ele1pos_, r);
+          GEOMETRYPAIR::EvaluatePosition<Beam>(xi_mortar_node(0), this->ele1posref_, X);
           u = r;
           u -= X;
 
           // Get the discrete Lagrangian multiplier.
-          GEOMETRYPAIR::EvaluatePosition<mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
+          GEOMETRYPAIR::EvaluatePosition<Mortar>(xi_mortar_node(0), q_lambda, lambda_discret);
 
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
@@ -187,11 +187,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
           // Get the position, displacement and lambda value at the current point.
           xi = segment.GetEtadata() + i_curve_segment * (segment.GetEtaB() - segment.GetEtadata()) /
                                           (double)mortar_segments;
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1pos_, r);
-          GEOMETRYPAIR::EvaluatePosition<beam>(xi, this->ele1posref_, X);
+          GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1pos_, r);
+          GEOMETRYPAIR::EvaluatePosition<Beam>(xi, this->ele1posref_, X);
           u = r;
           u -= X;
-          GEOMETRYPAIR::EvaluatePosition<mortar>(xi, q_lambda, lambda_discret);
+          GEOMETRYPAIR::EvaluatePosition<Mortar>(xi, q_lambda, lambda_discret);
 
           // Add to output data.
           for (unsigned int dim = 0; dim < 3; dim++)
@@ -256,19 +256,19 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, bea
               this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
           // Get the jacobian in the reference configuration.
-          GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+          GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
               projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
           // Jacobian including the segment length.
           segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
           // Evaluate the coupling load at this point.
-          GEOMETRYPAIR::EvaluatePosition<mortar>(
+          GEOMETRYPAIR::EvaluatePosition<Mortar>(
               projected_gauss_point.GetEta(), q_lambda, lambda_gauss_point);
 
           // Get the position at this Gauss point.
-          GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(),
-              GEOMETRYPAIR::ElementDataToDouble<beam>::ToDouble(this->ele1pos_), r_gauss_point);
+          GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.GetEta(),
+              GEOMETRYPAIR::ElementDataToDouble<Beam>::ToDouble(this->ele1pos_), r_gauss_point);
 
           // Calculate moment around origin.
           temp_moment.cross_product(r_gauss_point, lambda_gauss_point);

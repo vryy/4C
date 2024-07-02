@@ -22,23 +22,22 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Gen
 {
   /// struct containing the base type of the pairedmatrix class
-  template <typename Key, typename T, typename inner_insert_policy, typename outer_insert_policy>
+  template <typename Key, typename T, typename InnerInsertPolicy, typename OuterInsertPolicy>
   struct PairedmatrixBase
   {
-    typedef Pairedvector<Key, Pairedvector<Key, T, inner_insert_policy>, outer_insert_policy> type;
+    typedef Pairedvector<Key, Pairedvector<Key, T, InnerInsertPolicy>, OuterInsertPolicy> type;
   };
 
-  template <typename Key, typename T, typename inner_insert_policy = DefaultInsertPolicy<Key, T>,
-      typename outer_insert_policy =
-          DefaultInsertPolicy<Key, Pairedvector<Key, T, inner_insert_policy>>>
-  class Pairedmatrix
-      : public PairedmatrixBase<Key, T, inner_insert_policy, outer_insert_policy>::type
+  template <typename Key, typename T, typename InnerInsertPolicy = DefaultInsertPolicy<Key, T>,
+      typename OuterInsertPolicy =
+          DefaultInsertPolicy<Key, Pairedvector<Key, T, InnerInsertPolicy>>>
+  class Pairedmatrix : public PairedmatrixBase<Key, T, InnerInsertPolicy, OuterInsertPolicy>::type
   {
-    typedef Pairedvector<Key, T, inner_insert_policy> inner_pairedvector_type;
-    typedef Pairedvector<Key, inner_pairedvector_type, outer_insert_policy> base_type;
+    typedef Pairedvector<Key, T, InnerInsertPolicy> inner_pairedvector_type;
+    typedef Pairedvector<Key, inner_pairedvector_type, OuterInsertPolicy> base_type;
     typedef std::pair<Key, inner_pairedvector_type> pair_type;
     typedef std::vector<pair_type> pairedmatrix_type;
-    typedef Pairedmatrix<Key, T, inner_insert_policy, outer_insert_policy> class_type;
+    typedef Pairedmatrix<Key, T, InnerInsertPolicy, OuterInsertPolicy> class_type;
 
    public:
     /**
@@ -299,14 +298,14 @@ namespace Core::Gen
    *  @param[out] vec_paired_obj  Reset this vector of paired objects.
    *
    *  @author hiermeier @date 03/17 */
-  template <typename paired_type>
+  template <typename PairedType>
   inline void reset(
-      const unsigned num_vec, const unsigned reserve_size, std::vector<paired_type>& vec_paired_obj)
+      const unsigned num_vec, const unsigned reserve_size, std::vector<PairedType>& vec_paired_obj)
   {
     if (vec_paired_obj.size() != num_vec)
     {
       vec_paired_obj.clear();
-      const paired_type empty_paired_obj;
+      const PairedType empty_paired_obj;
       vec_paired_obj.resize(num_vec, empty_paired_obj);
     }
 
@@ -321,8 +320,8 @@ namespace Core::Gen
    *  @param[out] vec_paired_obj  Reset this vector of paired objects.
    *
    *  @author hiermeier @date 03/17 */
-  template <typename paired_type>
-  inline void reset(const unsigned reserve_size, std::vector<paired_type>& vec_paired_obj)
+  template <typename PairedType>
+  inline void reset(const unsigned reserve_size, std::vector<PairedType>& vec_paired_obj)
   {
     reset(vec_paired_obj.size(), reserve_size, vec_paired_obj);
   }
@@ -366,8 +365,8 @@ namespace Core::Gen
    *  @param[out] vec_paired_obj  Weak reset this vector of paired objects.
    *
    *  @author hiermeier @date 11/17 */
-  template <typename paired_type>
-  inline void weak_reset(std::vector<paired_type>& vec_paired_obj)
+  template <typename PairedType>
+  inline void weak_reset(std::vector<PairedType>& vec_paired_obj)
   {
     for (auto& paired_obj : vec_paired_obj) weak_reset(paired_obj);
   }
@@ -380,8 +379,8 @@ namespace Core::Gen
    *          took place, the old capacity is returned.
    *
    *  @author hiermeier @date 03/17 */
-  template <typename paired_type>
-  inline size_t increase_capacity(paired_type& paired_obj)
+  template <typename PairedType>
+  inline size_t increase_capacity(PairedType& paired_obj)
   {
     size_t new_capacity = paired_obj.capacity();
 
@@ -412,8 +411,8 @@ namespace Core::Gen
    *  @param[in]  type   Optional copy type. Per default shape and values are copied.
    *
    *  @author hiermeier @date 05/17 */
-  template <typename paired_type>
-  inline void copy(const std::vector<paired_type>& source, std::vector<paired_type>& target,
+  template <typename PairedType>
+  inline void copy(const std::vector<PairedType>& source, std::vector<PairedType>& target,
       const enum CopyType type = DeepCopy)
   {
     const unsigned vec_dim = source.size();
@@ -431,9 +430,9 @@ namespace Core::Gen
    *  @param[in]  type   Optional copy type. Per default shape and values are copied.
    *
    *  @author hiermeier @date 05/17 */
-  template <typename paired_type>
+  template <typename PairedType>
   inline void copy(
-      const paired_type& source, paired_type& target, const enum CopyType type = DeepCopy)
+      const PairedType& source, PairedType& target, const enum CopyType type = DeepCopy)
   {
     target.clone(source, type);
   }
@@ -444,13 +443,13 @@ namespace Core::Gen
    *  @param[out] os              Use this output stream.
    *
    *  @author hiermeier @date 07/17 */
-  template <typename paired_type>
-  inline void print(const std::vector<paired_type>& vec_paired_obj, std::ostream& os = std::cout)
+  template <typename PairedType>
+  inline void print(const std::vector<PairedType>& vec_paired_obj, std::ostream& os = std::cout)
   {
     size_t i = 0;
     const size_t vec_size = vec_paired_obj.size();
 
-    for (const paired_type& paired_obj : vec_paired_obj)
+    for (const PairedType& paired_obj : vec_paired_obj)
     {
       os << "component #" << ++i << " of " << vec_size << ":\n";
       paired_obj.print(os);
@@ -463,10 +462,10 @@ namespace Core::Gen
    *                              vector.
    *
    *  @author hiermeier @date 07/17 */
-  template <typename paired_type>
-  inline void complete(std::vector<paired_type>& vec_paired_obj)
+  template <typename PairedType>
+  inline void complete(std::vector<PairedType>& vec_paired_obj)
   {
-    for (paired_type& paired_obj : vec_paired_obj) paired_obj.complete();
+    for (PairedType& paired_obj : vec_paired_obj) paired_obj.complete();
   }
 
   /** @brief Set debug mode status in each of the contained paired objects
@@ -477,10 +476,10 @@ namespace Core::Gen
    *  @param[in] isdebug         New debug status.
    *
    *  @author hiermeier @date 07/17 */
-  template <typename paired_type>
-  inline void setDebugMode(std::vector<paired_type>& vec_paired_obj, bool isdebug)
+  template <typename PairedType>
+  inline void setDebugMode(std::vector<PairedType>& vec_paired_obj, bool isdebug)
   {
-    for (paired_type& paired_obj : vec_paired_obj)
+    for (PairedType& paired_obj : vec_paired_obj)
     {
       paired_obj.setDebugMode(isdebug);
     }

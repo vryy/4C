@@ -1809,7 +1809,7 @@ ScaTra::MortarCellInterface* ScaTra::MortarCellFactory::mortar_cell_calc(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS>
+template <Core::FE::CellType distype_s>
 ScaTra::MortarCellInterface* ScaTra::MortarCellFactory::mortar_cell_calc(
     const Inpar::ScaTra::ImplType& impltype, const Mortar::Element& masterelement,
     const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
@@ -1822,14 +1822,14 @@ ScaTra::MortarCellInterface* ScaTra::MortarCellFactory::mortar_cell_calc(
   {
     case Core::FE::CellType::tri3:
     {
-      return mortar_cell_calc<distypeS, Core::FE::CellType::tri3>(
+      return mortar_cell_calc<distype_s, Core::FE::CellType::tri3>(
           impltype, couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
 
     case Core::FE::CellType::quad4:
     {
-      return mortar_cell_calc<distypeS, Core::FE::CellType::quad4>(
+      return mortar_cell_calc<distype_s, Core::FE::CellType::quad4>(
           impltype, couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
@@ -1846,7 +1846,7 @@ ScaTra::MortarCellInterface* ScaTra::MortarCellFactory::mortar_cell_calc(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 ScaTra::MortarCellInterface* ScaTra::MortarCellFactory::mortar_cell_calc(
     const Inpar::ScaTra::ImplType& impltype, const Inpar::S2I::CouplingType& couplingtype,
     const Inpar::S2I::InterfaceSides& lmside, const int& numdofpernode_slave,
@@ -1858,28 +1858,28 @@ ScaTra::MortarCellInterface* ScaTra::MortarCellFactory::mortar_cell_calc(
   {
     case Inpar::ScaTra::impltype_std:
     {
-      return ScaTra::MortarCellCalc<distypeS, distypeM>::Instance(
+      return ScaTra::MortarCellCalc<distype_s, distype_m>::Instance(
           couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
 
     case Inpar::ScaTra::impltype_elch_electrode:
     {
-      return ScaTra::MortarCellCalcElch<distypeS, distypeM>::Instance(
+      return ScaTra::MortarCellCalcElch<distype_s, distype_m>::Instance(
           couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
 
     case Inpar::ScaTra::impltype_elch_electrode_thermo:
     {
-      return ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
+      return ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::Instance(
           couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
 
     case Inpar::ScaTra::impltype_thermo_elch_electrode:
     {
-      return ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
+      return ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::Instance(
           couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
@@ -4112,24 +4112,25 @@ ScaTra::MortarCellInterface::MortarCellInterface(const Inpar::S2I::CouplingType&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-ScaTra::MortarCellCalc<distypeS, distypeM>* ScaTra::MortarCellCalc<distypeS, distypeM>::Instance(
-    const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
-    const int& numdofpernode_slave, const int& numdofpernode_master, const std::string& disname)
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+ScaTra::MortarCellCalc<distype_s, distype_m>*
+ScaTra::MortarCellCalc<distype_s, distype_m>::Instance(const Inpar::S2I::CouplingType& couplingtype,
+    const Inpar::S2I::InterfaceSides& lmside, const int& numdofpernode_slave,
+    const int& numdofpernode_master, const std::string& disname)
 {
   // static map assigning mortar discretization names to class instances
-  static std::map<std::string, Core::UTILS::SingletonOwner<MortarCellCalc<distypeS, distypeM>>>
+  static std::map<std::string, Core::UTILS::SingletonOwner<MortarCellCalc<distype_s, distype_m>>>
       owners;
 
   // add an owner for the given disname if not already present
   if (owners.find(disname) == owners.end())
   {
     owners.template emplace(
-        disname, Core::UTILS::SingletonOwner<MortarCellCalc<distypeS, distypeM>>(
+        disname, Core::UTILS::SingletonOwner<MortarCellCalc<distype_s, distype_m>>(
                      [&]()
                      {
-                       return std::unique_ptr<MortarCellCalc<distypeS, distypeM>>(
-                           new MortarCellCalc<distypeS, distypeM>(
+                       return std::unique_ptr<MortarCellCalc<distype_s, distype_m>>(
+                           new MortarCellCalc<distype_s, distype_m>(
                                couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
                      }));
   }
@@ -4139,10 +4140,10 @@ ScaTra::MortarCellCalc<distypeS, distypeM>* ScaTra::MortarCellCalc<distypeS, dis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate(const Core::FE::Discretization& idiscret,
-    Mortar::IntCell& cell, Mortar::Element& slaveelement, Mortar::Element& masterelement,
-    Core::Elements::Element::LocationArray& la_slave,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate(
+    const Core::FE::Discretization& idiscret, Mortar::IntCell& cell, Mortar::Element& slaveelement,
+    Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix& cellmatrix1, Core::LinAlg::SerialDenseMatrix& cellmatrix2,
     Core::LinAlg::SerialDenseMatrix& cellmatrix3, Core::LinAlg::SerialDenseMatrix& cellmatrix4,
@@ -4179,8 +4180,8 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate(const Core::FE::Discre
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_nts(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_nts(
     const Core::FE::Discretization& idiscret, const Mortar::Node& slavenode,
     const double& lumpedarea, Mortar::Element& slaveelement, Mortar::Element& masterelement,
     Core::Elements::Element::LocationArray& la_slave,
@@ -4221,8 +4222,8 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_nts(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_element(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_mortar_element(
     const Core::FE::Discretization& idiscret, Mortar::Element& element,
     Core::Elements::Element::LocationArray& la, const Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
@@ -4250,8 +4251,8 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_element(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-ScaTra::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+ScaTra::MortarCellCalc<distype_s, distype_m>::MortarCellCalc(
     const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
     const int& numdofpernode_slave, const int& numdofpernode_master)
     : MortarCellInterface(couplingtype, lmside, numdofpernode_slave, numdofpernode_master),
@@ -4276,8 +4277,8 @@ ScaTra::MortarCellCalc<distypeS, distypeM>::MortarCellCalc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::extract_node_values(
     const Core::FE::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master)
 {
@@ -4288,8 +4289,8 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::extract_node_values(
     Core::LinAlg::Matrix<nen_slave_, 1>& estate_slave, const Core::FE::Discretization& idiscret,
     Core::Elements::Element::LocationArray& la_slave, const std::string& statename,
     const int& nds) const
@@ -4308,8 +4309,8 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::extract_node_values(
     std::vector<Core::LinAlg::Matrix<nen_slave_, 1>>& estate_slave,
     std::vector<Core::LinAlg::Matrix<nen_master_, 1>>& estate_master,
     const Core::FE::Discretization& idiscret, Core::Elements::Element::LocationArray& la_slave,
@@ -4331,8 +4332,8 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::extract_node_values(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-double ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_fac_at_int_point(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int_fac_at_int_point(
     Mortar::Element& slaveelement, Mortar::Element& masterelement, Mortar::IntCell& cell,
     const Core::FE::IntPointsAndWeights<nsd_slave_>& intpoints, const int iquad)
 {
@@ -4357,8 +4358,8 @@ double ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_f
           coordinates_global.data(), cell.Auxn(), masterelement, coordinates_master.data(), dummy);
 
   // evaluate shape functions at current integration point on slave and master elements
-  Core::VolMortar::UTILS::shape_function<distypeS>(funct_slave_, coordinates_slave.data());
-  Core::VolMortar::UTILS::shape_function<distypeM>(funct_master_, coordinates_master.data());
+  Core::VolMortar::UTILS::shape_function<distype_s>(funct_slave_, coordinates_slave.data());
+  Core::VolMortar::UTILS::shape_function<distype_m>(funct_master_, coordinates_master.data());
   switch (couplingtype_)
   {
     case Inpar::S2I::coupling_mortar_standard:
@@ -4379,13 +4380,13 @@ double ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_f
       // functions
       if (lmside_ == Inpar::S2I::side_slave)
       {
-        Core::VolMortar::UTILS::dual_shape_function<distypeS>(
+        Core::VolMortar::UTILS::dual_shape_function<distype_s>(
             shape_lm_slave_, coordinates_slave.data(), slaveelement);
         test_lm_slave_ = funct_slave_;
       }
       else
       {
-        Core::VolMortar::UTILS::dual_shape_function<distypeM>(
+        Core::VolMortar::UTILS::dual_shape_function<distype_m>(
             shape_lm_master_, coordinates_master.data(), masterelement);
         test_lm_master_ = funct_master_;
       }
@@ -4400,13 +4401,13 @@ double ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_f
       // functions
       if (lmside_ == Inpar::S2I::side_slave)
       {
-        Core::VolMortar::UTILS::dual_shape_function<distypeS>(
+        Core::VolMortar::UTILS::dual_shape_function<distype_s>(
             shape_lm_slave_, coordinates_slave.data(), slaveelement);
         test_lm_slave_ = shape_lm_slave_;
       }
       else
       {
-        Core::VolMortar::UTILS::dual_shape_function<distypeM>(
+        Core::VolMortar::UTILS::dual_shape_function<distype_m>(
             shape_lm_master_, coordinates_master.data(), masterelement);
         test_lm_master_ = shape_lm_master_;
       }
@@ -4433,14 +4434,14 @@ double ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_f
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-double ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_fac_at_int_point(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+double ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_and_dom_int_fac_at_int_point(
     Mortar::Element& element, const Core::FE::IntPointsAndWeights<nsd_slave_>& intpoints,
     const int iquad)
 {
   // extract global coordinates of element nodes
   Core::LinAlg::Matrix<nsd_slave_ + 1, nen_slave_> coordinates_nodes;
-  Core::Geo::fillInitialPositionArray<distypeS, nsd_slave_ + 1,
+  Core::Geo::fillInitialPositionArray<distype_s, nsd_slave_ + 1,
       Core::LinAlg::Matrix<nsd_slave_ + 1, nen_slave_>>(&element, coordinates_nodes);
 
   // extract reference coordinates of integration point
@@ -4448,8 +4449,8 @@ double ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_f
 
   // evaluate slave-side shape functions and their first derivatives at integration point
   Core::LinAlg::Matrix<nsd_slave_, nen_slave_> deriv_slave;
-  Core::FE::shape_function<distypeS>(coordinates_ref, funct_slave_);
-  Core::FE::shape_function_deriv1<distypeS>(coordinates_ref, deriv_slave);
+  Core::FE::shape_function<distype_s>(coordinates_ref, funct_slave_);
+  Core::FE::shape_function_deriv1<distype_s>(coordinates_ref, deriv_slave);
 
   // evaluate transposed Jacobian matrix at integration point
   Core::LinAlg::Matrix<nsd_slave_, nsd_slave_ + 1> jacobian;
@@ -4466,8 +4467,8 @@ double ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_and_dom_int_f
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_at_slave_node(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::eval_shape_func_at_slave_node(
     const Mortar::Node& slavenode, Mortar::Element& slaveelement, Mortar::Element& masterelement)
 {
   // safety check
@@ -4502,13 +4503,13 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::eval_shape_func_at_slave_node(
           coordinates_master.data(), dummy);
 
   // evaluate master-side shape functions at projected node on master-side element
-  Core::VolMortar::UTILS::shape_function<distypeM>(funct_master_, coordinates_master.data());
+  Core::VolMortar::UTILS::shape_function<distype_m>(funct_master_, coordinates_master.data());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_matrices(Mortar::IntCell& cell,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_mortar_matrices(Mortar::IntCell& cell,
     Mortar::Element& slaveelement, Mortar::Element& masterelement,
     Core::LinAlg::SerialDenseMatrix& D, Core::LinAlg::SerialDenseMatrix& M,
     Core::LinAlg::SerialDenseMatrix& E)
@@ -4623,8 +4624,8 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_mortar_matrices(Mortar
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_condition(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_condition(
     const Core::FE::Discretization& idiscret, Mortar::IntCell& cell, Mortar::Element& slaveelement,
     Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
@@ -4664,7 +4665,7 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_condition(
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     Discret::ELEMENTS::ScaTraEleBoundaryCalc<
-        distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(ephinp_slave_,
+        distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(ephinp_slave_,
         ephinp_master_, pseudo_contact_fac, funct_slave_, funct_master_, test_lm_slave_,
         test_lm_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac,
         k_ss, k_sm, k_ms, k_mm, r_s, r_m);
@@ -4673,8 +4674,8 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_condition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_condition_nts(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_condition_nts(
     Core::Conditions::Condition& condition, const Mortar::Node& slavenode, const double& lumpedarea,
     Mortar::Element& slaveelement, Mortar::Element& masterelement,
     const std::vector<Core::LinAlg::Matrix<nen_slave_, 1>>& ephinp_slave,
@@ -4705,7 +4706,7 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_condition_nts(
   if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
   Discret::ELEMENTS::ScaTraEleBoundaryCalc<
-      distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(ephinp_slave,
+      distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(ephinp_slave,
       ephinp_master, pseudo_contact_fac, funct_slave_, funct_master_, funct_slave_, funct_master_,
       numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac, k_ss, k_sm, k_ms,
       k_mm, r_s, r_m);
@@ -4713,13 +4714,13 @@ void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_condition_nts(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalc<distypeS, distypeM>::evaluate_nodal_area_fractions(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_nodal_area_fractions(
     Mortar::Element& slaveelement, Core::LinAlg::SerialDenseVector& areafractions)
 {
   // integration points and weights
   const Core::FE::IntPointsAndWeights<nsd_slave_> intpoints(
-      ScaTra::DisTypeToOptGaussRule<distypeS>::rule);
+      ScaTra::DisTypeToOptGaussRule<distype_s>::rule);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)

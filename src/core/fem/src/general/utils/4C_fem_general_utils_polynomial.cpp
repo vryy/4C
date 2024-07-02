@@ -133,20 +133,19 @@ namespace Core::FE
   /*
    \brief Evaluates the values of the whole polynomial space in the given point
    */
-  template <int nsd_, class POLY>
-  void PolynomialSpaceTensor<nsd_, POLY>::evaluate(
-      const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
+  template <int nsd, class POLY>
+  void PolynomialSpaceTensor<nsd, POLY>::evaluate(
+      const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseVector &values) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
-    double evaluation[nsd_][20];
+    double evaluation[nsd][20];
     for (unsigned int i = 0; i < size; ++i)
-      for (unsigned int d = 0; d < nsd_; ++d)
-        evaluation[d][i] = poly_space1d_[i].evaluate(point(d));
+      for (unsigned int d = 0; d < nsd; ++d) evaluation[d][i] = poly_space1d_[i].evaluate(point(d));
 
-    switch (nsd_)
+    switch (nsd)
     {
       case 3:
         for (unsigned int i = 0; i < size; ++i)
@@ -173,26 +172,25 @@ namespace Core::FE
   /*
    \brief Evaluates the first derivative of the whole polynomial space in the given point
    */
-  template <int nsd_, class POLY>
-  void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv1(
-      const Core::LinAlg::Matrix<nsd_, 1> &point,
-      Core::LinAlg::SerialDenseMatrix &derivatives) const
+  template <int nsd, class POLY>
+  void PolynomialSpaceTensor<nsd, POLY>::Evaluate_deriv1(
+      const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
-    double evaluation[nsd_][20], gradient[nsd_][20];
+    double evaluation[nsd][20], gradient[nsd][20];
     Core::LinAlg::Matrix<2, 1, double> eval;
     for (unsigned int i = 0; i < size; ++i)
-      for (unsigned int d = 0; d < nsd_; ++d)
+      for (unsigned int d = 0; d < nsd; ++d)
       {
         poly_space1d_[i].evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
         gradient[d][i] = eval(1);
       }
 
-    switch (nsd_)
+    switch (nsd)
     {
       case 3:
         for (unsigned int i = 0; i < size; ++i)
@@ -229,19 +227,18 @@ namespace Core::FE
   /*
    \brief Evaluates the first derivative of the whole polynomial space in the given point
    */
-  template <int nsd_, class POLY>
-  void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv2(
-      const Core::LinAlg::Matrix<nsd_, 1> &point,
-      Core::LinAlg::SerialDenseMatrix &derivatives) const
+  template <int nsd, class POLY>
+  void PolynomialSpaceTensor<nsd, POLY>::Evaluate_deriv2(
+      const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
-    double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
+    double evaluation[nsd][20], gradient[nsd][20], hessian[nsd][20];
     Core::LinAlg::Matrix<3, 1, double> eval;
     for (unsigned int i = 0; i < size; ++i)
-      for (unsigned int d = 0; d < nsd_; ++d)
+      for (unsigned int d = 0; d < nsd; ++d)
       {
         poly_space1d_[i].evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
@@ -249,7 +246,7 @@ namespace Core::FE
         hessian[d][i] = eval(2);
       }
 
-    switch (nsd_)
+    switch (nsd)
     {
       case 3:
         for (unsigned int i = 0; i < size; ++i)
@@ -293,14 +290,14 @@ namespace Core::FE
   /*
    \brief Creates an array with coordinates of the nodes supporting the polynomials.
    */
-  template <int nsd_, class POLY>
-  void PolynomialSpaceTensor<nsd_, POLY>::FillUnitNodePoints(
+  template <int nsd, class POLY>
+  void PolynomialSpaceTensor<nsd, POLY>::FillUnitNodePoints(
       Core::LinAlg::SerialDenseMatrix &matrix) const
   {
-    matrix.shape(nsd_, Size());
+    matrix.shape(nsd, Size());
 
     const unsigned int size = poly_space1d_.size();
-    switch (nsd_)
+    switch (nsd)
     {
       case 3:
         for (unsigned int i = 0; i < size; ++i)
@@ -338,21 +335,20 @@ namespace Core::FE
   /*
    \brief Evaluates the values of the whole polynomial space in the given point
    */
-  template <int nsd_, class POLY>
-  void PolynomialSpaceComplete<nsd_, POLY>::evaluate(
-      const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
+  template <int nsd, class POLY>
+  void PolynomialSpaceComplete<nsd, POLY>::evaluate(
+      const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseVector &values) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
-    double evaluation[nsd_][20];
+    double evaluation[nsd][20];
     for (unsigned int i = 0; i < size; ++i)
-      for (unsigned int d = 0; d < nsd_; ++d)
-        evaluation[d][i] = poly_space1d_[i].evaluate(point(d));
+      for (unsigned int d = 0; d < nsd; ++d) evaluation[d][i] = poly_space1d_[i].evaluate(point(d));
 
     unsigned int c = 0;
-    switch (nsd_)
+    switch (nsd)
     {
       case 3:
         for (unsigned int i = 0; i < size; ++i)
@@ -380,19 +376,18 @@ namespace Core::FE
   /*
    \brief Evaluates the first derivative of the whole polynomial space in the given point
    */
-  template <int nsd_, class POLY>
-  void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv1(
-      const Core::LinAlg::Matrix<nsd_, 1> &point,
-      Core::LinAlg::SerialDenseMatrix &derivatives) const
+  template <int nsd, class POLY>
+  void PolynomialSpaceComplete<nsd, POLY>::Evaluate_deriv1(
+      const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
-    double evaluation[nsd_][20], gradient[nsd_][20];
+    double evaluation[nsd][20], gradient[nsd][20];
     Core::LinAlg::Matrix<2, 1, double> eval;
     for (unsigned int i = 0; i < size; ++i)
-      for (unsigned int d = 0; d < nsd_; ++d)
+      for (unsigned int d = 0; d < nsd; ++d)
       {
         poly_space1d_[i].evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
@@ -400,7 +395,7 @@ namespace Core::FE
       }
 
     unsigned int c = 0;
-    switch (nsd_)
+    switch (nsd)
     {
       case 3:
         for (unsigned int i = 0; i < size; ++i)
@@ -440,19 +435,18 @@ namespace Core::FE
   /*
    \brief Evaluates the first derivative of the whole polynomial space in the given point
    */
-  template <int nsd_, class POLY>
-  void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv2(
-      const Core::LinAlg::Matrix<nsd_, 1> &point,
-      Core::LinAlg::SerialDenseMatrix &derivatives) const
+  template <int nsd, class POLY>
+  void PolynomialSpaceComplete<nsd, POLY>::Evaluate_deriv2(
+      const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     const unsigned int size = poly_space1d_.size();
     FOUR_C_ASSERT(size < 20, "Not implemented");
 
     // avoid memory allocation by allocating values on the stack
-    double evaluation[nsd_][20], gradient[nsd_][20], hessian[nsd_][20];
+    double evaluation[nsd][20], gradient[nsd][20], hessian[nsd][20];
     Core::LinAlg::Matrix<3, 1, double> eval;
     for (unsigned int i = 0; i < size; ++i)
-      for (unsigned int d = 0; d < nsd_; ++d)
+      for (unsigned int d = 0; d < nsd; ++d)
       {
         poly_space1d_[i].evaluate(point(d), eval);
         evaluation[d][i] = eval(0);
@@ -461,7 +455,7 @@ namespace Core::FE
       }
 
     unsigned int c = 0;
-    switch (nsd_)
+    switch (nsd)
     {
       case 3:
         for (unsigned int i = 0; i < size; ++i)
@@ -501,15 +495,15 @@ namespace Core::FE
   /*
    \brief Creates an array with coordinates of the nodes supporting the polynomials.
    */
-  template <int nsd_, class POLY>
-  void PolynomialSpaceComplete<nsd_, POLY>::FillUnitNodePoints(
+  template <int nsd, class POLY>
+  void PolynomialSpaceComplete<nsd, POLY>::FillUnitNodePoints(
       Core::LinAlg::SerialDenseMatrix &matrix) const
   {
-    matrix.shape(nsd_, Size());
+    matrix.shape(nsd, Size());
 
     const unsigned int size = poly_space1d_.size();
     unsigned int c = 0;
-    switch (nsd_)
+    switch (nsd)
     {
       case 3:
         for (unsigned int i = 0; i < size; ++i)
@@ -542,9 +536,9 @@ namespace Core::FE
 
 
 
-  template <int nsd_>
-  void LagrangeBasisTet<nsd_>::evaluate(
-      const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
+  template <int nsd>
+  void LagrangeBasisTet<nsd>::evaluate(
+      const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseVector &values) const
   {
     legendre_.evaluate(point, values);
     vandermonde_factor_.setVectors(Teuchos::rcpFromRef(values), Teuchos::rcpFromRef(values));
@@ -553,12 +547,12 @@ namespace Core::FE
 
 
 
-  template <int nsd_>
-  void LagrangeBasisTet<nsd_>::Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
-      Core::LinAlg::SerialDenseMatrix &derivatives) const
+  template <int nsd>
+  void LagrangeBasisTet<nsd>::Evaluate_deriv1(
+      const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     legendre_.Evaluate_deriv1(point, derivatives);
-    for (unsigned int d = 0; d < nsd_; ++d)
+    for (unsigned int d = 0; d < nsd; ++d)
     {
       for (unsigned int i = 0; i < Size(); ++i) evaluate_vec_(i, 0) = derivatives(d, i);
       vandermonde_factor_.setVectors(
@@ -570,12 +564,12 @@ namespace Core::FE
 
 
 
-  template <int nsd_>
-  void LagrangeBasisTet<nsd_>::Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
-      Core::LinAlg::SerialDenseMatrix &derivatives) const
+  template <int nsd>
+  void LagrangeBasisTet<nsd>::Evaluate_deriv2(
+      const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseMatrix &derivatives) const
   {
     legendre_.Evaluate_deriv2(point, derivatives);
-    for (unsigned int d = 0; d < (nsd_ * (nsd_ + 1)) / 2; ++d)
+    for (unsigned int d = 0; d < (nsd * (nsd + 1)) / 2; ++d)
     {
       for (unsigned int i = 0; i < Size(); ++i) evaluate_vec_(i, 0) = derivatives(d, i);
       vandermonde_factor_.setVectors(
@@ -657,26 +651,26 @@ namespace Core::FE
 
 
 
-  template <int nsd_>
-  void Core::FE::LagrangeBasisTet<nsd_>::fill_fekete_points(const unsigned int)
+  template <int nsd>
+  void Core::FE::LagrangeBasisTet<nsd>::fill_fekete_points(const unsigned int)
   {
-    FOUR_C_THROW("Not implemented for dim = %d", nsd_);
+    FOUR_C_THROW("Not implemented for dim = %d", nsd);
   }
 
 
 
-  template <int nsd_>
-  void Core::FE::LagrangeBasisTet<nsd_>::compute_vandermonde_matrices(const unsigned int degree)
+  template <int nsd>
+  void Core::FE::LagrangeBasisTet<nsd>::compute_vandermonde_matrices(const unsigned int degree)
   {
     vandermonde_.shape(Size(), Size());
 
     Core::LinAlg::SerialDenseVector values(Size());
-    Core::LinAlg::SerialDenseMatrix deriv1(nsd_, Size());
-    Core::LinAlg::SerialDenseMatrix deriv2(nsd_ * (nsd_ + 1) / 2, Size());
-    Core::LinAlg::Matrix<nsd_, 1> point;
+    Core::LinAlg::SerialDenseMatrix deriv1(nsd, Size());
+    Core::LinAlg::SerialDenseMatrix deriv2(nsd * (nsd + 1) / 2, Size());
+    Core::LinAlg::Matrix<nsd, 1> point;
     for (unsigned int i = 0; i < Size(); ++i)
     {
-      for (unsigned int d = 0; d < nsd_; ++d) point(d, 0) = fekete_points_(d, i);
+      for (unsigned int d = 0; d < nsd; ++d) point(d, 0) = fekete_points_(d, i);
 
       legendre_.evaluate(point, values);
       for (unsigned int j = 0; j < Size(); ++j) vandermonde_(j, i) = values(j);
@@ -706,8 +700,8 @@ namespace Core::FE
 
 
 
-  template <int nsd_>
-  void Core::FE::LagrangeBasisTet<nsd_>::FillUnitNodePoints(
+  template <int nsd>
+  void Core::FE::LagrangeBasisTet<nsd>::FillUnitNodePoints(
       Core::LinAlg::SerialDenseMatrix &matrix) const
   {
     matrix.shape(fekete_points_.numRows(), fekete_points_.numCols());
@@ -715,32 +709,32 @@ namespace Core::FE
       for (int j = 0; j < fekete_points_.numRows(); ++j) matrix(j, i) = fekete_points_(j, i);
   }
 
-  template <int nsd_>
-  Core::FE::PolynomialSpaceCache<nsd_> &Core::FE::PolynomialSpaceCache<nsd_>::Instance()
+  template <int nsd>
+  Core::FE::PolynomialSpaceCache<nsd> &Core::FE::PolynomialSpaceCache<nsd>::Instance()
   {
-    static Core::UTILS::SingletonOwner<Core::FE::PolynomialSpaceCache<nsd_>> owner(
+    static Core::UTILS::SingletonOwner<Core::FE::PolynomialSpaceCache<nsd>> owner(
         []() {
-          return std::unique_ptr<Core::FE::PolynomialSpaceCache<nsd_>>(
-              new PolynomialSpaceCache<nsd_>);
+          return std::unique_ptr<Core::FE::PolynomialSpaceCache<nsd>>(
+              new PolynomialSpaceCache<nsd>);
         });
 
     return *owner.Instance(Core::UTILS::SingletonAction::create);
   }
 
-  template <int nsd_>
-  Teuchos::RCP<Core::FE::PolynomialSpace<nsd_>> Core::FE::PolynomialSpaceCache<nsd_>::Create(
+  template <int nsd>
+  Teuchos::RCP<Core::FE::PolynomialSpace<nsd>> Core::FE::PolynomialSpaceCache<nsd>::Create(
       PolynomialSpaceParams params)
   {
-    typename std::map<PolynomialSpaceParams,
-        Teuchos::RCP<Core::FE::PolynomialSpace<nsd_>>>::iterator i = ps_cache_.find(params);
+    typename std::map<PolynomialSpaceParams, Teuchos::RCP<Core::FE::PolynomialSpace<nsd>>>::iterator
+        i = ps_cache_.find(params);
     if (i != ps_cache_.end())
     {
       return i->second;
     }
 
     // this is expensive and should not be done too often
-    Teuchos::RCP<PolynomialSpace<nsd_>> ps;
-    ps = Teuchos::rcp(new PolynomialSpace<nsd_>(params));
+    Teuchos::RCP<PolynomialSpace<nsd>> ps;
+    ps = Teuchos::rcp(new PolynomialSpace<nsd>(params));
 
     ps_cache_[params] = ps;
 

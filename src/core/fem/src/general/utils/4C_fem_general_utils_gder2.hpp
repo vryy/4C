@@ -57,19 +57,19 @@ namespace Core::FE
   *----------------------------------------------------------------------*/
   // for enriched elements (e.g. xwall), num_node may be larger than the number of element nodes
   // for all other elements, num_node==numnode
-  template <Core::FE::CellType DISTYPE, int num_node, int ProbDim>
-  void gder2(const Core::LinAlg::Matrix<ProbDim, ProbDim>& xjm,
-      const Core::LinAlg::Matrix<ProbDim, num_node>& derxy,
-      const Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, num_node>&
+  template <Core::FE::CellType distype, int num_node, int prob_dim>
+  void gder2(const Core::LinAlg::Matrix<prob_dim, prob_dim>& xjm,
+      const Core::LinAlg::Matrix<prob_dim, num_node>& derxy,
+      const Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<distype>::numderiv2, num_node>&
           deriv2,
-      const Core::LinAlg::Matrix<ProbDim, num_node>& xyze,
-      Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, num_node>& derxy2)
+      const Core::LinAlg::Matrix<prob_dim, num_node>& xyze,
+      Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<distype>::numderiv2, num_node>& derxy2)
   {
     // some numbers already known during compilation
-    const int numnode = Core::FE::num_nodes<DISTYPE>;
+    const int numnode = Core::FE::num_nodes<distype>;
     FOUR_C_ASSERT(numnode <= num_node, "Expect at least numNodePerElement matrix columns");
-    const int nsd = ProbDim;
-    const int numderiv2 = Core::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2;
+    const int nsd = prob_dim;
+    const int numderiv2 = Core::FE::DisTypeToNumDeriv2<distype>::numderiv2;
 
     // compute d^2x/dr^2
     double xder2[numderiv2 * nsd];
@@ -135,15 +135,15 @@ namespace Core::FE
 
   }  // Core::FE::gder2
 
-  template <Core::FE::CellType DISTYPE, int num_node>
-  void gder2(const Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::dim<DISTYPE>>& xjm,
-      const Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, num_node>& derxy,
-      const Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, num_node>&
+  template <Core::FE::CellType distype, int num_node>
+  void gder2(const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& xjm,
+      const Core::LinAlg::Matrix<Core::FE::dim<distype>, num_node>& derxy,
+      const Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<distype>::numderiv2, num_node>&
           deriv2,
-      const Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, num_node>& xyze,
-      Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<DISTYPE>::numderiv2, num_node>& derxy2)
+      const Core::LinAlg::Matrix<Core::FE::dim<distype>, num_node>& xyze,
+      Core::LinAlg::Matrix<Core::FE::DisTypeToNumDeriv2<distype>::numderiv2, num_node>& derxy2)
   {
-    gder2<DISTYPE, num_node, Core::FE::dim<DISTYPE>>(xjm, derxy, deriv2, xyze, derxy2);
+    gder2<distype, num_node, Core::FE::dim<distype>>(xjm, derxy, deriv2, xyze, derxy2);
   }
 
 

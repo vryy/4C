@@ -22,7 +22,7 @@ namespace Discret
   {
     // forward declarations
     class ScaTraEleDiffManagerElchScl;
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElchScl;
     template <Core::FE::CellType distype>
     class ScaTraEleUtilsElchScl;
@@ -296,17 +296,17 @@ namespace Discret
     /*!
       This class keeps all internal variables needed for the diffusion-conduction formulation.
     */
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElchScl
-        : public ScaTraEleInternalVariableManagerElchDiffCond<NSD, NEN>
+        : public ScaTraEleInternalVariableManagerElchDiffCond<nsd, nen>
     {
      public:
-      using vm = ScaTraEleInternalVariableManager<NSD, NEN>;
+      using vm = ScaTraEleInternalVariableManager<nsd, nen>;
 
       ScaTraEleInternalVariableManagerElchScl(int numscal,
           const Discret::ELEMENTS::ScaTraEleParameterElch* elchparams,
           const Discret::ELEMENTS::ScaTraEleParameterElchDiffCond* diffcondparams)
-          : ScaTraEleInternalVariableManagerElchDiffCond<NSD, NEN>(
+          : ScaTraEleInternalVariableManagerElchDiffCond<nsd, nen>(
                 numscal, elchparams, diffcondparams),
             curint_(true)
       {
@@ -318,7 +318,7 @@ namespace Discret
       /*========================================================================*/
 
       //! current density at Gauss point
-      Core::LinAlg::Matrix<NSD, 1> curint_;
+      Core::LinAlg::Matrix<nsd, 1> curint_;
     };
   }  // namespace ELEMENTS
 }  // namespace Discret

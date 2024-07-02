@@ -33,13 +33,13 @@ namespace Discret
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, Core::FE::CellType distype>
-    class So3PoroP1 : public So3Poro<so3_ele, distype>
+    template <class So3Ele, Core::FE::CellType distype>
+    class So3PoroP1 : public So3Poro<So3Ele, distype>
     {
       //! @name Friends
       friend class SoHex8PoroP1Type;
 
-      using Base = So3Poro<so3_ele, distype>;
+      using Base = So3Poro<So3Ele, distype>;
 
      public:
       //!@}
