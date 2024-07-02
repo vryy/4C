@@ -79,37 +79,37 @@ namespace
 
     Discret::ELEMENTS::ElementNodes<distype> nodal_coordinates;
 
-    nodal_coordinates.reference_coordinates_(0, 0) = 0;
-    nodal_coordinates.reference_coordinates_(0, 1) = 0;
-    nodal_coordinates.reference_coordinates_(0, 2) = 0;
+    nodal_coordinates.reference_coordinates(0, 0) = 0;
+    nodal_coordinates.reference_coordinates(0, 1) = 0;
+    nodal_coordinates.reference_coordinates(0, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(1, 0) = 4;
-    nodal_coordinates.reference_coordinates_(1, 1) = 0;
-    nodal_coordinates.reference_coordinates_(1, 2) = 0;
+    nodal_coordinates.reference_coordinates(1, 0) = 4;
+    nodal_coordinates.reference_coordinates(1, 1) = 0;
+    nodal_coordinates.reference_coordinates(1, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(2, 0) = 4;
-    nodal_coordinates.reference_coordinates_(2, 1) = 1;
-    nodal_coordinates.reference_coordinates_(2, 2) = 0;
+    nodal_coordinates.reference_coordinates(2, 0) = 4;
+    nodal_coordinates.reference_coordinates(2, 1) = 1;
+    nodal_coordinates.reference_coordinates(2, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(3, 0) = 0;
-    nodal_coordinates.reference_coordinates_(3, 1) = 1;
-    nodal_coordinates.reference_coordinates_(3, 2) = 0;
+    nodal_coordinates.reference_coordinates(3, 0) = 0;
+    nodal_coordinates.reference_coordinates(3, 1) = 1;
+    nodal_coordinates.reference_coordinates(3, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(4, 0) = 0;
-    nodal_coordinates.reference_coordinates_(4, 1) = 0;
-    nodal_coordinates.reference_coordinates_(4, 2) = 2;
+    nodal_coordinates.reference_coordinates(4, 0) = 0;
+    nodal_coordinates.reference_coordinates(4, 1) = 0;
+    nodal_coordinates.reference_coordinates(4, 2) = 2;
 
-    nodal_coordinates.reference_coordinates_(5, 0) = 4;
-    nodal_coordinates.reference_coordinates_(5, 1) = 0;
-    nodal_coordinates.reference_coordinates_(5, 2) = 2;
+    nodal_coordinates.reference_coordinates(5, 0) = 4;
+    nodal_coordinates.reference_coordinates(5, 1) = 0;
+    nodal_coordinates.reference_coordinates(5, 2) = 2;
 
-    nodal_coordinates.reference_coordinates_(6, 0) = 4;
-    nodal_coordinates.reference_coordinates_(6, 1) = 1;
-    nodal_coordinates.reference_coordinates_(6, 2) = 2;
+    nodal_coordinates.reference_coordinates(6, 0) = 4;
+    nodal_coordinates.reference_coordinates(6, 1) = 1;
+    nodal_coordinates.reference_coordinates(6, 2) = 2;
 
-    nodal_coordinates.reference_coordinates_(7, 0) = 0;
-    nodal_coordinates.reference_coordinates_(7, 1) = 1;
-    nodal_coordinates.reference_coordinates_(7, 2) = 2;
+    nodal_coordinates.reference_coordinates(7, 0) = 0;
+    nodal_coordinates.reference_coordinates(7, 1) = 1;
+    nodal_coordinates.reference_coordinates(7, 2) = 2;
 
     Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid_ref(true);
     x_centroid_ref(0) = 2;
@@ -131,21 +131,21 @@ namespace
 
     Discret::ELEMENTS::ElementNodes<distype> nodal_coordinates;
 
-    nodal_coordinates.reference_coordinates_(0, 0) = 0;
-    nodal_coordinates.reference_coordinates_(0, 1) = 0;
-    nodal_coordinates.reference_coordinates_(0, 2) = 0;
+    nodal_coordinates.reference_coordinates(0, 0) = 0;
+    nodal_coordinates.reference_coordinates(0, 1) = 0;
+    nodal_coordinates.reference_coordinates(0, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(1, 0) = 1;
-    nodal_coordinates.reference_coordinates_(1, 1) = 0;
-    nodal_coordinates.reference_coordinates_(1, 2) = 0;
+    nodal_coordinates.reference_coordinates(1, 0) = 1;
+    nodal_coordinates.reference_coordinates(1, 1) = 0;
+    nodal_coordinates.reference_coordinates(1, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(2, 0) = 0;
-    nodal_coordinates.reference_coordinates_(2, 1) = 2;
-    nodal_coordinates.reference_coordinates_(2, 2) = 0;
+    nodal_coordinates.reference_coordinates(2, 0) = 0;
+    nodal_coordinates.reference_coordinates(2, 1) = 2;
+    nodal_coordinates.reference_coordinates(2, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(3, 0) = 0;
-    nodal_coordinates.reference_coordinates_(3, 1) = 0;
-    nodal_coordinates.reference_coordinates_(3, 2) = 4;
+    nodal_coordinates.reference_coordinates(3, 0) = 0;
+    nodal_coordinates.reference_coordinates(3, 1) = 0;
+    nodal_coordinates.reference_coordinates(3, 2) = 4;
 
     Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid_ref(true);
     x_centroid_ref(0) = 0.25;
@@ -167,25 +167,25 @@ namespace
 
     Discret::ELEMENTS::ElementNodes<distype> nodal_coordinates;
 
-    nodal_coordinates.reference_coordinates_(0, 0) = -2;
-    nodal_coordinates.reference_coordinates_(0, 1) = -1;
-    nodal_coordinates.reference_coordinates_(0, 2) = 0;
+    nodal_coordinates.reference_coordinates(0, 0) = -2;
+    nodal_coordinates.reference_coordinates(0, 1) = -1;
+    nodal_coordinates.reference_coordinates(0, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(1, 0) = 4;
-    nodal_coordinates.reference_coordinates_(1, 1) = -1;
-    nodal_coordinates.reference_coordinates_(1, 2) = 0;
+    nodal_coordinates.reference_coordinates(1, 0) = 4;
+    nodal_coordinates.reference_coordinates(1, 1) = -1;
+    nodal_coordinates.reference_coordinates(1, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(2, 0) = 4;
-    nodal_coordinates.reference_coordinates_(2, 1) = 1;
-    nodal_coordinates.reference_coordinates_(2, 2) = 0;
+    nodal_coordinates.reference_coordinates(2, 0) = 4;
+    nodal_coordinates.reference_coordinates(2, 1) = 1;
+    nodal_coordinates.reference_coordinates(2, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(3, 0) = -2;
-    nodal_coordinates.reference_coordinates_(3, 1) = 1;
-    nodal_coordinates.reference_coordinates_(3, 2) = 0;
+    nodal_coordinates.reference_coordinates(3, 0) = -2;
+    nodal_coordinates.reference_coordinates(3, 1) = 1;
+    nodal_coordinates.reference_coordinates(3, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(4, 0) = 1;
-    nodal_coordinates.reference_coordinates_(4, 1) = 0;
-    nodal_coordinates.reference_coordinates_(4, 2) = 4;
+    nodal_coordinates.reference_coordinates(4, 0) = 1;
+    nodal_coordinates.reference_coordinates(4, 1) = 0;
+    nodal_coordinates.reference_coordinates(4, 2) = 4;
 
     Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid_ref(true);
     x_centroid_ref(0) = 1.0;
@@ -207,29 +207,29 @@ namespace
 
     Discret::ELEMENTS::ElementNodes<distype> nodal_coordinates;
 
-    nodal_coordinates.reference_coordinates_(0, 0) = 0;
-    nodal_coordinates.reference_coordinates_(0, 1) = 0;
-    nodal_coordinates.reference_coordinates_(0, 2) = 0;
+    nodal_coordinates.reference_coordinates(0, 0) = 0;
+    nodal_coordinates.reference_coordinates(0, 1) = 0;
+    nodal_coordinates.reference_coordinates(0, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(1, 0) = 3;
-    nodal_coordinates.reference_coordinates_(1, 1) = 0;
-    nodal_coordinates.reference_coordinates_(1, 2) = 0;
+    nodal_coordinates.reference_coordinates(1, 0) = 3;
+    nodal_coordinates.reference_coordinates(1, 1) = 0;
+    nodal_coordinates.reference_coordinates(1, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(2, 0) = 0;
-    nodal_coordinates.reference_coordinates_(2, 1) = 6;
-    nodal_coordinates.reference_coordinates_(2, 2) = 0;
+    nodal_coordinates.reference_coordinates(2, 0) = 0;
+    nodal_coordinates.reference_coordinates(2, 1) = 6;
+    nodal_coordinates.reference_coordinates(2, 2) = 0;
 
-    nodal_coordinates.reference_coordinates_(3, 0) = 0;
-    nodal_coordinates.reference_coordinates_(3, 1) = 0;
-    nodal_coordinates.reference_coordinates_(3, 2) = 1;
+    nodal_coordinates.reference_coordinates(3, 0) = 0;
+    nodal_coordinates.reference_coordinates(3, 1) = 0;
+    nodal_coordinates.reference_coordinates(3, 2) = 1;
 
-    nodal_coordinates.reference_coordinates_(4, 0) = 3;
-    nodal_coordinates.reference_coordinates_(4, 1) = 0;
-    nodal_coordinates.reference_coordinates_(4, 2) = 1;
+    nodal_coordinates.reference_coordinates(4, 0) = 3;
+    nodal_coordinates.reference_coordinates(4, 1) = 0;
+    nodal_coordinates.reference_coordinates(4, 2) = 1;
 
-    nodal_coordinates.reference_coordinates_(5, 0) = 0;
-    nodal_coordinates.reference_coordinates_(5, 1) = 6;
-    nodal_coordinates.reference_coordinates_(5, 2) = 1;
+    nodal_coordinates.reference_coordinates(5, 0) = 0;
+    nodal_coordinates.reference_coordinates(5, 1) = 6;
+    nodal_coordinates.reference_coordinates(5, 2) = 1;
 
     Core::LinAlg::Matrix<Discret::ELEMENTS::DETAIL::num_dim<distype>, 1> x_centroid_ref(true);
     x_centroid_ref(0) = 1;

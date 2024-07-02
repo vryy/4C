@@ -61,7 +61,7 @@ namespace Discret::ELEMENTS
 
       const SpatialMaterialMapping<celltype> spatial_material_mapping =
           evaluate_mulf_spatial_material_mapping(
-              jacobian_mapping, shape_functions, element_nodes.displacements_, history_data);
+              jacobian_mapping, shape_functions, element_nodes.displacements, history_data);
 
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> cauchygreen =
           evaluate_cauchy_green<celltype>(spatial_material_mapping);
@@ -143,7 +143,7 @@ namespace Discret::ELEMENTS
     {
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> delta_defgrd =
           evaluate_mulf_deformation_gradient_update(
-              shape_functions, element_nodes.displacements_, history_data);
+              shape_functions, element_nodes.displacements, history_data);
 
       // update mulf history data only if prestress is active
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> inv_delta_defgrd(

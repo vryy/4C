@@ -41,7 +41,7 @@ namespace Discret::ELEMENTS
         const MulfHistoryData<celltype>& mulf_data_centeroid)
     {
       Core::LinAlg::Matrix<3, 3> delta_F = evaluate_mulf_deformation_gradient_update(
-          shape_functions_centeroid, nodal_coordinates.displacements_, mulf_data_centeroid);
+          shape_functions_centeroid, nodal_coordinates.displacements, mulf_data_centeroid);
 
       SpatialMaterialMapping<celltype> spatial_material_mapping_centeroid{};
 
@@ -79,7 +79,7 @@ namespace Discret::ELEMENTS
     {
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> delta_defgrd =
           evaluate_mulf_deformation_gradient_update(
-              shape_functions, element_nodes.displacements_, mulf_data);
+              shape_functions, element_nodes.displacements, mulf_data);
 
       Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> inv_delta_defgrd(true);
       inv_delta_defgrd.invert(delta_defgrd);
@@ -161,7 +161,7 @@ namespace Discret::ELEMENTS
 
       const SpatialMaterialMapping<celltype> spatial_material_mapping =
           evaluate_mulf_spatial_material_mapping(
-              jacobian_mapping, shape_functions, element_nodes.displacements_, mulf_data_gp);
+              jacobian_mapping, shape_functions, element_nodes.displacements, mulf_data_gp);
 
       const double fbar_factor = evaluate_fbar_factor(
           mapping_center.spatial_material_mapping.determinant_deformation_gradient_,
