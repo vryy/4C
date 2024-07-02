@@ -34,65 +34,6 @@ template <class so3_ele, Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Poro<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
-  if (scatra_coupling_)
-  {
-    if (la.Size() > 2)
-    {
-      if (discretization.HasState(2, "scalar"))
-      {
-        // check if you can get the scalar state
-        Teuchos::RCP<const Epetra_Vector> scalarnp = discretization.GetState(2, "scalar");
-
-        // extract local values of the global vectors
-        std::vector<double> myscalar(la[2].lm_.size());
-        Core::FE::ExtractMyValues(*scalarnp, myscalar, la[2].lm_);
-
-        if (so3_ele::NumMaterial() < 2)
-          FOUR_C_THROW("no second material defined for Wall poro element!");
-        Teuchos::RCP<Core::Mat::Material> scatramat = so3_ele::Material(2);
-
-        int numscal = 1;
-        if (scatramat->MaterialType() == Core::Materials::m_matlist or
-            scatramat->MaterialType() == Core::Materials::m_matlist_reactions)
-        {
-          Teuchos::RCP<Mat::MatList> matlist = Teuchos::rcp_dynamic_cast<Mat::MatList>(scatramat);
-          numscal = matlist->NumMat();
-        }
-
-        Teuchos::RCP<std::vector<double>> scalar =
-            Teuchos::rcp(new std::vector<double>(numscal, 0.0));
-        if ((int)myscalar.size() != numscal * numnod_) FOUR_C_THROW("sizes do not match!");
-
-        for (int i = 0; i < numnod_; i++)
-          for (int j = 0; j < numscal; j++) scalar->at(j) += myscalar[numscal * i + j] / numnod_;
-
-        params.set("scalar", scalar);
-      }
-    }
-    else
-    {
-      const double time = params.get("total time", 0.0);
-      // find out whether we will use a time curve and get the factor
-      int num = 0;  // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
-      std::vector<double> xrefe;
-      xrefe.resize(3);
-      Core::Nodes::Node** nodes = Nodes();
-      // get displacements of this element
-      //  Core::FE::ExtractMyValues(*disp,mydisp,lm);
-      for (int i = 0; i < numnod_; ++i)
-      {
-        const auto& x = nodes[i]->X();
-        xrefe[0] += x[0] / numnod_;
-        xrefe[1] += x[1] / numnod_;
-        xrefe[2] += x[2] / numnod_;
-      }
-      const double* coordgpref = xrefe.data();
-      double functfac =
-          Global::Problem::Instance()->FunctionById<Core::UTILS::FunctionOfSpaceTime>(num).evaluate(
-              coordgpref, time, 0);
-      params.set<double>("scalar", functfac);
-    }
-  }
 }
 
 template <class so3_ele, Core::FE::CellType distype>
@@ -124,8 +65,6 @@ int Discret::ELEMENTS::So3Poro<so3_ele, distype>::evaluate(Teuchos::ParameterLis
       FOUR_C_THROW("No action supplied");
     else if (action == "struct_poro_calc_fluidcoupling")
       act = Core::Elements::struct_poro_calc_fluidcoupling;
-    else if (action == "struct_poro_calc_scatracoupling")
-      act = Core::Elements::struct_poro_calc_scatracoupling;
   }
 
   // what should the element do
@@ -139,10 +78,6 @@ int Discret::ELEMENTS::So3Poro<so3_ele, distype>::evaluate(Teuchos::ParameterLis
           elevec2_epetra, elevec3_epetra);
     }
     break;
-    case Core::Elements::struct_poro_calc_scatracoupling:
-      // no coupling-> return
-      break;
-    //==================================================================================
     default:
     {
       // in some cases we need to write/change some data before evaluating
@@ -1258,11 +1193,6 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::InitElement()
   }
 
   init_ = true;
-
-  scatra_coupling_ = false;
-
-  Core::ProblemType probtype = Global::Problem::Instance()->GetProblemType();
-  if (probtype == Core::ProblemType::poroscatra) scatra_coupling_ = true;
 }
 
 template <class so3_ele, Core::FE::CellType distype>

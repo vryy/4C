@@ -24,7 +24,6 @@ Discret::ELEMENTS::So3Poro<so3_ele, distype>::So3Poro(int id, int owner)
     : so3_ele(id, owner),
       intpoints_(distype),
       init_(false),
-      scatra_coupling_(false),
       isNurbs_(false),
       weights_(true),
       myknots_(numdim_),
@@ -50,7 +49,6 @@ Discret::ELEMENTS::So3Poro<so3_ele, distype>::So3Poro(
       xsi_(old.xsi_),
       intpoints_(distype),
       init_(old.init_),
-      scatra_coupling_(old.scatra_coupling_),
       isNurbs_(old.isNurbs_),
       weights_(old.weights_),
       myknots_(old.myknots_),
@@ -92,9 +90,6 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::pack(Core::Communication::Pac
   so3_ele::add_to_pack(data, size);
   for (int i = 0; i < size; ++i) so3_ele::add_to_pack(data, xsi_[i]);
 
-  // scatra_coupling_
-  so3_ele::add_to_pack(data, scatra_coupling_);
-
   // isNurbs_
   so3_ele::add_to_pack(data, isNurbs_);
 
@@ -135,9 +130,6 @@ void Discret::ELEMENTS::So3Poro<so3_ele, distype>::unpack(const std::vector<char
   so3_ele::extract_from_pack(position, data, size);
   xsi_.resize(size, Core::LinAlg::Matrix<numdim_, 1>(true));
   for (int i = 0; i < size; ++i) so3_ele::extract_from_pack(position, data, xsi_[i]);
-
-  // scatra_coupling_
-  scatra_coupling_ = static_cast<bool>(so3_ele::extract_int(position, data));
 
   // isNurbs_
   isNurbs_ = static_cast<bool>(so3_ele::extract_int(position, data));
