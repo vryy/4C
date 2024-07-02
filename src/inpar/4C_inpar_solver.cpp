@@ -174,9 +174,6 @@ namespace Inpar::SOLVER
     {
       Core::UTILS::StringParameter(
           "MUELU_XML_FILE", "none", "xml file defining any MueLu preconditioner", &list);
-
-      Core::UTILS::BoolParameter(
-          "MUELU_XML_ENFORCE", "Yes", "option defining xml file usage", &list);
     }
 
     // BGS2x2 options

@@ -77,23 +77,17 @@ NAME                           Poro_solver
 AMGNXN_TYPE                    XML
 AMGNXN_XML_FILE                poro_3D_hex8_amgnxn_BGSAMG.xml
 -----------------------------------------------------------SOLVER 2
-SOLVER                         Belos
-AZSOLVE                        GMRES
-AZPREC                         MueLu
-MUELU_XML_ENFORCE              No
 NAME                           solidsolver
-ML_SMOOTHERFINE                 GS
-ML_SMOOTHERMED                  GS
-ML_SMOOTHERCOARSE               GS
------------------------------------------------------------SOLVER 3
 SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
-MUELU_XML_ENFORCE              No
+MUELU_XML_FILE                 xml/multigrid/elasticity3D_template.xml
+-----------------------------------------------------------SOLVER 3
 NAME                           fluidsolver
-ML_SMOOTHERFINE                 GS
-ML_SMOOTHERMED                  GS
-ML_SMOOTHERCOARSE               GS
+SOLVER                         Belos
+AZSOLVE                        GMRES
+AZPREC                         MueLu
+MUELU_XML_FILE                 xml/multigrid/fluid3D_template.xml
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 5 INITPOROSITY 0.8
 MAT 5 MAT_PoroLawNeoHooke BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001

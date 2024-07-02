@@ -989,6 +989,10 @@ void ScaTra::ScaTraTimIntImpl::compute_null_space_if_necessary() const
       mllist.set<Teuchos::RCP<Epetra_MultiVector>>("nullspace", nullspace);
       mllist.set("null space: vectors", nullspace->Values());
       mllist.set("ML validate parameter list", false);
+
+      Teuchos::RCP<Epetra_MultiVector> coordinates = discret_->build_node_coordinates();
+
+      mllist.set<Teuchos::RCP<Epetra_MultiVector>>("Coordinates", coordinates);
     }
 
     else

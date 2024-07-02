@@ -104,7 +104,7 @@ AZGRAPH                         0
 AZITER                          500
 AZOMEGA                         0
 AZOUTPUT                        10
-AZPREC                          MueLu
+AZPREC                          ML
 AZREUSE                         10
 AZSOLVE                         GMRES
 AZSUB                           300
@@ -128,7 +128,6 @@ ML_SMOOTHERFINE                 SGS
 ML_SMOOTHERMED                  SGS
 ML_SMOTIMES                     1 1 1 1 1
 SIMPLE_DAMPING                  1
-MUELU_XML_ENFORCE               No
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          Belos
@@ -183,7 +182,7 @@ AZGRAPH                         0
 AZITER                          1000
 AZOMEGA                         0
 AZOUTPUT                        10
-AZPREC                          MueLu
+AZPREC                          ML
 AZREUSE                         0
 AZSOLVE                         GMRES
 AZSUB                           300
@@ -207,7 +206,6 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     6 6 6 6 1
 SIMPLE_DAMPING                  1
-MUELU_XML_ENFORCE               No
 SOLVER                          Belos
 ----------------------------------------------------------MATERIALS
 //MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2500  NUE 0.25 DENS 7.8e-3
