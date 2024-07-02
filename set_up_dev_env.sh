@@ -20,6 +20,9 @@ pip install --upgrade pip
 pip install wheel
 pip install -r requirements.txt
 
+# Additionally store the hash of the ingredients for the virtual environment.
+./utilities/code_checks/check_venv --update
+
 # Install the pre-commit hooks.
 pre-commit install
 
