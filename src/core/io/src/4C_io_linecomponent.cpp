@@ -890,7 +890,7 @@ namespace Input
       condline->seekg(position);
 
       // add parameter value to line parameter list
-      insert_operation_(name(), str, container);
+      insert_operation_(str, container);
     }
 
     return condline;

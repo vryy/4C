@@ -437,9 +437,8 @@ namespace Input
         std::function<T(const std::string&)> process_operation, std::string print_string,
         bool optional = false)
         : LineComponent(name, optional),
-          insert_operation_(
-              [process_operation](const std::string& name, const std::string& read_string,
-                  Core::IO::InputParameterContainer& container)
+          insert_operation_([process_operation, name](const std::string& read_string,
+                                Core::IO::InputParameterContainer& container)
               { container.Add(name, process_operation(read_string)); }),
           print_string_(std::move(print_string)){};
 
@@ -454,7 +453,7 @@ namespace Input
    private:
     //! add processed data to the container
     std::function<void(
-        const std::string&, const std::string&, Core::IO::InputParameterContainer& container)>
+        const std::string& read_string, Core::IO::InputParameterContainer& container)>
         insert_operation_;
 
     //! string defining print out for this component
@@ -581,17 +580,6 @@ namespace Input
     definition->add_component(
         Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
     definition->add_component(Teuchos::rcp(new Input::BoolComponent(name, defaultvalue, optional)));
-  }
-
-  /// add a separator
-  /// add additional separator to indicate end of line which is important, e.g., for the validity
-  /// check of the std::vector<>
-  template <typename DefinitionType>
-  inline void add_named_separator(const Teuchos::RCP<DefinitionType>& definition,
-      const std::string& name, const std::string& description, const bool optional = false)
-  {
-    definition->add_component(
-        Teuchos::rcp(new Input::SeparatorComponent(name, description, optional)));
   }
 
   /*!

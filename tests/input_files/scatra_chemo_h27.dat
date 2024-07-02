@@ -151,8 +151,8 @@ BGS2X2_BLOCK2_DAMPING           1
 NAME                            No_name
 SIMPLE_DAMPING                  1
 -------------------------------------------------------------------MATERIALS
-//MAT 1 MAT_matlist LOCAL No NUMMAT 4 MATIDS 101 102 103 104 END  //scalar transport list
-MAT 1 MAT_matlist_chemotaxis LOCAL No NUMMAT 5 MATIDS 101 102 103 104 105 NUMPAIR 3 PAIRIDS 111 112 113 END //scalar transport list with reactions
+//MAT 1 MAT_matlist LOCAL No NUMMAT 4 MATIDS 101 102 103 104  //scalar transport list
+MAT 1 MAT_matlist_chemotaxis LOCAL No NUMMAT 5 MATIDS 101 102 103 104 105 NUMPAIR 3 PAIRIDS 111 112 113 //scalar transport list with reactions
 MAT 101 MAT_scatra DIFFUSIVITY 20.0
 MAT 102 MAT_scatra DIFFUSIVITY 1.0
 MAT 103 MAT_scatra DIFFUSIVITY 0.5

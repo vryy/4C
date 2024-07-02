@@ -36,7 +36,7 @@ DEFINITION_TAU                  Shakib_Hughes_Codina
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 10 11 NUMREAC 1 REACIDS 20 END
+MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 2 MATIDS 10 11 NUMREAC 1 REACIDS 20
 // particles of interest
 MAT 10 MAT_scatra DIFFUSIVITY 1e-5 REACTS_TO_EXTERNAL_FORCE true
 // dummy scalar

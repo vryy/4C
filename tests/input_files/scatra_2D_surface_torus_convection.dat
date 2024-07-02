@@ -46,7 +46,7 @@ DEFINITION_TAU                  Franca_Valentin
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 1 MATIDS 3 END
+MAT 1 MAT_matlist LOCAL No NUMMAT 1 MATIDS 3
 MAT 2 MAT_scatra DIFFUSIVITY 0.05    // Pe_e=1
 MAT 3 MAT_scatra DIFFUSIVITY 0.005    // Pe_e=10
 MAT 4 MAT_scatra DIFFUSIVITY 0.0005   // Pe_e=100

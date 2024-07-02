@@ -73,7 +73,7 @@ MAT 3 MAT_ion DIFFUSIVITY 7.99e-4 VALENCE -3.0 // Fe(CN)_6^-3
 MAT 4 MAT_ion DIFFUSIVITY 7.33e-4 VALENCE -4.0 // Fe(CN)_6^-4
 MAT 5 MAT_ion DIFFUSIVITY 5e-3 VALENCE 1.0 //H+
 MAT 6 MAT_ion DIFFUSIVITY 1e-3 VALENCE -1.0 //HSO4-
-MAT 7 MAT_matlist LOCAL No NUMMAT 6 MATIDS 1 2 3 4 5 6 END
+MAT 7 MAT_matlist LOCAL No NUMMAT 6 MATIDS 1 2 3 4 5 6
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 9.95 //initial concentration field: A+ in [mmol/cm^3 = mol/l = M]
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1 //initial concentration field: B+

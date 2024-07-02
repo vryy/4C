@@ -39,7 +39,7 @@ EQUPOT                          ENC
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3 END
+MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 2 3
 MAT 2 MAT_ion DIFFUSIVITY 1.71e-5 VALENCE 1.0
 MAT 3 MAT_ion DIFFUSIVITY 2.18e-5 VALENCE -1.0
 ----------------------------------------------------------------------FUNCT1

@@ -59,7 +59,7 @@ SOLVESCATRA                     no
 NAME                            mysolver
 SOLVER                          Superlu
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 2 MATIDS 13 14 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 0 END
+MAT 1 MAT_FluidPoroMultiPhase LOCAL No PERMEABILITY 1.0 NUMMAT 2 MATIDS 13 14 NUMFLUIDPHASES_IN_MULTIPHASEPORESPACE 0
 
 MAT 13 MAT_FluidPoroSingleVolFrac DENSITY 1.0 DIFFUSIVITY 1.0 AddScalarDependentFlux NO
 

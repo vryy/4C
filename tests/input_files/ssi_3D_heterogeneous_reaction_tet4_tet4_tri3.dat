@@ -73,10 +73,10 @@ CONVTOL                         1.000e-02
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_matlist LOCAL No NUMMAT 1 MATIDS 11 END
-MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 10 10 END
+MAT 1 MAT_matlist LOCAL No NUMMAT 1 MATIDS 11
+MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 10 10
 // first slave dofs and then master dofs in reaction list
-MAT 4 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 11 10 10 NUMREAC 1 REACIDS 20 END
+MAT 4 MAT_matlist_reactions LOCAL No NUMMAT 3 MATIDS 11 10 10 NUMREAC 1 REACIDS 20
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 10000 NUE 0.35 DENS 0.1
 MAT 10 MAT_scatra DIFFUSIVITY 0.1
 MAT 11 MAT_scatra DIFFUSIVITY 0.1
