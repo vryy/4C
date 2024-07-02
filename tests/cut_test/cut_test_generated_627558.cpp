@@ -2454,8 +2454,8 @@ void test_generated_627558()
     intersection.add_element(639690, nids, hex8_xyze, Core::FE::CellType::hex8);
   }
 
-  intersection.CutTest_Cut(
-      true, Inpar::Cut::VCellGaussPts_DirectDivergence, Inpar::Cut::BCellGaussPts_Tessellation);
-  intersection.Cut_Finalize(true, Inpar::Cut::VCellGaussPts_DirectDivergence,
-      Inpar::Cut::BCellGaussPts_Tessellation, false, true);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+      Core::Geo::Cut::BCellGaussPts_Tessellation);
+  intersection.Cut_Finalize(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence,
+      Core::Geo::Cut::BCellGaussPts_Tessellation, false, true);
 }

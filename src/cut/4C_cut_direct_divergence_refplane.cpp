@@ -125,9 +125,9 @@ std::vector<double> Core::Geo::Cut::DirectDivergenceGlobalRefplane::GetReference
 bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::diagonal_based_ref(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
-  if (options_.direct_divergence_refplane() != Inpar::Cut::DirDiv_refplane_all &&
-      options_.direct_divergence_refplane() != Inpar::Cut::DirDiv_refplane_diagonal &&
-      options_.direct_divergence_refplane() != Inpar::Cut::DirDiv_refplane_diagonal_side)
+  if (options_.direct_divergence_refplane() != DirDiv_refplane_all &&
+      options_.direct_divergence_refplane() != DirDiv_refplane_diagonal &&
+      options_.direct_divergence_refplane() != DirDiv_refplane_diagonal_side)
     return false;
 
   // Any method should involve the following two steps
@@ -195,8 +195,8 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::diagonal_based_ref(
 bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::facet_based_ref(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
-  if (options_.direct_divergence_refplane() != Inpar::Cut::DirDiv_refplane_all &&
-      options_.direct_divergence_refplane() != Inpar::Cut::DirDiv_refplane_facet)
+  if (options_.direct_divergence_refplane() != DirDiv_refplane_all &&
+      options_.direct_divergence_refplane() != DirDiv_refplane_facet)
     return false;
 
   const plain_facet_set& allfacets = volcell_->Facets();
@@ -265,9 +265,9 @@ bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::facet_based_ref(
 bool Core::Geo::Cut::DirectDivergenceGlobalRefplane::side_based_ref(
     std::vector<double>& RefPlaneEqn, std::vector<Point*> points, double tol)
 {
-  if (options_.direct_divergence_refplane() != Inpar::Cut::DirDiv_refplane_all &&
-      options_.direct_divergence_refplane() != Inpar::Cut::DirDiv_refplane_side &&
-      options_.direct_divergence_refplane() != Inpar::Cut::DirDiv_refplane_diagonal_side)
+  if (options_.direct_divergence_refplane() != DirDiv_refplane_all &&
+      options_.direct_divergence_refplane() != DirDiv_refplane_side &&
+      options_.direct_divergence_refplane() != DirDiv_refplane_diagonal_side)
     return false;
 
   const std::vector<Side*>& allsides = elem1_->Sides();

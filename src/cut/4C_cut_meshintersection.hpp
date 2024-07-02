@@ -80,9 +80,9 @@ namespace Core::Geo
 
       /// standard cut routine for non-parallel frameworks and cuttest
       void CutTest_Cut(bool include_inner,
-          Inpar::Cut::VCellGaussPts VCellgausstype = Inpar::Cut::VCellGaussPts_Tessellation,
-          Inpar::Cut::BCellGaussPts BCellgausstype = Inpar::Cut::BCellGaussPts_Tessellation,
-          bool tetcellsonly = true, bool screenoutput = true,
+          VCellGaussPts VCellgausstype = VCellGaussPts_Tessellation,
+          BCellGaussPts BCellgausstype = BCellGaussPts_Tessellation, bool tetcellsonly = true,
+          bool screenoutput = true,
           bool do_Cut_Positions_Dofsets = false);  // for cuttest with closed cutsides this option
                                                    // can be activated, otherwise this will fail!
 

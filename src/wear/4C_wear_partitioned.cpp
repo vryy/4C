@@ -99,7 +99,8 @@ Wear::Partitioned::Partitioned(const Epetra_Comm& comm) : Algorithm(comm)
 
     // setup projection matrices
     Teuchos::rcp_dynamic_cast<Core::Adapter::MortarVolCoupl>(coupalestru_)
-        ->setup(Global::Problem::Instance()->VolmortarParams());
+        ->setup(Global::Problem::Instance()->VolmortarParams(),
+            Global::Problem::Instance()->CutGeneralParams());
   }
 
   // create interface coupling

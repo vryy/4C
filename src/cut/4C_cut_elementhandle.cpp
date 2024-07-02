@@ -20,7 +20,6 @@
 #include "4C_cut_quadrature_compression.hpp"
 #include "4C_cut_tolerance.hpp"
 #include "4C_cut_volumecell.hpp"
-#include "4C_inpar_xfem.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -81,17 +80,17 @@ void Core::Geo::Cut::ElementHandle::volume_cell_gauss_points(
 
     switch (vc->parent_element()->get_element_integration_type())
     {
-      case Inpar::Cut::EleIntType_Tessellation:
+      case EleIntType_Tessellation:
       {
         append_volume_cell_gauss_points_tessellation(gpc, vc);
         break;
       }
-      case Inpar::Cut::EleIntType_MomentFitting:
+      case EleIntType_MomentFitting:
       {
         append_volume_cell_gauss_points_moment_fitting(gpc, vc);
         break;
       }
-      case Inpar::Cut::EleIntType_DirectDivergence:
+      case EleIntType_DirectDivergence:
       {
         append_volume_cell_gauss_points_direct_divergence(gpc, vc);
         break;
@@ -273,7 +272,7 @@ void Core::Geo::Cut::ElementHandle::append_volume_cell_gauss_points_direct_diver
 // The integration rules over all the volume-cells are connected.
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gauss_points_connected(
-    plain_volumecell_set& cells, Inpar::Cut::VCellGaussPts gausstype)
+    plain_volumecell_set& cells, VCellGaussPts gausstype)
 {
   Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
       Teuchos::rcp(new Core::FE::GaussPointsComposite(0));
@@ -285,7 +284,7 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gaus
     const plain_integrationcell_set& cells = vc->IntegrationCells();
 
 
-    if (gausstype == Inpar::Cut::VCellGaussPts_Tessellation)
+    if (gausstype == VCellGaussPts_Tessellation)
     {
       for (plain_integrationcell_set::const_iterator i = cells.begin(); i != cells.end(); ++i)
       {
@@ -332,8 +331,8 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Core::Geo::Cut::ElementHandle::gaus
         }
       }
     }
-    else if (gausstype == Inpar::Cut::VCellGaussPts_MomentFitting ||
-             gausstype == Inpar::Cut::VCellGaussPts_DirectDivergence)
+    else if (gausstype == VCellGaussPts_MomentFitting ||
+             gausstype == VCellGaussPts_DirectDivergence)
     {
       Teuchos::RCP<Core::FE::GaussPoints> gp = vc->get_gauss_rule();
       gpc->Append(gp);

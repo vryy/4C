@@ -173,7 +173,7 @@ void test_hex8_quad4_qhull1()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 // INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the
@@ -241,7 +241,7 @@ void test_hex8_quad4_alex1()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex2()
@@ -314,7 +314,7 @@ void test_hex8_quad4_alex2()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex3()
@@ -400,7 +400,7 @@ void test_hex8_quad4_alex3()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex4()
@@ -486,7 +486,7 @@ void test_hex8_quad4_alex4()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex5()
@@ -558,7 +558,7 @@ void test_hex8_quad4_alex5()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex6()
@@ -630,7 +630,7 @@ void test_hex8_quad4_alex6()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex7()
@@ -702,7 +702,7 @@ void test_hex8_quad4_alex7()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex8()
@@ -774,7 +774,7 @@ void test_hex8_quad4_alex8()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_tet4_quad4_alex9()
@@ -860,7 +860,7 @@ void test_tet4_quad4_alex9()
     tet.push_back(points.size());
     points.push_back(n->point());
   }
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
 }
 
 void test_tet4_quad4_alex10()
@@ -946,7 +946,7 @@ void test_tet4_quad4_alex10()
     tet.push_back(points.size());
     points.push_back(n->point());
   }
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
 }
 
 void test_tet4_quad4_alex11()
@@ -1018,7 +1018,7 @@ void test_tet4_quad4_alex11()
   for (int i = 0; i < 4; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, tet4_xyze, Core::FE::CellType::tet4);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex12()
@@ -1112,7 +1112,7 @@ void test_hex8_quad4_alex12()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex13()
@@ -1199,7 +1199,7 @@ void test_hex8_quad4_alex13()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex14()
@@ -1286,7 +1286,7 @@ void test_hex8_quad4_alex14()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex15()
@@ -1415,7 +1415,7 @@ void test_hex8_quad4_alex15()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_tet4_quad4_alex16()
@@ -1529,7 +1529,7 @@ void test_tet4_quad4_alex16()
   for (int i = 0; i < 4; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, tet4_xyze, Core::FE::CellType::tet4);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
 }
 
 void test_hex8_quad4_alex17()
@@ -1630,7 +1630,7 @@ void test_hex8_quad4_alex17()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex18()
@@ -1703,7 +1703,7 @@ void test_hex8_quad4_alex18()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex19()
@@ -1776,7 +1776,7 @@ void test_hex8_quad4_alex19()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex20()
@@ -1849,7 +1849,7 @@ void test_hex8_quad4_alex20()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex21()
@@ -1936,7 +1936,7 @@ void test_hex8_quad4_alex21()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex22()
@@ -2009,7 +2009,7 @@ void test_hex8_quad4_alex22()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex23()
@@ -2110,7 +2110,7 @@ void test_hex8_quad4_alex23()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex24()
@@ -2183,7 +2183,7 @@ void test_hex8_quad4_alex24()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex25()
@@ -2270,7 +2270,7 @@ void test_hex8_quad4_alex25()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex26()
@@ -2357,7 +2357,7 @@ void test_hex8_quad4_alex26()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex27()
@@ -2430,7 +2430,7 @@ void test_hex8_quad4_alex27()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex28()
@@ -2517,7 +2517,7 @@ void test_hex8_quad4_alex28()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex29()
@@ -2590,7 +2590,7 @@ void test_hex8_quad4_alex29()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex30()
@@ -2663,8 +2663,8 @@ void test_hex8_quad4_alex30()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  // intersection.CutTest_Cut( true,Inpar::Cut::VCellGaussPts_Tessellation);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  // intersection.CutTest_Cut( true,Core::Geo::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex31()
@@ -2737,7 +2737,7 @@ void test_hex8_quad4_alex31()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex32()
@@ -2810,7 +2810,7 @@ void test_hex8_quad4_alex32()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex33()
@@ -2883,7 +2883,7 @@ void test_hex8_quad4_alex33()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex34()
@@ -2956,7 +2956,7 @@ void test_hex8_quad4_alex34()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex35()
@@ -3029,7 +3029,7 @@ void test_hex8_quad4_alex35()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex36()
@@ -3130,7 +3130,7 @@ void test_hex8_quad4_alex36()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex37()
@@ -3211,7 +3211,7 @@ void test_hex8_quad4_alex37()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_alex38()
@@ -3298,7 +3298,7 @@ void test_hex8_quad4_alex38()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_tri3_ursula1()
@@ -3367,7 +3367,7 @@ void test_hex8_tri3_ursula1()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_axel7()
@@ -3474,7 +3474,7 @@ void test_hex8_quad4_axel7()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, tet4_xyze, Core::FE::CellType::tet4);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
 }
 
 void test_hex8_quad4_axel6()
@@ -3547,7 +3547,7 @@ void test_hex8_quad4_axel6()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_axel5()
@@ -3620,7 +3620,7 @@ void test_hex8_quad4_axel5()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_axel4()
@@ -3693,7 +3693,7 @@ void test_hex8_quad4_axel4()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_axel3()
@@ -3766,7 +3766,7 @@ void test_hex8_quad4_axel3()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_axel2()
@@ -3839,7 +3839,7 @@ void test_hex8_quad4_axel2()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_axel1()
@@ -3912,7 +3912,7 @@ void test_hex8_quad4_axel1()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_shadan5()
@@ -4014,7 +4014,7 @@ void test_hex8_quad4_shadan5()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_shadan4()
@@ -4137,7 +4137,7 @@ void test_hex8_quad4_shadan4()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_shadan3()
@@ -4238,7 +4238,7 @@ void test_hex8_quad4_shadan3()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_shadan2()
@@ -4325,7 +4325,7 @@ void test_hex8_quad4_shadan2()
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_shadan1()
@@ -4497,7 +4497,7 @@ void test_hex8_quad4_shadan1()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
   // intersection.CutTest_Cut( true,   );
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 // INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the
@@ -4643,7 +4643,7 @@ void test_hex8_quad4_mesh_many()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 // INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the
@@ -4749,7 +4749,7 @@ void test_hex8_quad4_mesh_edgecut()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 // INFO: This Cut test will not work with DD in LOCAL, as the hex8 does not fullfill the
@@ -4815,7 +4815,7 @@ void test_hex8_quad4_mesh_edgecut2()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex8_quad4_mesh_inner()
@@ -4879,7 +4879,7 @@ void test_hex8_quad4_mesh_inner()
 
   intersection.add_element(1, nids, hex8_xyze, Core::FE::CellType::hex8);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex27_quad9_simple()
@@ -4928,7 +4928,7 @@ void test_hex27_quad9_simple()
 
   intersection.add_element(1, nids, hex27_xyze, Core::FE::CellType::hex27);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex20_quad9_simple()
@@ -4977,7 +4977,7 @@ void test_hex20_quad9_simple()
 
   intersection.add_element(1, nids, hex20_xyze, Core::FE::CellType::hex20);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_hex20_quad9_moved()
@@ -5035,7 +5035,7 @@ void test_hex20_quad9_moved()
 
   intersection.add_element(1, nids, hex20_xyze, Core::FE::CellType::hex20);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }
 
 void test_tet10_quad9_simple()
@@ -5085,7 +5085,7 @@ void test_tet10_quad9_simple()
   intersection.add_element(1, nids, tet10_xyze, Core::FE::CellType::tet10);
 
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
 }
 
 void test_tet10_quad9_moved()
@@ -5143,7 +5143,7 @@ void test_tet10_quad9_moved()
 
   intersection.add_element(1, nids, tet10_xyze, Core::FE::CellType::tet10);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
 }
 
 void test_tet4_quad4_double()
@@ -5194,7 +5194,7 @@ void test_tet4_quad4_double()
   // Geo::Cut::ElementHandle * e =
   intersection.add_element(1, nids, tet4_xyze, Core::FE::CellType::tet4);
 
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
 }
 
 void test_tet4_tri3_double()
@@ -5242,7 +5242,7 @@ void test_tet4_tri3_double()
 
   // Geo::Cut::ElementHandle * e =
   intersection.add_element(1, nids, tet4_xyze, Core::FE::CellType::tet4);
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_Tessellation);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_Tessellation);
   std::cout << __LINE__ << std::endl;
   std::vector<double> tessVol, momFitVol, dirDivVol;
 

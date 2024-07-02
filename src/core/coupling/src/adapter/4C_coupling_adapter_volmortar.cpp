@@ -92,7 +92,8 @@ void Core::Adapter::MortarVolCoupl::init(int spatial_dimension,
 /*----------------------------------------------------------------------*
  |  setup                                                    rauch 08/16|
  *----------------------------------------------------------------------*/
-void Core::Adapter::MortarVolCoupl::setup(const Teuchos::ParameterList& params)
+void Core::Adapter::MortarVolCoupl::setup(
+    const Teuchos::ParameterList& params, const Teuchos::ParameterList& cut_params)
 {
   check_init();
 
@@ -101,9 +102,9 @@ void Core::Adapter::MortarVolCoupl::setup(const Teuchos::ParameterList& params)
     materialstrategy_ = Teuchos::rcp(new Core::VolMortar::UTILS::DefaultMaterialStrategy());
 
   // create coupling instance
-  Teuchos::RCP<Core::VolMortar::VolMortarCoupl> coupdis =
-      Teuchos::rcp(new Core::VolMortar::VolMortarCoupl(spatial_dimension_, masterdis_, slavedis_,
-          params, coupleddof12_, coupleddof21_, dofsets12_, dofsets21_, materialstrategy_));
+  Teuchos::RCP<Core::VolMortar::VolMortarCoupl> coupdis = Teuchos::rcp(
+      new Core::VolMortar::VolMortarCoupl(spatial_dimension_, masterdis_, slavedis_, params,
+          cut_params, coupleddof12_, coupleddof21_, dofsets12_, dofsets21_, materialstrategy_));
 
   //-----------------------
   // Evaluate volmortar coupling:
@@ -195,6 +196,7 @@ void Core::Adapter::MortarVolCoupl::create_aux_dofsets(Teuchos::RCP<Core::FE::Di
  *----------------------------------------------------------------------*/
 void Core::Adapter::MortarVolCoupl::AssignMaterials(Teuchos::RCP<Core::FE::Discretization> dis1,
     Teuchos::RCP<Core::FE::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
+    const Teuchos::ParameterList& cut_params,
     Teuchos::RCP<Core::VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy)
 {
   if (materialstrategy == Teuchos::null)
@@ -202,7 +204,7 @@ void Core::Adapter::MortarVolCoupl::AssignMaterials(Teuchos::RCP<Core::FE::Discr
   // create coupling instance
   Teuchos::RCP<Core::VolMortar::VolMortarCoupl> coupdis =
       Teuchos::rcp(new Core::VolMortar::VolMortarCoupl(spatial_dimension_, dis1, dis2,
-          volmortar_params, nullptr, nullptr, nullptr, nullptr, materialstrategy));
+          volmortar_params, cut_params, nullptr, nullptr, nullptr, nullptr, materialstrategy));
 
   // assign materials from one discretization to the other
   coupdis->AssignMaterials();

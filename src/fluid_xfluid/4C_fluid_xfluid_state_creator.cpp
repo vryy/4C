@@ -134,16 +134,20 @@ void FLD::XFluidStateCreator::create_new_cut_state(
 )
 {
   // new wizard using information about cutting sides from the condition_manager
-  wizard = Teuchos::rcp(new Core::Geo::CutWizard(xdiscret));
+  wizard = Teuchos::rcp(new Core::Geo::CutWizard(xdiscret,
+      [xdiscret](const Core::Nodes::Node& node, std::vector<int>& lm)
+      { xdiscret->InitialDof(&node, lm); }));
 
   // Set options for the cut wizard
-  wizard->SetOptions(nodal_dofset_strategy_,  // strategy for nodal dofset management
-      volume_cell_gauss_point_by_,            // how to create volume cell Gauss points?
-      bound_cell_gauss_point_by_,             // how to create boundary cell Gauss points?
-      gmsh_cut_out_,                          // gmsh output for cut library
-      true,                                   // find point positions
-      false,                                  // generate only tet cells
-      true                                    // print screen output
+  wizard->SetOptions(Global::Problem::Instance()->CutGeneralParams(),
+      nodal_dofset_strategy_,       // strategy for nodal dofset management
+      volume_cell_gauss_point_by_,  // how to create volume cell Gauss points?
+      bound_cell_gauss_point_by_,   // how to create boundary cell Gauss points?
+      Global::Problem::Instance()->OutputControlFile()->file_name(),
+      gmsh_cut_out_,  // gmsh output for cut library
+      true,           // find point positions
+      false,          // generate only tet cells
+      true            // print screen output
   );
 
   //--------------------------------------------------------------------------------------

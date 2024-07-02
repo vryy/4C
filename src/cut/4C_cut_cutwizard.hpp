@@ -12,13 +12,16 @@ surface meshes
 
 #include "4C_config.hpp"
 
-#include "4C_inpar_cut.hpp"
+#include "4C_cut_enum.hpp"
+#include "4C_fem_general_node.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
+
+#include <filesystem>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -159,10 +162,16 @@ namespace Core::Geo
     //! @name Constructor and Destructor
     /*========================================================================*/
 
-    /*!
-    \brief Constructor
-    */
-    CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis);
+    /**
+     * \brief Constructor.
+     *
+     * Create CutWizard object with the given background discretization. The optional
+     * function @p global_dof_indices can be used to retrieve the global dof indices from
+     * the background discretization.
+     */
+    CutWizard(const Teuchos::RCP<Core::FE::Discretization>& backdis,
+        std::function<void(const Core::Nodes::Node& node, std::vector<int>& lm)>
+            global_dof_indices = nullptr);
 
 
     /*!
@@ -177,15 +186,15 @@ namespace Core::Geo
     /*========================================================================*/
 
     //! set options and flags used during the cut
-    void SetOptions(Inpar::Cut::NodalDofSetStrategy
-                        nodal_dofset_strategy,     //!< strategy for nodal dofset management
-        Inpar::Cut::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
-        Inpar::Cut::BCellGaussPts
-            BCellgausstype,  //!< Gauss point generation method for Boundarycell
-        bool gmsh_output,    //!< print write gmsh output for cut
-        bool positions,      //!< set inside and outside point, facet and volumecell positions
-        bool tetcellsonly,   //!< generate only tet cells
-        bool screenoutput    //!< print screen output
+    void SetOptions(const Teuchos::ParameterList& cutparams,  //!< parameter list for cut options
+        Cut::NodalDofSetStrategy nodal_dofset_strategy,  //!< strategy for nodal dofset management
+        Cut::VCellGaussPts VCellgausstype,  //!< Gauss point generation method for Volumecell
+        Cut::BCellGaussPts BCellgausstype,  //!< Gauss point generation method for Boundarycell
+        std::string output_prefix,          //!< prefix for output files
+        bool gmsh_output,                   //!< print write gmsh output for cut
+        bool positions,     //!< set inside and outside point, facet and volumecell positions
+        bool tetcellsonly,  //!< generate only tet cells
+        bool screenoutput   //!< print screen output
     );
 
     virtual void SetBackgroundState(
@@ -355,6 +364,7 @@ namespace Core::Geo
 
     //! @name meshes
     Teuchos::RCP<BackMesh> back_mesh_;
+    std::function<void(const Core::Nodes::Node& node, std::vector<int>& lm)> global_dof_indices_;
     std::map<int, Teuchos::RCP<CutterMesh>> cutter_meshes_;
     const Epetra_Comm& comm_;
     int myrank_;  ///< my processor Id
@@ -379,9 +389,10 @@ namespace Core::Geo
     //---------------------------------Options ----------------------------
 
     //! @name Options
-    Inpar::Cut::VCellGaussPts v_cellgausstype_;  ///< integration type for volume-cells
-    Inpar::Cut::BCellGaussPts b_cellgausstype_;  ///< integration type for boundary-cells
-    bool gmsh_output_;                           ///< write gmsh output?
+    Cut::VCellGaussPts v_cellgausstype_;  ///< integration type for volume-cells
+    Cut::BCellGaussPts b_cellgausstype_;  ///< integration type for boundary-cells
+    std::string output_prefix_;           ///< prefix for output files
+    bool gmsh_output_;                    ///< write gmsh output?
     bool tetcellsonly_;          ///< enforce to create tetrahedral integration cells exclusively
     bool screenoutput_;          ///< write output to screen
     bool lsv_only_plus_domain_;  ///< consider only plus domain of level-set field as physical field

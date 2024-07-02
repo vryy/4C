@@ -17,7 +17,6 @@
 #include "4C_cut_tetmesh.hpp"
 #include "4C_fem_geometry_element_volume.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_cut.hpp"
 
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -142,7 +141,7 @@ Core::Geo::Cut::Element::Element(
       sides_(sides),
       nodes_(nodes),
       quadshape_(Core::FE::CellType::dis_none),
-      eleinttype_(Inpar::Cut::EleIntType_Undecided)
+      eleinttype_(Core::Geo::Cut::EleIntType_Undecided)
 {
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
   {
@@ -908,7 +907,7 @@ void Core::Geo::Cut::Element::create_integration_cells(Mesh& mesh, int count, bo
     // return if this was possible
   }
 
-  eleinttype_ = Inpar::Cut::EleIntType_Tessellation;
+  eleinttype_ = Core::Geo::Cut::EleIntType_Tessellation;
 
   if (not tetcellsonly)
   {
@@ -984,13 +983,13 @@ bool Core::Geo::Cut::Element::create_simple_shaped_integration_cells(Mesh& mesh)
       //
       //        if(fabs(vol_diff)<1e-14)
       //        {
-      //          eleinttype_ = Inpar::Cut::EleIntType_StandardUncut;
+      //          eleinttype_ = Core::Geo::Cut::EleIntType_StandardUncut;
       //          return true;
       //        }
       //      }
 
       // simple integration cells could be created, however, does not equal the element itself
-      eleinttype_ = Inpar::Cut::EleIntType_Tessellation;
+      eleinttype_ = Core::Geo::Cut::EleIntType_Tessellation;
       return true;  // return if this was possible
     }
   }
@@ -1226,7 +1225,7 @@ void Core::Geo::Cut::Element::integrate_specific_functions_tessellation()
  * only for cells placed in the fluid region
  *----------------------------------------------------------------------------*/
 void Core::Geo::Cut::Element::moment_fit_gauss_weights(
-    Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype)
+    Mesh& mesh, bool include_inner, Core::Geo::Cut::BCellGaussPts Bcellgausstype)
 {
   if (not active_) return;
 
@@ -1252,7 +1251,7 @@ void Core::Geo::Cut::Element::moment_fit_gauss_weights(
    }
    }*/
 
-  eleinttype_ = Inpar::Cut::EleIntType_MomentFitting;
+  eleinttype_ = Core::Geo::Cut::EleIntType_MomentFitting;
 
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); i++)
   {
@@ -1267,7 +1266,7 @@ void Core::Geo::Cut::Element::moment_fit_gauss_weights(
  * performed only for cells placed in the fluid region
  *----------------------------------------------------------------------------*/
 void Core::Geo::Cut::Element::direct_divergence_gauss_rule(
-    Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype)
+    Mesh& mesh, bool include_inner, Core::Geo::Cut::BCellGaussPts Bcellgausstype)
 {
   if (not active_) return;
 
@@ -1275,7 +1274,7 @@ void Core::Geo::Cut::Element::direct_divergence_gauss_rule(
   if (create_simple_shaped_integration_cells(mesh)) return;
   // return if this was possible
 
-  eleinttype_ = Inpar::Cut::EleIntType_DirectDivergence;
+  eleinttype_ = Core::Geo::Cut::EleIntType_DirectDivergence;
 
   for (plain_volumecell_set::iterator i = cells_.begin(); i != cells_.end(); i++)
   {

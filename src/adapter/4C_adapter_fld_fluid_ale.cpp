@@ -102,7 +102,8 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
         &dofsets21, Teuchos::null, false);
 
     // setup coupling adapter
-    coupfa_volmortar->setup(Global::Problem::Instance()->VolmortarParams());
+    coupfa_volmortar->setup(Global::Problem::Instance()->VolmortarParams(),
+        Global::Problem::Instance()->CutGeneralParams());
 
     // set pointer to coupling adapter
     coupfa_ = coupfa_volmortar;
@@ -157,7 +158,8 @@ Adapter::FluidAle::FluidAle(const Teuchos::ParameterList& prbdyn, std::string co
         Global::Problem::Instance()->GetDis("ale"), &coupleddof12, &coupleddof21, &dofsets12,
         &dofsets21, Teuchos::null, false);
 
-    icoupfa->setup(Global::Problem::Instance()->VolmortarParams());
+    icoupfa->setup(Global::Problem::Instance()->VolmortarParams(),
+        Global::Problem::Instance()->CutGeneralParams());
 
     icoupfa_ = icoupfa;
   }

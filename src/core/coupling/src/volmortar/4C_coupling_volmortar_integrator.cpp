@@ -16,7 +16,6 @@
 #include "4C_coupling_volmortar_cell.hpp"
 #include "4C_coupling_volmortar_defines.hpp"
 #include "4C_coupling_volmortar_shape.hpp"
-#include "4C_cut_volumecell.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_linalg_serialdensematrix.hpp"

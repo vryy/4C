@@ -13,8 +13,8 @@
 
 #include "4C_inpar_xfem.hpp"
 
+#include "4C_cut_enum.hpp"
 #include "4C_fem_condition_definition.hpp"
-#include "4C_inpar_cut.hpp"
 #include "4C_io_linecomponent.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -53,24 +53,26 @@ void Inpar::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Strategy used for the nodal dofset management per node",
       tuple<std::string>(
           "OneDofset_PerNodeAndPosition", "ConnectGhostDofsets_PerNodeAndPosition", "full"),
-      tuple<int>(Inpar::Cut::NDS_Strategy_OneDofset_PerNodeAndPosition,
-          Inpar::Cut::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition,
-          Inpar::Cut::NDS_Strategy_full),
+      tuple<int>(Core::Geo::Cut::NDS_Strategy_OneDofset_PerNodeAndPosition,
+          Core::Geo::Cut::NDS_Strategy_ConnectGhostDofsets_PerNodeAndPosition,
+          Core::Geo::Cut::NDS_Strategy_full),
       &xfem_general);
 
   // Integration options
   setStringToIntegralParameter<int>("VOLUME_GAUSS_POINTS_BY", "Tessellation",
       "Method for finding Gauss Points for the cut volumes",
       tuple<std::string>("Tessellation", "MomentFitting", "DirectDivergence"),
-      tuple<int>(Inpar::Cut::VCellGaussPts_Tessellation, Inpar::Cut::VCellGaussPts_MomentFitting,
-          Inpar::Cut::VCellGaussPts_DirectDivergence),
+      tuple<int>(Core::Geo::Cut::VCellGaussPts_Tessellation,
+          Core::Geo::Cut::VCellGaussPts_MomentFitting,
+          Core::Geo::Cut::VCellGaussPts_DirectDivergence),
       &xfem_general);
 
   setStringToIntegralParameter<int>("BOUNDARY_GAUSS_POINTS_BY", "Tessellation",
       "Method for finding Gauss Points for the boundary cells",
       tuple<std::string>("Tessellation", "MomentFitting", "DirectDivergence"),
-      tuple<int>(Inpar::Cut::BCellGaussPts_Tessellation, Inpar::Cut::BCellGaussPts_MomentFitting,
-          Inpar::Cut::BCellGaussPts_DirectDivergence),
+      tuple<int>(Core::Geo::Cut::BCellGaussPts_Tessellation,
+          Core::Geo::Cut::BCellGaussPts_MomentFitting,
+          Core::Geo::Cut::BCellGaussPts_DirectDivergence),
       &xfem_general);
 
   /*----------------------------------------------------------------------*/

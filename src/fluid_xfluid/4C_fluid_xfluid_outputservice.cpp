@@ -261,7 +261,7 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
       gmsh_eos_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_EOS_OUT")),
       gmsh_discret_out_((bool)Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_DISCRET_OUT")),
       gmsh_step_diff_(500),
-      volume_cell_gauss_point_by_(Core::UTILS::IntegralValue<Inpar::Cut::VCellGaussPts>(
+      volume_cell_gauss_point_by_(Core::UTILS::IntegralValue<Core::Geo::Cut::VCellGaussPts>(
           params_xfem, "VOLUME_GAUSS_POINTS_BY")),
       include_inner_(include_inner)
 {
@@ -823,7 +823,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
   // facet based output for cut volumes
   // integrationcells are not available because tessellation is not used
-  if (volume_cell_gauss_point_by_ != Inpar::Cut::VCellGaussPts_Tessellation)
+  if (volume_cell_gauss_point_by_ != Core::Geo::Cut::VCellGaussPts_Tessellation)
   {
     const Core::Geo::Cut::plain_facet_set& facete = vc->Facets();
     for (Core::Geo::Cut::plain_facet_set::const_iterator i = facete.begin(); i != facete.end(); i++)

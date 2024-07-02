@@ -83,7 +83,7 @@ namespace Core::Adapter
     \brief Setup this class based on the @p params.
 
     */
-    void setup(const Teuchos::ParameterList& params);
+    void setup(const Teuchos::ParameterList& params, const Teuchos::ParameterList& cut_params);
 
     /*!
     \brief Redistribute discretizations to meet needs of volmortar coupling
@@ -136,6 +136,7 @@ namespace Core::Adapter
     //! assign materials
     void AssignMaterials(Teuchos::RCP<Core::FE::Discretization> dis1,
         Teuchos::RCP<Core::FE::Discretization> dis2, const Teuchos::ParameterList& volmortar_params,
+        const Teuchos::ParameterList& cut_params,
         Teuchos::RCP<VolMortar::UTILS::DefaultMaterialStrategy> materialstrategy = Teuchos::null);
 
 

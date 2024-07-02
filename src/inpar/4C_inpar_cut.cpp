@@ -11,6 +11,7 @@
 
 #include "4C_inpar_cut.hpp"
 
+#include "4C_cut_enum.hpp"
 #include "4C_fem_condition_definition.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -29,12 +30,12 @@ void Inpar::Cut::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   // intersection precision (double or cln)
   setStringToIntegralParameter<int>("KERNEL_INTERSECTION_FLOATTYPE", "double",
       "The floattype of the cut surface-edge intersection", tuple<std::string>("cln", "double"),
-      tuple<int>(Inpar::Cut::floattype_cln, Inpar::Cut::floattype_double), &cut_general);
+      tuple<int>(Core::Geo::Cut::floattype_cln, Core::Geo::Cut::floattype_double), &cut_general);
 
   // Computing disctance surface to point precision (double or cln)
   setStringToIntegralParameter<int>("KERNEL_DISTANCE_FLOATTYPE", "double",
       "The floattype of the cut distance computation", tuple<std::string>("cln", "double"),
-      tuple<int>(Inpar::Cut::floattype_cln, Inpar::Cut::floattype_double), &cut_general);
+      tuple<int>(Core::Geo::Cut::floattype_cln, Core::Geo::Cut::floattype_double), &cut_general);
 
   // A general floattype for Core::Geo::Cut::Position for Embedded Elements (compute_distance)
   // If specified this floattype is used for all computations of Core::Geo::Cut::Position with
@@ -42,8 +43,8 @@ void Inpar::Cut::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("GENERAL_POSITON_DISTANCE_FLOATTYPE", "none",
       "A general floattype for Core::Geo::Cut::Position for Embedded Elements (compute_distance)",
       tuple<std::string>("none", "cln", "double"),
-      tuple<int>(
-          Inpar::Cut::floattype_none, Inpar::Cut::floattype_cln, Inpar::Cut::floattype_double),
+      tuple<int>(Core::Geo::Cut::floattype_none, Core::Geo::Cut::floattype_cln,
+          Core::Geo::Cut::floattype_double),
       &cut_general);
 
   // A general floattype for Core::Geo::Cut::Position for Elements (ComputePosition)
@@ -51,17 +52,17 @@ void Inpar::Cut::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   setStringToIntegralParameter<int>("GENERAL_POSITON_POSITION_FLOATTYPE", "none",
       "A general floattype for Core::Geo::Cut::Position Elements (ComputePosition)",
       tuple<std::string>("none", "cln", "double"),
-      tuple<int>(
-          Inpar::Cut::floattype_none, Inpar::Cut::floattype_cln, Inpar::Cut::floattype_double),
+      tuple<int>(Core::Geo::Cut::floattype_none, Core::Geo::Cut::floattype_cln,
+          Core::Geo::Cut::floattype_double),
       &cut_general);
 
   // Specifiy which Referenceplanes are used in DirectDivergence
   setStringToIntegralParameter<int>("DIRECT_DIVERGENCE_REFPLANE", "all",
       "Specifiy which Referenceplanes are used in DirectDivergence",
       tuple<std::string>("all", "diagonal_side", "facet", "diagonal", "side", "none"),
-      tuple<int>(Inpar::Cut::DirDiv_refplane_all, Inpar::Cut::DirDiv_refplane_diagonal_side,
-          Inpar::Cut::DirDiv_refplane_facet, Inpar::Cut::DirDiv_refplane_diagonal,
-          Inpar::Cut::DirDiv_refplane_side, Inpar::Cut::DirDiv_refplane_none),
+      tuple<int>(Core::Geo::Cut::DirDiv_refplane_all, Core::Geo::Cut::DirDiv_refplane_diagonal_side,
+          Core::Geo::Cut::DirDiv_refplane_facet, Core::Geo::Cut::DirDiv_refplane_diagonal,
+          Core::Geo::Cut::DirDiv_refplane_side, Core::Geo::Cut::DirDiv_refplane_none),
       &cut_general);
 
   // Specifiy is Cutsides are triangulated

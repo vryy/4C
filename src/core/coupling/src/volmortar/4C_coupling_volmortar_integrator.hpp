@@ -20,7 +20,6 @@
 #include "4C_config.hpp"
 
 #include "4C_coupling_volmortar.hpp"
-#include "4C_cut_utils.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 

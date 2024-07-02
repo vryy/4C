@@ -13,6 +13,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_cut_enum.hpp"
 #include "4C_inpar_cut.hpp"
 #include "4C_inpar_fluid.hpp"
 #include "4C_inpar_xfem.hpp"
@@ -76,11 +77,11 @@ namespace FLD
         Teuchos::ParameterList& params_xfem, int maxnumdofsets, int minnumdofsets,
         bool include_inner)
         : condition_manager_(condition_manager),
-          nodal_dofset_strategy_(Core::UTILS::IntegralValue<Inpar::Cut::NodalDofSetStrategy>(
+          nodal_dofset_strategy_(Core::UTILS::IntegralValue<Core::Geo::Cut::NodalDofSetStrategy>(
               params_xfem, "NODAL_DOFSET_STRATEGY")),
-          volume_cell_gauss_point_by_(Core::UTILS::IntegralValue<Inpar::Cut::VCellGaussPts>(
+          volume_cell_gauss_point_by_(Core::UTILS::IntegralValue<Core::Geo::Cut::VCellGaussPts>(
               params_xfem, "VOLUME_GAUSS_POINTS_BY")),
-          bound_cell_gauss_point_by_(Core::UTILS::IntegralValue<Inpar::Cut::BCellGaussPts>(
+          bound_cell_gauss_point_by_(Core::UTILS::IntegralValue<Core::Geo::Cut::BCellGaussPts>(
               params_xfem, "BOUNDARY_GAUSS_POINTS_BY")),
           gmsh_cut_out_(Core::UTILS::IntegralValue<int>(params_xfem, "GMSH_CUT_OUT")),
           maxnumdofsets_(maxnumdofsets),
@@ -131,10 +132,10 @@ namespace FLD
     Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
 
     //! strategy for nodal dofset management
-    const Inpar::Cut::NodalDofSetStrategy nodal_dofset_strategy_;
+    const Core::Geo::Cut::NodalDofSetStrategy nodal_dofset_strategy_;
 
-    const Inpar::Cut::VCellGaussPts volume_cell_gauss_point_by_;
-    const Inpar::Cut::BCellGaussPts bound_cell_gauss_point_by_;
+    const Core::Geo::Cut::VCellGaussPts volume_cell_gauss_point_by_;
+    const Core::Geo::Cut::BCellGaussPts bound_cell_gauss_point_by_;
 
     /// is gmsh-output active?
     const bool gmsh_cut_out_;

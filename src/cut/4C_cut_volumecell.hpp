@@ -13,9 +13,9 @@
 
 #include "4C_config.hpp"
 
+#include "4C_cut_enum.hpp"
 #include "4C_cut_facet.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
-#include "4C_inpar_cut.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -89,15 +89,16 @@ namespace Core::Geo
       \brief Construct the Gaussian quadrature rule by performing moment fitting over the
       volumecells
        */
-      void moment_fit_gauss_weights(
-          Element* elem, Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts BCellgausstype);
+      void moment_fit_gauss_weights(Element* elem, Mesh& mesh, bool include_inner,
+          Core::Geo::Cut::BCellGaussPts BCellgausstype);
 
       /*!
       \brief Construct the Gaussian quadrature rule by triangulating the facets of volumecell and
       applying divergence theorem
        */
       void direct_divergence_gauss_rule(Element* elem, Mesh& mesh, bool include_inner,
-          Inpar::Cut::BCellGaussPts BCellgausstype = Inpar::Cut::BCellGaussPts_Tessellation);
+          Core::Geo::Cut::BCellGaussPts BCellgausstype =
+              Core::Geo::Cut::BCellGaussPts_Tessellation);
 
       /*!
       \brief Project the integration rule generated w.r to the global coordinates of the element to
@@ -110,11 +111,11 @@ namespace Core::Geo
       momentfitting and boundarycells are by tessellation
        */
       void generate_boundary_cells(Mesh& mesh, const Core::Geo::Cut::Point::PointPosition posi,
-          Element* elem, int BaseNos, Inpar::Cut::BCellGaussPts BCellgausstype);
+          Element* elem, int BaseNos, Core::Geo::Cut::BCellGaussPts BCellgausstype);
 
       void generate_boundary_cells_level_set_side(Mesh& mesh,
           const Core::Geo::Cut::Point::PointPosition posi, Element* elem, Facet* facet, int BaseNos,
-          Inpar::Cut::BCellGaussPts BCellgausstype);
+          Core::Geo::Cut::BCellGaussPts BCellgausstype);
 
       /*!
       \brief Get the boundarycells generated from this volumecell

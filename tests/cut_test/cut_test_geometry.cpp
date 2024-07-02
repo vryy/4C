@@ -121,10 +121,10 @@ void test_geometry_distance()
   Core::LinAlg::Matrix<3, 1> xyz(xyz_data);
 
   Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(
-      Inpar::Cut::floattype_cln);  // use cln
+      Core::Geo::Cut::floattype_cln);  // use cln
   Core::Geo::Cut::PositionFactory::specify_general_pos_floattype(
-      Inpar::Cut::floattype_double);  // use
-                                      // double
+      Core::Geo::Cut::floattype_double);  // use
+                                          // double
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
       Core::Geo::Cut::Position::Create(xyze, xyz, Core::FE::CellType::tri3);
   if (pos->Compute())
@@ -150,10 +150,10 @@ void test_geometry_distance2()
   }
 
   Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(
-      Inpar::Cut::floattype_cln);  // use cln
+      Core::Geo::Cut::floattype_cln);  // use cln
   Core::Geo::Cut::PositionFactory::specify_general_pos_floattype(
-      Inpar::Cut::floattype_double);  // use
-                                      // double
+      Core::Geo::Cut::floattype_double);  // use
+                                          // double
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
       Core::Geo::Cut::Position::Create(xyze, xyz, Core::FE::CellType::quad4);
   if (pos->Compute())
@@ -180,10 +180,10 @@ void test_geometry_distance3()
   }
 
   Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(
-      Inpar::Cut::floattype_cln);  // use cln
+      Core::Geo::Cut::floattype_cln);  // use cln
   Core::Geo::Cut::PositionFactory::specify_general_pos_floattype(
-      Inpar::Cut::floattype_double);  // use
-                                      // double
+      Core::Geo::Cut::floattype_double);  // use
+                                          // double
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
       Core::Geo::Cut::Position::Create(xyze, xyz, Core::FE::CellType::quad4);
   if (pos->Compute())

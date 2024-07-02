@@ -69,5 +69,5 @@ void test_hex8_quad4_double_cut()
   // intersection.SelfCutTest_Cut();
 
   // OutputGenerator generator;
-  intersection.CutTest_Cut(true, Inpar::Cut::VCellGaussPts_DirectDivergence);
+  intersection.CutTest_Cut(true, Core::Geo::Cut::VCellGaussPts_DirectDivergence);
 }

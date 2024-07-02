@@ -1467,10 +1467,10 @@ void test_position2d()
   xyz.scale(scale);
 
   Core::Geo::Cut::PositionFactory::specify_general_dist_floattype(
-      Inpar::Cut::floattype_cln);  // use cln
+      Core::Geo::Cut::floattype_cln);  // use cln
   Core::Geo::Cut::PositionFactory::specify_general_pos_floattype(
-      Inpar::Cut::floattype_double);  // use
-                                      // double
+      Core::Geo::Cut::floattype_double);  // use
+                                          // double
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
       Core::Geo::Cut::Position::Create(side_xyze, xyz, Core::FE::CellType::tri3);
   pos->Compute();

@@ -1077,7 +1077,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::VolumeCell::gauss_points_fit
 *---------------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
     const Core::Geo::Cut::Point::PointPosition posi, Element* elem, int BaseNos,
-    Inpar::Cut::BCellGaussPts BCellgausstype)
+    Core::Geo::Cut::BCellGaussPts BCellgausstype)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "Core::Geo::Cut::VolumeCell::generate_boundary_cells" );
 
@@ -1149,8 +1149,9 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
     }
     else
     {
-      if (BCellgausstype == Inpar::Cut::BCellGaussPts_Tessellation)  // generate boundarycell
-                                                                     // gausspoints by triangulation
+      if (BCellgausstype ==
+          Core::Geo::Cut::BCellGaussPts_Tessellation)  // generate boundarycell
+                                                       // gausspoints by triangulation
       {
         if (!fac->IsTriangulated()) fac->DoTriangulation(mesh, corners);
         const std::vector<std::vector<Point*>>& triangulation = fac->Triangulation();
@@ -1178,8 +1179,8 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
       }
 
       else if (BCellgausstype ==
-               Inpar::Cut::BCellGaussPts_MomentFitting)  // generate boundarycell gausspoints by
-                                                         // solving moment fitting equations
+               Core::Geo::Cut::BCellGaussPts_MomentFitting)  // generate boundarycell gausspoints by
+                                                             // solving moment fitting equations
       {
         BoundarycellIntegration bcell_inte(elem, fac, posi, BaseNos);
         bcellweights_ = bcell_inte.generate_boundary_cell_integration_rule();
@@ -1245,12 +1246,12 @@ void Core::Geo::Cut::VolumeCell::generate_boundary_cells(Mesh& mesh,
 *---------------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::VolumeCell::generate_boundary_cells_level_set_side(Mesh& mesh,
     const Core::Geo::Cut::Point::PointPosition posi, Element* elem, Facet* fac, int BaseNos,
-    Inpar::Cut::BCellGaussPts BCellgausstype)
+    Core::Geo::Cut::BCellGaussPts BCellgausstype)
 {
   if (not fac->belongs_to_level_set_side())
     FOUR_C_THROW("Why would you call BC-creation for LS-Side without a LS side?");
 
-  if (BCellgausstype == Inpar::Cut::BCellGaussPts_MomentFitting)
+  if (BCellgausstype == Core::Geo::Cut::BCellGaussPts_MomentFitting)
     FOUR_C_THROW("Not supported for BC-Cell creation for LevelSetSides.");
 
   // Is the facet split/triangulated and if it consists of 4 corners is it planar.
@@ -1494,7 +1495,7 @@ Teuchos::RCP<Core::FE::GaussPoints> Core::Geo::Cut::VolumeCell::generate_interna
    Moment fitting equations are solved at each volume cell to construct integration rules
 *-------------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::VolumeCell::moment_fit_gauss_weights(
-    Element* elem, Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts BCellgausstype)
+    Element* elem, Mesh& mesh, bool include_inner, Core::Geo::Cut::BCellGaussPts BCellgausstype)
 {
 #ifdef LOCAL
   // position is used to decide whether the ordering of points are in clockwise or not
@@ -1539,14 +1540,15 @@ void Core::Geo::Cut::VolumeCell::moment_fit_gauss_weights(
 is identified which will be used to find the modified integral in fluid integration
 *----------------------------------------------------------------------------------------------------------------*/
 void Core::Geo::Cut::VolumeCell::direct_divergence_gauss_rule(
-    Element* elem, Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts BCellgausstype)
+    Element* elem, Mesh& mesh, bool include_inner, Core::Geo::Cut::BCellGaussPts BCellgausstype)
 {
   if (elem->Shape() != Core::FE::CellType::hex8 && elem->Shape() != Core::FE::CellType::hex20)
     FOUR_C_THROW("direct_divergence_gauss_rule: Just hex8 and hex20 avaiable yet in DD!");
 
-  if (BCellgausstype != Inpar::Cut::BCellGaussPts_Tessellation)
+  if (BCellgausstype != Core::Geo::Cut::BCellGaussPts_Tessellation)
     FOUR_C_THROW(
-        "direct_divergence_gauss_rule: just Inpar::Cut::BCellGaussPts_Tessellation supported at "
+        "direct_divergence_gauss_rule: just Core::Geo::Cut::BCellGaussPts_Tessellation supported "
+        "at "
         "the "
         "moment!");
 

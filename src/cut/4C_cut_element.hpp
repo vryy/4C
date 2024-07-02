@@ -13,10 +13,10 @@
 
 #include "4C_config.hpp"
 
+#include "4C_cut_enum.hpp"
 #include "4C_cut_integrationcell.hpp"
 #include "4C_cut_node.hpp"
 #include "4C_cut_utils.hpp"
-#include "4C_inpar_cut.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -180,12 +180,12 @@ namespace Core::Geo
       /*! \brief Construct quadrature rules for the volumecells by solving the moment
        *  fitting equations */
       void moment_fit_gauss_weights(
-          Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype);
+          Mesh& mesh, bool include_inner, Core::Geo::Cut::BCellGaussPts Bcellgausstype);
 
       /*! \brief Construct quadrature rules for the volumecells by triangulating the
        *  facets and applying divergence theorem */
       void direct_divergence_gauss_rule(
-          Mesh& mesh, bool include_inner, Inpar::Cut::BCellGaussPts Bcellgausstype);
+          Mesh& mesh, bool include_inner, Core::Geo::Cut::BCellGaussPts Bcellgausstype);
 
       /*! \brief Return the level set value at the given global coordinate
        *  which has to be INSIDE the element. */
@@ -311,7 +311,7 @@ namespace Core::Geo
       bool OnSide(const std::vector<Point*>& facet_points);
 
       /*! \brief Get the integrationcells created from this element */
-      Inpar::Cut::ElementIntegrationType get_element_integration_type() { return eleinttype_; }
+      Core::Geo::Cut::ElementIntegrationType get_element_integration_type() { return eleinttype_; }
 
       /*! \brief Get the integrationcells created from this element */
       void GetIntegrationCells(plain_integrationcell_set& cells);
@@ -632,7 +632,7 @@ namespace Core::Geo
       Teuchos::RCP<BoundingBox> boundingvolume_;
 
       /// type of integration-rule for this element
-      Inpar::Cut::ElementIntegrationType eleinttype_;
+      Core::Geo::Cut::ElementIntegrationType eleinttype_;
 
     };  // class Element
 

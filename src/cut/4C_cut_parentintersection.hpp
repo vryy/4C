@@ -121,13 +121,13 @@ namespace Core::Geo
       void SetFindPositions(bool positions) { options_.SetFindPositions(positions); }
 
       /// set the option if positions have to be determined or not
-      void set_nodal_dof_set_strategy(Inpar::Cut::NodalDofSetStrategy nodal_dofset_strategy)
+      void set_nodal_dof_set_strategy(Core::Geo::Cut::NodalDofSetStrategy nodal_dofset_strategy)
       {
         options_.set_nodal_dof_set_strategy(nodal_dofset_strategy);
       }
 
       /// Set the position for the boundary cell creation
-      void set_gen_boundary_cell_position(Inpar::Cut::BoundaryCellPosition gen_bcell_position)
+      void set_gen_boundary_cell_position(BoundaryCellPosition gen_bcell_position)
       {
         options_.set_gen_boundary_cell_position(gen_bcell_position);
       }
@@ -175,8 +175,8 @@ namespace Core::Geo
       \brief The routine which splits the volumecell into integrationcells by tessellation, or
       create Gaussian integration rules by moment fitting equations
        */
-      void Cut_Finalize(bool include_inner, Inpar::Cut::VCellGaussPts VCellgausstype,
-          Inpar::Cut::BCellGaussPts BCellgausstype, bool tetcellsonly, bool screenoutput);
+      void Cut_Finalize(bool include_inner, VCellGaussPts VCellgausstype,
+          Core::Geo::Cut::BCellGaussPts BCellgausstype, bool tetcellsonly, bool screenoutput);
 
       /*========================================================================*/
       //! @name nodal dofset routines

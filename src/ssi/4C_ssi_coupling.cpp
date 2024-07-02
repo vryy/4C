@@ -374,7 +374,8 @@ void SSI::SSICouplingNonMatchingVolume::setup()
   check_is_init();
 
   // setup projection matrices (use default material strategy)
-  volcoupl_structurescatra_->setup(Global::Problem::Instance()->VolmortarParams());
+  volcoupl_structurescatra_->setup(Global::Problem::Instance()->VolmortarParams(),
+      Global::Problem::Instance()->CutGeneralParams());
 
   set_is_setup(true);
 }
@@ -385,8 +386,9 @@ void SSI::SSICouplingNonMatchingVolume::assign_material_pointers(
     Teuchos::RCP<Core::FE::Discretization> structdis,
     Teuchos::RCP<Core::FE::Discretization> scatradis)
 {
-  volcoupl_structurescatra_->AssignMaterials(
-      structdis, scatradis, Global::Problem::Instance()->VolmortarParams());
+  volcoupl_structurescatra_->AssignMaterials(structdis, scatradis,
+      Global::Problem::Instance()->VolmortarParams(),
+      Global::Problem::Instance()->CutGeneralParams());
 }
 
 /*----------------------------------------------------------------------*/

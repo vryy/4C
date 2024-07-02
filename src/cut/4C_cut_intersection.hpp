@@ -565,7 +565,7 @@ namespace Core::Geo
 
       // Remove all the edges from list of touching edges that are further away than 1e-14 (
       // TOPOLOGICAL_TOLERANCE ) distance from the point
-      template <unsigned int dim, Inpar::Cut::CutFloattype floattype>
+      template <unsigned int dim, Core::Geo::Cut::CutFloatType floattype>
       void fix_distant_touching_edges(
           Core::LinAlg::Matrix<dim, 1>& p_coord, std::vector<int>& touching_edges)
       {
@@ -635,14 +635,14 @@ namespace Core::Geo
       {
         switch (get_options_ptr()->geom_intersect_floattype())
         {
-          case Inpar::Cut::floattype_cln:
+          case floattype_cln:
           {
-            return compute_edge_side_intersection_t<Inpar::Cut::floattype_cln>(
+            return compute_edge_side_intersection_t<floattype_cln>(
                 tolerance, check_inside, touched_edges);
           }
-          case Inpar::Cut::floattype_double:
+          case floattype_double:
           {
-            return compute_edge_side_intersection_t<Inpar::Cut::floattype_double>(
+            return compute_edge_side_intersection_t<floattype_double>(
                 tolerance, check_inside, touched_edges);
           }
           default:
@@ -650,7 +650,7 @@ namespace Core::Geo
         }
       }
 
-      template <Inpar::Cut::CutFloattype floattype>
+      template <Core::Geo::Cut::CutFloatType floattype>
       IntersectionStatus compute_edge_side_intersection_t(
           double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = nullptr)
       {
@@ -668,11 +668,10 @@ namespace Core::Geo
           return (istatus_);
         }
 
-        Kernel::ComputeIntersection<probdim, edgetype, sidetype,
-            (floattype == Inpar::Cut::floattype_cln)>
-            ci(xsi_);
+        Kernel::ComputeIntersection<probdim, edgetype, sidetype, (floattype == floattype_cln)> ci(
+            xsi_);
         // Kernel::DebugComputeIntersection<probdim,edgetype,sidetype,(floattype ==
-        // Inpar::Cut::floattype_cln)> ci( xsi_ );
+        // floattype_cln)> ci( xsi_ );
 
         bool conv = ci(xyze_surfaceElement_, xyze_lineElement_);
         tolerance = ci.GetTolerance();
@@ -949,22 +948,20 @@ namespace Core::Geo
       {
         switch (get_options_ptr()->geom_intersect_floattype())
         {
-          case Inpar::Cut::floattype_cln:
+          case floattype_cln:
           {
-            return compute_edge_tri3_intersection_t<Inpar::Cut::floattype_cln>(
-                triangleid, location);
+            return compute_edge_tri3_intersection_t<floattype_cln>(triangleid, location);
           }
-          case Inpar::Cut::floattype_double:
+          case floattype_double:
           {
-            return compute_edge_tri3_intersection_t<Inpar::Cut::floattype_double>(
-                triangleid, location);
+            return compute_edge_tri3_intersection_t<floattype_double>(triangleid, location);
           }
           default:
             FOUR_C_THROW("Unexpected floattype for compute_edge_tri3_intersection_t!");
         }
       }
 
-      template <Inpar::Cut::CutFloattype floattype>
+      template <Core::Geo::Cut::CutFloatType floattype>
       bool compute_edge_tri3_intersection_t(int triangleid, Kernel::PointOnSurfaceLoc& location)
       {
         if (triangleid < 0) FOUR_C_THROW("The triangle id has to be positive!");
@@ -997,14 +994,14 @@ namespace Core::Geo
       {
         switch (get_options_ptr()->geom_intersect_floattype())
         {
-          case Inpar::Cut::floattype_cln:
+          case floattype_cln:
           {
-            return compute_edge_tri3_intersection_quad4_split_t<Inpar::Cut::floattype_cln>(
+            return compute_edge_tri3_intersection_quad4_split_t<floattype_cln>(
                 triangleid, close_to_shared_edge);
           }
-          case Inpar::Cut::floattype_double:
+          case floattype_double:
           {
-            return compute_edge_tri3_intersection_quad4_split_t<Inpar::Cut::floattype_double>(
+            return compute_edge_tri3_intersection_quad4_split_t<floattype_double>(
                 triangleid, close_to_shared_edge);
           }
           default:
@@ -1012,7 +1009,7 @@ namespace Core::Geo
         }
       }
 
-      template <Inpar::Cut::CutFloattype floattype>
+      template <Core::Geo::Cut::CutFloatType floattype>
       IntersectionStatus compute_edge_tri3_intersection_quad4_split_t(
           int triangleid, bool* close_to_shared_edge = nullptr)
       {
@@ -1079,14 +1076,14 @@ namespace Core::Geo
       {
         switch (get_options_ptr()->geom_distance_floattype())
         {
-          case Inpar::Cut::floattype_cln:
+          case floattype_cln:
           {
-            return compute_distance_t<Inpar::Cut::floattype_cln>(
+            return compute_distance_t<floattype_cln>(
                 point, distance, tolerance, zeroarea, loc, touched_edges, signeddistance);
           }
-          case Inpar::Cut::floattype_double:
+          case floattype_double:
           {
-            return compute_distance_t<Inpar::Cut::floattype_double>(
+            return compute_distance_t<floattype_double>(
                 point, distance, tolerance, zeroarea, loc, touched_edges, signeddistance);
           }
           default:
@@ -1094,7 +1091,7 @@ namespace Core::Geo
         }
       }
 
-      template <Inpar::Cut::CutFloattype floattype>
+      template <Core::Geo::Cut::CutFloatType floattype>
       bool compute_distance_t(Core::LinAlg::Matrix<probdim, 1> point, double& distance,
           double& tolerance, bool& zeroarea, Kernel::PointOnSurfaceLoc& loc,
           std::vector<int>& touched_edges, bool signeddistance = false)
@@ -1187,24 +1184,22 @@ namespace Core::Geo
       {
         switch (get_options_ptr()->geom_distance_floattype())
         {
-          case Inpar::Cut::floattype_cln:
+          case floattype_cln:
           {
-            return compute_distance_t<Inpar::Cut::floattype_cln>(point, distance, tolerance,
-                zeroarea, loc, touched_edges, signeddistance, tri3_id,
-                extended_tri_tolerance_loc_triangle_split);
+            return compute_distance_t<floattype_cln>(point, distance, tolerance, zeroarea, loc,
+                touched_edges, signeddistance, tri3_id, extended_tri_tolerance_loc_triangle_split);
           }
-          case Inpar::Cut::floattype_double:
+          case floattype_double:
           {
-            return compute_distance_t<Inpar::Cut::floattype_double>(point, distance, tolerance,
-                zeroarea, loc, touched_edges, signeddistance, tri3_id,
-                extended_tri_tolerance_loc_triangle_split);
+            return compute_distance_t<floattype_double>(point, distance, tolerance, zeroarea, loc,
+                touched_edges, signeddistance, tri3_id, extended_tri_tolerance_loc_triangle_split);
           }
           default:
             FOUR_C_THROW("Unexpected floattype for compute_distance_t!");
         }
       }
 
-      template <Inpar::Cut::CutFloattype floattype>
+      template <Core::Geo::Cut::CutFloatType floattype>
       bool compute_distance_t(Core::LinAlg::Matrix<3, 1> point, double& distance, double& tolerance,
           bool& zeroarea, Kernel::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
           bool signeddistance, int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)
