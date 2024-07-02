@@ -71,7 +71,7 @@ namespace Discret
      private:
       static SoWeg6Type instance_;
 
-      std::string get_element_type_string() const { return "SOLIDW6"; }
+      std::string get_element_type_string() const { return "SOLIDW6_DEPRECATED"; }
     };
 
     /*!
@@ -424,7 +424,7 @@ namespace Discret
       void sow6_lumpmass(Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass);
 
      private:
-      std::string get_element_type_string() const { return "SOLIDW6"; }
+      std::string get_element_type_string() const { return "SOLIDW6_DEPRECATED"; }
     };  // class So_weg6
 
 

@@ -63,9 +63,9 @@ namespace
 
   TEST_F(GridGeneratorTest, TestGridGeneratorWithHex8Elements)
   {
-    inputData_.elementtype_ = "SOLIDH8";
+    inputData_.elementtype_ = "SOLID";
     inputData_.distype_ = "HEX8";
-    inputData_.elearguments_ = "MAT 1 KINEM nonlinear EAS none";
+    inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
 
     Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
 
@@ -84,9 +84,9 @@ namespace
 
   TEST_F(GridGeneratorTest, TestGridGeneratorWithRotatedHex8Elements)
   {
-    inputData_.elementtype_ = "SOLIDH8";
+    inputData_.elementtype_ = "SOLID";
     inputData_.distype_ = "HEX8";
-    inputData_.elearguments_ = "MAT 1 KINEM nonlinear EAS none";
+    inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
     inputData_.rotation_angle_ = std::array<double, 3>{30.0, 10.0, 7.0};
 
     Core::IO::GridGenerator::CreateRectangularCuboidDiscretization(*testdis_, inputData_, true);
@@ -106,7 +106,7 @@ namespace
 
   TEST_F(GridGeneratorTest, TestGridGeneratorWithHex27Elements)
   {
-    inputData_.elementtype_ = "SOLIDH27";
+    inputData_.elementtype_ = "SOLID";
     inputData_.distype_ = "HEX27";
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
 
@@ -127,7 +127,7 @@ namespace
 
   TEST_F(GridGeneratorTest, TestGridGeneratorWithWedge6Elements)
   {
-    inputData_.elementtype_ = "SOLIDW6";
+    inputData_.elementtype_ = "SOLID";
     inputData_.distype_ = "WEDGE6";
     inputData_.elearguments_ = "MAT 1 KINEM nonlinear";
     inputData_.autopartition_ = true;

@@ -97,7 +97,7 @@ SIDE structure x+ DSURFACE 2
 LOWER_BOUND 0.0 0.0 0.0
 UPPER_BOUND 4.0 4.0 4.0
 INTERVALS   3 3 3
-ELEMENTS    SOLIDH8 HEX8 MAT 1 KINEM nonlinear EAS none
+ELEMENTS    SOLID HEX8 MAT 1 KINEM nonlinear
 PARTITION   structured
 -------------------------------------------------------------------------END
 //                              END

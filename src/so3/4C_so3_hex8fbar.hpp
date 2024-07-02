@@ -55,7 +55,7 @@ namespace Discret
      private:
       static SoHex8fbarType instance_;
 
-      std::string get_element_type_string() const { return "SOLIDH8FBAR"; }
+      std::string get_element_type_string() const { return "SOLIDH8FBAR_DEPRECATED"; }
     };
 
     /*!
@@ -244,7 +244,7 @@ namespace Discret
       void init_jacobian_mapping() override;
 
      private:
-      std::string get_element_type_string() const { return "SOLIDH8FBAR"; }
+      std::string get_element_type_string() const { return "SOLIDH8FBAR_DEPRECATED"; }
     };  // class So_hex8fbar
 
     //=======================================================================

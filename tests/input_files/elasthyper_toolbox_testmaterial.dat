@@ -102,7 +102,7 @@ NODE 25 COORD 1.0 0.5 0.5
 NODE 26 COORD 0.5 0.0 0.5
 NODE 27 COORD 0.5 0.5 0.5
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH27 HEX27 8 7 3 5 6 4 1 2 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 MAT 1 KINEM nonlinear
+1 SOLID HEX27 8 7 3 5 6 4 1 2 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 MAT 1 KINEM nonlinear
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 2 3 DENS 0.001 POLYCONVEX 1
 MAT 2 ELAST_VolSussmanBathe KAPPA 10000

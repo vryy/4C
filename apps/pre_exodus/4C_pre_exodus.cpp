@@ -80,8 +80,8 @@ namespace
               << "has 9417816 Elements" << std::endl
               << "'*eb0=\"ELEMENT\"'" << std::endl
               << "sectionname=\"STRUCTURE\"" << std::endl
-              << "description=\"MAT 1 KINEM nonlinear EAS none\"" << std::endl
-              << "elementname=\"SOLIDH8\" \n"
+              << "description=\"MAT 1 KINEM nonlinear\"" << std::endl
+              << "elementname=\"SOLID\" \n"
               << std::endl
               << "Node Set, named:" << std::endl
               << "Property Name: INFLOW" << std::endl

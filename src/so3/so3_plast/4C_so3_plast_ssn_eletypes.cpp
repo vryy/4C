@@ -80,7 +80,7 @@ void Discret::ELEMENTS::SoHex8PlastType::setup_element_definition(
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex8;
   SoHex8Type::setup_element_definition(definitions_hex8);
 
-  std::map<std::string, Input::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8"];
+  std::map<std::string, Input::LineDefinition>& defs_hex8 = definitions_hex8["SOLIDH8_DEPRECATED"];
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
@@ -285,7 +285,8 @@ void Discret::ELEMENTS::SoHex27PlastType::setup_element_definition(
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex27;
   SoHex27Type::setup_element_definition(definitions_hex27);
 
-  std::map<std::string, Input::LineDefinition>& defs_hex27 = definitions_hex27["SOLIDH27"];
+  std::map<std::string, Input::LineDefinition>& defs_hex27 =
+      definitions_hex27["SOLIDH27_DEPRECATED"];
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 
@@ -383,7 +384,7 @@ void Discret::ELEMENTS::SoTet4PlastType::setup_element_definition(
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_tet4;
   SoTet4Type::setup_element_definition(definitions_tet4);
 
-  std::map<std::string, Input::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4"];
+  std::map<std::string, Input::LineDefinition>& defs_tet4 = definitions_tet4["SOLIDT4_DEPRECATED"];
 
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
 

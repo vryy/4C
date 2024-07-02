@@ -51,7 +51,7 @@ with 150 cube-shaped linear elements by
    UPPER_BOUND  10 5 3
    INTERVALS   10 5 3
    ROTATION 0 0 0
-   ELEMENTS    SOLIDH8 HEX8 MAT 1 KINEM nonlinear EAS none
+   ELEMENTS    SOLID HEX8 MAT 1 KINEM nonlinear
    PARTITION   structured
 
 The same meshing strategy can be used for the following discretizations::

@@ -73,7 +73,7 @@ namespace Discret
      private:
       static SoTet10Type instance_;
 
-      std::string get_element_type_string() const { return "SOLIDT10"; }
+      std::string get_element_type_string() const { return "SOLIDT10_DEPRECATED"; }
     };
 
     /*!
@@ -445,7 +445,7 @@ namespace Discret
       void material_post_setup(Teuchos::ParameterList& params) override;
 
      private:
-      std::string get_element_type_string() const { return "SOLIDT10"; }
+      std::string get_element_type_string() const { return "SOLIDT10_DEPRECATED"; }
     };  // class So_tet10
 
 

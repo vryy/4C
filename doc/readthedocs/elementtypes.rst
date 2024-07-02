@@ -238,9 +238,53 @@ SHELL7PSCATRA
 | TYPE            |  1 x string |
 +-----------------+-------------+
 
+.. _structuresolid
+
+SOLID
+^^^^^
+
+*Shapes:*
+
+- :ref:`HEX8 <hex8>` (8 nodes)
+- :ref:`HEX18 <hex18>` (18 nodes)
+- :ref:`HEX20 <hex20>` (20 nodes)
+- :ref:`HEX27 <hex27>` (27 nodes)
+- :ref:`nurbs27 <nurbs27>` (27 nodes)
+- :ref:`tet4 <tet4>` (4 nodes)
+- :ref:`tet10 <tet10>` (10 nodes)
+- :ref:`wedge6 <wedge6>` (6 nodes)
+- :ref:`pyramid5 <pyramid5>` (5 nodes)
+
+**Parameters**
+
++-----------------+-------------+
+| Parameter       | Values      |
++=================+=============+
+| MAT             |  1 x number |
++-----------------+-------------+
+| KINEM           |  1 x string |
++-----------------+-------------+
+| TECH            |  1 x string |
++-----------------+-------------+
+| PRESTRESS_TECH  |  1 x string |
++-----------------+-------------+
+| AXI (opt.)      |  3 x number |
++-----------------+-------------+
+| CIR (opt.)      |  3 x number |
++-----------------+-------------+
+| FIBER1 (opt.)   |  3 x number |
++-----------------+-------------+
+| FIBER2 (opt.)   |  3 x number |
++-----------------+-------------+
+| FIBER3 (opt.)   |  3 x number |
++-----------------+-------------+
+| RAD (opt.)      |  3 x number |
++-----------------+-------------+
+
+
 .. _structuresolidh18:
 
-SOLIDH18
+SOLIDH18_DEPRECATED
 ^^^^^^^^
 
 *Shapes:*
@@ -277,7 +321,7 @@ SOLIDH18
 
 .. _structuresolidh20:
 
-SOLIDH20
+SOLIDH20_DEPRECATED
 ^^^^^^^^
 
 *Shapes:*
@@ -316,7 +360,7 @@ SOLIDH20
 
 .. _structuresolidh27:
 
-SOLIDH27
+SOLIDH27_DEPRECATED
 ^^^^^^^^
 
 *Shapes:*
@@ -530,7 +574,7 @@ SOLIDH20THERMO
 
 .. _structuresonurbs27:
 
-SONURBS27
+SONURBS27_DEPRECATED
 ^^^^^^^^^
 
 *Shapes:*
@@ -549,7 +593,7 @@ SONURBS27
 
 .. _structuresolidh8:
 
-SOLIDH8
+SOLIDH8_DEPRECATED
 ^^^^^^^
 
 *Shapes:*
@@ -609,7 +653,7 @@ SOLIDH8P1J1
 
 .. _structuresolidh8fbar:
 
-SOLIDH8FBAR
+SOLIDH8FBAR_DEPRECATED
 ^^^^^^^^^^^
 
 *Shapes:*
@@ -1295,8 +1339,10 @@ SOLIDSHW6
 
 .. _structuresolidt10:
 
-SOLIDT10
-^^^^^^^^
+SOLIDT10_DEPRECATED
+^^^^^^^^^^^^^^^^^^^
+
+Note: This element is deprecated and should not be used. Use SOLID instead.
 
 *Shapes:*
 
@@ -1334,8 +1380,10 @@ SOLIDT10
 
 .. _structuresolidt4:
 
-SOLIDT4
-^^^^^^^
+SOLIDT4_DEPRECATED
+^^^^^^^^^^^^^^^^^^
+
+Note: This element is deprecated and should not be used. Use SOLID instead.
 
 *Shapes:*
 
@@ -1645,8 +1693,10 @@ Note: This element is deprecated and should not be used. Use SOLIDSCATRA instead
 
 .. _structuresolidp5:
 
-SOLIDP5
-^^^^^^^
+SOLIDP5_DEPRECATED
+^^^^^^^^^^^^^^^^^^
+
+Note: This element is deprecated and should not be used. Use SOLID instead.
 
 *Shapes:*
 
@@ -1684,8 +1734,10 @@ SOLIDP5
 
 .. _structuresolidp5fbar:
 
-SOLIDP5FBAR
-^^^^^^^^^^^
+SOLIDP5FBAR_DEPRECATED
+^^^^^^^^^^^^^^^^^^^^^^
+
+Note: This element is deprecated and should not be used. Use SOLID instead.
 
 *Shapes:*
 

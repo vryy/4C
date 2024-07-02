@@ -68,7 +68,7 @@ namespace Discret
      private:
       static SoHex20Type instance_;
 
-      std::string get_element_type_string() const { return "SOLIDH20"; }
+      std::string get_element_type_string() const { return "SOLIDH20_DEPRECATED"; }
     };
 
     /*!
@@ -470,7 +470,7 @@ namespace Discret
       };
 
      private:
-      std::string get_element_type_string() const { return "SOLIDH20"; }
+      std::string get_element_type_string() const { return "SOLIDH20_DEPRECATED"; }
     };  // class So_hex20
 
 

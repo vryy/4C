@@ -118,6 +118,6 @@ NODE 10 COORD 2.0 1.0 0.0
 NODE 11 COORD 2.0 0.0 1.0
 NODE 12 COORD 2.0 1.0 1.0
 ------------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear EAS none
-2 SOLIDH8 HEX8 5 9 10 6 7 11 12 8 MAT 1 KINEM nonlinear EAS none
+1 SOLID HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear
+2 SOLID HEX8 5 9 10 6 7 11 12 8 MAT 1 KINEM nonlinear
 ---------------------------------------------------------------------------END

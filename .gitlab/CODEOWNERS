@@ -351,7 +351,7 @@ xfem/                      @baci/team_fluid
 
 /tests/input_files/mixture*                    @baci/team_structure
 
-/tests/input_files/new_solid_ele*              @baci/team_structure
+/tests/input_files/solid_ele*              @baci/team_structure
 
 /tests/input_files/one_d_3_artery*             @baci/team_reduced_fluid_models
 

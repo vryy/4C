@@ -77,7 +77,7 @@ namespace Discret
        private:
         static SoNurbs27Type instance_;
 
-        std::string get_element_type_string() const { return "SONURBS27"; }
+        std::string get_element_type_string() const { return "SONURBS27_DEPRECATED"; }
       };
 
 
@@ -358,7 +358,7 @@ namespace Discret
         void lumpmass(Core::LinAlg::Matrix<NUMDOF_SONURBS27, NUMDOF_SONURBS27>* emass);
 
        private:
-        std::string get_element_type_string() const { return "SONURBS27"; }
+        std::string get_element_type_string() const { return "SONURBS27_DEPRECATED"; }
       };  // class So_nurbs27
 
 
