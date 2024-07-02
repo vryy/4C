@@ -1490,19 +1490,6 @@ namespace CONTACT
     virtual void set_cn_ct_values(const int& iter);  // newton step
 
     /*!
-    \brief Routine scale between nts, mortar, lts etc. This is required for non-smooth
-           contact geometries
-
-    */
-    virtual void scale_terms();
-
-    /*!
-    \brief LTL version of scaling routine
-
-    */
-    virtual void scale_terms_ltl();
-
-    /*!
     \brief Routine to scale nodal normals between nodal averaged normal and cpp normal
 
     */
@@ -1534,12 +1521,6 @@ namespace CONTACT
     */
     virtual void store_lt_svalues();
 
-    /*!
-    \brief Routine which stores entries from ltl algorithm into mortar nodes to reuse
-           standard assemble functions
-
-    */
-    virtual void store_lt_lvalues();
 
     /*!
     \brief These functions are not properly implemented/used!!!!
