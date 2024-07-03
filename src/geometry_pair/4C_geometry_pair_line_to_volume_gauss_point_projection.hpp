@@ -28,19 +28,19 @@ namespace GEOMETRYPAIR
    * @param line Type of line element.
    * @param volume Type of volume element.
    */
-  template <typename scalar_type, typename line, typename volume>
+  template <typename ScalarType, typename Line, typename Volume>
   class GeometryPairLineToVolumeGaussPointProjection
-      : public GeometryPairLineToVolume<scalar_type, line, volume>
+      : public GeometryPairLineToVolume<ScalarType, Line, Volume>
   {
    public:
     //! Public alias for scalar type so that other classes can use this type.
-    using t_scalar_type = scalar_type;
+    using t_scalar_type = ScalarType;
 
     //! Public alias for line type so that other classes can use this type.
-    using t_line = line;
+    using t_line = Line;
 
     //! Public alias for volume type so that other classes can use this type.
-    using t_other = volume;
+    using t_other = Volume;
 
    public:
     /**
@@ -63,9 +63,9 @@ namespace GEOMETRYPAIR
      * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<volume, scalar_type>& element_data_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const override;
+    void pre_evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Volume, ScalarType>& element_data_volume,
+        std::vector<LineSegment<ScalarType>>& segments) const override;
 
     /**
      * \brief Check if a Gauss point projected valid for this pair in pre_evaluate.
@@ -78,9 +78,9 @@ namespace GEOMETRYPAIR
      * @param element_data_volume (in) Degrees of freedom for the volume.
      * @param segments (out) Vector with the segments of this line to volume pair.
      */
-    void evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<volume, scalar_type>& element_data_volume,
-        std::vector<LineSegment<scalar_type>>& segments) const override;
+    void evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Volume, ScalarType>& element_data_volume,
+        std::vector<LineSegment<ScalarType>>& segments) const override;
   };
 }  // namespace GEOMETRYPAIR
 

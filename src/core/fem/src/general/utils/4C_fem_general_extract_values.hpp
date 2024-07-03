@@ -43,9 +43,9 @@ namespace Core::FE
   void ExtractMyValues(
       const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm);
 
-  template <class matrix>
+  template <class Matrix>
   void ExtractMyValues(
-      const Epetra_Vector& global, std::vector<matrix>& local, const std::vector<int>& lm)
+      const Epetra_Vector& global, std::vector<Matrix>& local, const std::vector<int>& lm)
   {
     // safety check
     if (local[0].n() != 1 or local.size() * (unsigned)local[0].m() != lm.size())
@@ -73,8 +73,8 @@ namespace Core::FE
     }
   }
 
-  template <class matrix>
-  void ExtractMyValues(const Epetra_Vector& global, matrix& local, const std::vector<int>& lm)
+  template <class Matrix>
+  void ExtractMyValues(const Epetra_Vector& global, Matrix& local, const std::vector<int>& lm)
   {
     // safety check
     if ((unsigned)(local.numRows() * local.numCols()) != lm.size())

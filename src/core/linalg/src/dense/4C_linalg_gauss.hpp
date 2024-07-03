@@ -28,10 +28,10 @@ namespace Core::LinAlg
     precision
     \return determinant of system matrix
   */
-  template <bool do_piv, unsigned dim, typename valtype>
-  valtype gaussElimination(Core::LinAlg::Matrix<dim, dim, valtype>& A,  ///< (in)    : system matrix
-      Core::LinAlg::Matrix<dim, 1, valtype>& b,  ///< (in)    : right-hand-side
-      Core::LinAlg::Matrix<dim, 1, valtype>& x   ///< (out)   : solution vector
+  template <bool do_piv, unsigned dim, typename Valtype>
+  Valtype gaussElimination(Core::LinAlg::Matrix<dim, dim, Valtype>& A,  ///< (in)    : system matrix
+      Core::LinAlg::Matrix<dim, 1, Valtype>& b,  ///< (in)    : right-hand-side
+      Core::LinAlg::Matrix<dim, 1, Valtype>& x   ///< (out)   : solution vector
   );
 
 

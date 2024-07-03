@@ -493,8 +493,8 @@ namespace Core::Communication
      * \param[in] stuff  ptr to stuff that has length stuffsize (in byte)
      * \param[in] stuffsize length of stuff in byte
      */
-    template <typename kind>
-    static void add_to_pack(PackBuffer& data, const kind* stuff, const int stuffsize)
+    template <typename Kind>
+    static void add_to_pack(PackBuffer& data, const Kind* stuff, const int stuffsize)
     {
       data.add_to_pack(stuff, stuffsize);
     }
@@ -943,9 +943,9 @@ namespace Core::Communication
      * \param[out] stuff array of total length stuffsize (in byte)
      * \param[in] stuffsize length of stuff in byte
      */
-    template <typename kind>
+    template <typename Kind>
     static void extract_from_pack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, kind* stuff, const int stuffsize)
+        const std::vector<char>& data, Kind* stuff, const int stuffsize)
     {
       memcpy(stuff, &data[position], stuffsize);
       position += stuffsize;

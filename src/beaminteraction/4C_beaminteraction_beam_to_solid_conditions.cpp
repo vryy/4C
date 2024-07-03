@@ -183,30 +183,30 @@ void BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::BuildIdSets(
 /**
  *
  */
-template <template <typename...> class bts_class, typename... bts_template_arguments>
+template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSolidVolumePairShape(
     const Core::FE::CellType shape)
 {
   switch (shape)
   {
     case Core::FE::CellType::hex8:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8, BtsTemplateArguments...>());
     case Core::FE::CellType::hex20:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20, BtsTemplateArguments...>());
     case Core::FE::CellType::hex27:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27, BtsTemplateArguments...>());
     case Core::FE::CellType::tet4:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4, BtsTemplateArguments...>());
     case Core::FE::CellType::tet10:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10, BtsTemplateArguments...>());
     case Core::FE::CellType::nurbs27:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27,
-          bts_template_arguments...>());
+      return Teuchos::rcp(new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27,
+          BtsTemplateArguments...>());
     default:
       FOUR_C_THROW("Wrong element type for solid element.");
       return Teuchos::null;
@@ -216,27 +216,27 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSoli
 /**
  *
  */
-template <template <typename...> class bts_class, typename... bts_template_arguments>
+template <template <typename...> class BtsClass, typename... BtsTemplateArguments>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::CreateBeamToSolidVolumePairShapeNoNurbs(const Core::FE::CellType shape)
 {
   switch (shape)
   {
     case Core::FE::CellType::hex8:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8, BtsTemplateArguments...>());
     case Core::FE::CellType::hex20:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20, BtsTemplateArguments...>());
     case Core::FE::CellType::hex27:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27, BtsTemplateArguments...>());
     case Core::FE::CellType::tet4:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4, BtsTemplateArguments...>());
     case Core::FE::CellType::tet10:
-      return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10,
-          bts_template_arguments...>());
+      return Teuchos::rcp(
+          new BtsClass<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10, BtsTemplateArguments...>());
     default:
       FOUR_C_THROW("Wrong element type for solid element.");
       return Teuchos::null;
@@ -246,23 +246,23 @@ BEAMINTERACTION::CreateBeamToSolidVolumePairShapeNoNurbs(const Core::FE::CellTyp
 /**
  *
  */
-template <template <typename...> class bts_class, typename... bts_mortar_template_arguments,
-    typename... bts_mortar_shape>
+template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments,
+    typename... BtsMortarShape>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSolidVolumePairMortar(
     const Core::FE::CellType shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function,
-    bts_mortar_shape... other_mortar_shape_function)
+    BtsMortarShape... other_mortar_shape_function)
 {
   switch (mortar_shape_function)
   {
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
-      return CreateBeamToSolidVolumePairMortar<bts_class, bts_mortar_template_arguments...,
+      return CreateBeamToSolidVolumePairMortar<BtsClass, BtsMortarTemplateArguments...,
           GEOMETRYPAIR::t_line2>(shape, other_mortar_shape_function...);
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line3:
-      return CreateBeamToSolidVolumePairMortar<bts_class, bts_mortar_template_arguments...,
+      return CreateBeamToSolidVolumePairMortar<BtsClass, BtsMortarTemplateArguments...,
           GEOMETRYPAIR::t_line3>(shape, other_mortar_shape_function...);
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line4:
-      return CreateBeamToSolidVolumePairMortar<bts_class, bts_mortar_template_arguments...,
+      return CreateBeamToSolidVolumePairMortar<BtsClass, BtsMortarTemplateArguments...,
           GEOMETRYPAIR::t_line4>(shape, other_mortar_shape_function...);
     default:
       FOUR_C_THROW("Wrong mortar shape function.");
@@ -273,11 +273,11 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSoli
 /**
  *
  */
-template <template <typename...> class bts_class, typename... bts_mortar_template_arguments>
+template <template <typename...> class BtsClass, typename... BtsMortarTemplateArguments>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSolidVolumePairMortar(
     const Core::FE::CellType shape)
 {
-  return CreateBeamToSolidVolumePairShape<bts_class, bts_mortar_template_arguments...>(shape);
+  return CreateBeamToSolidVolumePairShape<BtsClass, BtsMortarTemplateArguments...>(shape);
 }
 
 /**

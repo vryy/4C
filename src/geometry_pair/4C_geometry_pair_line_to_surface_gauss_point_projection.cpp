@@ -19,12 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::GeometryPairLineToSurfaceGaussPointProjection(const Core::Elements::Element* element1,
+template <typename ScalarType, typename Line, typename Surface>
+GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line,
+    Surface>::GeometryPairLineToSurfaceGaussPointProjection(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& line_to_surface_evaluation_data)
-    : GeometryPairLineToSurface<scalar_type, line, surface>(
+    : GeometryPairLineToSurface<ScalarType, Line, Surface>(
           element1, element2, line_to_surface_evaluation_data)
 {
   // Check if a projection tracking vector exists for this line element. If not a new one is
@@ -45,39 +45,39 @@ GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
-    const ElementData<surface, scalar_type>& element_data_surface,
-    std::vector<LineSegment<scalar_type>>& segments) const
+template <typename ScalarType, typename Line, typename Surface>
+void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line,
+    Surface>::pre_evaluate(const ElementData<Line, ScalarType>& element_data_line,
+    const ElementData<Surface, ScalarType>& element_data_surface,
+    std::vector<LineSegment<ScalarType>>& segments) const
 {
   // Call the pre_evaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
-      GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>>::pre_evaluate(this,
+      GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line, Surface>>::pre_evaluate(this,
       element_data_line, element_data_surface, segments);
 }
 
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::evaluate(const ElementData<line, scalar_type>& element_data_line,
-    const ElementData<surface, scalar_type>& element_data_surface,
-    std::vector<LineSegment<scalar_type>>& segments) const
+template <typename ScalarType, typename Line, typename Surface>
+void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line,
+    Surface>::evaluate(const ElementData<Line, ScalarType>& element_data_line,
+    const ElementData<Surface, ScalarType>& element_data_surface,
+    std::vector<LineSegment<ScalarType>>& segments) const
 {
   // Call the pre_evaluate method of the general Gauss point projection class.
   LineTo3DGaussPointProjection<
-      GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line, surface>>::evaluate(this,
+      GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line, Surface>>::evaluate(this,
       element_data_line, element_data_surface, segments);
 }
 
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::get_line_projection_vector() const
+template <typename ScalarType, typename Line, typename Surface>
+std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<ScalarType, Line,
+    Surface>::get_line_projection_vector() const
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();

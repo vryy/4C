@@ -97,12 +97,12 @@ namespace ScaTra
         Core::LinAlg::SolverParams& solver_params) const override;
   };
 
-  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-  class MortarCellCalcElch : public MortarCellCalc<distypeS, distypeM>
+  template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+  class MortarCellCalcElch : public MortarCellCalc<distype_s, distype_m>
   {
    public:
     //! singleton access method
-    static MortarCellCalcElch<distypeS, distypeM>* Instance(
+    static MortarCellCalcElch<distype_s, distype_m>* Instance(
         const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const Inpar::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -123,7 +123,7 @@ namespace ScaTra
 
    private:
     //! abbreviation
-    typedef MortarCellCalc<distypeS, distypeM> my;
+    typedef MortarCellCalc<distype_s, distype_m> my;
 
    protected:
     using my::nen_master_;
@@ -180,12 +180,12 @@ namespace ScaTra
   };  // class MortarCellCalcElch
 
 
-  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-  class MortarCellCalcElchSTIThermo : public MortarCellCalcElch<distypeS, distypeM>
+  template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+  class MortarCellCalcElchSTIThermo : public MortarCellCalcElch<distype_s, distype_m>
   {
    public:
     //! singleton access method
-    static MortarCellCalcElchSTIThermo<distypeS, distypeM>* Instance(
+    static MortarCellCalcElchSTIThermo<distype_s, distype_m>* Instance(
         const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const Inpar::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -214,8 +214,8 @@ namespace ScaTra
 
    private:
     //! abbreviation
-    typedef MortarCellCalc<distypeS, distypeM> my;
-    typedef MortarCellCalcElch<distypeS, distypeM> myelch;
+    typedef MortarCellCalc<distype_s, distype_m> my;
+    typedef MortarCellCalcElch<distype_s, distype_m> myelch;
     using my::nen_master_;
     using my::nen_slave_;
     using my::nsd_slave_;
@@ -259,12 +259,12 @@ namespace ScaTra
   };  // class MortarCellCalcElchSTIThermo
 
 
-  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-  class MortarCellCalcSTIElch : public MortarCellCalc<distypeS, distypeM>
+  template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+  class MortarCellCalcSTIElch : public MortarCellCalc<distype_s, distype_m>
   {
    public:
     //! singleton access method
-    static MortarCellCalcSTIElch<distypeS, distypeM>* Instance(
+    static MortarCellCalcSTIElch<distype_s, distype_m>* Instance(
         const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
         const Inpar::S2I::InterfaceSides&
             lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -292,7 +292,7 @@ namespace ScaTra
 
    private:
     //! abbreviation
-    typedef MortarCellCalc<distypeS, distypeM> my;
+    typedef MortarCellCalc<distype_s, distype_m> my;
     using my::nen_master_;
     using my::nen_slave_;
     using my::nsd_slave_;

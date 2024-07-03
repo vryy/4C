@@ -211,7 +211,7 @@ namespace GEOMETRYPAIR
   /**
    * \brief Compile time struct to check if an element type is based on Lagrange shape functions
    */
-  template <typename element_type>
+  template <typename ElementType>
   struct IsLagrangeElement
   {
     static const bool value_ = false;
@@ -275,7 +275,7 @@ namespace GEOMETRYPAIR
   /**
    * \brief Compile time struct to check if an element type is based on NURBS shape functions
    */
-  template <typename element_type>
+  template <typename ElementType>
   struct IsNurbsElement
   {
     static const bool value_ = false;
@@ -297,7 +297,7 @@ namespace GEOMETRYPAIR
    * \brief Compile time struct to check if an element type is a surface element with averaged nodal
    * normals
    */
-  template <typename element_type>
+  template <typename ElementType>
   struct IsSurfaceAveragedNormalsElement
   {
     static const bool value_ = false;
@@ -339,7 +339,7 @@ namespace GEOMETRYPAIR
    * Per default this is empty as no additional data (besides the parameter coordinates) are needed
    * to evaluate the shape functions
    */
-  template <typename element_type, typename enable = void>
+  template <typename ElementType, typename Enable = void>
   struct ShapeFunctionData
   {
   };
@@ -378,11 +378,11 @@ namespace GEOMETRYPAIR
   /**
    * \brief Structure to set the shape function data container
    */
-  template <typename element_type, typename enable = void>
+  template <typename ElementType, typename Enable = void>
   struct SetShapeFunctionData
   {
-    static void set(ShapeFunctionData<element_type>& shape_function_data,
-        const Core::Elements::Element* element)
+    static void set(
+        ShapeFunctionData<ElementType>& shape_function_data, const Core::Elements::Element* element)
     {
       // Per default this is empty, for all shape functions which don't need additional data
     }
@@ -449,37 +449,37 @@ namespace GEOMETRYPAIR
   /**
    * \brief Data container warping everything required to evaluate field functions on the elements
    */
-  template <typename element_type, typename scalar_type, typename enable = void>
+  template <typename ElementType, typename ScalarType, typename Enable = void>
   struct ElementData
   {
-    Core::LinAlg::Matrix<element_type::n_dof_, 1, scalar_type> element_position_;
-    ShapeFunctionData<element_type> shape_function_data_;
+    Core::LinAlg::Matrix<ElementType::n_dof_, 1, ScalarType> element_position_;
+    ShapeFunctionData<ElementType> shape_function_data_;
   };
 
   /**
    * \brief Specialization for elements with averaged nodal normals, here we have to also store the
    * normals at the nodes to ensure we can fully evaluate the element
    */
-  template <typename element_type, typename scalar_type>
-  struct ElementData<element_type, scalar_type,
-      typename std::enable_if<IsSurfaceAveragedNormalsElement<element_type>::value_>::type>
+  template <typename ElementType, typename ScalarType>
+  struct ElementData<ElementType, ScalarType,
+      typename std::enable_if<IsSurfaceAveragedNormalsElement<ElementType>::value_>::type>
   {
-    Core::LinAlg::Matrix<element_type::n_dof_, 1, scalar_type> element_position_;
-    Core::LinAlg::Matrix<element_type::n_dof_, 1, scalar_type> nodal_normals_;
-    ShapeFunctionData<element_type> shape_function_data_;
+    Core::LinAlg::Matrix<ElementType::n_dof_, 1, ScalarType> element_position_;
+    Core::LinAlg::Matrix<ElementType::n_dof_, 1, ScalarType> nodal_normals_;
+    ShapeFunctionData<ElementType> shape_function_data_;
   };
 
   /**
    * \brief Struct to initialize element data containers with the correct shape function data
    */
-  template <typename element_type, typename scalar_type>
+  template <typename ElementType, typename ScalarType>
   struct InitializeElementData
   {
-    static GEOMETRYPAIR::ElementData<element_type, scalar_type> initialize(
+    static GEOMETRYPAIR::ElementData<ElementType, ScalarType> initialize(
         const Core::Elements::Element* element)
     {
-      GEOMETRYPAIR::ElementData<element_type, scalar_type> element_data;
-      SetShapeFunctionData<element_type>::set(element_data.shape_function_data_, element);
+      GEOMETRYPAIR::ElementData<ElementType, ScalarType> element_data;
+      SetShapeFunctionData<ElementType>::set(element_data.shape_function_data_, element);
       return element_data;
     }
   };
@@ -488,14 +488,14 @@ namespace GEOMETRYPAIR
    * \brief Struct to convert a FAD element data container to an element data container of
    * type double
    */
-  template <typename element_type, typename enable = void>
+  template <typename ElementType, typename Enable = void>
   struct ElementDataToDouble
   {
-    template <typename scalar_type>
-    static GEOMETRYPAIR::ElementData<element_type, double> ToDouble(
-        const GEOMETRYPAIR::ElementData<element_type, scalar_type>& element_data)
+    template <typename ScalarType>
+    static GEOMETRYPAIR::ElementData<ElementType, double> ToDouble(
+        const GEOMETRYPAIR::ElementData<ElementType, ScalarType>& element_data)
     {
-      auto element_data_double = ElementData<element_type, double>();
+      auto element_data_double = ElementData<ElementType, double>();
       element_data_double.shape_function_data_ = element_data.shape_function_data_;
       element_data_double.element_position_ =
           Core::FADUtils::CastToDouble(element_data.element_position_);
@@ -506,15 +506,15 @@ namespace GEOMETRYPAIR
   /**
    * \brief Specialization for Elements with averaged nodal normals
    */
-  template <typename element_type>
-  struct ElementDataToDouble<element_type,
-      typename std::enable_if<IsSurfaceAveragedNormalsElement<element_type>::value_>::type>
+  template <typename ElementType>
+  struct ElementDataToDouble<ElementType,
+      typename std::enable_if<IsSurfaceAveragedNormalsElement<ElementType>::value_>::type>
   {
-    template <typename scalar_type>
-    static GEOMETRYPAIR::ElementData<element_type, double> ToDouble(
-        const GEOMETRYPAIR::ElementData<element_type, scalar_type>& element_data)
+    template <typename ScalarType>
+    static GEOMETRYPAIR::ElementData<ElementType, double> ToDouble(
+        const GEOMETRYPAIR::ElementData<ElementType, ScalarType>& element_data)
     {
-      auto element_data_double = ElementData<element_type, double>();
+      auto element_data_double = ElementData<ElementType, double>();
       element_data_double.shape_function_data_ = element_data.shape_function_data_;
       element_data_double.element_position_ =
           Core::FADUtils::CastToDouble(element_data.element_position_);
@@ -527,11 +527,11 @@ namespace GEOMETRYPAIR
   /**
    * \brief Struct to print the element data container to screen
    */
-  template <typename element_type, typename enable = void>
+  template <typename ElementType, typename Enable = void>
   struct PrintElementData
   {
-    template <typename scalar_type>
-    static void print(const ElementData<element_type, scalar_type>& element_data, std::ostream& out)
+    template <typename ScalarType>
+    static void print(const ElementData<ElementType, ScalarType>& element_data, std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);
@@ -543,12 +543,12 @@ namespace GEOMETRYPAIR
   /**
    * \brief Specialization for NURBS elements
    */
-  template <typename element_type>
-  struct PrintElementData<element_type,
-      typename std::enable_if<IsNurbsElement<element_type>::value_>::type>
+  template <typename ElementType>
+  struct PrintElementData<ElementType,
+      typename std::enable_if<IsNurbsElement<ElementType>::value_>::type>
   {
-    template <typename scalar_type>
-    static void print(const ElementData<element_type, scalar_type>& element_data, std::ostream& out)
+    template <typename ScalarType>
+    static void print(const ElementData<ElementType, ScalarType>& element_data, std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);
@@ -567,8 +567,8 @@ namespace GEOMETRYPAIR
   template <>
   struct PrintElementData<t_hermite>
   {
-    template <typename scalar_type>
-    static void print(const ElementData<t_hermite, scalar_type>& element_data, std::ostream& out)
+    template <typename ScalarType>
+    static void print(const ElementData<t_hermite, ScalarType>& element_data, std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);
@@ -581,12 +581,12 @@ namespace GEOMETRYPAIR
   /**
    * \brief Specialization for elements with averaged nodal normals
    */
-  template <typename element_type>
-  struct PrintElementData<element_type,
-      typename std::enable_if<IsSurfaceAveragedNormalsElement<element_type>::value_>::type>
+  template <typename ElementType>
+  struct PrintElementData<ElementType,
+      typename std::enable_if<IsSurfaceAveragedNormalsElement<ElementType>::value_>::type>
   {
-    template <typename scalar_type>
-    static void print(const ElementData<element_type, scalar_type>& element_data, std::ostream& out)
+    template <typename ScalarType>
+    static void print(const ElementData<ElementType, ScalarType>& element_data, std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);

@@ -622,8 +622,8 @@ namespace CONTACT
        *  storage for the nodal quantities.
        *
        *  \author hiermeier \date 06/17 */
-      template <typename assemble_policy>
-      class NodeBasedAssembleStrategy : public AssembleStrategy, public assemble_policy
+      template <typename AssemblePolicy>
+      class NodeBasedAssembleStrategy : public AssembleStrategy, public AssemblePolicy
       {
        public:
         /// constructor

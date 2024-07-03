@@ -27,13 +27,13 @@ namespace BEAMINTERACTION
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
-  template <typename scalar_type, typename beam, typename surface>
+  template <typename ScalarType, typename Beam, typename Surface>
   class BeamToSolidSurfaceMeshtyingPairGaussPointBase
-      : public BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
+      : public BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>
   {
    private:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>;
+    using base_class = BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>;
 
    public:
     /**
@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
      * \brief Get the penalty potential for Gauss point to segment coupling.
      * @return Penalty potential.
      */
-    scalar_type get_penalty_potential() const;
+    ScalarType get_penalty_potential() const;
   };
 }  // namespace BEAMINTERACTION
 

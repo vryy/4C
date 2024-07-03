@@ -659,7 +659,7 @@ namespace Core::Geo
      *
      *  \author hiermeier */
     template <unsigned probdim, Core::FE::CellType sidetype,
-        unsigned numNodesSide = Core::FE::num_nodes<sidetype>,
+        unsigned num_nodes_side = Core::FE::num_nodes<sidetype>,
         unsigned dim = Core::FE::dim<sidetype>>
     class ConcreteSide : public Side, public ConcreteElement<probdim, sidetype>
     {
@@ -685,7 +685,7 @@ namespace Core::Geo
       /// problem dimension
       unsigned ProbDim() const override { return probdim; }
 
-      unsigned NumNodes() const override { return numNodesSide; }
+      unsigned NumNodes() const override { return num_nodes_side; }
 
       /// Returns the topology data for the side from Shards library
       const CellTopologyData* Topology() const override
@@ -829,10 +829,10 @@ namespace Core::Geo
           bool unitnormal = true)
       {
         // get derivatives at pos
-        Core::LinAlg::Matrix<probdim, numNodesSide> side_xyze(true);
+        Core::LinAlg::Matrix<probdim, num_nodes_side> side_xyze(true);
         this->Coordinates(side_xyze);
 
-        Core::LinAlg::Matrix<dim, numNodesSide> deriv(true);
+        Core::LinAlg::Matrix<dim, num_nodes_side> deriv(true);
         Core::LinAlg::Matrix<dim, probdim> A(true);
 
         Core::FE::shape_function_deriv1<sidetype>(xsi, deriv);
@@ -892,10 +892,10 @@ namespace Core::Geo
           Core::LinAlg::Matrix<probdim, 1>& t2, Core::LinAlg::Matrix<probdim, 1>& n)
       {
         // get derivatives at pos
-        Core::LinAlg::Matrix<probdim, numNodesSide> side_xyze(true);
+        Core::LinAlg::Matrix<probdim, num_nodes_side> side_xyze(true);
         this->Coordinates(side_xyze);
 
-        Core::LinAlg::Matrix<dim, numNodesSide> deriv(true);
+        Core::LinAlg::Matrix<dim, num_nodes_side> deriv(true);
         Core::LinAlg::Matrix<dim, probdim> A(true);
 
         Core::FE::shape_function_deriv1<sidetype>(xsi, deriv);
@@ -933,7 +933,7 @@ namespace Core::Geo
       }
 
       /// get coordinates of side
-      void Coordinates(Core::LinAlg::Matrix<probdim, numNodesSide>& xyze_surfaceElement) const
+      void Coordinates(Core::LinAlg::Matrix<probdim, num_nodes_side>& xyze_surfaceElement) const
       {
         Coordinates(xyze_surfaceElement.data());
       }

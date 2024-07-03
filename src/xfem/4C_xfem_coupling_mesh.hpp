@@ -131,7 +131,7 @@ namespace XFEM
     /*!
      Return a (smoothed -- soon)/non-smoothed tangiential projection of the mesh surface.
      */
-    template <Core::FE::CellType DISTYPE, class T1, class M3>
+    template <Core::FE::CellType distype, class T1, class M3>
     void eval_projection_matrix(T1& projection_matrix,  ///< Projection matrix
         M3& normal                                      ///< surface normal of cut element
     )

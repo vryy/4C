@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(
+template <Core::FE::CellType distype, unsigned prob_dim>
+int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::Element::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -107,8 +107,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_action(
 /*----------------------------------------------------------------------*
  | setup element evaluation                                  fang 02/15 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
+template <Core::FE::CellType distype, unsigned prob_dim>
+int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::SetupCalc(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // reset all managers to their default values (I feel better this way)
@@ -130,8 +130,8 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
 /*----------------------------------------------------------------------*
  | calculate system matrix and rhs for correction step  rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correction(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_correction(
     const double penalty,                   ///< element penalty parameter
     Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
@@ -220,8 +220,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_correcti
 /*-------------------------------------------------------------------------------*
  | calculation of element-wise denominator of penalty parameter  rasthofer 12/13 |
  *-------------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalty_parameter(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_ele_penalty_parameter(
     double& penalty)
 {
   // safety check
@@ -313,8 +313,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_ele_penalt
 /*------------------------------------------------------------------- *
  |  calculation of penalty term on rhs                rasthofer 12/13 |
  *--------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_rhs_penalty(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_rhs_penalty(
     Core::LinAlg::SerialDenseVector& erhs, const double fac, const double penalty,
     const double deriv_sign, const double norm_gradphizero)
 {
@@ -334,8 +334,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_rhs_penalt
 /*-------------------------------------------------------------------------*
  | calculate system matrix and rhs for velocity projection rasthofer 12/13 |
  *-------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_nodal_vel(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_vel(
     const int dir,                          ///< current spatial direction
     Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate

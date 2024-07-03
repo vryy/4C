@@ -30,7 +30,7 @@ namespace Core::LinAlg
 }  // namespace Core::LinAlg
 namespace GEOMETRYPAIR
 {
-  template <typename scalar_type, typename line, typename volume>
+  template <typename ScalarType, typename Line, typename Volume>
   class GeometryPairLineToVolume;
 }  // namespace GEOMETRYPAIR
 
@@ -42,17 +42,17 @@ namespace BEAMINTERACTION
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @param solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <typename beam, typename solid>
+  template <typename Beam, typename Solid>
   class BeamToSolidVolumeMeshtyingPairBase
-      : public BeamToSolidPairBase<GEOMETRYPAIR::line_to_volume_scalar_type<beam, solid>, double,
-            beam, solid>
+      : public BeamToSolidPairBase<GEOMETRYPAIR::line_to_volume_scalar_type<Beam, Solid>, double,
+            Beam, Solid>
   {
    protected:
     //! Type to be used for scalar AD variables.
-    using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<beam, solid>;
+    using scalar_type = GEOMETRYPAIR::line_to_volume_scalar_type<Beam, Solid>;
 
     //! Shortcut to the base class.
-    using base_class = BeamToSolidPairBase<scalar_type, double, beam, solid>;
+    using base_class = BeamToSolidPairBase<scalar_type, double, Beam, Solid>;
 
    public:
     /**
@@ -130,10 +130,10 @@ namespace BEAMINTERACTION
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
-    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>
+    inline Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToVolume<double, Beam, Solid>>
     cast_geometry_pair() const
     {
-      return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, beam, solid>>(
+      return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToVolume<double, Beam, Solid>>(
           this->geometry_pair_, true);
     };
 
@@ -157,25 +157,25 @@ namespace BEAMINTERACTION
      * @param beam_coupling_ref (out) shifted reference position of the beam.
      * @param solid_coupling_ref (out) shifted reference position of the solid.
      */
-    void get_coupling_reference_position(GEOMETRYPAIR::ElementData<beam, double>& beam_coupling_ref,
-        GEOMETRYPAIR::ElementData<solid, double>& solid_coupling_ref) const;
+    void get_coupling_reference_position(GEOMETRYPAIR::ElementData<Beam, double>& beam_coupling_ref,
+        GEOMETRYPAIR::ElementData<Solid, double>& solid_coupling_ref) const;
 
    protected:
     //! Flag if the meshtying has been evaluated already.
     bool meshtying_is_evaluated_;
 
     //! Current nodal positions (and tangents) of the solid.
-    GEOMETRYPAIR::ElementData<solid, scalar_type> ele2pos_;
+    GEOMETRYPAIR::ElementData<Solid, scalar_type> ele2pos_;
 
     //! Reference nodal positions (and tangents) of the solid.
-    GEOMETRYPAIR::ElementData<solid, double> ele2posref_;
+    GEOMETRYPAIR::ElementData<Solid, double> ele2posref_;
 
     //! Offset of solid DOFs for coupling. This will be used when the state that should be coupled
     //! is not the undeformed reference position, i.e. in restart simulations where the restart
     //! state is coupled. This only makes sense for volume mesh tying, which is why we also define
     //! the beam restart DOFs here.
-    Core::LinAlg::Matrix<beam::n_dof_, 1, double> ele1posref_offset_;
-    Core::LinAlg::Matrix<solid::n_dof_, 1, double> ele2posref_offset_;
+    Core::LinAlg::Matrix<Beam::n_dof_, 1, double> ele1posref_offset_;
+    Core::LinAlg::Matrix<Solid::n_dof_, 1, double> ele2posref_offset_;
   };
 }  // namespace BEAMINTERACTION
 

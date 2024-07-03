@@ -18,18 +18,18 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
-  template <unsigned int size, typename value_type = double>
-  LinAlg::Matrix<size, size, value_type> DiagonalMatrix(const value_type diagonal_value)
+  template <unsigned int size, typename ValueType = double>
+  LinAlg::Matrix<size, size, ValueType> DiagonalMatrix(const ValueType diagonal_value)
   {
-    LinAlg::Matrix<size, size, value_type> diag_matrix(true);
+    LinAlg::Matrix<size, size, ValueType> diag_matrix(true);
     for (unsigned int i = 0; i < size; ++i) diag_matrix(i, i) = diagonal_value;
     return diag_matrix;
   }
 
-  template <unsigned int size, typename value_type = double>
-  LinAlg::Matrix<size, size, value_type> IdentityMatrix()
+  template <unsigned int size, typename ValueType = double>
+  LinAlg::Matrix<size, size, ValueType> IdentityMatrix()
   {
-    return DiagonalMatrix<size, value_type>(1);
+    return DiagonalMatrix<size, ValueType>(1);
   }
 }  // namespace Core::LinAlg
 

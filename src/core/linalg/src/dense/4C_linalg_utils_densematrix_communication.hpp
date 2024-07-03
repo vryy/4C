@@ -680,11 +680,11 @@ namespace Core::LinAlg
 
    This should be part of stl but is not. So we define our own version.
    */
-  template <typename pair_type>
+  template <typename PairType>
   struct Select1st
-      : public std::unary_function<const pair_type&, const typename pair_type::first_type&>
+      : public std::unary_function<const PairType&, const typename PairType::first_type&>
   {
-    const typename pair_type::first_type& operator()(const pair_type& v) const { return v.first; }
+    const typename PairType::first_type& operator()(const PairType& v) const { return v.first; }
   };
 
 }  // namespace Core::LinAlg

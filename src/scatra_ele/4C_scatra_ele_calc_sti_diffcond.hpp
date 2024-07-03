@@ -28,7 +28,7 @@ namespace Discret
     class ScaTraEleCalcElchDiffCond;
     class ScaTraEleDiffManagerElchDiffCond;
     class ScaTraEleDiffManagerSTIThermo;
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElchDiffCond;
     template <Core::FE::CellType distype>
     class ScaTraEleUtilsElchDiffCond;

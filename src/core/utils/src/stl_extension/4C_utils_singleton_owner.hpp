@@ -37,7 +37,7 @@ namespace Core::UTILS
    * @tparam creation_args_ A template parameter pack which contains the types of all arguments that
    *   are necessary to create the owned singleton object.
    */
-  template <typename T, typename... creation_args_>
+  template <typename T, typename... CreationArgs>
   class SingletonOwner
   {
    public:
@@ -76,14 +76,14 @@ namespace Core::UTILS
      * to be passed as well. Unfortunately, this is necessary regardless of the @p action flag.
      *
      */
-    T* Instance(SingletonAction action, creation_args_... args);
+    T* Instance(SingletonAction action, CreationArgs... args);
 
    private:
     //! singleton instance
     std::unique_ptr<T> instance_;
 
     //! Function that creates a singleton object
-    std::function<std::unique_ptr<T>(creation_args_...)> creator_;
+    std::function<std::unique_ptr<T>(CreationArgs...)> creator_;
   };
 
   /**
@@ -99,7 +99,7 @@ namespace Core::UTILS
    * @tparam creation_args_ A template parameter pack which contains the types of all arguments that
    *   are necessary to create the owned singleton object.
    */
-  template <typename Key, typename T, typename... creation_args_>
+  template <typename Key, typename T, typename... CreationArgs>
   class SingletonMap
   {
    public:
@@ -125,14 +125,14 @@ namespace Core::UTILS
      * disname);
      * @endoce
      */
-    SingletonOwner<T, creation_args_...>& operator[](const Key& key);
+    SingletonOwner<T, CreationArgs...>& operator[](const Key& key);
 
    private:
     //! Function that creates a singleton object
-    std::function<std::unique_ptr<T>(creation_args_...)> creator_;
+    std::function<std::unique_ptr<T>(CreationArgs...)> creator_;
 
     //! All SingletonOwner objects that are stored internally.
-    std::map<Key, SingletonOwner<T, creation_args_...>> map_;
+    std::map<Key, SingletonOwner<T, CreationArgs...>> map_;
   };
 
 
@@ -190,16 +190,16 @@ namespace Core::UTILS
   // --- template and inline functions --- //
 
 
-  template <typename T, typename... creation_args_>
+  template <typename T, typename... CreationArgs>
   template <typename Fn, typename E>
-  SingletonOwner<T, creation_args_...>::SingletonOwner(Fn&& creator)
+  SingletonOwner<T, CreationArgs...>::SingletonOwner(Fn&& creator)
       : creator_(std::forward<Fn>(creator))
   {
   }
 
 
-  template <typename T, typename... creation_args_>
-  T* SingletonOwner<T, creation_args_...>::Instance(SingletonAction action, creation_args_... args)
+  template <typename T, typename... CreationArgs>
+  T* SingletonOwner<T, CreationArgs...>::Instance(SingletonAction action, CreationArgs... args)
   {
     if (action == SingletonAction::create and !instance_)
     {
@@ -213,16 +213,16 @@ namespace Core::UTILS
   }
 
 
-  template <typename Key, typename T, typename... creation_args_>
+  template <typename Key, typename T, typename... CreationArgs>
   template <typename Fn, typename E>
-  SingletonMap<Key, T, creation_args_...>::SingletonMap(Fn&& creator)
+  SingletonMap<Key, T, CreationArgs...>::SingletonMap(Fn&& creator)
       : creator_(std::forward<Fn>(creator))
   {
   }
 
 
-  template <typename Key, typename T, typename... creation_args_>
-  SingletonOwner<T, creation_args_...>& SingletonMap<Key, T, creation_args_...>::operator[](
+  template <typename Key, typename T, typename... CreationArgs>
+  SingletonOwner<T, CreationArgs...>& SingletonMap<Key, T, CreationArgs...>::operator[](
       const Key& key)
   {
     auto it = map_.find(key);

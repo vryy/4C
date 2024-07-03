@@ -660,7 +660,7 @@ namespace Core::FE
    *
    * @tparam DISTYPE discretization type
    */
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToDegree
   {
   };
@@ -801,7 +801,7 @@ namespace Core::FE
    *   3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
    *   6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
    */
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToNumDeriv2
   {
   };
@@ -938,7 +938,7 @@ namespace Core::FE
    *
    * @tparam DISTYPE discretization type
    */
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToFaceShapeType
   {
     static constexpr Core::FE::CellType shape = Core::FE::CellType::max_distype;
@@ -1073,11 +1073,11 @@ namespace Core::FE
    *
    * @tparam DISTYPE discretization type
    */
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToNumNodePerFace
   {
     static constexpr int numNodePerFace =
-        Core::FE::num_nodes<DisTypeToFaceShapeType<DISTYPE>::shape>;
+        Core::FE::num_nodes<DisTypeToFaceShapeType<distype>::shape>;
   };
 
 
@@ -1086,7 +1086,7 @@ namespace Core::FE
    *
    * @tparam DISTYPE discretization type
    */
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   struct DisTypeToEdgeOrder
   {
   };

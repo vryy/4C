@@ -285,9 +285,9 @@ namespace Core::Geo
     };  // class Edge
 
     /*--------------------------------------------------------------------------*/
-    template <unsigned probDim, Core::FE::CellType edgeType,
-        unsigned dimEdge = Core::FE::dim<edgeType>,
-        unsigned numNodesEdge = Core::FE::num_nodes<edgeType>>
+    template <unsigned prob_dim, Core::FE::CellType edge_type,
+        unsigned dim_edge = Core::FE::dim<edge_type>,
+        unsigned num_nodes_edge = Core::FE::num_nodes<edge_type>>
     class ConcreteEdge : public Edge
     {
      public:
@@ -295,16 +295,16 @@ namespace Core::Geo
       ConcreteEdge(const std::vector<Node*>& nodes) : Edge(nodes) {}
 
       /// get the element dimension of this edge
-      unsigned Dim() const override { return dimEdge; }
+      unsigned Dim() const override { return dim_edge; }
 
       /// get the number of nodes of this edge
-      unsigned NumNodes() const override { return numNodesEdge; }
+      unsigned NumNodes() const override { return num_nodes_edge; }
 
       /// get the problem dimension
-      unsigned ProbDim() const override { return probDim; }
+      unsigned ProbDim() const override { return prob_dim; }
 
       /// get the shape of this edge element
-      Core::FE::CellType Shape() const override { return edgeType; }
+      Core::FE::CellType Shape() const override { return edge_type; }
 
       /*! \brief Get the coordinates of the nodes of the side */
       void Coordinates(double* xyze) override
@@ -314,7 +314,7 @@ namespace Core::Geo
         {
           const Node& n = **i;
           n.Coordinates(x);
-          x += probDim;
+          x += prob_dim;
         }
       }
 
@@ -376,12 +376,12 @@ namespace Core::Geo
             cutfound = true;
             double z = blsv / (blsv - elsv);
 
-            Core::LinAlg::Matrix<probDim, 1> x1;
-            Core::LinAlg::Matrix<probDim, 1> x2;
+            Core::LinAlg::Matrix<prob_dim, 1> x1;
+            Core::LinAlg::Matrix<prob_dim, 1> x2;
             BeginNode()->Coordinates(x1.data());
             EndNode()->Coordinates(x2.data());
 
-            Core::LinAlg::Matrix<probDim, 1> x;
+            Core::LinAlg::Matrix<prob_dim, 1> x;
             x.update(-1., x1, 1., x2, 0.);
             x.update(1., x1, z);
             Point* p = Point::NewPoint(mesh, x.data(), 2. * z - 1., this, &side, 0.0);

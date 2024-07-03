@@ -30,7 +30,7 @@ namespace
   /**
    * \brief Fill a discretization with the geometry for the unit test.
    */
-  template <typename face_element_type>
+  template <typename FaceElementType>
   void XtestSurfacePatchQuad4(const Teuchos::RCP<Core::FE::Discretization>& discret,
       std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements_map)
   {
@@ -153,7 +153,7 @@ namespace
             n_nodes_face, node_ids.data(), element_nodes.data(), discret->gElement(parent_id), 0));
 
         // Create the geometry pair face element.
-        face_elements_map[parent_id] = Teuchos::rcp(new face_element_type(face_element, true));
+        face_elements_map[parent_id] = Teuchos::rcp(new FaceElementType(face_element, true));
       }
     }
   }

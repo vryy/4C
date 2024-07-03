@@ -443,7 +443,7 @@ namespace Core::Geo
      *
      * \author hiermeier
      * \date 11/16 */
-    template <unsigned probDim>
+    template <unsigned prob_dim>
     class ConcretePoint : public Point
     {
      public:
@@ -452,10 +452,10 @@ namespace Core::Geo
           : Point(pid, tolerance)
       {
         // copy the given coordinates into the base class member variable
-        std::copy(x, x + probDim, this->x_);
+        std::copy(x, x + prob_dim, this->x_);
 
         // set the remaining entries to zero
-        std::fill(this->x_ + probDim, this->x_ + 3, 0.0);
+        std::fill(this->x_ + prob_dim, this->x_ + 3, 0.0);
 
         // The x_ coordinate must be set, before these methods are called!
         if (cut_edge != nullptr)
@@ -471,7 +471,7 @@ namespace Core::Geo
       };
 
       /** \brief Get the coordinates of this point */
-      void Coordinates(double* x) const override { std::copy(this->x_, this->x_ + probDim, x); };
+      void Coordinates(double* x) const override { std::copy(this->x_, this->x_ + prob_dim, x); };
 
       void MovePoint(const double* new_coord) override;
 
@@ -670,11 +670,11 @@ namespace Core::Geo
     }
 
     /// Find distance between points
-    template <unsigned int probDim>
-    double DistanceBetweenPoints(const Core::LinAlg::Matrix<probDim, 1>& coord_a,
-        const Core::LinAlg::Matrix<probDim, 1>& coord_b)
+    template <unsigned int prob_dim>
+    double DistanceBetweenPoints(const Core::LinAlg::Matrix<prob_dim, 1>& coord_a,
+        const Core::LinAlg::Matrix<prob_dim, 1>& coord_b)
     {
-      Core::LinAlg::Matrix<probDim, 1> diff;
+      Core::LinAlg::Matrix<prob_dim, 1> diff;
       diff.update(1, coord_a, -1, coord_b);
       return diff.norm2();
     }

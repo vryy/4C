@@ -459,8 +459,8 @@ Mortar::ProjectorCalc<distype>::ProjectorCalc()
 /*----------------------------------------------------------------------*
  |  ctor ele-based (public)                                  farah 04/14|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectorCalcEleBased()
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectorCalcEleBased()
 {
   // nothing
 }
@@ -478,16 +478,16 @@ Mortar::ProjectorCalc<distype>* Mortar::ProjectorCalc<distype>::Instance(
   return singleton_owner.Instance(action);
 }
 
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-Mortar::ProjectorCalcEleBased<distypeS, distypeM>*
-Mortar::ProjectorCalcEleBased<distypeS, distypeM>::Instance(Core::UTILS::SingletonAction action)
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+Mortar::ProjectorCalcEleBased<distype_s, distype_m>*
+Mortar::ProjectorCalcEleBased<distype_s, distype_m>::Instance(Core::UTILS::SingletonAction action)
 {
-  static Core::UTILS::SingletonOwner<Mortar::ProjectorCalcEleBased<distypeS, distypeM>>
+  static Core::UTILS::SingletonOwner<Mortar::ProjectorCalcEleBased<distype_s, distype_m>>
       singleton_owner(
           []()
           {
-            return std::unique_ptr<Mortar::ProjectorCalcEleBased<distypeS, distypeM>>(
-                new Mortar::ProjectorCalcEleBased<distypeS, distypeM>());
+            return std::unique_ptr<Mortar::ProjectorCalcEleBased<distype_s, distype_m>>(
+                new Mortar::ProjectorCalcEleBased<distype_s, distype_m>());
           });
 
   return singleton_owner.Instance(action);
@@ -622,8 +622,8 @@ bool Mortar::ProjectorCalc<distype>::project_element_normal(
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (public)           popp 01/08|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectGaussPoint2D(
     Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi)
 {
   bool ok = true;
@@ -636,7 +636,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
     if (!mynodes) FOUR_C_THROW("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    if (distypeS == Core::FE::CellType::nurbs2 || distypeS == Core::FE::CellType::nurbs3)
+    if (distype_s == Core::FE::CellType::nurbs2 || distype_s == Core::FE::CellType::nurbs3)
     {
       Core::LinAlg::SerialDenseVector auxval(ns_);
       Core::LinAlg::SerialDenseMatrix deriv(ns_, 1);
@@ -645,7 +645,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
       for (int i = 0; i < ns_; ++i) val(i) = auxval(i);
     }
     else
-      Core::FE::shape_function_1D(val, gpeta[0], distypeS);
+      Core::FE::shape_function_1D(val, gpeta[0], distype_s);
 
     // get interpolated GP normal and GP coordinates
     double gpn[ndim_];
@@ -710,8 +710,8 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint2D(
 /*----------------------------------------------------------------------*
  | Check projection for warped elements quad4 elements       farah 01/13|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxplane(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::check_projection4_auxplane(
     Mortar::Element& ele, double* ngp, double* globgp)
 {
   if (ele.Shape() == Core::FE::CellType::tri3) FOUR_C_THROW("ELEMENT SHAPE TRI3 -- NO WARPING");
@@ -867,8 +867,8 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::check_projection4_auxpla
 /*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::ProjectGaussPoint3D(
     Mortar::Element& gpele, const double* gpeta, Mortar::Element& ele, double* xi, double& par)
 {
   if (ndim_ == 3)
@@ -882,8 +882,8 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
     if (!mypoints) FOUR_C_THROW("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    if (distypeS == Core::FE::CellType::nurbs4 || distypeS == Core::FE::CellType::nurbs8 ||
-        distypeS == Core::FE::CellType::nurbs9)
+    if (distype_s == Core::FE::CellType::nurbs4 || distype_s == Core::FE::CellType::nurbs8 ||
+        distype_s == Core::FE::CellType::nurbs9)
     {
       Core::LinAlg::SerialDenseVector auxval(ns_);
       Core::LinAlg::SerialDenseMatrix deriv(ns_, 2);
@@ -893,7 +893,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::ProjectGaussPoint3D(
     }
     else
     {
-      Core::FE::shape_function_2D(val, gpeta[0], gpeta[1], distypeS);
+      Core::FE::shape_function_2D(val, gpeta[0], gpeta[1], distype_s);
     }
 
     // get interpolated GP normal and GP coordinates
@@ -2801,8 +2801,8 @@ double Mortar::ProjectorCalc<distype>::evaluate_grad_f_element_normal(
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (public)                  popp 01/08|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-double Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point2_d(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_point2_d(
     const double* gpx, const double* gpn, Mortar::Element& ele, const double* eta)
 {
   /* Evaluate the function F(eta) = ( Ni * xim - gpx ) x gpn,
@@ -2817,7 +2817,7 @@ double Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point
 
   // build interpolation of master node coordinates for current eta
   double nx[ndim_];
-  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nx, 0);
+  Mortar::UTILS::LocalToGlobal<distype_m>(ele, eta, nx, 0);
 
   // subtract GP coordinates
   nx[0] -= gpx[0];
@@ -2832,8 +2832,8 @@ double Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (public)              popp 01/08|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-double Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_point2_d(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+double Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gauss_point2_d(
     const double* gpn, Mortar::Element& ele, const double* eta)
 {
   /* Evaluate the function GradF(eta)
@@ -2848,7 +2848,7 @@ double Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_
   // build interpolation of master node coordinates for current eta
   // use shape function derivatives for interpolation (hence "1")
   double nxeta[ndim_];
-  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta, 1);
+  Mortar::UTILS::LocalToGlobal<distype_m>(ele, eta, nxeta, 1);
 
   // calculate GradF
   fgrad = nxeta[0] * gpn[1] - nxeta[1] * gpn[0];
@@ -2859,8 +2859,8 @@ double Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_
 /*----------------------------------------------------------------------*
  |  Evaluate F for Gauss point case (3D)                      popp 11/08|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point3_d(double* f,
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_f_gauss_point3_d(double* f,
     const double* gpx, const double* gpn, Mortar::Element& ele, const double* eta,
     const double& alpha)
 {
@@ -2874,7 +2874,7 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point3_
 
   // build interpolation of ele node coordinates for current eta
   double nx[ndim_];
-  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nx, 0);
+  Mortar::UTILS::LocalToGlobal<distype_m>(ele, eta, nx, 0);
 
   // evaluate function f
   for (int i = 0; i < ndim_; ++i) f[i] = nx[i] - alpha * gpn[i] - gpx[i];
@@ -2885,8 +2885,8 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_f_gauss_point3_
 /*----------------------------------------------------------------------*
  |  Evaluate GradF for Gauss point case (3D)                  popp 11/08|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_point3_d(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+bool Mortar::ProjectorCalcEleBased<distype_s, distype_m>::evaluate_grad_f_gauss_point3_d(
     Core::LinAlg::Matrix<3, 3>& fgrad, const double* gpx, const double* gpn, Mortar::Element& ele,
     const double* eta, const double& alpha)
 {
@@ -2905,8 +2905,8 @@ bool Mortar::ProjectorCalcEleBased<distypeS, distypeM>::evaluate_grad_f_gauss_po
   //  ele.LocalToGlobal(eta,nxeta2,2);
   double* nxeta1 = &fgrad(0, 0);
   double* nxeta2 = &fgrad(0, 1);
-  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta1, 1);
-  Mortar::UTILS::LocalToGlobal<distypeM>(ele, eta, nxeta2, 2);
+  Mortar::UTILS::LocalToGlobal<distype_m>(ele, eta, nxeta1, 1);
+  Mortar::UTILS::LocalToGlobal<distype_m>(ele, eta, nxeta2, 2);
 
   // evaluate function f gradient
   for (int i = 0; i < ndim_; ++i) fgrad(i, 2) = -gpn[i];

@@ -24,7 +24,7 @@ namespace GEOMETRYPAIR
   /**
    * \brief Struct to evaluate the shape functions for an element
    */
-  template <typename element_type, typename enable = void>
+  template <typename ElementType, typename Enable = void>
   struct EvaluateShapeFunction
   {
     // Empty per default
@@ -35,10 +35,10 @@ namespace GEOMETRYPAIR
    * elements which require averaged nodal normals are currently always based on Lagrange elements
    * in 4C)
    */
-  template <typename element_type>
-  struct EvaluateShapeFunction<element_type,
-      typename std::enable_if<IsLagrangeElement<element_type>::value_ ||
-                              IsSurfaceAveragedNormalsElement<element_type>::value_>::type>
+  template <typename ElementType>
+  struct EvaluateShapeFunction<ElementType,
+      typename std::enable_if<IsLagrangeElement<ElementType>::value_ ||
+                              IsSurfaceAveragedNormalsElement<ElementType>::value_>::type>
   {
     /**
      * \brief Evaluate the shape functions of the element at xi.
@@ -50,24 +50,24 @@ namespace GEOMETRYPAIR
      * @param xi (in) Parameter coordinate on the element.
      * @param shape_function_data (in) Shape function data container.
      */
-    template <typename V, typename T, typename... not_needed_argument_type>
-    static void evaluate(V& N, const T& xi, const not_needed_argument_type&... not_needed_argument)
+    template <typename V, typename T, typename... NotNeededArgumentType>
+    static void evaluate(V& N, const T& xi, const NotNeededArgumentType&... not_needed_argument)
     {
-      if constexpr (element_type::element_dim_ == 1)
+      if constexpr (ElementType::element_dim_ == 1)
       {
-        Core::FE::shape_function_1D(N, xi, element_type::discretization_);
+        Core::FE::shape_function_1D(N, xi, ElementType::discretization_);
       }
-      else if constexpr (element_type::element_dim_ == 2)
+      else if constexpr (ElementType::element_dim_ == 2)
       {
-        Core::FE::shape_function_2D(N, xi(0), xi(1), element_type::discretization_);
+        Core::FE::shape_function_2D(N, xi(0), xi(1), ElementType::discretization_);
       }
-      else if constexpr (element_type::element_dim_ == 3)
+      else if constexpr (ElementType::element_dim_ == 3)
       {
-        Core::FE::shape_function_3D(N, xi(0), xi(1), xi(2), element_type::discretization_);
+        Core::FE::shape_function_3D(N, xi(0), xi(1), xi(2), ElementType::discretization_);
       }
       else
       {
-        FOUR_C_THROW("Got unexpected element dimension %d", element_type::element_dim_);
+        FOUR_C_THROW("Got unexpected element dimension %d", ElementType::element_dim_);
       }
     }
 
@@ -81,25 +81,25 @@ namespace GEOMETRYPAIR
      * @param xi (in) Parameter coordinate on the element.
      * @param shape_function_data (in) Shape function data container.
      */
-    template <typename V, typename T, typename... not_needed_argument_type>
+    template <typename V, typename T, typename... NotNeededArgumentType>
     static void EvaluateDeriv1(
-        V& dN, const T& xi, const not_needed_argument_type&... not_needed_argument)
+        V& dN, const T& xi, const NotNeededArgumentType&... not_needed_argument)
     {
-      if constexpr (element_type::element_dim_ == 1)
+      if constexpr (ElementType::element_dim_ == 1)
       {
-        Core::FE::shape_function_1D_deriv1(dN, xi, element_type::discretization_);
+        Core::FE::shape_function_1D_deriv1(dN, xi, ElementType::discretization_);
       }
-      else if constexpr (element_type::element_dim_ == 2)
+      else if constexpr (ElementType::element_dim_ == 2)
       {
-        Core::FE::shape_function_2D_deriv1(dN, xi(0), xi(1), element_type::discretization_);
+        Core::FE::shape_function_2D_deriv1(dN, xi(0), xi(1), ElementType::discretization_);
       }
-      else if constexpr (element_type::element_dim_ == 3)
+      else if constexpr (ElementType::element_dim_ == 3)
       {
-        Core::FE::shape_function_3D_deriv1(dN, xi(0), xi(1), xi(2), element_type::discretization_);
+        Core::FE::shape_function_3D_deriv1(dN, xi(0), xi(1), xi(2), ElementType::discretization_);
       }
       else
       {
-        FOUR_C_THROW("Got unexpected element dimension %d", element_type::element_dim_);
+        FOUR_C_THROW("Got unexpected element dimension %d", ElementType::element_dim_);
       }
     }
   };
@@ -143,9 +143,9 @@ namespace GEOMETRYPAIR
   /**
    * \brief Specialization for NURBS elements
    */
-  template <typename element_type>
-  struct EvaluateShapeFunction<element_type,
-      typename std::enable_if<IsNurbsElement<element_type>::value_>::type>
+  template <typename ElementType>
+  struct EvaluateShapeFunction<ElementType,
+      typename std::enable_if<IsNurbsElement<ElementType>::value_>::type>
   {
     /**
      * \brief Evaluate the shape functions of the element at xi.
@@ -156,27 +156,27 @@ namespace GEOMETRYPAIR
      */
     template <typename V, typename T>
     static void evaluate(
-        V& N, const T& xi, const ShapeFunctionData<element_type>& shape_function_data)
+        V& N, const T& xi, const ShapeFunctionData<ElementType>& shape_function_data)
     {
       if (shape_function_data.myknots_.size() == 0)
         FOUR_C_THROW(
             "Got shape function data with knot size 0 - did you forget to initialize the element "
             "data with get_element_data::Get?");
 
-      if constexpr (element_type::element_dim_ == 2)
+      if constexpr (ElementType::element_dim_ == 2)
       {
         Core::FE::Nurbs::nurbs_get_2D_funct<typename V::scalar_type>(N, xi,
             shape_function_data.myknots_, shape_function_data.weights_,
-            element_type::discretization_);
+            ElementType::discretization_);
       }
-      else if constexpr (element_type::element_dim_ == 3)
+      else if constexpr (ElementType::element_dim_ == 3)
       {
         Core::FE::Nurbs::nurbs_get_3D_funct(N, xi, shape_function_data.myknots_,
-            shape_function_data.weights_, element_type::discretization_);
+            shape_function_data.weights_, ElementType::discretization_);
       }
       else
       {
-        FOUR_C_THROW("Got unexpected element dimension %d", element_type::element_dim_);
+        FOUR_C_THROW("Got unexpected element dimension %d", ElementType::element_dim_);
       }
     }
 
@@ -189,30 +189,30 @@ namespace GEOMETRYPAIR
      */
     template <typename V, typename T>
     static void EvaluateDeriv1(
-        V& dN, const T& xi, const ShapeFunctionData<element_type>& shape_function_data)
+        V& dN, const T& xi, const ShapeFunctionData<ElementType>& shape_function_data)
     {
       if (shape_function_data.myknots_.size() == 0)
         FOUR_C_THROW(
             "Got shape function data with knot size 0 - did you forget to initialize the element "
             "data with get_element_data::Get?");
 
-      using type_dummy = Core::LinAlg::Matrix<element_type::n_nodes_, 1, typename V::scalar_type>;
+      using type_dummy = Core::LinAlg::Matrix<ElementType::n_nodes_, 1, typename V::scalar_type>;
       type_dummy N_dummy;
 
-      if constexpr (element_type::element_dim_ == 2)
+      if constexpr (ElementType::element_dim_ == 2)
       {
         Core::FE::Nurbs::nurbs_get_2D_funct_deriv<typename V::scalar_type>(N_dummy, dN, xi,
             shape_function_data.myknots_, shape_function_data.weights_,
-            element_type::discretization_);
+            ElementType::discretization_);
       }
-      else if constexpr (element_type::element_dim_ == 3)
+      else if constexpr (ElementType::element_dim_ == 3)
       {
         Core::FE::Nurbs::nurbs_get_3D_funct_deriv(N_dummy, dN, xi, shape_function_data.myknots_,
             shape_function_data.weights_, t_nurbs27::discretization_);
       }
       else
       {
-        FOUR_C_THROW("Got unexpected element dimension %d", element_type::element_dim_);
+        FOUR_C_THROW("Got unexpected element dimension %d", ElementType::element_dim_);
       }
     }
   };
@@ -227,27 +227,27 @@ namespace GEOMETRYPAIR
    * @param N (out) shape function matrix.
    * @param shape_function_data (in) Shape function data container.
    */
-  template <typename element_type, typename T, typename scalar_type_result,
-      typename... shape_function_data_type>
+  template <typename ElementType, typename T, typename ScalarTypeResult,
+      typename... ShapeFunctionDataType>
   inline void EvaluateShapeFunctionMatrix(
-      Core::LinAlg::Matrix<element_type::spatial_dim_, element_type::n_dof_, scalar_type_result>& N,
-      const T& xi, const shape_function_data_type&... shape_function_data)
+      Core::LinAlg::Matrix<ElementType::spatial_dim_, ElementType::n_dof_, ScalarTypeResult>& N,
+      const T& xi, const ShapeFunctionDataType&... shape_function_data)
   {
     // Matrix for shape function values.
-    Core::LinAlg::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type_result>
-        N_flat(true);
+    Core::LinAlg::Matrix<1, ElementType::n_nodes_ * ElementType::n_val_, ScalarTypeResult> N_flat(
+        true);
 
     // Evaluate the shape function values.
-    EvaluateShapeFunction<element_type>::evaluate(N_flat, xi, shape_function_data...);
+    EvaluateShapeFunction<ElementType>::evaluate(N_flat, xi, shape_function_data...);
 
     // Fill up the full shape function matrix.
     N.clear();
-    for (unsigned int node = 0; node < element_type::n_nodes_; node++)
-      for (unsigned int dim = 0; dim < element_type::spatial_dim_; dim++)
-        for (unsigned int val = 0; val < element_type::n_val_; val++)
-          N(dim, element_type::spatial_dim_ * element_type::n_val_ * node +
-                     element_type::spatial_dim_ * val + dim) =
-              N_flat(element_type::n_val_ * node + val);
+    for (unsigned int node = 0; node < ElementType::n_nodes_; node++)
+      for (unsigned int dim = 0; dim < ElementType::spatial_dim_; dim++)
+        for (unsigned int val = 0; val < ElementType::n_val_; val++)
+          N(dim, ElementType::spatial_dim_ * ElementType::n_val_ * node +
+                     ElementType::spatial_dim_ * val + dim) =
+              N_flat(ElementType::n_val_ * node + val);
   }
 
 }  // namespace GEOMETRYPAIR

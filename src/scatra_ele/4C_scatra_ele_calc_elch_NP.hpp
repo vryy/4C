@@ -22,7 +22,7 @@ namespace Discret
   namespace ELEMENTS
   {
     // forward declaration
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElchNP;
 
     template <Core::FE::CellType distype>
@@ -369,17 +369,17 @@ namespace Discret
     /*!
       This class keeps all internal variables for the Nernst-Planck formulation.
     */
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerElchNP
-        : public ScaTraEleInternalVariableManagerElch<NSD, NEN>
+        : public ScaTraEleInternalVariableManagerElch<nsd, nen>
     {
      public:
-      using vm = ScaTraEleInternalVariableManager<NSD, NEN>;
-      using vmelch = ScaTraEleInternalVariableManagerElch<NSD, NEN>;
+      using vm = ScaTraEleInternalVariableManager<nsd, nen>;
+      using vmelch = ScaTraEleInternalVariableManagerElch<nsd, nen>;
 
       ScaTraEleInternalVariableManagerElchNP(
           int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
-          : ScaTraEleInternalVariableManagerElch<NSD, NEN>(numscal, elchpara),
+          : ScaTraEleInternalVariableManagerElch<nsd, nen>(numscal, elchpara),
             // constant internal variables
             // empty
 
@@ -389,16 +389,16 @@ namespace Discret
 
       //! compute and set internal variables for the Nernst-Planck formulation
       void set_internal_variables_elch_np(
-          const Core::LinAlg::Matrix<NEN, 1>& funct,  //!< array for shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nen, 1>& funct,  //!< array for shape functions
+          const Core::LinAlg::Matrix<nsd, nen>&
               derxy,  //!< global derivatives of shape functions w.r.t x,y,z
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephinp,  //!< nodal state variables at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ephin,  //!< nodal state variables at t_(n)
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nsd, nen>&
               econvelnp,  //!< nodal convective velocity values at t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               ehist  //!< history vector of transported scalars
       )
       {
@@ -424,11 +424,11 @@ namespace Discret
       /*========================================================================*/
 
       //! return migration velocity vector (divided by D_k*z_k): -F/(RT) \grad{\Phi}
-      const Core::LinAlg::Matrix<NSD, 1>& MigVelInt() const { return migvelint_; };
+      const Core::LinAlg::Matrix<nsd, 1>& MigVelInt() const { return migvelint_; };
 
       //! return convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi} *
       //! \grad{N}
-      Core::LinAlg::Matrix<NEN, 1> MigConv() { return migconv_; };
+      Core::LinAlg::Matrix<nen, 1> MigConv() { return migconv_; };
 
      private:
       /*========================================================================*/
@@ -441,10 +441,10 @@ namespace Discret
       /*========================================================================*/
 
       //! migration velocity vector (divided by D_k*z_k): -F/(RT) \grad{\Phi}
-      Core::LinAlg::Matrix<NSD, 1> migvelint_;
+      Core::LinAlg::Matrix<nsd, 1> migvelint_;
 
       //! convective part of migration term (divided by D_k*z_k): -F/(RT) \grad{\Phi} * \grad{N}
-      Core::LinAlg::Matrix<NEN, 1> migconv_;
+      Core::LinAlg::Matrix<nen, 1> migconv_;
 
     };  // class ScaTraEleInternalVariableManagerElchNP
 

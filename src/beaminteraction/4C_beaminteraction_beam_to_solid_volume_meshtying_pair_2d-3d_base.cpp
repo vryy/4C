@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::CreateGeometryPair(
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam, Solid>::CreateGeometryPair(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
@@ -37,16 +37,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam, solid>::Creat
         "The 2D-3D beam-to-volume mesh tying pair only works with the cross section projection "
         "geometry pair. This has to be specified in the input file.");
   this->geometry_pair_ = Teuchos::rcp(
-      new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam,
-          solid>(element1, element2, line_to_3d_evaluation_data));
+      new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, Beam,
+          Solid>(element1, element2, line_to_3d_evaluation_data));
 }
 
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
-    solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<Beam,
+    Solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                               integration_point,
     Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const
 {
@@ -60,7 +60,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
     r_cross_section_ref(1) = integration_point.GetEtaCrossSection()(0);
     r_cross_section_ref(2) = integration_point.GetEtaCrossSection()(1);
     r_cross_section_cur.multiply(triad, r_cross_section_ref);
-    GEOMETRYPAIR::EvaluatePosition<beam>(eta, q, r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(eta, q, r_beam);
     r_beam += r_cross_section_cur;
   };
 
@@ -70,7 +70,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<beam,
   }
   else
   {
-    evaluate_position(GEOMETRYPAIR::ElementDataToDouble<beam>::ToDouble(this->ele1pos_), r_beam);
+    evaluate_position(GEOMETRYPAIR::ElementDataToDouble<Beam>::ToDouble(this->ele1pos_), r_beam);
   }
 }
 

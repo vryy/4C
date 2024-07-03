@@ -41,8 +41,8 @@ namespace Discret
     and (near)-incompressibility.
 
     */
-    template <class so3_ele, Core::FE::CellType distype>
-    class So3Poro : public so3_ele
+    template <class So3Ele, Core::FE::CellType distype>
+    class So3Poro : public So3Ele
     {
       //! @name Friends
       friend class SoTet4PoroType;

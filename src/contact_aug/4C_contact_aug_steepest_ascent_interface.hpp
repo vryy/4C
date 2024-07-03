@@ -61,14 +61,14 @@ namespace CONTACT
          *  condensed system contributions.
          *
          *  \author hiermeier \date 07/17 */
-        template <typename assemble_policy>
+        template <typename AssemblePolicy>
         class NodeBasedAssembleStrategy
-            : public CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>
+            : public CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<AssemblePolicy>
         {
          public:
           /// constructor
           explicit NodeBasedAssembleStrategy(Interface* inter)
-              : CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<assemble_policy>(inter)
+              : CONTACT::Aug::INTERFACE::NodeBasedAssembleStrategy<AssemblePolicy>(inter)
           { /* empty */
           }
 

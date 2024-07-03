@@ -24,18 +24,18 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename beam, typename fluid>
-BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam,
-    fluid>::BeamToFluidMeshtyingPairGaussPoint()
-    : BeamToFluidMeshtyingPairBase<beam, fluid>()
+template <typename Beam, typename Fluid>
+BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam,
+    Fluid>::BeamToFluidMeshtyingPairGaussPoint()
+    : BeamToFluidMeshtyingPairBase<Beam, Fluid>()
 {
   // Empty constructor.
 }
 
 /*------------------------------------------------------------------------------------------------*/
 
-template <typename beam, typename fluid>
-bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
+template <typename Beam, typename Fluid>
+bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<Beam, Fluid>::evaluate(
     Core::LinAlg::SerialDenseVector* forcevec1, Core::LinAlg::SerialDenseVector* forcevec2,
     Core::LinAlg::SerialDenseMatrix* stiffmat11, Core::LinAlg::SerialDenseMatrix* stiffmat12,
     Core::LinAlg::SerialDenseMatrix* stiffmat21, Core::LinAlg::SerialDenseMatrix* stiffmat22)
@@ -59,19 +59,19 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
   Core::LinAlg::Matrix<3, 1, scalar_type> v_fluid;
   Core::LinAlg::Matrix<3, 1, scalar_type> force;
   Core::LinAlg::Matrix<3, 1, scalar_type> force2;
-  Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type> force_element_1(true);
-  Core::LinAlg::Matrix<fluid::n_dof_, 1, scalar_type> force_element_2(true);
-  Core::LinAlg::Matrix<fluid::n_dof_, 1, scalar_type> force_element_f(true);
-  Core::LinAlg::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  Core::LinAlg::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
+  Core::LinAlg::Matrix<Beam::n_dof_, 1, scalar_type> force_element_1(true);
+  Core::LinAlg::Matrix<Fluid::n_dof_, 1, scalar_type> force_element_2(true);
+  Core::LinAlg::Matrix<Fluid::n_dof_, 1, scalar_type> force_element_f(true);
+  Core::LinAlg::Matrix<1, Beam::n_nodes_ * Beam::n_val_, double> N_beam(true);
+  Core::LinAlg::Matrix<1, Fluid::n_nodes_ * Fluid::n_val_, double> N_fluid(true);
 
   // Resize and initialize the return variables.
-  if (forcevec1 != nullptr) forcevec1->size(beam::n_dof_);
-  if (forcevec2 != nullptr) forcevec2->size(fluid::n_dof_);
-  if (stiffmat11 != nullptr) stiffmat11->shape(beam::n_dof_, beam::n_dof_);
-  if (stiffmat12 != nullptr) stiffmat12->shape(beam::n_dof_, fluid::n_dof_);
-  if (stiffmat21 != nullptr) stiffmat21->shape(fluid::n_dof_, beam::n_dof_);
-  if (stiffmat22 != nullptr) stiffmat22->shape(fluid::n_dof_, fluid::n_dof_);
+  if (forcevec1 != nullptr) forcevec1->size(Beam::n_dof_);
+  if (forcevec2 != nullptr) forcevec2->size(Fluid::n_dof_);
+  if (stiffmat11 != nullptr) stiffmat11->shape(Beam::n_dof_, Beam::n_dof_);
+  if (stiffmat12 != nullptr) stiffmat12->shape(Beam::n_dof_, Fluid::n_dof_);
+  if (stiffmat21 != nullptr) stiffmat21->shape(Fluid::n_dof_, Beam::n_dof_);
+  if (stiffmat22 != nullptr) stiffmat22->shape(Fluid::n_dof_, Fluid::n_dof_);
 
   // Initialize scalar variables.
   double segment_jacobian, beam_segmentation_factor;
@@ -92,34 +92,34 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the current positions on beam and fluid.
-      GEOMETRYPAIR::EvaluatePosition<beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<fluid>(projected_gauss_point.GetXi(), this->ele2pos_, r_fluid);
+      GEOMETRYPAIR::EvaluatePosition<Beam>(projected_gauss_point.GetEta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<Fluid>(projected_gauss_point.GetXi(), this->ele2pos_, r_fluid);
 
       N_beam.clear();
       N_fluid.clear();
 
       // Evaluate the chapefunctions at the current gauss point
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<Beam>::evaluate(
           N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<fluid>::evaluate(N_fluid, projected_gauss_point.GetXi());
+      GEOMETRYPAIR::EvaluateShapeFunction<Fluid>::evaluate(N_fluid, projected_gauss_point.GetXi());
 
       // assemble fluid mass matrix
       if (stiffmat22 != nullptr)
       {
-        for (unsigned int i_fluid_node1 = 0; i_fluid_node1 < fluid::n_nodes_; i_fluid_node1++)
-          for (unsigned int i_fluid_val1 = 0; i_fluid_val1 < fluid::n_val_; i_fluid_val1++)
+        for (unsigned int i_fluid_node1 = 0; i_fluid_node1 < Fluid::n_nodes_; i_fluid_node1++)
+          for (unsigned int i_fluid_val1 = 0; i_fluid_val1 < Fluid::n_val_; i_fluid_val1++)
             for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-              for (unsigned int i_fluid_node2 = 0; i_fluid_node2 < fluid::n_nodes_; i_fluid_node2++)
-                for (unsigned int i_fluid_val2 = 0; i_fluid_val2 < fluid::n_val_; i_fluid_val2++)
-                  (*stiffmat22)(i_fluid_node1 * fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
-                      i_fluid_node2 * fluid::n_val_ * 3 + i_fluid_val2 * 3 + i_dir) +=
+              for (unsigned int i_fluid_node2 = 0; i_fluid_node2 < Fluid::n_nodes_; i_fluid_node2++)
+                for (unsigned int i_fluid_val2 = 0; i_fluid_val2 < Fluid::n_val_; i_fluid_val2++)
+                  (*stiffmat22)(i_fluid_node1 * Fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
+                      i_fluid_node2 * Fluid::n_val_ * 3 + i_fluid_val2 * 3 + i_dir) +=
                       N_fluid(i_fluid_node1) * N_fluid(i_fluid_node2) *
                       projected_gauss_point.GetGaussWeight() * segment_jacobian;
       }
@@ -127,43 +127,43 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
       // assemble beam mass matrix
       if (stiffmat11 != nullptr)
       {
-        for (unsigned int i_beam_node1 = 0; i_beam_node1 < beam::n_nodes_; i_beam_node1++)
-          for (unsigned int i_beam_val1 = 0; i_beam_val1 < beam::n_val_; i_beam_val1++)
+        for (unsigned int i_beam_node1 = 0; i_beam_node1 < Beam::n_nodes_; i_beam_node1++)
+          for (unsigned int i_beam_val1 = 0; i_beam_val1 < Beam::n_val_; i_beam_val1++)
             for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-              for (unsigned int i_beam_node2 = 0; i_beam_node2 < beam::n_nodes_; i_beam_node2++)
-                for (unsigned int i_beam_val2 = 0; i_beam_val2 < beam::n_val_; i_beam_val2++)
-                  (*stiffmat11)(i_beam_node1 * beam::n_val_ * 3 + 3 * i_beam_val1 + i_dir,
-                      i_beam_node2 * beam::n_val_ * 3 + 3 * i_beam_val2 + i_dir) +=
-                      N_beam(i_beam_node1 * beam::n_val_ + i_beam_val1) *
-                      N_beam(i_beam_node2 * beam::n_val_ + i_beam_val2) *
+              for (unsigned int i_beam_node2 = 0; i_beam_node2 < Beam::n_nodes_; i_beam_node2++)
+                for (unsigned int i_beam_val2 = 0; i_beam_val2 < Beam::n_val_; i_beam_val2++)
+                  (*stiffmat11)(i_beam_node1 * Beam::n_val_ * 3 + 3 * i_beam_val1 + i_dir,
+                      i_beam_node2 * Beam::n_val_ * 3 + 3 * i_beam_val2 + i_dir) +=
+                      N_beam(i_beam_node1 * Beam::n_val_ + i_beam_val1) *
+                      N_beam(i_beam_node2 * Beam::n_val_ + i_beam_val2) *
                       projected_gauss_point.GetGaussWeight() * segment_jacobian;
       }
 
       // assemble fluid beam coupling matrix
       if (stiffmat21 != nullptr)
       {
-        for (unsigned int i_fluid_node1 = 0; i_fluid_node1 < fluid::n_nodes_; i_fluid_node1++)
-          for (unsigned int i_fluid_val1 = 0; i_fluid_val1 < fluid::n_val_; i_fluid_val1++)
+        for (unsigned int i_fluid_node1 = 0; i_fluid_node1 < Fluid::n_nodes_; i_fluid_node1++)
+          for (unsigned int i_fluid_val1 = 0; i_fluid_val1 < Fluid::n_val_; i_fluid_val1++)
             for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-              for (unsigned int i_beam_node2 = 0; i_beam_node2 < beam::n_nodes_; i_beam_node2++)
-                for (unsigned int i_beam_val2 = 0; i_beam_val2 < beam::n_val_; i_beam_val2++)
-                  (*stiffmat21)(i_fluid_node1 * fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
-                      i_beam_node2 * beam::n_val_ * 3 + 3 * i_beam_val2 + i_dir) +=
-                      N_fluid(i_fluid_node1) * N_beam(i_beam_node2 * beam::n_val_ + i_beam_val2) *
+              for (unsigned int i_beam_node2 = 0; i_beam_node2 < Beam::n_nodes_; i_beam_node2++)
+                for (unsigned int i_beam_val2 = 0; i_beam_val2 < Beam::n_val_; i_beam_val2++)
+                  (*stiffmat21)(i_fluid_node1 * Fluid::n_val_ * 3 + i_fluid_val1 * 3 + i_dir,
+                      i_beam_node2 * Beam::n_val_ * 3 + 3 * i_beam_val2 + i_dir) +=
+                      N_fluid(i_fluid_node1) * N_beam(i_beam_node2 * Beam::n_val_ + i_beam_val2) *
                       projected_gauss_point.GetGaussWeight() * segment_jacobian;
       }
 
       // assemble fluid beam coupling matrix
       if (stiffmat12 != nullptr)
       {
-        for (unsigned int i_beam_node1 = 0; i_beam_node1 < beam::n_nodes_; i_beam_node1++)
-          for (unsigned int i_beam_val1 = 0; i_beam_val1 < beam::n_val_; i_beam_val1++)
+        for (unsigned int i_beam_node1 = 0; i_beam_node1 < Beam::n_nodes_; i_beam_node1++)
+          for (unsigned int i_beam_val1 = 0; i_beam_val1 < Beam::n_val_; i_beam_val1++)
             for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
-              for (unsigned int i_fluid_node2 = 0; i_fluid_node2 < fluid::n_nodes_; i_fluid_node2++)
-                for (unsigned int i_fluid_val2 = 0; i_fluid_val2 < fluid::n_val_; i_fluid_val2++)
-                  (*stiffmat12)(i_beam_node1 * beam::n_val_ * 3 + 3 * i_beam_val1 + i_dir,
-                      i_fluid_node2 * fluid::n_val_ * 3 + 3 * i_fluid_val2 + i_dir) +=
-                      N_fluid(i_fluid_node2) * N_beam(i_beam_node1 * beam::n_val_ + i_beam_val1) *
+              for (unsigned int i_fluid_node2 = 0; i_fluid_node2 < Fluid::n_nodes_; i_fluid_node2++)
+                for (unsigned int i_fluid_val2 = 0; i_fluid_val2 < Fluid::n_val_; i_fluid_val2++)
+                  (*stiffmat12)(i_beam_node1 * Beam::n_val_ * 3 + 3 * i_beam_val1 + i_dir,
+                      i_fluid_node2 * Fluid::n_val_ * 3 + 3 * i_fluid_val2 + i_dir) +=
+                      N_fluid(i_fluid_node2) * N_beam(i_beam_node1 * Beam::n_val_ + i_beam_val1) *
                       projected_gauss_point.GetGaussWeight() * segment_jacobian;
       }
     }
@@ -173,13 +173,13 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
   {
     if (forcevec1 != nullptr)
     {
-      for (unsigned int i_dof1 = 0; i_dof1 < beam::n_dof_; i_dof1++)
+      for (unsigned int i_dof1 = 0; i_dof1 < Beam::n_dof_; i_dof1++)
       {
-        for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
+        for (unsigned int i_dof2 = 0; i_dof2 < Beam::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) +=
               (*stiffmat11)(i_dof1, i_dof2) *
               Core::FADUtils::CastToDouble(this->ele1vel_.element_position_(i_dof2));
-        for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
+        for (unsigned int i_dof2 = 0; i_dof2 < Fluid::n_dof_; i_dof2++)
           (*forcevec1)(i_dof1) -=
               (*stiffmat12)(i_dof1, i_dof2) *
               Core::FADUtils::CastToDouble(this->ele2vel_.element_position_(i_dof2));
@@ -193,13 +193,13 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
                ->get_weak_dirichlet_flag())
 
       {
-        for (unsigned int i_dof1 = 0; i_dof1 < fluid::n_dof_; i_dof1++)
+        for (unsigned int i_dof1 = 0; i_dof1 < Fluid::n_dof_; i_dof1++)
         {
-          for (unsigned int i_dof2 = 0; i_dof2 < fluid::n_dof_; i_dof2++)
+          for (unsigned int i_dof2 = 0; i_dof2 < Fluid::n_dof_; i_dof2++)
             (*forcevec2)(i_dof1) +=
                 (*stiffmat22)(i_dof1, i_dof2) *
                 Core::FADUtils::CastToDouble(this->ele2vel_.element_position_(i_dof2));
-          for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
+          for (unsigned int i_dof2 = 0; i_dof2 < Beam::n_dof_; i_dof2++)
             (*forcevec2)(i_dof1) -=
                 (*stiffmat21)(i_dof1, i_dof2) *
                 Core::FADUtils::CastToDouble(this->ele1vel_.element_position_(i_dof2));
@@ -207,9 +207,9 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::evaluate(
       }
       else
 
-        for (unsigned int i_dof1 = 0; i_dof1 < fluid::n_dof_; i_dof1++)
+        for (unsigned int i_dof1 = 0; i_dof1 < Fluid::n_dof_; i_dof1++)
         {
-          for (unsigned int i_dof2 = 0; i_dof2 < beam::n_dof_; i_dof2++)
+          for (unsigned int i_dof2 = 0; i_dof2 < Beam::n_dof_; i_dof2++)
             (*forcevec2)(i_dof1) -=
                 (*stiffmat21)(i_dof1, i_dof2) *
                 Core::FADUtils::CastToDouble(this->ele1vel_.element_position_(i_dof2));

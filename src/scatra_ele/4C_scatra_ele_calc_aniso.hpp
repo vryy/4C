@@ -21,7 +21,7 @@ namespace Discret
 {
   namespace ELEMENTS
   {
-    template <int NSD>
+    template <int nsd>
     class ScaTraEleDiffManagerAniso;
 
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
@@ -124,7 +124,7 @@ namespace Discret
     basic isotropic diffusion manager class in scatra_ele_calc.H. It doesn't
     contain subgrid diffusion.
     */
-    template <int NSD>
+    template <int nsd>
     class ScaTraEleDiffManagerAniso : public ScaTraEleDiffManager
     {
      public:
@@ -134,21 +134,21 @@ namespace Discret
       }
 
       //! Set the anisotropic diffusion coefficient
-      virtual void SetAnisotropicDiff(const Core::LinAlg::Matrix<NSD, NSD> difftensor, const int k)
+      virtual void SetAnisotropicDiff(const Core::LinAlg::Matrix<nsd, nsd> difftensor, const int k)
       {
         difftensor_[k] = difftensor;
         return;
       }
 
       //! Return the stored anisotropic diffusion coefficient
-      virtual Core::LinAlg::Matrix<NSD, NSD> GetAnisotropicDiff(const int k)
+      virtual Core::LinAlg::Matrix<nsd, nsd> GetAnisotropicDiff(const int k)
       {
         return difftensor_[k];
       }
 
      protected:
       //! tensor valued diffusion coefficient
-      std::vector<Core::LinAlg::Matrix<NSD, NSD>> difftensor_;
+      std::vector<Core::LinAlg::Matrix<nsd, nsd>> difftensor_;
     };
 
   }  // namespace ELEMENTS

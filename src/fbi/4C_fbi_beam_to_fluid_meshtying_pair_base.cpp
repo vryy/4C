@@ -34,32 +34,32 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-template <typename beam, typename fluid>
-BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::BeamToFluidMeshtyingPairBase()
-    : BeamToSolidVolumeMeshtyingPairBase<beam, fluid>()
+template <typename Beam, typename Fluid>
+BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::BeamToFluidMeshtyingPairBase()
+    : BeamToSolidVolumeMeshtyingPairBase<Beam, Fluid>()
 {
   // Empty constructor.
 }
 /*------------------------------------------------------------------------------------------------*/
 
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::setup()
+template <typename Beam, typename Fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::setup()
 {
   this->check_init();
 
-  BeamToSolidVolumeMeshtyingPairBase<beam, fluid>::setup();
+  BeamToSolidVolumeMeshtyingPairBase<Beam, Fluid>::setup();
 
   // Initialize the element data containers
-  ele1vel_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::initialize(this->Element1());
-  ele2vel_ = GEOMETRYPAIR::InitializeElementData<fluid, scalar_type>::initialize(this->Element2());
-  ele1poscur_ = GEOMETRYPAIR::InitializeElementData<beam, double>::initialize(this->Element1());
-  ele2poscur_ = GEOMETRYPAIR::InitializeElementData<fluid, double>::initialize(this->Element2());
+  ele1vel_ = GEOMETRYPAIR::InitializeElementData<Beam, scalar_type>::initialize(this->Element1());
+  ele2vel_ = GEOMETRYPAIR::InitializeElementData<Fluid, scalar_type>::initialize(this->Element2());
+  ele1poscur_ = GEOMETRYPAIR::InitializeElementData<Beam, double>::initialize(this->Element1());
+  ele2poscur_ = GEOMETRYPAIR::InitializeElementData<Fluid, double>::initialize(this->Element2());
 
   // Initialize current nodal velocities for beam element
-  for (unsigned int i = 0; i < beam::n_dof_; i++) this->ele1vel_.element_position_(i) = 0.0;
+  for (unsigned int i = 0; i < Beam::n_dof_; i++) this->ele1vel_.element_position_(i) = 0.0;
 
   // Initialize current nodal velocities for fluid element
-  for (unsigned int i = 0; i < fluid::n_dof_; i++) this->ele2vel_.element_position_(i) = 0.0;
+  for (unsigned int i = 0; i < Fluid::n_dof_; i++) this->ele2vel_.element_position_(i) = 0.0;
 
   this->issetup_ = true;
 }
@@ -67,48 +67,48 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::setup()
 /**
  *
  */
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
-    fluid>::ResetState(  // todo somehow hand in nodal velocities
+template <typename Beam, typename Fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
+    Fluid>::ResetState(  // todo somehow hand in nodal velocities
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& fluid_nodal_dofvec)
 {
   // Beam element.
-  for (unsigned int i = 0; i < beam::n_dof_; i++)
+  for (unsigned int i = 0; i < Beam::n_dof_; i++)
   {
     this->ele1pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
-        beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[i]);
+        Beam::n_dof_ + Fluid::n_dof_, i, beam_centerline_dofvec[i]);
     this->ele1poscur_.element_position_(i) = beam_centerline_dofvec[i];
     this->ele1vel_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
-        beam::n_dof_ + fluid::n_dof_, i, beam_centerline_dofvec[beam::n_dof_ + i]);
+        Beam::n_dof_ + Fluid::n_dof_, i, beam_centerline_dofvec[Beam::n_dof_ + i]);
   }
 
   // Fluid element.
-  for (unsigned int i = 0; i < fluid::n_dof_; i++)
+  for (unsigned int i = 0; i < Fluid::n_dof_; i++)
   {
     this->ele2pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
-        beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[i]);
+        Beam::n_dof_ + Fluid::n_dof_, Beam::n_dof_ + i, fluid_nodal_dofvec[i]);
     this->ele2poscur_.element_position_(i) = fluid_nodal_dofvec[i];
     this->ele2vel_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
-        beam::n_dof_ + fluid::n_dof_, beam::n_dof_ + i, fluid_nodal_dofvec[fluid::n_dof_ + i]);
+        Beam::n_dof_ + Fluid::n_dof_, Beam::n_dof_ + i, fluid_nodal_dofvec[Fluid::n_dof_ + i]);
   }
 }
 
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::CreateGeometryPair(
+template <typename Beam, typename Fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::CreateGeometryPair(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Set up the geometry pair
-  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, fluid>(
+  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, Beam, Fluid>(
       element1, element2, geometry_evaluation_data_ptr);
 }
 
 /**
  *
  */
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::pre_evaluate()
+template <typename Beam, typename Fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!this->meshtying_is_evaluated_)
@@ -120,8 +120,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::pre_evaluate()
 /**
  *
  */
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::print(std::ostream& out) const
+template <typename Beam, typename Fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::print(std::ostream& out) const
 {
   this->check_init_setup();
 
@@ -142,9 +142,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::print(std::ostr
 /**
  *
  */
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
-    fluid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
+template <typename Beam, typename Fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
+    Fluid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   this->check_init_setup();
 
@@ -171,8 +171,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam,
 /**
  *
  */
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visualization(
+template <typename Beam, typename Fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visualization(
     Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -238,8 +238,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visual
       // Add the left and right boundary point of the segment.
       for (const auto& segmentation_point : {segment.GetEtadata(), segment.GetEtaB()})
       {
-        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1posref_, X);
-        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1pos_, r);
+        GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1posref_, X);
+        GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1pos_, r);
         u = r;
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
@@ -252,15 +252,15 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::get_pair_visual
   }
 }
 
-template <typename beam, typename fluid>
-void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::evaluate_beam_position(
+template <typename Beam, typename Fluid>
+void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::evaluate_beam_position(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& integration_point,
     Core::LinAlg::Matrix<3, 1, scalar_type>& r_beam, bool reference) const
 {
   if (reference)
-    GEOMETRYPAIR::EvaluatePosition<beam>(integration_point.GetEta(), this->ele1posref_, r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.GetEta(), this->ele1posref_, r_beam);
   else
-    GEOMETRYPAIR::EvaluatePosition<beam>(integration_point.GetEta(), this->ele1pos_, r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.GetEta(), this->ele1pos_, r_beam);
 }
 
 /**

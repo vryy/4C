@@ -34,8 +34,8 @@ namespace BEAMINTERACTION
    * \param[in] beam Type from GEOMETRYPAIR::ElementDiscretization representing the beam.
    * \param[in] volume Type from GEOMETRYPAIR::ElementDiscretization... representing the fluid.
    */
-  template <typename beam, typename fluid>
-  class BeamToFluidMeshtyingPairGaussPoint : public BeamToFluidMeshtyingPairBase<beam, fluid>
+  template <typename Beam, typename Fluid>
+  class BeamToFluidMeshtyingPairGaussPoint : public BeamToFluidMeshtyingPairBase<Beam, Fluid>
   {
     friend FBI::PairFactory;
     friend BeamToFluidMeshtyingPairGPTSTest;
@@ -66,7 +66,7 @@ namespace BEAMINTERACTION
     BeamToFluidMeshtyingPairGaussPoint();
 
     //! Shortcut to base class.
-    using base_class = BeamToFluidMeshtyingPairBase<beam, fluid>;
+    using base_class = BeamToFluidMeshtyingPairBase<Beam, Fluid>;
 
     //! Scalar type for FAD variables.
     using scalar_type = typename base_class::scalar_type;

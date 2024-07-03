@@ -1580,8 +1580,8 @@ void Core::Geo::Cut::Side::replaceNodes(Node* nod, Node* replwith)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
-bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_closer_side(
+template <unsigned probdim, Core::FE::CellType sidetype, unsigned num_nodes_side, unsigned dim>
+bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::is_closer_side(
     const Core::LinAlg::Matrix<probdim, 1>& startpoint_xyz, Core::Geo::Cut::Side* other,
     bool& is_closer)
 {
@@ -1597,7 +1597,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
    * almost parallel sides and a start-point next to the common point of the sides
    * the side-center might lead to a ray which is almost parallel to the other side */
 
-  Core::LinAlg::Matrix<dim, numNodesSide> corner_coords_rst(true);
+  Core::LinAlg::Matrix<dim, num_nodes_side> corner_coords_rst(true);
   this->local_corner_coordinates(corner_coords_rst.data());
 
   /* shrink/perturb the local coordinates around the center point with a given
@@ -1608,10 +1608,10 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
   //-----------------------------
   // get perturbed coordinates
   //-----------------------------
-  Core::LinAlg::Matrix<dim, numNodesSide> inner_corner_coords_rst(true);
+  Core::LinAlg::Matrix<dim, num_nodes_side> inner_corner_coords_rst(true);
 
   // 1. transform such that coordinates center is located in the element center
-  for (unsigned i = 0; i < numNodesSide; ++i)
+  for (unsigned i = 0; i < num_nodes_side; ++i)
   {
     for (unsigned j = 0; j < dim; ++j)
       inner_corner_coords_rst(j, i) = corner_coords_rst(j, i) - rst_center(j);
@@ -1624,7 +1624,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
   inner_corner_coords_rst.scale(scalefac);
 
   // 3. transform the element back
-  for (unsigned i = 0; i < numNodesSide; ++i)
+  for (unsigned i = 0; i < num_nodes_side; ++i)
   {
     for (unsigned j = 0; j < dim; ++j) inner_corner_coords_rst(j, i) += rst_center(j);
   }
@@ -1652,7 +1652,7 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
 
 
   // loop corner nodes
-  for (unsigned i = 0; i < numNodesSide; i++)
+  for (unsigned i = 0; i < num_nodes_side; i++)
   {
     // get ray vector (endpoint-startpoint)
     Core::LinAlg::Matrix<dim, 1> rst_inner_corner(&inner_corner_coords_rst(0, i), true);
@@ -1751,9 +1751,9 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::is_clos
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
+template <unsigned probdim, Core::FE::CellType sidetype, unsigned num_nodes_side, unsigned dim>
 ///  lies point with given coordinates within this side?
-bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinSide(
+bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::WithinSide(
     const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<dim, 1>& rs, double& dist)
 {
   FOUR_C_THROW("Do we use this function?");
@@ -1775,9 +1775,9 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::WithinS
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
+template <unsigned probdim, Core::FE::CellType sidetype, unsigned num_nodes_side, unsigned dim>
 ///  lies point with given coordinates within this side?
-bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::local_coordinates(
+bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::local_coordinates(
     const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<probdim, 1>& rsd,
     bool allow_dist, double tol)
 {
@@ -1820,13 +1820,13 @@ bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::local_c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType sidetype, unsigned numNodesSide, unsigned dim>
+template <unsigned probdim, Core::FE::CellType sidetype, unsigned num_nodes_side, unsigned dim>
 ///  lies point with given coordinates within this side?
-bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
+bool Core::Geo::Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::RayCut(
     const Core::LinAlg::Matrix<probdim, 1>& p1_xyz, const Core::LinAlg::Matrix<probdim, 1>& p2_xyz,
     Core::LinAlg::Matrix<dim, 1>& rs, double& line_xi)
 {
-  Core::LinAlg::Matrix<probdim, numNodesSide> xyze_surface(true);
+  Core::LinAlg::Matrix<probdim, num_nodes_side> xyze_surface(true);
   this->Coordinates(xyze_surface);
 
   Core::LinAlg::Matrix<probdim, 2> xyze_line(true);

@@ -35,16 +35,16 @@ namespace BEAMINTERACTION
    * @param mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar shape
    * functions.
    */
-  template <typename beam, typename solid, typename mortar>
+  template <typename Beam, typename Solid, typename Mortar>
   class BeamToSolidVolumeMeshtyingPairMortar
-      : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
+      : public BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>
   {
     //! Define the unit test class as friend so it can set up a valid pair state for the test cases.
     friend BeamToSolidVolumeMeshtyingPairMortarTest;
 
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>;
 
     //! Type to be used for scalar AD variables.
     using scalar_type = typename base_class::scalar_type;
@@ -90,10 +90,10 @@ namespace BEAMINTERACTION
     /**
      * \brief Evaluate the local mortar matrices for this contact element pair.
      */
-    void evaluate_dm(Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-        Core::LinAlg::Matrix<mortar::n_dof_, solid::n_dof_, double>& local_M,
-        Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-        Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_constraint) const;
+    void evaluate_dm(Core::LinAlg::Matrix<Mortar::n_dof_, Beam::n_dof_, double>& local_D,
+        Core::LinAlg::Matrix<Mortar::n_dof_, Solid::n_dof_, double>& local_M,
+        Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_kappa,
+        Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_constraint) const;
 
     /**
      * \brief For the mortar pairs it does not make sense to calculate forces at the integration

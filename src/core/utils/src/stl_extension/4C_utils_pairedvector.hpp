@@ -55,12 +55,12 @@ namespace Core::Gen
    * the container it is based on. Note especially that the elements are not
    * sorted.
    */
-  template <typename Key, typename T, typename insert_policy = DefaultInsertPolicy<Key, T>>
-  class Pairedvector : protected insert_policy
+  template <typename Key, typename T, typename InsertPolicy = DefaultInsertPolicy<Key, T>>
+  class Pairedvector : protected InsertPolicy
   {
    private:
-    typedef Pairedvector<Key, T, insert_policy> class_type;
-    typedef insert_policy base_type;
+    typedef Pairedvector<Key, T, InsertPolicy> class_type;
+    typedef InsertPolicy base_type;
     typedef typename base_type::pairedvector_type pairedvector_type;
     typedef typename base_type::pair_type pair_type;
 
@@ -74,7 +74,7 @@ namespace Core::Gen
      *  @param reserve The number of elements that are preallocated
      */
     Pairedvector(size_t reserve)
-        : m_(reserve + insert_policy::capacity_offset(), pair_type()), entries_(0)
+        : m_(reserve + InsertPolicy::capacity_offset(), pair_type()), entries_(0)
     {
     }
 
@@ -83,7 +83,7 @@ namespace Core::Gen
      *          number of entries. Use resize as soon as you know the necessary
      *          number of elements.
      */
-    Pairedvector() : m_(insert_policy::capacity_offset(), pair_type()), entries_(0) {}
+    Pairedvector() : m_(InsertPolicy::capacity_offset(), pair_type()), entries_(0) {}
 
     /**
      *  @brief  constructor creates no elements, but reserves the maximum
@@ -93,7 +93,7 @@ namespace Core::Gen
      *  @param default_T   default value for the data within the pair
      */
     Pairedvector(size_t reserve, Key default_key, T default_T)
-        : m_(reserve + insert_policy::capacity_offset(), pair_type(default_key, default_T)),
+        : m_(reserve + InsertPolicy::capacity_offset(), pair_type(default_key, default_T)),
           entries_(0)
     {
     }
@@ -211,10 +211,10 @@ namespace Core::Gen
     void resize(size_t new_size, pair_type x = pair_type())
     {
       // adapt sentinel value thresholds
-      if (m_.size() >= insert_policy::capacity_offset())
-        std::fill(m_.end() - insert_policy::capacity_offset(), m_.end(), x);
+      if (m_.size() >= InsertPolicy::capacity_offset())
+        std::fill(m_.end() - InsertPolicy::capacity_offset(), m_.end(), x);
 
-      m_.resize(new_size + insert_policy::capacity_offset(), x);
+      m_.resize(new_size + InsertPolicy::capacity_offset(), x);
 
       // If vector is truncated to new_size, adapt number of entries.
       if (new_size < entries_) entries_ = new_size;
@@ -258,7 +258,7 @@ namespace Core::Gen
      *  for more information.
      *
      *  @author hiermeier @date 05/17 */
-    void complete() { entries_ = insert_policy::complete(m_, entries_); }
+    void complete() { entries_ = InsertPolicy::complete(m_, entries_); }
 
     /**
      *  @brief  Access to %Pairedvector data.
@@ -281,7 +281,7 @@ namespace Core::Gen
     /** Returns the current capacity of the %Pairedvector.  */
     size_t capacity() const
     {
-      return (m_.size() > 0 ? m_.size() - insert_policy::capacity_offset() : 0);
+      return (m_.size() > 0 ? m_.size() - InsertPolicy::capacity_offset() : 0);
     }
 
     /**  Returns the number of elements in the %Pairedvector.  */

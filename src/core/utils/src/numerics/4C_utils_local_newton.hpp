@@ -35,10 +35,10 @@ namespace Core::UTILS
     x -= residuum / jacobian;
   }
 
-  template <unsigned N, typename ScalarType>
-  void local_newton_iteration(Core::LinAlg::Matrix<N, 1, ScalarType>& x,
-      const Core::LinAlg::Matrix<N, 1, ScalarType>& residuum,
-      Core::LinAlg::Matrix<N, N, ScalarType>&& jacobian)
+  template <unsigned n, typename ScalarType>
+  void local_newton_iteration(Core::LinAlg::Matrix<n, 1, ScalarType>& x,
+      const Core::LinAlg::Matrix<n, 1, ScalarType>& residuum,
+      Core::LinAlg::Matrix<n, n, ScalarType>&& jacobian)
   {
     jacobian.invert();
     x.multiply_nn(-1, jacobian, residuum, 1.0);
@@ -56,8 +56,8 @@ namespace Core::UTILS
     return Core::FADUtils::Norm(x);
   }
 
-  template <unsigned N, typename ScalarType>
-  ScalarType l2_norm(const Core::LinAlg::Matrix<N, 1, ScalarType>& x)
+  template <unsigned n, typename ScalarType>
+  ScalarType l2_norm(const Core::LinAlg::Matrix<n, 1, ScalarType>& x)
   {
     return Core::FADUtils::VectorNorm(x);
   }

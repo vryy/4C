@@ -201,12 +201,12 @@ namespace GEOMETRYPAIR
    * @tparam surface Type of surface element.
    * @tparam scalar_type Scalar type for FAD evaluations.
    */
-  template <typename surface, typename scalar_type>
+  template <typename Surface, typename ScalarType>
   class FaceElementTemplate : public FaceElement
   {
    public:
     //! Shortcut to the type of this templated object.
-    using my_type = FaceElementTemplate<surface, scalar_type>;
+    using my_type = FaceElementTemplate<Surface, ScalarType>;
 
    public:
     /**
@@ -246,7 +246,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the reference normals on this face.
      */
-    virtual const Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, double>* GetReferenceNormals()
+    virtual const Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, double>* GetReferenceNormals()
         const
     {
       return nullptr;
@@ -255,7 +255,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return the current normals on this face.
      */
-    virtual const Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, scalar_type>* GetCurrentNormals()
+    virtual const Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, ScalarType>* GetCurrentNormals()
         const
     {
       return nullptr;
@@ -303,10 +303,10 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Reference position.
-    ElementData<surface, double> face_reference_position_;
+    ElementData<Surface, double> face_reference_position_;
 
     //! Current position.
-    ElementData<surface, scalar_type> face_position_;
+    ElementData<Surface, ScalarType> face_position_;
 
     //! Number of DOFs used for the element that will be interacting with this face. This is
     //! required to correctly set the FAD types. For now, a single face element can only be used in
@@ -322,17 +322,17 @@ namespace GEOMETRYPAIR
    * @tparam surface Type of surface element.
    * @tparam scalar_type Scalar type for FAD evaluations.
    */
-  template <typename surface, typename scalar_type>
-  class FaceElementPatchTemplate : public FaceElementTemplate<surface, scalar_type>
+  template <typename Surface, typename ScalarType>
+  class FaceElementPatchTemplate : public FaceElementTemplate<Surface, ScalarType>
   {
     friend GeometryPairLineToSurfacePatchTest;
 
    public:
     //! Shortcut to the type of this templated object.
-    using my_type = FaceElementPatchTemplate<surface, scalar_type>;
+    using my_type = FaceElementPatchTemplate<Surface, ScalarType>;
 
     //! Shortcut to the base class.
-    using base_class = FaceElementTemplate<surface, scalar_type>;
+    using base_class = FaceElementTemplate<Surface, ScalarType>;
 
    public:
     /**
@@ -391,8 +391,8 @@ namespace GEOMETRYPAIR
      */
     template <typename T>
     void average_nodal_normals(
-        Core::LinAlg::Matrix<surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, T>>& normals,
-        Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const;
+        Core::LinAlg::Matrix<Surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, T>>& normals,
+        Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, T>& averaged_normals) const;
 
    protected:
     //! Store the relevant information of the connected faces. The key of this map is the GID of the
@@ -408,15 +408,15 @@ namespace GEOMETRYPAIR
   /**
    * \brief Class to handle extended volume coupling.
    */
-  template <typename surface, typename scalar_type, typename volume>
-  class FaceElementTemplateExtendedVolume : public FaceElementTemplate<surface, scalar_type>
+  template <typename Surface, typename ScalarType, typename Volume>
+  class FaceElementTemplateExtendedVolume : public FaceElementTemplate<Surface, ScalarType>
   {
    public:
     //! Shortcut to the type of this templated object.
-    using my_type = FaceElementTemplateExtendedVolume<surface, scalar_type, volume>;
+    using my_type = FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume>;
 
     //! Shortcut to the base class.
-    using base_class = FaceElementTemplate<surface, scalar_type>;
+    using base_class = FaceElementTemplate<Surface, ScalarType>;
 
    public:
     /**
@@ -455,11 +455,11 @@ namespace GEOMETRYPAIR
      * @param surface_position (in) Face position vector of the surface.
      * @param normals (out) Normals on the nodes.
      */
-    template <typename scalar_type_normal>
+    template <typename ScalarTypeNormal>
     void CalculateNormals(
-        const GEOMETRYPAIR::ElementData<volume, scalar_type_normal>& volume_position,
-        const GEOMETRYPAIR::ElementData<surface, scalar_type_normal>& surface_position,
-        Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const;
+        const GEOMETRYPAIR::ElementData<Volume, ScalarTypeNormal>& volume_position,
+        const GEOMETRYPAIR::ElementData<Surface, ScalarTypeNormal>& surface_position,
+        Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, ScalarTypeNormal>& normals) const;
 
     /**
      * \brief Return a normal on the element. (derived)
@@ -478,13 +478,13 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Map between surface DOFs and volume DOFs.
-    Core::LinAlg::Matrix<surface::n_dof_, 1, int> surface_dof_lid_map_;
+    Core::LinAlg::Matrix<Surface::n_dof_, 1, int> surface_dof_lid_map_;
 
     //! Reference position.
-    GEOMETRYPAIR::ElementData<volume, double> volume_reference_position_;
+    GEOMETRYPAIR::ElementData<Volume, double> volume_reference_position_;
 
     //! Current position.
-    GEOMETRYPAIR::ElementData<volume, scalar_type> volume_position_;
+    GEOMETRYPAIR::ElementData<Volume, ScalarType> volume_position_;
 
     //! Map the face coordinate axis to the volume coordinate axis.
     Core::LinAlg::Matrix<2, 1, int> face_to_volume_coordinate_axis_map_;

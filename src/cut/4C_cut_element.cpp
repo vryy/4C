@@ -1029,8 +1029,9 @@ void Core::Geo::Cut::Element::MakeVolumeCells(Mesh& mesh)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType elementtype, unsigned numNodesElement, unsigned dim>
-bool Core::Geo::Cut::ConcreteElement<probdim, elementtype, numNodesElement, dim>::PointInside(
+template <unsigned probdim, Core::FE::CellType elementtype, unsigned num_nodes_element,
+    unsigned dim>
+bool Core::Geo::Cut::ConcreteElement<probdim, elementtype, num_nodes_element, dim>::PointInside(
     Point* p)
 {
   Teuchos::RCP<Position> pos = Position::Create(*this, *p);
@@ -1039,9 +1040,11 @@ bool Core::Geo::Cut::ConcreteElement<probdim, elementtype, numNodesElement, dim>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <unsigned probdim, Core::FE::CellType elementtype, unsigned numNodesElement, unsigned dim>
-bool Core::Geo::Cut::ConcreteElement<probdim, elementtype, numNodesElement, dim>::local_coordinates(
-    const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<dim, 1>& rst)
+template <unsigned probdim, Core::FE::CellType elementtype, unsigned num_nodes_element,
+    unsigned dim>
+bool Core::Geo::Cut::ConcreteElement<probdim, elementtype, num_nodes_element,
+    dim>::local_coordinates(const Core::LinAlg::Matrix<probdim, 1>& xyz,
+    Core::LinAlg::Matrix<dim, 1>& rst)
 {
   Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, elementtype>(*this, xyz);
   bool success = pos->Compute();

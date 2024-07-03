@@ -534,9 +534,9 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/16 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-ScaTra::MortarCellCalcElch<distypeS, distypeM>*
-ScaTra::MortarCellCalcElch<distypeS, distypeM>::Instance(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+ScaTra::MortarCellCalcElch<distype_s, distype_m>*
+ScaTra::MortarCellCalcElch<distype_s, distype_m>::Instance(
     const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -549,8 +549,8 @@ ScaTra::MortarCellCalcElch<distypeS, distypeM>::Instance(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
-        return std::unique_ptr<MortarCellCalcElch<distypeS, distypeM>>(
-            new MortarCellCalcElch<distypeS, distypeM>(
+        return std::unique_ptr<MortarCellCalcElch<distype_s, distype_m>>(
+            new MortarCellCalcElch<distype_s, distype_m>(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
@@ -562,8 +562,8 @@ ScaTra::MortarCellCalcElch<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 01/16 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-ScaTra::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+ScaTra::MortarCellCalcElch<distype_s, distype_m>::MortarCellCalcElch(
     const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -576,8 +576,8 @@ ScaTra::MortarCellCalcElch<distypeS, distypeM>::MortarCellCalcElch(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition(
     const Core::FE::Discretization& idiscret, Mortar::IntCell& cell, Mortar::Element& slaveelement,
     Mortar::Element& masterelement, Core::Elements::Element::LocationArray& la_slave,
     Core::Elements::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
@@ -632,7 +632,7 @@ void ScaTra::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
     Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
-        distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(matelectrode,
+        distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(matelectrode,
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
@@ -642,8 +642,8 @@ void ScaTra::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition(
 
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition_nts(
     Core::Conditions::Condition& condition, const Mortar::Node& slavenode, const double& lumpedarea,
     Mortar::Element& slaveelement, Mortar::Element& masterelement,
     const std::vector<Core::LinAlg::Matrix<nen_slave_, 1>>& ephinp_slave,
@@ -688,7 +688,7 @@ void ScaTra::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
   const double dummy_detF(1.0);
 
   Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
-      distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(matelectrode,
+      distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(matelectrode,
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, pseudo_contact_fac,
       my::funct_slave_, my::funct_master_, my::funct_slave_, my::funct_master_,
       my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
@@ -700,8 +700,8 @@ void ScaTra::MortarCellCalcElch<distypeS, distypeM>::evaluate_condition_nts(
 /*----------------------------------------------------------------------*
  | evaluate factor F/RT                                      fang 01/17 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-double ScaTra::MortarCellCalcElch<distypeS, distypeM>::get_frt() const
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+double ScaTra::MortarCellCalcElch<distype_s, distype_m>::get_frt() const
 {
   // fetch factor F/RT from electrochemistry parameter list
   return Discret::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->FRT();
@@ -711,9 +711,9 @@ double ScaTra::MortarCellCalcElch<distypeS, distypeM>::get_frt() const
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/17 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>*
-ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>*
+ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::Instance(
     const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -726,8 +726,8 @@ ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
-        return std::unique_ptr<MortarCellCalcElchSTIThermo<distypeS, distypeM>>(
-            new MortarCellCalcElchSTIThermo<distypeS, distypeM>(
+        return std::unique_ptr<MortarCellCalcElchSTIThermo<distype_s, distype_m>>(
+            new MortarCellCalcElchSTIThermo<distype_s, distype_m>(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
@@ -739,8 +739,8 @@ ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 01/17 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTIThermo(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::MortarCellCalcElchSTIThermo(
     const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -760,8 +760,8 @@ ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTITh
  | evaluate single mortar integration cell of particular slave-side and master-side discretization
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate(
     const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -804,8 +804,8 @@ void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate(
 /*---------------------------------------------------------------------------*
  | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition_od(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_condition_od(
     const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -871,7 +871,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
     const double dummy_detF(1.0);
 
     Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<
-        distypeS>::template evaluate_s2_i_coupling_od_at_integration_point<distypeM>(matelectrode,
+        distype_s>::template evaluate_s2_i_coupling_od_at_integration_point<distype_m>(matelectrode,
         my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
         my::test_lm_master_, dummy_shapederivatives, dummy_shapederivatives,
@@ -884,8 +884,8 @@ void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::evaluate_condition
 /*------------------------------------------------------------------------------------*
  | extract nodal state variables associated with mortar integration cell   fang 01/17 |
  *------------------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::extract_node_values(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::extract_node_values(
     const Core::FE::Discretization& idiscret,          //!< interface discretization
     Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
     Core::Elements::Element::LocationArray& la_master  //!< master-side location array
@@ -902,8 +902,8 @@ void ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::extract_node_value
 /*----------------------------------------------------------------------*
  | evaluate factor F/RT                                      fang 01/17 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-double ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::get_frt() const
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+double ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::get_frt() const
 {
   // evaluate local temperature value
   const double temperature = my::funct_slave_.dot(etempnp_slave_);
@@ -923,9 +923,9 @@ double ScaTra::MortarCellCalcElchSTIThermo<distypeS, distypeM>::get_frt() const
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 01/17 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>*
-ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>*
+ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::Instance(
     const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -938,8 +938,8 @@ ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
       [](const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
           const int& numdofpernode_slave, const int& numdofpernode_master)
       {
-        return std::unique_ptr<MortarCellCalcSTIElch<distypeS, distypeM>>(
-            new MortarCellCalcSTIElch<distypeS, distypeM>(
+        return std::unique_ptr<MortarCellCalcSTIElch<distype_s, distype_m>>(
+            new MortarCellCalcSTIElch<distype_s, distype_m>(
                 couplingtype, lmside, numdofpernode_slave, numdofpernode_master));
       });
 
@@ -951,8 +951,8 @@ ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::Instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 01/17 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::MortarCellCalcSTIElch(
     const Inpar::S2I::CouplingType& couplingtype,  //!< flag for meshtying method
     const Inpar::S2I::InterfaceSides&
         lmside,  //!< flag for interface side underlying Lagrange multiplier definition
@@ -973,8 +973,8 @@ ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
  | evaluate single mortar integration cell of particular slave-side and master-side discretization
  types   fang 01/17 |
  *--------------------------------------------------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate(
     const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -1026,8 +1026,8 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate(
 /*---------------------------------------------------------------------------*
  | evaluate and assemble interface linearizations and residuals   fang 01/17 |
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition(
     const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -1093,7 +1093,7 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
     const double dummy_detF(1.0);
 
     Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
-        distypeS>::template evaluate_s2_i_coupling_at_integration_point<distypeM>(matelectrode,
+        distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
         timefacfac, timefacrhsfac, dummy_detF, k_ss, dummy_ksm, r_s);
@@ -1104,8 +1104,8 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition(
 /*---------------------------------------------------------------------------*
  | evaluate and assemble off-diagonal interface linearizations    fang 01/17 |
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition_od(
     const Core::FE::Discretization& idiscret,           //!< interface discretization
     Mortar::IntCell& cell,                              //!< mortar integration cell
     Mortar::Element& slaveelement,                      //!< slave-side mortar element
@@ -1169,7 +1169,7 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
     const double dummy_detF(1.0);
 
     Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
-        distypeS>::template evaluate_s2_i_coupling_od_at_integration_point<distypeM>(matelectrode,
+        distype_s>::template evaluate_s2_i_coupling_od_at_integration_point<distype_m>(matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
         timefacfac, fac, dummy_detF, ScaTra::DifferentiationType::elch, dummy_shape_deriv,
@@ -1181,8 +1181,8 @@ void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::evaluate_condition_od(
 /*------------------------------------------------------------------------------------*
  | extract nodal state variables associated with mortar integration cell   fang 01/17 |
  *------------------------------------------------------------------------------------*/
-template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
-void ScaTra::MortarCellCalcSTIElch<distypeS, distypeM>::extract_node_values(
+template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
+void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::extract_node_values(
     const Core::FE::Discretization& idiscret,          //!< interface discretization
     Core::Elements::Element::LocationArray& la_slave,  //!< slave-side location array
     Core::Elements::Element::LocationArray& la_master  //!< master-side location array

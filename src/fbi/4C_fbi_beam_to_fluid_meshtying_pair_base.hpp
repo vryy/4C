@@ -29,7 +29,7 @@ namespace Core::LinAlg
 
 namespace GEOMETRYPAIR
 {
-  template <typename scalar_type, typename line, typename volume>
+  template <typename ScalarType, typename Line, typename Volume>
   class GeometryPairLineToVolume;
   class LineTo3DEvaluationData;
   class GeometryEvaluationDataBase;
@@ -44,12 +44,12 @@ namespace BEAMINTERACTION
    * \param[in] beam Type from GEOMETRYPAIR::ElementDiscretization representing the beam.
    * \param[in] fluid Type from GEOMETRYPAIR::ElementDiscretization representing the fluid.
    */
-  template <typename beam, typename fluid>
-  class BeamToFluidMeshtyingPairBase : public BeamToSolidVolumeMeshtyingPairBase<beam, fluid>
+  template <typename Beam, typename Fluid>
+  class BeamToFluidMeshtyingPairBase : public BeamToSolidVolumeMeshtyingPairBase<Beam, Fluid>
   {
    protected:
     //! Shortcut to base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, fluid>;
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<Beam, Fluid>;
 
     //! Scalar type for FAD variables.
     using scalar_type = typename base_class::scalar_type;
@@ -125,12 +125,12 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<3, 1, scalar_type>& r_beam, bool reference) const;
 
     //! Current nodal velocities of the two elements.
-    GEOMETRYPAIR::ElementData<beam, scalar_type> ele1vel_;
-    GEOMETRYPAIR::ElementData<fluid, scalar_type> ele2vel_;
+    GEOMETRYPAIR::ElementData<Beam, scalar_type> ele1vel_;
+    GEOMETRYPAIR::ElementData<Fluid, scalar_type> ele2vel_;
 
     //! Current nodal positions (and tangents) of the two elements.
-    GEOMETRYPAIR::ElementData<beam, double> ele1poscur_;
-    GEOMETRYPAIR::ElementData<fluid, double> ele2poscur_;
+    GEOMETRYPAIR::ElementData<Beam, double> ele1poscur_;
+    GEOMETRYPAIR::ElementData<Fluid, double> ele2poscur_;
   };
 }  // namespace BEAMINTERACTION
 

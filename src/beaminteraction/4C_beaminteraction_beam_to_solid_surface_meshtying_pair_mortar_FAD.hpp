@@ -53,14 +53,13 @@ namespace BEAMINTERACTION
    * @tparam mortar Type from BEAMINTERACTION::ElementDiscretization... representing the mortar
    * shape functions.
    */
-  template <typename scalar_type, typename beam, typename surface, typename mortar>
+  template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
   class BeamToSolidSurfaceMeshtyingPairMortarFAD
-      : public BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, surface, mortar>
+      : public BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Surface, Mortar>
   {
    private:
     //! Shortcut to the base class.
-    using base_class =
-        BeamToSolidSurfaceMeshtyingPairMortarBase<scalar_type, beam, surface, mortar>;
+    using base_class = BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam, Surface, Mortar>;
 
    public:
     /**
@@ -107,23 +106,23 @@ namespace BEAMINTERACTION
    * @tparam scalar_type Type of used surface element.
    * @tparam scalar_type Type of used mortar interpolation.
    */
-  template <typename scalar_type, typename beam, typename surface, typename mortar>
+  template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
   class BeamToSolidSurfaceMeshtyingPairMortarRotationFAD
-      : public BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface, mortar>
+      : public BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface, Mortar>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface, mortar>;
+    using base_class = BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface, Mortar>;
 
     //! FAD type to evaluate the rotational coupling terms. The first 3 entries are the values of
     //! psi_beam, the following entries are the discrete solid DOFs.
-    using scalar_type_rot_1st = typename Sacado::Fad::SLFad<double, 3 + surface::n_dof_>;
+    using scalar_type_rot_1st = typename Sacado::Fad::SLFad<double, 3 + Surface::n_dof_>;
     using scalar_type_rot_2nd =
         typename Core::FADUtils::HigherOrderFadType<2, scalar_type_rot_1st>::type;
 
     //! Number of rotational DOF for the SR beams;
     static constexpr unsigned int n_dof_rot_ = 9;
-    static constexpr unsigned int n_dof_pair_ = n_dof_rot_ + surface::n_dof_;
+    static constexpr unsigned int n_dof_pair_ = n_dof_rot_ + Surface::n_dof_;
 
    public:
     /**
@@ -131,7 +130,7 @@ namespace BEAMINTERACTION
      */
     BeamToSolidSurfaceMeshtyingPairMortarRotationFAD() : base_class()
     {
-      this->n_mortar_rot_ = mortar::n_dof_;
+      this->n_mortar_rot_ = Mortar::n_dof_;
     };
 
     /**
@@ -168,13 +167,13 @@ namespace BEAMINTERACTION
      * @param surface_triad_type (in) How the surface triad should be constructed.
      * @param psi_solid (out) Rotation vector on solid surface.
      */
-    template <typename scalar_type_rot_vec>
+    template <typename ScalarTypeRotVec>
     void get_surface_rotation_vector(const Core::LinAlg::Matrix<3, 1, double>& xi,
-        const GEOMETRYPAIR::ElementData<surface, double>& q_solid_ref,
-        const GEOMETRYPAIR::ElementData<surface, scalar_type_rot_vec>& q_solid,
+        const GEOMETRYPAIR::ElementData<Surface, double>& q_solid_ref,
+        const GEOMETRYPAIR::ElementData<Surface, ScalarTypeRotVec>& q_solid,
         const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
         const Inpar::BeamToSolid::BeamToSolidSurfaceRotationCoupling surface_triad_type,
-        Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec>& psi_solid) const;
+        Core::LinAlg::Matrix<3, 1, ScalarTypeRotVec>& psi_solid) const;
 
     /**
      * \brief Get the rotational GIDs for the beam and surface.

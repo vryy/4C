@@ -25,8 +25,8 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GeometryPairLineToSurface(
+template <typename ScalarType, typename Line, typename Surface>
+GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::GeometryPairLineToSurface(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::LineToSurfaceEvaluationData>& line_to_surface_evaluation_data)
     : GeometryPair(element1, element2),
@@ -48,11 +48,11 @@ GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::GeometryPai
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::ProjectPointToOther(
-    const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
-    const ElementData<surface, scalar_type>& element_data_surface,
-    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+template <typename ScalarType, typename Line, typename Surface>
+void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::ProjectPointToOther(
+    const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+    const ElementData<Surface, ScalarType>& element_data_surface,
+    Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
     const bool min_one_iteration) const
 {
   ProjectPointToSurface(point, element_data_surface, xi, projection_result,
@@ -63,12 +63,12 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::Projec
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::intersect_line_with_other(
-    const ElementData<line, scalar_type>& element_data_line,
-    const ElementData<surface, scalar_type>& element_data_surface,
-    std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-    const scalar_type& eta_start, const Core::LinAlg::Matrix<3, 1, scalar_type>& xi_start) const
+template <typename ScalarType, typename Line, typename Surface>
+void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::intersect_line_with_other(
+    const ElementData<Line, ScalarType>& element_data_line,
+    const ElementData<Surface, ScalarType>& element_data_surface,
+    std::vector<ProjectionPoint1DTo3D<ScalarType>>& intersection_points,
+    const ScalarType& eta_start, const Core::LinAlg::Matrix<3, 1, ScalarType>& xi_start) const
 {
   unsigned int n_faces;
   std::vector<unsigned int> face_fixed_parameters;
@@ -80,8 +80,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::inters
   intersection_points.reserve(n_faces);
 
   // Create variables.
-  scalar_type eta;
-  Core::LinAlg::Matrix<3, 1, scalar_type> xi;
+  ScalarType eta;
+  Core::LinAlg::Matrix<3, 1, ScalarType> xi;
   ProjectionResult intersection_found;
 
   // Try to intersect the beam with each face.
@@ -98,7 +98,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::inters
     // If a valid intersection is found, add it to the output vector.
     if (intersection_found == ProjectionResult::projection_found_valid)
     {
-      intersection_points.push_back(ProjectionPoint1DTo3D<scalar_type>(eta, xi));
+      intersection_points.push_back(ProjectionPoint1DTo3D<ScalarType>(eta, xi));
       intersection_points.back().SetIntersectionFace(i);
     }
   }
@@ -107,22 +107,22 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::inters
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
-    surface>::intersect_line_with_surface_edge(const ElementData<line, scalar_type>&
+template <typename ScalarType, typename Line, typename Surface>
+void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line,
+    Surface>::intersect_line_with_surface_edge(const ElementData<Line, ScalarType>&
                                                    element_data_line,
-    const ElementData<surface, scalar_type>& element_data_surface,
-    const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    const ElementData<Surface, ScalarType>& element_data_surface,
+    const unsigned int& fixed_parameter, const double& fixed_value, ScalarType& eta,
+    Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
     const bool min_one_iteration) const
 {
   // Check the input parameters.
   {
-    if (surface::geometry_type_ == DiscretizationTypeGeometry::quad && fixed_parameter > 1)
+    if (Surface::geometry_type_ == DiscretizationTypeGeometry::quad && fixed_parameter > 1)
       FOUR_C_THROW(
           "Fixed_parameter in intersect_line_with_surface_edge has to be smaller than 2 with a "
           "quad element.");
-    else if (surface::geometry_type_ == DiscretizationTypeGeometry::none)
+    else if (Surface::geometry_type_ == DiscretizationTypeGeometry::none)
       FOUR_C_THROW("Wrong DiscretizationTypeGeometry type given.");
     else if (fixed_parameter > 2)
       FOUR_C_THROW("fixed_parameter in intersect_line_with_surface_edge can be 2 at maximum.");
@@ -134,21 +134,21 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 
   // Initialize data structures.
   // Point on line.
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_line;
-  Core::LinAlg::Matrix<3, 1, scalar_type> dr_line;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_line;
+  Core::LinAlg::Matrix<3, 1, ScalarType> dr_line;
 
   // Point on surface.
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
-  Core::LinAlg::Matrix<3, 3, scalar_type> dr_surface;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
+  Core::LinAlg::Matrix<3, 3, ScalarType> dr_surface;
 
   // Residuum.
-  Core::LinAlg::Matrix<4, 1, scalar_type> residuum;
-  Core::LinAlg::Matrix<4, 1, scalar_type> delta_xi;
+  Core::LinAlg::Matrix<4, 1, ScalarType> residuum;
+  Core::LinAlg::Matrix<4, 1, ScalarType> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
   delta_xi.put_scalar(10 * Constants::projection_xi_eta_tol);
 
   // Jacobian / inverse.
-  Core::LinAlg::Matrix<4, 4, scalar_type> J_J_inv;
+  Core::LinAlg::Matrix<4, 4, ScalarType> J_J_inv;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -159,8 +159,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
     while (counter < Constants::local_newton_iter_max)
     {
       // Evaluate the position and its derivative on the line.
-      EvaluatePosition<line>(eta, element_data_line, r_line);
-      EvaluatePositionDerivative1<line>(eta, element_data_line, dr_line);
+      EvaluatePosition<Line>(eta, element_data_line, r_line);
+      EvaluatePositionDerivative1<Line>(eta, element_data_line, dr_line);
 
       // Evaluate the position and its derivative on the surface.
       EvaluateSurfacePositionAndDerivative(element_data_surface, xi, r_surface, dr_surface);
@@ -196,7 +196,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
       {
         // System is solved, now check if the parameter coordinates are valid.
         if (ValidParameter1D(eta) &&
-            ValidParameterSurface<scalar_type, surface>(xi, normal_influence_direction))
+            ValidParameterSurface<ScalarType, Surface>(xi, normal_influence_direction))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;
@@ -236,9 +236,9 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
-    surface>::get_surface_normal_influence_direction(const ElementData<surface, scalar_type>&
+template <typename ScalarType, typename Line, typename Surface>
+double GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line,
+    Surface>::get_surface_normal_influence_direction(const ElementData<Surface, ScalarType>&
         element_data_surface) const
 {
   if (is_unit_test_)
@@ -255,22 +255,22 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line,
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_surface_size(
-    const ElementData<surface, scalar_type>& element_data_surface) const
+template <typename ScalarType, typename Line, typename Surface>
+double GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::get_surface_size(
+    const ElementData<Surface, ScalarType>& element_data_surface) const
 {
   // Get the position of the first 3 nodes of the surface.
   Core::LinAlg::Matrix<2, 1, double> xi_corner_node;
   Core::LinAlg::Matrix<3, 1, Core::LinAlg::Matrix<3, 1, double>> corner_nodes;
   Core::LinAlg::SerialDenseMatrix nodal_coordinates =
-      Core::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+      Core::FE::getEleNodeNumbering_nodes_paramspace(Surface::discretization_);
   const auto element_data_surface_double =
-      ElementDataToDouble<surface>::ToDouble(element_data_surface);
+      ElementDataToDouble<Surface>::ToDouble(element_data_surface);
   for (unsigned int i_node = 0; i_node < 3; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
       xi_corner_node(i_dim) = nodal_coordinates(i_dim, i_node);
-    EvaluatePosition<surface>(xi_corner_node, element_data_surface_double, corner_nodes(i_node));
+    EvaluatePosition<Surface>(xi_corner_node, element_data_surface_double, corner_nodes(i_node));
   }
 
   // Calculate the maximum distance between the three points.
@@ -296,18 +296,18 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_face_fixed_parameters(
+template <typename ScalarType, typename Line, typename Surface>
+void GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line, Surface>::get_face_fixed_parameters(
     unsigned int& n_faces, std::vector<unsigned int>& face_fixed_parameters,
     std::vector<double>& face_fixed_values) const
 {
-  if (surface::geometry_type_ == DiscretizationTypeGeometry::quad)
+  if (Surface::geometry_type_ == DiscretizationTypeGeometry::quad)
   {
     n_faces = 4;
     face_fixed_parameters = {0, 0, 1, 1};
     face_fixed_values = {-1., 1., -1., 1.};
   }
-  else if (surface::geometry_type_ == DiscretizationTypeGeometry::triangle)
+  else if (Surface::geometry_type_ == DiscretizationTypeGeometry::triangle)
   {
     n_faces = 3;
     face_fixed_parameters = {0, 1, 2};
@@ -323,23 +323,23 @@ void GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, line, surface>::get_fa
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::pre_evaluate(
-    const ElementData<line, scalar_type>& element_data_line,
-    const ElementData<surface, scalar_type>& element_data_surface,
-    std::vector<LineSegment<scalar_type>>& segments) const
+template <typename ScalarType, typename Line, typename Surface>
+void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface>::pre_evaluate(
+    const ElementData<Line, ScalarType>& element_data_line,
+    const ElementData<Surface, ScalarType>& element_data_surface,
+    std::vector<LineSegment<ScalarType>>& segments) const
 {
   // Call pre_evaluate on the double pair.
   std::vector<LineSegment<double>> segments_double;
-  geometry_pair_double_->pre_evaluate(ElementDataToDouble<line>::ToDouble(element_data_line),
-      ElementDataToDouble<surface>::ToDouble(element_data_surface), segments_double);
+  geometry_pair_double_->pre_evaluate(ElementDataToDouble<Line>::ToDouble(element_data_line),
+      ElementDataToDouble<Surface>::ToDouble(element_data_surface), segments_double);
 
   // Convert the created double segments to a segment of scalar type.
   segments.clear();
   for (auto& segment_double : segments_double)
   {
     // Create the segment with the scalar FAD type.
-    segments.push_back(LineSegment<scalar_type>());
+    segments.push_back(LineSegment<ScalarType>());
     CopySegment(segment_double, segments.back());
   }
 }
@@ -347,11 +347,11 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
 /**
  *
  */
-template <typename scalar_type, typename line, typename surface>
-void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surface>::evaluate(
-    const ElementData<line, scalar_type>& element_data_line,
-    const ElementData<surface, scalar_type>& element_data_surface,
-    std::vector<LineSegment<scalar_type>>& segments) const
+template <typename ScalarType, typename Line, typename Surface>
+void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<ScalarType, Line, Surface>::evaluate(
+    const ElementData<Line, ScalarType>& element_data_line,
+    const ElementData<Surface, ScalarType>& element_data_surface,
+    std::vector<LineSegment<ScalarType>>& segments) const
 {
   // Convert the input segments to a segment of scalar type double.
   std::vector<LineSegment<double>> segments_double;
@@ -363,8 +363,8 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
   }
 
   // Call Evaluate on the double pair.
-  geometry_pair_double_->evaluate(ElementDataToDouble<line>::ToDouble(element_data_line),
-      ElementDataToDouble<surface>::ToDouble(element_data_surface), segments_double);
+  geometry_pair_double_->evaluate(ElementDataToDouble<Line>::ToDouble(element_data_line),
+      ElementDataToDouble<Surface>::ToDouble(element_data_surface), segments_double);
 
   // Get the face parameters.
   unsigned int n_faces;
@@ -374,18 +374,18 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
 
   // Initialize variables for the projections.
   ProjectionResult projection_result = ProjectionResult::none;
-  Core::LinAlg::Matrix<3, 1, scalar_type> point_in_space;
+  Core::LinAlg::Matrix<3, 1, ScalarType> point_in_space;
 
   // If segments are found, convert them to FAD segments.
   segments.clear();
   for (auto& segment_double : segments_double)
   {
     // Create the segment with the scalar FAD type.
-    segments.push_back(LineSegment<scalar_type>());
-    LineSegment<scalar_type>& new_segment = segments.back();
+    segments.push_back(LineSegment<ScalarType>());
+    LineSegment<ScalarType>& new_segment = segments.back();
 
     // Add the projection point to an array.
-    std::array<std::reference_wrapper<ProjectionPoint1DTo3D<scalar_type>>, 2>
+    std::array<std::reference_wrapper<ProjectionPoint1DTo3D<ScalarType>>, 2>
         segment_start_end_points = {new_segment.GetStartPoint(), new_segment.GetEndPoint()};
     segment_start_end_points[0].get().set_from_other_point_double(segment_double.GetStartPoint());
     segment_start_end_points[1].get().set_from_other_point_double(segment_double.GetEndPoint());
@@ -403,7 +403,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
     }
 
     // Reevaluate the integration points along the segment.
-    std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
+    std::vector<ProjectionPoint1DTo3D<ScalarType>>& projection_points =
         new_segment.GetProjectionPoints();
     projection_points.resize(segment_double.get_number_of_projection_points());
     for (unsigned int i_point = 0; i_point < segment_double.get_number_of_projection_points();
@@ -419,7 +419,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
       projection_point.set_from_other_point_double(projection_point_double);
       projection_point.SetEta(new_segment.GetEtadata() + new_segment.GetSegmentLength() * factor);
 
-      EvaluatePosition<line>(projection_point.GetEta(), element_data_line, point_in_space);
+      EvaluatePosition<Line>(projection_point.GetEta(), element_data_line, point_in_space);
 
       // Calculate the projection.
       this->ProjectPointToOther(
@@ -431,21 +431,21 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
 /**
  *
  */
-template <typename scalar_type, typename surface>
-void GEOMETRYPAIR::ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
-    const ElementData<surface, scalar_type>& element_data_surface,
-    Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+template <typename ScalarType, typename Surface>
+void GEOMETRYPAIR::ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+    const ElementData<Surface, ScalarType>& element_data_surface,
+    Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
     const double normal_influence_direction, const bool min_one_iteration)
 {
   // Vectors in 3D.
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
-  Core::LinAlg::Matrix<3, 1, scalar_type> delta_xi;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
+  Core::LinAlg::Matrix<3, 1, ScalarType> delta_xi;
   // Initialize the increment with a value that will not pass the first convergence check.
   delta_xi.put_scalar(10 * Constants::projection_xi_eta_tol);
-  Core::LinAlg::Matrix<3, 1, scalar_type> residuum;
+  Core::LinAlg::Matrix<3, 1, ScalarType> residuum;
 
   // Jacobian / inverse.
-  Core::LinAlg::Matrix<3, 3, scalar_type> J_J_inv;
+  Core::LinAlg::Matrix<3, 3, ScalarType> J_J_inv;
 
   // Reset the projection result flag.
   projection_result = ProjectionResult::projection_not_found;
@@ -470,7 +470,7 @@ void GEOMETRYPAIR::ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, scalar
       else if (Core::FADUtils::VectorNorm(residuum) < Constants::local_newton_res_tol &&
                Core::FADUtils::VectorNorm(delta_xi) < Constants::projection_xi_eta_tol)
       {
-        if (ValidParameterSurface<scalar_type, surface>(xi, normal_influence_direction))
+        if (ValidParameterSurface<ScalarType, Surface>(xi, normal_influence_direction))
           projection_result = ProjectionResult::projection_found_valid;
         else
           projection_result = ProjectionResult::projection_found_not_valid;

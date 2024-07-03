@@ -1218,7 +1218,7 @@ void XFEM::XfluidSemiLagrange::call_back_tracking(
 /*------------------------------------------------------------------------------------------------*
  * back-tracking of data at final Lagrangian origin of a point                       schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-template <const int numnode, Core::FE::CellType DISTYPE>
+template <const int numnode, Core::FE::CellType distype>
 void XFEM::XfluidSemiLagrange::back_tracking(
     Core::Elements::Element*& fittingele,  /// pointer to element
     TimeIntData* data,                     /// data
@@ -1337,7 +1337,7 @@ void XFEM::XfluidSemiLagrange::back_tracking(
 
   bool compute_deriv = true;
 
-  eval_shape_and_deriv<numnode, DISTYPE>(ele, xi, xji, shapeFcn, shapeFcnDeriv, compute_deriv);
+  eval_shape_and_deriv<numnode, distype>(ele, xi, xji, shapeFcn, shapeFcnDeriv, compute_deriv);
 
   //-------------------------------------------------------
   // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)

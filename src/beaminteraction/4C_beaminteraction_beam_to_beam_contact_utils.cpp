@@ -278,13 +278,13 @@ double BEAMINTERACTION::CalcAngle(
 /*----------------------------------------------------------------------*
  |  Get closest distance between the endpoints of two lines   meier 10/14|
  *----------------------------------------------------------------------*/
-template <typename type>
-type BEAMINTERACTION::GetClosestEndpointDist(Core::LinAlg::Matrix<3, 1, type> r1_a,
-    Core::LinAlg::Matrix<3, 1, type> r1_b, Core::LinAlg::Matrix<3, 1, type> r2_a,
-    Core::LinAlg::Matrix<3, 1, type> r2_b)
+template <typename Type>
+Type BEAMINTERACTION::GetClosestEndpointDist(Core::LinAlg::Matrix<3, 1, Type> r1_a,
+    Core::LinAlg::Matrix<3, 1, Type> r1_b, Core::LinAlg::Matrix<3, 1, Type> r2_a,
+    Core::LinAlg::Matrix<3, 1, Type> r2_b)
 {
-  type minnodaldist = 0.0;
-  type nodaldist = 0.0;
+  Type minnodaldist = 0.0;
+  Type nodaldist = 0.0;
 
   minnodaldist = Core::FADUtils::VectorNorm<3>(Core::FADUtils::DiffVector(r1_a, r2_a));
 

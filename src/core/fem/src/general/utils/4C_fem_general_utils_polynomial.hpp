@@ -271,7 +271,7 @@ namespace Core::FE
   /*!
   \brief Base class for polynomial spaces in nsd_ dimensions used by HDG
   */
-  template <int nsd_>
+  template <int nsd>
   class PolynomialSpaceBase
   {
    public:
@@ -284,19 +284,19 @@ namespace Core::FE
     /*
      \brief Evaluates the values of all polynomials on the given point
      */
-    virtual void evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    virtual void evaluate(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseVector &values) const = 0;
 
     /*
      \brief Evaluates the values of all polynomials on the given point
      */
-    virtual void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    virtual void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const = 0;
 
     /*
      \brief Evaluates the first derivative of all polynomials on the given point
      */
-    virtual void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    virtual void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const = 0;
 
     /*
@@ -316,8 +316,8 @@ namespace Core::FE
 
    Base class for LagrangeBasis
    */
-  template <int nsd_, class POLY>
-  class PolynomialSpaceTensor : public PolynomialSpaceBase<nsd_>
+  template <int nsd, class POLY>
+  class PolynomialSpaceTensor : public PolynomialSpaceBase<nsd>
   {
    public:
     /*
@@ -339,7 +339,7 @@ namespace Core::FE
     static std::size_t Size(const std::size_t degree)
     {
       std::size_t size = degree + 1;
-      for (unsigned int d = 1; d < nsd_; ++d) size *= degree + 1;
+      for (unsigned int d = 1; d < nsd; ++d) size *= degree + 1;
       return size;
     }
 
@@ -351,26 +351,26 @@ namespace Core::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void evaluate(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
     template <typename M>
-    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point, M &derivatives) const
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point, M &derivatives) const
     {
     }
 
@@ -378,12 +378,12 @@ namespace Core::FE
      \brief Convert from a index within the polynomial space to the tensor indices in the
      individual dimensions
      */
-    Core::LinAlg::Matrix<nsd_, 1, unsigned int> getIndices(const unsigned int index) const
+    Core::LinAlg::Matrix<nsd, 1, unsigned int> getIndices(const unsigned int index) const
     {
       FOUR_C_ASSERT(index < Size(), "Access out of range");
-      Core::LinAlg::Matrix<nsd_, 1, unsigned int> indices;
+      Core::LinAlg::Matrix<nsd, 1, unsigned int> indices;
       const unsigned int npoly = poly_space1d_.size();
-      switch (nsd_)
+      switch (nsd)
       {
         case 1:
           indices(0) = index;
@@ -426,8 +426,8 @@ namespace Core::FE
 
    Base class for LagrangeBasis
    */
-  template <int nsd_, class POLY>
-  class PolynomialSpaceComplete : public PolynomialSpaceBase<nsd_>
+  template <int nsd, class POLY>
+  class PolynomialSpaceComplete : public PolynomialSpaceBase<nsd>
   {
    public:
     /*
@@ -446,7 +446,7 @@ namespace Core::FE
     static std::size_t Size(const std::size_t degree)
     {
       std::size_t size = degree + 1;
-      for (unsigned int d = 1; d < nsd_; ++d)
+      for (unsigned int d = 1; d < nsd; ++d)
       {
         size *= degree + 1 + d;
         size /= (d + 1);  // This integer division is always without remainder
@@ -462,19 +462,19 @@ namespace Core::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void evaluate(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
@@ -495,15 +495,15 @@ namespace Core::FE
    for higher order). This class is usually not directly called in user code, as
    its functionality can be accessed through PolynomialSpace<nsd_>.
   */
-  template <int nsd_>
-  class LagrangeBasis : public PolynomialSpaceTensor<nsd_, LagrangePolynomial>
+  template <int nsd>
+  class LagrangeBasis : public PolynomialSpaceTensor<nsd, LagrangePolynomial>
   {
    public:
     /*
     \brief Constructor from a vector of one-dimensional polynomials
      */
     LagrangeBasis(const unsigned int degree)
-        : PolynomialSpaceTensor<nsd_, LagrangePolynomial>(generateLagrangeBasis1D(degree))
+        : PolynomialSpaceTensor<nsd, LagrangePolynomial>(generateLagrangeBasis1D(degree))
     {
     }
   };
@@ -515,15 +515,15 @@ namespace Core::FE
    is usually not directly called in user code, as its functionality can be
    accessed through PolynomialSpace<nsd_>.
   */
-  template <int nsd_>
-  class LegendreBasis : public PolynomialSpaceComplete<nsd_, Polynomial>
+  template <int nsd>
+  class LegendreBasis : public PolynomialSpaceComplete<nsd, Polynomial>
   {
    public:
     /*
    \brief Constructor from a vector of one-dimensional polynomials
      */
     LegendreBasis(const unsigned int degree)
-        : PolynomialSpaceComplete<nsd_, Polynomial>(generateLegendreBasis1D(degree))
+        : PolynomialSpaceComplete<nsd, Polynomial>(generateLegendreBasis1D(degree))
     {
     }
   };
@@ -545,8 +545,8 @@ namespace Core::FE
 
    Author: kronbichler 08/14
    */
-  template <int nsd_>
-  class LagrangeBasisTet : public PolynomialSpaceBase<nsd_>
+  template <int nsd>
+  class LagrangeBasisTet : public PolynomialSpaceBase<nsd>
   {
    public:
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
@@ -565,7 +565,7 @@ namespace Core::FE
     static std::size_t Size(const std::size_t degree)
     {
       std::size_t size = degree + 1;
-      for (unsigned int d = 1; d < nsd_; ++d)
+      for (unsigned int d = 1; d < nsd; ++d)
       {
         size *= degree + 1 + d;
         size /= (d + 1);  // This integer division is always without remainder
@@ -581,19 +581,19 @@ namespace Core::FE
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    void evaluate(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void evaluate(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const override;
 
     /*
@@ -609,7 +609,7 @@ namespace Core::FE
     mutable Teuchos::SerialDenseSolver<ordinalType, scalarType> vandermonde_factor_;
     mutable Core::LinAlg::SerialDenseMatrix evaluate_vec_;
     Core::LinAlg::SerialDenseMatrix fekete_points_;
-    LegendreBasis<nsd_> legendre_;
+    LegendreBasis<nsd> legendre_;
   };
 
 
@@ -624,33 +624,33 @@ namespace Core::FE
    for that we need a special transform to be able to use the above truncated
    tensor product.
    */
-  template <int nsd_>
+  template <int nsd>
   class PolynomialSpace
   {
    public:
     PolynomialSpace(
         const Core::FE::CellType distype, const unsigned int degree, const bool completeSpace)
-        : polyspace_((Core::FE::getNumberOfElementFaces(distype) == 1 + nsd_ && nsd_ > 1)
-                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
-                               new Core::FE::LagrangeBasisTet<nsd_>(degree))
-                     : completeSpace ? static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
-                                           new Core::FE::LegendreBasis<nsd_>(degree))
-                                     : static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
-                                           new Core::FE::LagrangeBasis<nsd_>(degree)))
+        : polyspace_((Core::FE::getNumberOfElementFaces(distype) == 1 + nsd && nsd > 1)
+                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                               new Core::FE::LagrangeBasisTet<nsd>(degree))
+                     : completeSpace ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                                           new Core::FE::LegendreBasis<nsd>(degree))
+                                     : static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                                           new Core::FE::LagrangeBasis<nsd>(degree)))
     {
-      if (nsd_ != Core::FE::getDimension(distype))
+      if (nsd != Core::FE::getDimension(distype))
         FOUR_C_THROW("Dimension of shape does not match template argument nsd_ in PolynomialSpace");
     }
 
     PolynomialSpace(PolynomialSpaceParams params)
-        : polyspace_((Core::FE::getNumberOfElementFaces(params.distype_) == 1 + nsd_ && nsd_ > 1)
-                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
-                               new Core::FE::LagrangeBasisTet<nsd_>(params.degree_))
+        : polyspace_((Core::FE::getNumberOfElementFaces(params.distype_) == 1 + nsd && nsd > 1)
+                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                               new Core::FE::LagrangeBasisTet<nsd>(params.degree_))
                      : params.completeSpace_
-                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
-                               new Core::FE::LegendreBasis<nsd_>(params.degree_))
-                         : static_cast<Core::FE::PolynomialSpaceBase<nsd_> *>(
-                               new Core::FE::LagrangeBasis<nsd_>(params.degree_)))
+                         ? static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                               new Core::FE::LegendreBasis<nsd>(params.degree_))
+                         : static_cast<Core::FE::PolynomialSpaceBase<nsd> *>(
+                               new Core::FE::LagrangeBasis<nsd>(params.degree_)))
     {
     }
 
@@ -663,7 +663,7 @@ namespace Core::FE
    \brief Evaluates the values of all polynomials on the given point
      */
     void evaluate(
-        const Core::LinAlg::Matrix<nsd_, 1> &point, Core::LinAlg::SerialDenseVector &values) const
+        const Core::LinAlg::Matrix<nsd, 1> &point, Core::LinAlg::SerialDenseVector &values) const
     {
       polyspace_->evaluate(point, values);
     }
@@ -671,7 +671,7 @@ namespace Core::FE
     /*
    \brief Evaluates the values of all polynomials on the given point
      */
-    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void Evaluate_deriv1(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const
     {
       polyspace_->Evaluate_deriv1(point, derivatives);
@@ -680,7 +680,7 @@ namespace Core::FE
     /*
    \brief Evaluates the first derivative of all polynomials on the given point
      */
-    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd_, 1> &point,
+    void Evaluate_deriv2(const Core::LinAlg::Matrix<nsd, 1> &point,
         Core::LinAlg::SerialDenseMatrix &derivatives) const
     {
       polyspace_->Evaluate_deriv2(point, derivatives);
@@ -701,7 +701,7 @@ namespace Core::FE
     }
 
    private:
-    Teuchos::RCP<PolynomialSpaceBase<nsd_>> polyspace_;
+    Teuchos::RCP<PolynomialSpaceBase<nsd>> polyspace_;
   };
 
   /*!
@@ -710,19 +710,19 @@ namespace Core::FE
    In analogy to GaussPointCache
    Author: schoeder 06/14
    */
-  template <int nsd_>
+  template <int nsd>
   class PolynomialSpaceCache
   {
    public:
-    static PolynomialSpaceCache<nsd_> &Instance();
+    static PolynomialSpaceCache<nsd> &Instance();
 
-    Teuchos::RCP<PolynomialSpace<nsd_>> Create(PolynomialSpaceParams params);
+    Teuchos::RCP<PolynomialSpace<nsd>> Create(PolynomialSpaceParams params);
 
    private:
     PolynomialSpaceCache() = default;
 
     /// cache of already created polynomial spaces
-    std::map<PolynomialSpaceParams, Teuchos::RCP<PolynomialSpace<nsd_>>> ps_cache_;
+    std::map<PolynomialSpaceParams, Teuchos::RCP<PolynomialSpace<nsd>>> ps_cache_;
   };
 
   /*!

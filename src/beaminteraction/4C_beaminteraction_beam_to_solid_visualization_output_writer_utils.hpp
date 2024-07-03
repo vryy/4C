@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
-  template <unsigned int rows, unsigned int cols, class value_type>
+  template <unsigned int rows, unsigned int cols, class ValueType>
   class Matrix;
 }
 namespace Core::FE

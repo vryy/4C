@@ -34,19 +34,19 @@ namespace GEOMETRYPAIR
 {
   enum class ProjectionResult;
 
-  template <typename scalar_type>
+  template <typename ScalarType>
   class ProjectionPoint1DTo3D;
 
   class LineToSurfaceEvaluationData;
 }  // namespace GEOMETRYPAIR
 namespace Core::LinAlg
 {
-  template <unsigned int rows, unsigned int cols, class value_type>
+  template <unsigned int rows, unsigned int cols, class ValueType>
   class Matrix;
 }  // namespace Core::LinAlg
 namespace GEOMETRYPAIR
 {
-  template <typename scalar_type>
+  template <typename ScalarType>
   class LineSegment;
 }
 
@@ -60,7 +60,7 @@ namespace GEOMETRYPAIR
    * @tparam line Type of line element.
    * @tparam surface Type of surface element.
    */
-  template <typename scalar_type, typename line, typename surface>
+  template <typename ScalarType, typename Line, typename Surface>
   class GeometryPairLineToSurface : public GeometryPair
   {
     //! Declare the unit test class as a fried class, so private and protected methods can be used.
@@ -83,9 +83,9 @@ namespace GEOMETRYPAIR
      * @param element_data_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
      */
-    virtual void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<surface, scalar_type>& element_data_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const {};
+    virtual void pre_evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Surface, ScalarType>& element_data_surface,
+        std::vector<LineSegment<ScalarType>>& segments) const {};
 
     /**
      * \brief Evaluate the geometry interaction of the line and the surface.
@@ -93,9 +93,9 @@ namespace GEOMETRYPAIR
      * @param element_data_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
      */
-    virtual void evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<surface, scalar_type>& element_data_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const {};
+    virtual void evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Surface, ScalarType>& element_data_surface,
+        std::vector<LineSegment<ScalarType>>& segments) const {};
 
     /**
      * \brief Project a point in space to the surface element.
@@ -108,9 +108,9 @@ namespace GEOMETRYPAIR
      * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
      * the initial residual satisfies the convergence check.
      */
-    void ProjectPointToOther(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
-        const ElementData<surface, scalar_type>& element_data_surface,
-        Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    void ProjectPointToOther(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+        const ElementData<Surface, ScalarType>& element_data_surface,
+        Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
         const bool min_one_iteration = false) const;
 
     /**
@@ -121,11 +121,10 @@ namespace GEOMETRYPAIR
      * @param eta_start (in) start value for parameter coordinate on line.
      * @param xi_start (in) start values for parameter coordinates in volume.
      */
-    void intersect_line_with_other(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<surface, scalar_type>& element_data_surface,
-        std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points,
-        const scalar_type& eta_start,
-        const Core::LinAlg::Matrix<3, 1, scalar_type>& xi_start) const;
+    void intersect_line_with_other(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Surface, ScalarType>& element_data_surface,
+        std::vector<ProjectionPoint1DTo3D<ScalarType>>& intersection_points,
+        const ScalarType& eta_start, const Core::LinAlg::Matrix<3, 1, ScalarType>& xi_start) const;
 
     /**
      * \brief Return the pointer to the evaluation data of this pair.
@@ -155,10 +154,10 @@ namespace GEOMETRYPAIR
      * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
      * the initial residual satisfies the convergence check.
      */
-    void intersect_line_with_surface_edge(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<surface, scalar_type>& element_data_surface,
-        const unsigned int& fixed_parameter, const double& fixed_value, scalar_type& eta,
-        Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+    void intersect_line_with_surface_edge(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Surface, ScalarType>& element_data_surface,
+        const unsigned int& fixed_parameter, const double& fixed_value, ScalarType& eta,
+        Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
         const bool min_one_iteration = false) const;
 
     /**
@@ -166,14 +165,14 @@ namespace GEOMETRYPAIR
      * outward and inward).
      */
     double get_surface_normal_influence_direction(
-        const ElementData<surface, scalar_type>& element_data_surface) const;
+        const ElementData<Surface, ScalarType>& element_data_surface) const;
 
     /**
      * \brief Get an approximate size of the surface.
      * @param (in) element_data_surface
      * @return Maximum distance between the first 3 nodes.
      */
-    double get_surface_size(const ElementData<surface, scalar_type>& element_data_surface) const;
+    double get_surface_size(const ElementData<Surface, ScalarType>& element_data_surface) const;
 
     /**
      * \brief Get number of faces for this surface and create a vector with the indices of the
@@ -211,13 +210,13 @@ namespace GEOMETRYPAIR
    * @tparam line Type of line element.
    * @tparam surface Type of surface element.
    */
-  template <typename scalar_type, typename line, typename surface>
+  template <typename ScalarType, typename Line, typename Surface>
   class GeometryPairLineToSurfaceFADWrapper
-      : public GeometryPairLineToSurface<scalar_type, line, surface>
+      : public GeometryPairLineToSurface<ScalarType, Line, Surface>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = GeometryPairLineToSurface<scalar_type, line, surface>;
+    using base_class = GeometryPairLineToSurface<ScalarType, Line, Surface>;
 
    public:
     /**
@@ -225,7 +224,7 @@ namespace GEOMETRYPAIR
      */
     GeometryPairLineToSurfaceFADWrapper(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GeometryPairLineToSurface<double, line, surface>>& double_geometry_pair)
+        const Teuchos::RCP<GeometryPairLineToSurface<double, Line, Surface>>& double_geometry_pair)
         : base_class(element1, element2, double_geometry_pair->GetEvaluationData()),
           geometry_pair_double_(double_geometry_pair){};
 
@@ -251,9 +250,9 @@ namespace GEOMETRYPAIR
      * @param element_data_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
      */
-    void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<surface, scalar_type>& element_data_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const override;
+    void pre_evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Surface, ScalarType>& element_data_surface,
+        std::vector<LineSegment<ScalarType>>& segments) const override;
 
     /**
      * \brief Wrap the pre_evaluate call.
@@ -266,13 +265,13 @@ namespace GEOMETRYPAIR
      * @param element_data_surface (in) Degrees of freedom for the surface.
      * @param segments (out) Vector with the segments of this line to surface pair.
      */
-    void evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<surface, scalar_type>& element_data_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const override;
+    void evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Surface, ScalarType>& element_data_surface,
+        std::vector<LineSegment<ScalarType>>& segments) const override;
 
    private:
     //! Pair to evaluate the intersections with the scalar type double.
-    Teuchos::RCP<GeometryPairLineToSurface<double, line, surface>> geometry_pair_double_;
+    Teuchos::RCP<GeometryPairLineToSurface<double, Line, Surface>> geometry_pair_double_;
   };
 
   /**
@@ -289,12 +288,12 @@ namespace GEOMETRYPAIR
    * the projection lies withing the governing 2D parameter space.
    * @return True if normal distance is in a reasonable range, false otherwise.
    */
-  template <typename scalar_type, typename surface>
+  template <typename ScalarType, typename Surface>
   bool ValidParameterSurface(
-      Core::LinAlg::Matrix<3, 1, scalar_type>& xi, const double normal_influence_direction)
+      Core::LinAlg::Matrix<3, 1, ScalarType>& xi, const double normal_influence_direction)
   {
     // We only need to check the normal distance if the coordinates are within the surface.
-    if (!ValidParameter2D<surface>(xi)) return false;
+    if (!ValidParameter2D<Surface>(xi)) return false;
 
     if (normal_influence_direction < 0)
     {
@@ -319,10 +318,10 @@ namespace GEOMETRYPAIR
    * @param min_one_iteration (in) Flag if at least one NR iteration should be performed, even if
    * the initial residual satisfies the convergence check.
    */
-  template <typename scalar_type, typename surface>
-  void ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, scalar_type>& point,
-      const ElementData<surface, scalar_type>& element_data_surface,
-      Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result,
+  template <typename ScalarType, typename Surface>
+  void ProjectPointToSurface(const Core::LinAlg::Matrix<3, 1, ScalarType>& point,
+      const ElementData<Surface, ScalarType>& element_data_surface,
+      Core::LinAlg::Matrix<3, 1, ScalarType>& xi, ProjectionResult& projection_result,
       const double normal_influence_direction = -1.0, const bool min_one_iteration = false);
 }  // namespace GEOMETRYPAIR
 

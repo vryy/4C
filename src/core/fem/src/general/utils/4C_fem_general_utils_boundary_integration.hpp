@@ -514,10 +514,10 @@ namespace Core::FE
   \param lineid     (i) local id of boundary element
 
     ----------------------------------------------------------------------------------*/
-  template <const int NSD>
+  template <const int nsd>
   void BoundaryGPToParentGP(Core::LinAlg::SerialDenseMatrix& pqxg,
       Core::LinAlg::SerialDenseMatrix& derivtrafo,
-      const Core::FE::IntPointsAndWeights<NSD - 1>& intpoints, const Core::FE::CellType pdistype,
+      const Core::FE::IntPointsAndWeights<nsd - 1>& intpoints, const Core::FE::CellType pdistype,
       const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
@@ -536,10 +536,10 @@ namespace Core::FE
 
 
 
-  template <const int NSD>
+  template <const int nsd>
   void BoundaryGPToParentGP(Core::LinAlg::SerialDenseMatrix& pqxg,
-      Core::LinAlg::Matrix<NSD, NSD>& derivtrafo,
-      const Core::FE::IntPointsAndWeights<NSD - 1>& intpoints, const Core::FE::CellType pdistype,
+      Core::LinAlg::Matrix<nsd, nsd>& derivtrafo,
+      const Core::FE::IntPointsAndWeights<nsd - 1>& intpoints, const Core::FE::CellType pdistype,
       const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
@@ -556,7 +556,7 @@ namespace Core::FE
 
 
 
-  template <const int NSD>
+  template <const int nsd>
   void BoundaryGPToParentGP(Core::LinAlg::SerialDenseMatrix& pqxg,
       Core::LinAlg::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
       const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
@@ -573,9 +573,9 @@ namespace Core::FE
       Core::LinAlg::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
       const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
-  template <const int NSD>
+  template <const int nsd>
   void BoundaryGPToParentGP(Core::LinAlg::SerialDenseMatrix& pqxg,
-      Core::LinAlg::Matrix<NSD, NSD>& derivtrafo, const GaussPoints& intpoints,
+      Core::LinAlg::Matrix<nsd, nsd>& derivtrafo, const GaussPoints& intpoints,
       const Core::FE::CellType pdistype, const Core::FE::CellType distype, const int surfaceid);
 
   //! specialization for 3D
@@ -613,14 +613,14 @@ namespace Core::FE
 
   //! compute covariant metric tensor for surface/line element and optionally, the normalized
   //! normal vector at the Gauss-point (template)
-  template <Core::FE::CellType DISTYPE, int probdim, typename valueType>
+  template <Core::FE::CellType distype, int probdim, typename ValueType>
   void ComputeMetricTensorForBoundaryEle(
-      const Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<DISTYPE>, valueType>& xyze,
-      const Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::num_nodes<DISTYPE>, valueType>&
+      const Core::LinAlg::Matrix<probdim, Core::FE::num_nodes<distype>, ValueType>& xyze,
+      const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>, ValueType>&
           deriv,
-      Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::dim<DISTYPE>, valueType>& metrictensor,
-      valueType& sqrtdetg, const bool throw_error,
-      Core::LinAlg::Matrix<probdim, 1, valueType>* normalvec = nullptr,
+      Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>, ValueType>& metrictensor,
+      ValueType& sqrtdetg, const bool throw_error,
+      Core::LinAlg::Matrix<probdim, 1, ValueType>* normalvec = nullptr,
       const bool unit_normal = true)
   {
     /* 2D boundary Element
@@ -654,7 +654,7 @@ namespace Core::FE
     |
     |   dxyzdrs(1,2) = deriv(1,iel) * xyze(2, iel)^T
      */
-    Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, probdim, valueType> dxyzdrs;
+    Core::LinAlg::Matrix<Core::FE::dim<distype>, probdim, ValueType> dxyzdrs;
     dxyzdrs.multiply_nt(deriv, xyze);
 
     /* 2D boundary Element
@@ -688,7 +688,7 @@ namespace Core::FE
     */
     sqrtdetg = metrictensor.determinant();
     if (sqrtdetg > 0.0)
-      sqrtdetg = Core::MathOperations<valueType>::sqrt(sqrtdetg);
+      sqrtdetg = Core::MathOperations<ValueType>::sqrt(sqrtdetg);
     else if (throw_error)
     {
       FOUR_C_THROW(
@@ -698,23 +698,23 @@ namespace Core::FE
     // Calculate outward pointing normal vector
     if (normalvec)
     {
-      if (probdim == 3 and Core::FE::dim<DISTYPE> == 2)
+      if (probdim == 3 and Core::FE::dim<distype> == 2)
       {
         (*normalvec)(0) = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(1, 1) * dxyzdrs(0, 2);
         (*normalvec)(1) = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(1, 2) * dxyzdrs(0, 0);
         (*normalvec)(2) = dxyzdrs(0, 0) * dxyzdrs(1, 1) - dxyzdrs(1, 0) * dxyzdrs(0, 1);
       }
-      else if (probdim == 2 and Core::FE::dim<DISTYPE> == 1)
+      else if (probdim == 2 and Core::FE::dim<distype> == 1)
       {
         (*normalvec)(0) = dxyzdrs(0, 1);
         (*normalvec)(1) = -dxyzdrs(0, 0);
       }
-      else if (probdim == 3 and Core::FE::dim<DISTYPE> == 1)
+      else if (probdim == 3 and Core::FE::dim<distype> == 1)
       {
         // handle small normal vectors with dxyzdrs(0,0), dxyzdrs(0,1) < 1e-6
         // and other components = 0.0
-        if (Core::MathOperations<valueType>::abs(dxyzdrs(0, 0)) < 1.0e-6 and
-            Core::MathOperations<valueType>::abs(dxyzdrs(0, 1)) < 1.0e-6 and
+        if (Core::MathOperations<ValueType>::abs(dxyzdrs(0, 0)) < 1.0e-6 and
+            Core::MathOperations<ValueType>::abs(dxyzdrs(0, 1)) < 1.0e-6 and
             (dxyzdrs(0, 2) != 0.0 or dxyzdrs(0, 1) != 0.0))
         {
           (*normalvec)(0) = 0.0;
@@ -734,7 +734,7 @@ namespace Core::FE
       // compute unit normal (outward pointing)
       if (unit_normal)
       {
-        const valueType norm2 = normalvec->norm2();
+        const ValueType norm2 = normalvec->norm2();
         if (norm2 < 0.0)
         {
           FOUR_C_THROW("The L2-norm of the normal vector is smaller than 0.0!");
@@ -746,15 +746,15 @@ namespace Core::FE
 
   //! compute kovariant metric tensor for surface/line element and optionally, the normalized
   //! normal vector at the Gausspoint (template)
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   void ComputeMetricTensorForBoundaryEle(
-      const Core::LinAlg::Matrix<(1 + Core::FE::dim<DISTYPE>), Core::FE::num_nodes<DISTYPE>>& xyze,
-      const Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::num_nodes<DISTYPE>>& deriv,
-      Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::dim<DISTYPE>>& metrictensor,
-      double& sqrtdetg, Core::LinAlg::Matrix<(1 + Core::FE::dim<DISTYPE>), 1>* normalvec = nullptr)
+      const Core::LinAlg::Matrix<(1 + Core::FE::dim<distype>), Core::FE::num_nodes<distype>>& xyze,
+      const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& deriv,
+      Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& metrictensor,
+      double& sqrtdetg, Core::LinAlg::Matrix<(1 + Core::FE::dim<distype>), 1>* normalvec = nullptr)
   {
     const bool throw_error_if_negative_determinant(true);
-    ComputeMetricTensorForBoundaryEle<DISTYPE, (1 + Core::FE::dim<DISTYPE>)>(
+    ComputeMetricTensorForBoundaryEle<distype, (1 + Core::FE::dim<distype>)>(
         xyze, deriv, metrictensor, sqrtdetg, throw_error_if_negative_determinant, normalvec);
   }
 

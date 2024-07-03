@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::setup(
+template <typename Surface, typename ScalarType>
+void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
@@ -38,9 +38,9 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::setup(
   // At the moment we need to get the structure discretization at this point since the beam
   // interaction discretization is a copy - without the nurbs information
   face_reference_position_ =
-      GEOMETRYPAIR::InitializeElementData<surface, double>::initialize(this->GetDrtFaceElement());
+      GEOMETRYPAIR::InitializeElementData<Surface, double>::initialize(this->GetDrtFaceElement());
   const Core::Nodes::Node* const* nodes = drt_face_element_->Nodes();
-  for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+  for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       face_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
 }
@@ -48,8 +48,8 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::setup(
 /**
  *
  */
-template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::set_state(
+template <typename Surface, typename ScalarType>
+void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::set_state(
     const Teuchos::RCP<const Epetra_Vector>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
@@ -58,16 +58,16 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::set_state(
   Core::FE::ExtractMyValues(*displacement, patch_displacement, patch_dof_gid_);
 
   // Create the full length FAD types.
-  face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::initialize(
+  face_position_ = GEOMETRYPAIR::InitializeElementData<Surface, ScalarType>::initialize(
       this->GetDrtFaceElement());
   const unsigned int n_patch_dof = patch_dof_gid_.size();
-  std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
+  std::vector<ScalarType> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
   {
     patch_displacement_fad[i_dof] =
-        Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(n_patch_dof + n_dof_other_element_,
+        Core::FADUtils::HigherOrderFadValue<ScalarType>::apply(n_patch_dof + n_dof_other_element_,
             n_dof_other_element_ + i_dof, patch_displacement[i_dof]);
-    if (i_dof < surface::n_dof_)
+    if (i_dof < Surface::n_dof_)
       face_position_.element_position_(i_dof) =
           face_reference_position_.element_position_(i_dof) + patch_displacement_fad[i_dof];
   }
@@ -76,19 +76,19 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::set_state(
 /**
  *
  */
-template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_position_double(
+template <typename Surface, typename ScalarType>
+void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::evaluate_face_position_double(
     const Core::LinAlg::Matrix<2, 1, double>& xi, Core::LinAlg::Matrix<3, 1, double>& r,
     bool reference) const
 {
   if (reference)
   {
-    EvaluatePosition<surface>(xi, face_reference_position_, r);
+    EvaluatePosition<Surface>(xi, face_reference_position_, r);
   }
   else
   {
-    Core::LinAlg::Matrix<3, 1, scalar_type> r_ad;
-    EvaluatePosition<surface>(xi, face_position_, r_ad);
+    Core::LinAlg::Matrix<3, 1, ScalarType> r_ad;
+    EvaluatePosition<Surface>(xi, face_position_, r_ad);
     r = Core::FADUtils::CastToDouble(r_ad);
   }
 }
@@ -96,8 +96,8 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_posi
 /**
  *
  */
-template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_normal_double(
+template <typename Surface, typename ScalarType>
+void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::evaluate_face_normal_double(
     const Core::LinAlg::Matrix<2, 1, double>& xi, Core::LinAlg::Matrix<3, 1, double>& n,
     const bool reference, const bool averaged_normal) const
 {
@@ -112,13 +112,13 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_norm
     auto get_position_double = [&]()
     {
       if (reference)
-        return ElementDataToDouble<surface>::ToDouble(face_reference_position_);
+        return ElementDataToDouble<Surface>::ToDouble(face_reference_position_);
       else
-        return ElementDataToDouble<surface>::ToDouble(face_position_);
+        return ElementDataToDouble<Surface>::ToDouble(face_position_);
     };
 
     const auto position_double = get_position_double();
-    EvaluateFaceNormal<surface>(xi, position_double, n);
+    EvaluateFaceNormal<Surface>(xi, position_double, n);
   }
 }
 
@@ -126,8 +126,8 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::evaluate_face_norm
 /**
  *
  */
-template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::setup(
+template <typename Surface, typename ScalarType>
+void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
@@ -240,8 +240,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::setup(
 /**
  *
  */
-template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::set_state(
+template <typename Surface, typename ScalarType>
+void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::set_state(
     const Teuchos::RCP<const Epetra_Vector>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
@@ -250,16 +250,16 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::set_state(
   Core::FE::ExtractMyValues(*displacement, patch_displacement, this->patch_dof_gid_);
 
   // Create the full length FAD types.
-  this->face_position_ = GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::initialize(
+  this->face_position_ = GEOMETRYPAIR::InitializeElementData<Surface, ScalarType>::initialize(
       this->GetDrtFaceElement());
   const unsigned int n_patch_dof = this->patch_dof_gid_.size();
-  std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
+  std::vector<ScalarType> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
   {
-    patch_displacement_fad[i_dof] = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
+    patch_displacement_fad[i_dof] = Core::FADUtils::HigherOrderFadValue<ScalarType>::apply(
         n_patch_dof + this->n_dof_other_element_, this->n_dof_other_element_ + i_dof,
         patch_displacement[i_dof]);
-    if (i_dof < surface::n_dof_)
+    if (i_dof < Surface::n_dof_)
       this->face_position_.element_position_(i_dof) =
           this->face_reference_position_.element_position_(i_dof) + patch_displacement_fad[i_dof];
   }
@@ -269,15 +269,15 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::set_state(
     // Parameter coordinates corresponding to LIDs of nodes.
     Core::LinAlg::Matrix<3, 1, double> xi(true);
     Core::LinAlg::SerialDenseMatrix nodal_coordinates =
-        Core::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+        Core::FE::getEleNodeNumbering_nodes_paramspace(Surface::discretization_);
 
     // Loop over the connected faces and evaluate their nodal normals.
-    Core::LinAlg::Matrix<surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, scalar_type>> normals;
-    Core::LinAlg::Matrix<3, 1, scalar_type> temp_normal;
-    for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+    Core::LinAlg::Matrix<Surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, ScalarType>> normals;
+    Core::LinAlg::Matrix<3, 1, ScalarType> temp_normal;
+    for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
     {
       for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
-      EvaluateFaceNormal<surface>(xi, this->face_position_, normals(i_node));
+      EvaluateFaceNormal<Surface>(xi, this->face_position_, normals(i_node));
     }
     for (const auto& value : connected_faces_)
     {
@@ -287,9 +287,9 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::set_state(
 
       // Setup an element data container for the other element, but with the FAD type and ordering
       // for this patch
-      auto q_other_face = InitializeElementData<surface, scalar_type>::initialize(
-          face_element->GetDrtFaceElement());
-      for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+      auto q_other_face =
+          InitializeElementData<Surface, ScalarType>::initialize(face_element->GetDrtFaceElement());
+      for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
       {
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         {
@@ -305,7 +305,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::set_state(
       {
         for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
           xi(i_dim) = nodal_coordinates(i_dim, node_map_iterator.first);
-        EvaluateFaceNormal<surface>(xi, q_other_face, temp_normal);
+        EvaluateFaceNormal<Surface>(xi, q_other_face, temp_normal);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           normals(node_map_iterator.second)(i_dim) += temp_normal(i_dim);
       }
@@ -317,23 +317,23 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::set_state(
 /**
  *
  */
-template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
-    scalar_type>::calculate_averaged_reference_normals(const std::unordered_map<int,
+template <typename Surface, typename ScalarType>
+void GEOMETRYPAIR::FaceElementPatchTemplate<Surface,
+    ScalarType>::calculate_averaged_reference_normals(const std::unordered_map<int,
     Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Parameter coordinates corresponding to LIDs of nodes.
   Core::LinAlg::Matrix<2, 1, double> xi(true);
   Core::LinAlg::SerialDenseMatrix nodal_coordinates =
-      Core::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+      Core::FE::getEleNodeNumbering_nodes_paramspace(Surface::discretization_);
 
   // Loop over the connected faces and evaluate their nodal normals.
-  Core::LinAlg::Matrix<surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, double>> normals;
+  Core::LinAlg::Matrix<Surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, double>> normals;
   Core::LinAlg::Matrix<3, 1, double> temp_normal;
-  for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+  for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++) xi(i_dim) = nodal_coordinates(i_dim, i_node);
-    EvaluateFaceNormal<surface>(xi, this->face_reference_position_, normals(i_node));
+    EvaluateFaceNormal<Surface>(xi, this->face_reference_position_, normals(i_node));
   }
   for (const auto& value : connected_faces_)
   {
@@ -346,7 +346,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
     {
       for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
         xi(i_dim) = nodal_coordinates(i_dim, node_map_iterator.first);
-      EvaluateFaceNormal<surface>(xi, face_element->face_reference_position_, temp_normal);
+      EvaluateFaceNormal<Surface>(xi, face_element->face_reference_position_, temp_normal);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         normals(node_map_iterator.second)(i_dim) += temp_normal(i_dim);
     }
@@ -357,8 +357,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface,
 /**
  *
  */
-template <typename surface, typename scalar_type>
-void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::evaluate_face_normal_double(
+template <typename Surface, typename ScalarType>
+void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::evaluate_face_normal_double(
     const Core::LinAlg::Matrix<2, 1, double>& xi, Core::LinAlg::Matrix<3, 1, double>& n,
     const bool reference, const bool averaged_normal) const
 {
@@ -366,14 +366,14 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::evaluate_face
   {
     if (reference)
     {
-      EvaluateSurfaceNormal<surface>(xi, this->face_reference_position_, n);
+      EvaluateSurfaceNormal<Surface>(xi, this->face_reference_position_, n);
     }
     else
     {
       if (evaluate_current_normals_)
       {
-        Core::LinAlg::Matrix<3, 1, scalar_type> n_ad;
-        EvaluateSurfaceNormal<surface>(xi, this->face_position_, n_ad);
+        Core::LinAlg::Matrix<3, 1, ScalarType> n_ad;
+        EvaluateSurfaceNormal<Surface>(xi, this->face_position_, n_ad);
         n = Core::FADUtils::CastToDouble(n_ad);
       }
       else
@@ -392,14 +392,14 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::evaluate_face
 /**
  *
  */
-template <typename surface, typename scalar_type>
+template <typename Surface, typename ScalarType>
 template <typename T>
-void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::average_nodal_normals(
-    Core::LinAlg::Matrix<surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, T>>& normals,
-    Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, T>& averaged_normals) const
+void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::average_nodal_normals(
+    Core::LinAlg::Matrix<Surface::n_nodes_, 1, Core::LinAlg::Matrix<3, 1, T>>& normals,
+    Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, T>& averaged_normals) const
 {
   averaged_normals.put_scalar(0.0);
-  for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+  for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
   {
     normals(i_node).scale(1.0 / Core::FADUtils::VectorNorm(normals(i_node)));
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
@@ -412,8 +412,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::average_nodal
 /**
  *
  */
-template <typename surface, typename scalar_type, typename volume>
-void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volume>::setup(
+template <typename Surface, typename ScalarType, typename Volume>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume>::setup(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
@@ -427,11 +427,11 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
       *discret, this->patch_dof_gid_, lmrowowner, lmstride);
 
   // Safety checks.
-  if (this->patch_dof_gid_.size() != volume::n_dof_ or surface_gid.size() != surface::n_dof_)
+  if (this->patch_dof_gid_.size() != Volume::n_dof_ or surface_gid.size() != Surface::n_dof_)
     FOUR_C_THROW("Mismatch in GID sizes!");
 
   // Calculate the face to volume DOF map.
-  for (unsigned i_dof_surf = 0; i_dof_surf < surface::n_dof_; i_dof_surf++)
+  for (unsigned i_dof_surf = 0; i_dof_surf < Surface::n_dof_; i_dof_surf++)
   {
     auto dof_iterator =
         find(this->patch_dof_gid_.begin(), this->patch_dof_gid_.end(), surface_gid[i_dof_surf]);
@@ -446,20 +446,20 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
 
   // Set the reference position.
   volume_reference_position_ =
-      GEOMETRYPAIR::InitializeElementData<volume, double>::initialize(nullptr);
+      GEOMETRYPAIR::InitializeElementData<Volume, double>::initialize(nullptr);
   this->face_reference_position_ =
-      GEOMETRYPAIR::InitializeElementData<surface, double>::initialize(nullptr);
+      GEOMETRYPAIR::InitializeElementData<Surface, double>::initialize(nullptr);
   const Core::Nodes::Node* const* nodes = this->drt_face_element_->parent_element()->Nodes();
-  for (unsigned int i_node = 0; i_node < volume::n_nodes_; i_node++)
+  for (unsigned int i_node = 0; i_node < Volume::n_nodes_; i_node++)
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       volume_reference_position_.element_position_(i_node * 3 + i_dim) = nodes[i_node]->X()[i_dim];
-  for (unsigned int i_dof_surf = 0; i_dof_surf < surface::n_dof_; i_dof_surf++)
+  for (unsigned int i_dof_surf = 0; i_dof_surf < Surface::n_dof_; i_dof_surf++)
     this->face_reference_position_.element_position_(i_dof_surf) =
         volume_reference_position_.element_position_(surface_dof_lid_map_(i_dof_surf));
 
   // Surface node to volume node map.
-  Core::LinAlg::Matrix<surface::n_nodes_, 1, int> surface_node_lid_map;
-  for (unsigned i_node_surf = 0; i_node_surf < surface::n_nodes_; i_node_surf++)
+  Core::LinAlg::Matrix<Surface::n_nodes_, 1, int> surface_node_lid_map;
+  for (unsigned i_node_surf = 0; i_node_surf < Surface::n_nodes_; i_node_surf++)
     surface_node_lid_map(i_node_surf) = surface_dof_lid_map_(i_node_surf * 3) / 3;
 
   if (surface_node_lid_map(0) == 0 and surface_node_lid_map(1) == 4 and
@@ -534,8 +534,8 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
 /**
  *
  */
-template <typename surface, typename scalar_type, typename volume>
-void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volume>::set_state(
+template <typename Surface, typename ScalarType, typename Volume>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume>::set_state(
     const Teuchos::RCP<const Epetra_Vector>& displacement,
     const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
@@ -544,19 +544,19 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
   Core::FE::ExtractMyValues(*displacement, volume_displacement, this->patch_dof_gid_);
 
   // Create the full length FAD types.
-  std::vector<scalar_type> patch_displacement_fad(volume::n_dof_);
+  std::vector<ScalarType> patch_displacement_fad(Volume::n_dof_);
 
-  volume_position_ = GEOMETRYPAIR::InitializeElementData<volume, scalar_type>::initialize(nullptr);
-  for (unsigned int i_dof = 0; i_dof < volume::n_dof_; i_dof++)
+  volume_position_ = GEOMETRYPAIR::InitializeElementData<Volume, ScalarType>::initialize(nullptr);
+  for (unsigned int i_dof = 0; i_dof < Volume::n_dof_; i_dof++)
   {
     volume_position_.element_position_(i_dof) =
-        Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
-            volume::n_dof_ + this->n_dof_other_element_, this->n_dof_other_element_ + i_dof,
+        Core::FADUtils::HigherOrderFadValue<ScalarType>::apply(
+            Volume::n_dof_ + this->n_dof_other_element_, this->n_dof_other_element_ + i_dof,
             volume_displacement[i_dof] + volume_reference_position_.element_position_(i_dof));
   }
   this->face_position_ =
-      GEOMETRYPAIR::InitializeElementData<surface, scalar_type>::initialize(nullptr);
-  for (unsigned int i_dof = 0; i_dof < surface::n_dof_; i_dof++)
+      GEOMETRYPAIR::InitializeElementData<Surface, ScalarType>::initialize(nullptr);
+  for (unsigned int i_dof = 0; i_dof < Surface::n_dof_; i_dof++)
     this->face_position_.element_position_(i_dof) =
         volume_position_.element_position_(surface_dof_lid_map_(i_dof));
 
@@ -566,37 +566,36 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
 /**
  *
  */
-template <typename surface, typename scalar_type, typename volume>
-template <typename scalar_type_normal>
-void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
-    volume>::CalculateNormals(const GEOMETRYPAIR::ElementData<volume, scalar_type_normal>&
-                                  volume_position,
-    const GEOMETRYPAIR::ElementData<surface, scalar_type_normal>& surface_position,
-    Core::LinAlg::Matrix<3 * surface::n_nodes_, 1, scalar_type_normal>& normals) const
+template <typename Surface, typename ScalarType, typename Volume>
+template <typename ScalarTypeNormal>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume>::CalculateNormals(
+    const GEOMETRYPAIR::ElementData<Volume, ScalarTypeNormal>& volume_position,
+    const GEOMETRYPAIR::ElementData<Surface, ScalarTypeNormal>& surface_position,
+    Core::LinAlg::Matrix<3 * Surface::n_nodes_, 1, ScalarTypeNormal>& normals) const
 {
   // Parameter coordinates corresponding to LIDs of nodes.
   Core::LinAlg::Matrix<2, 1, double> xi_surface(true);
   Core::LinAlg::SerialDenseMatrix nodal_coordinates =
-      Core::FE::getEleNodeNumbering_nodes_paramspace(surface::discretization_);
+      Core::FE::getEleNodeNumbering_nodes_paramspace(Surface::discretization_);
 
   // Loop over the faces and evaluate the "normals" at the nodes.
   Core::LinAlg::Matrix<3, 1, double> xi_volume(true);
-  Core::LinAlg::Matrix<3, 1, scalar_type_normal> r_surface;
-  Core::LinAlg::Matrix<3, 1, scalar_type_normal> r_volume;
-  Core::LinAlg::Matrix<3, 3, scalar_type_normal> dr_volume;
-  for (unsigned int i_node = 0; i_node < surface::n_nodes_; i_node++)
+  Core::LinAlg::Matrix<3, 1, ScalarTypeNormal> r_surface;
+  Core::LinAlg::Matrix<3, 1, ScalarTypeNormal> r_volume;
+  Core::LinAlg::Matrix<3, 3, ScalarTypeNormal> dr_volume;
+  for (unsigned int i_node = 0; i_node < Surface::n_nodes_; i_node++)
   {
     for (unsigned int i_dim = 0; i_dim < 2; i_dim++)
       xi_surface(i_dim) = nodal_coordinates(i_dim, i_node);
     xi_face_to_xi_volume(xi_surface, xi_volume);
 
-    EvaluatePosition<surface>(xi_surface, surface_position, r_surface);
-    EvaluatePosition<volume>(xi_volume, volume_position, r_volume);
+    EvaluatePosition<Surface>(xi_surface, surface_position, r_surface);
+    EvaluatePosition<Volume>(xi_volume, volume_position, r_volume);
     r_volume -= r_surface;
     if (Core::FADUtils::VectorNorm(r_volume) > 1e-10)
       FOUR_C_THROW("Nodal positions for face and volume do not match.");
 
-    EvaluatePositionDerivative1<volume>(xi_volume, volume_position, dr_volume);
+    EvaluatePositionDerivative1<Volume>(xi_volume, volume_position, dr_volume);
     for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       normals(3 * i_node + i_dim) = third_direction_factor_ * dr_volume(i_dim, third_direction_);
   }
@@ -605,21 +604,21 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
 /**
  *
  */
-template <typename surface, typename scalar_type, typename volume>
-void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
-    volume>::evaluate_face_normal_double(const Core::LinAlg::Matrix<2, 1, double>& xi,
+template <typename Surface, typename ScalarType, typename Volume>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType,
+    Volume>::evaluate_face_normal_double(const Core::LinAlg::Matrix<2, 1, double>& xi,
     Core::LinAlg::Matrix<3, 1, double>& n, const bool reference, const bool averaged_normal) const
 {
   if (averaged_normal)
   {
     if (reference)
     {
-      EvaluateSurfaceNormal<surface>(xi, this->face_reference_position_, n);
+      EvaluateSurfaceNormal<Surface>(xi, this->face_reference_position_, n);
     }
     else
     {
-      Core::LinAlg::Matrix<3, 1, scalar_type> n_ad;
-      EvaluateSurfaceNormal<surface>(xi, this->face_position_, n_ad);
+      Core::LinAlg::Matrix<3, 1, ScalarType> n_ad;
+      EvaluateSurfaceNormal<Surface>(xi, this->face_position_, n_ad);
       n = Core::FADUtils::CastToDouble(n_ad);
     }
   }
@@ -633,9 +632,9 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
 /**
  *
  */
-template <typename surface, typename scalar_type, typename volume>
-void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type,
-    volume>::xi_face_to_xi_volume(const Core::LinAlg::Matrix<2, 1, double>& xi_face,
+template <typename Surface, typename ScalarType, typename Volume>
+void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType,
+    Volume>::xi_face_to_xi_volume(const Core::LinAlg::Matrix<2, 1, double>& xi_face,
     Core::LinAlg::Matrix<3, 1, double>& xi_volume) const
 {
   xi_volume(face_to_volume_coordinate_axis_map_(0)) =

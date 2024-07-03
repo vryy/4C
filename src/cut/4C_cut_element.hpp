@@ -641,7 +641,7 @@ namespace Core::Geo
      *
      *  \author hiermeier */
     template <unsigned probdim, Core::FE::CellType elementtype,
-        unsigned numNodesElement = Core::FE::num_nodes<elementtype>,
+        unsigned num_nodes_element = Core::FE::num_nodes<elementtype>,
         unsigned dim = Core::FE::dim<elementtype>>
     class ConcreteElement : public Element
     {
@@ -663,11 +663,11 @@ namespace Core::Geo
       unsigned Dim() const override { return dim; }
 
       //! get the number of nodes
-      unsigned NumNodes() const override { return numNodesElement; }
+      unsigned NumNodes() const override { return num_nodes_element; }
 
       bool PointInside(Point* p) override;
 
-      void Coordinates(Core::LinAlg::Matrix<probdim, numNodesElement>& xyze) const
+      void Coordinates(Core::LinAlg::Matrix<probdim, num_nodes_element>& xyze) const
       {
         Coordinates(xyze.data());
       }
@@ -718,13 +718,13 @@ namespace Core::Geo
       void global_coordinates(
           const Core::LinAlg::Matrix<dim, 1>& rst, Core::LinAlg::Matrix<probdim, 1>& xyz)
       {
-        Core::LinAlg::Matrix<numNodesElement, 1> funct;
+        Core::LinAlg::Matrix<num_nodes_element, 1> funct;
         Core::FE::shape_function<elementtype>(rst, funct);
 
         xyz = 0;
 
         const std::vector<Node*>& nodes = Nodes();
-        for (unsigned i = 0; i < numNodesElement; ++i)
+        for (unsigned i = 0; i < num_nodes_element; ++i)
         {
           Core::LinAlg::Matrix<probdim, 1> x(nodes[i]->point()->X());
           xyz.update(funct(i), x, 1);
@@ -740,8 +740,8 @@ namespace Core::Geo
        *  \date 08/16 */
       void PointAt(const Core::LinAlg::Matrix<dim, 1>& rst, Core::LinAlg::Matrix<probdim, 1>& xyz)
       {
-        Core::LinAlg::Matrix<numNodesElement, 1> funct(true);
-        Core::LinAlg::Matrix<probdim, numNodesElement> xyze(true);
+        Core::LinAlg::Matrix<num_nodes_element, 1> funct(true);
+        Core::LinAlg::Matrix<probdim, num_nodes_element> xyze(true);
         this->Coordinates(xyze);
 
         Core::FE::shape_function<elementtype>(rst, funct);
@@ -771,10 +771,10 @@ namespace Core::Geo
        *  \param rst (in)  : local parameter space coordinate inside the element */
       double Scalar(const std::vector<double>& ns, const Core::LinAlg::Matrix<dim, 1>& rst)
       {
-        Core::LinAlg::Matrix<numNodesElement, 1> funct;
+        Core::LinAlg::Matrix<num_nodes_element, 1> funct;
         Core::FE::shape_function<elementtype>(rst, funct);
 
-        Core::LinAlg::Matrix<numNodesElement, 1> scalar(ns.data());
+        Core::LinAlg::Matrix<num_nodes_element, 1> scalar(ns.data());
         Core::LinAlg::Matrix<1, 1> res;
         res.multiply_tn(funct, scalar);
         return res(0);
@@ -797,14 +797,14 @@ namespace Core::Geo
        *  \param rst (in) : local parameter space coordinates */
       double get_level_set_value_at_local_coords(const Core::LinAlg::Matrix<dim, 1>& rst)
       {
-        Core::LinAlg::Matrix<numNodesElement, 1> funct;
+        Core::LinAlg::Matrix<num_nodes_element, 1> funct;
 
         Core::FE::shape_function<elementtype>(rst, funct);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
         // Extract Level Set values from element.
-        Core::LinAlg::Matrix<numNodesElement, 1> escaa;
+        Core::LinAlg::Matrix<num_nodes_element, 1> escaa;
         int mm = 0;
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
@@ -834,15 +834,15 @@ namespace Core::Geo
       {
         // Calculate global derivatives
         //----------------------------------
-        Core::LinAlg::Matrix<probdim, numNodesElement> deriv1;
-        Core::LinAlg::Matrix<probdim, numNodesElement> xyze;
+        Core::LinAlg::Matrix<probdim, num_nodes_element> deriv1;
+        Core::LinAlg::Matrix<probdim, num_nodes_element> xyze;
         Coordinates(xyze);
         // transposed jacobian dxyz/drst
         Core::LinAlg::Matrix<probdim, probdim> xjm;
         // inverse of transposed jacobian drst/dxyz
         Core::LinAlg::Matrix<probdim, probdim> xij;
         // nodal spatial derivatives dN_i/dr * dr/dx + dN_i/ds * ds/dx + ...
-        Core::LinAlg::Matrix<probdim, numNodesElement> derxy;
+        Core::LinAlg::Matrix<probdim, num_nodes_element> derxy;
         // only filled for manifolds
         Core::LinAlg::Matrix<dim, dim> metrictensor;
         Core::LinAlg::Matrix<probdim, 1> normalvec1;
@@ -858,7 +858,7 @@ namespace Core::Geo
         const std::vector<Node*> ele_node = this->Nodes();
 
         // Extract Level Set values from element.
-        Core::LinAlg::Matrix<1, numNodesElement> escaa;
+        Core::LinAlg::Matrix<1, num_nodes_element> escaa;
         int mm = 0;
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {
@@ -892,14 +892,14 @@ namespace Core::Geo
       std::vector<double> get_level_set_gradient_at_local_coords_in_local_coords(
           const Core::LinAlg::Matrix<dim, 1>& rst)
       {
-        Core::LinAlg::Matrix<dim, numNodesElement> deriv1;
+        Core::LinAlg::Matrix<dim, num_nodes_element> deriv1;
 
         Core::FE::shape_function_deriv1<elementtype>(rst, deriv1);
 
         const std::vector<Node*> ele_node = this->Nodes();
 
         // Extract Level Set values from element.
-        Core::LinAlg::Matrix<1, numNodesElement> escaa;
+        Core::LinAlg::Matrix<1, num_nodes_element> escaa;
         int mm = 0;
         for (std::vector<Node*>::const_iterator i = ele_node.begin(); i != ele_node.end(); i++)
         {

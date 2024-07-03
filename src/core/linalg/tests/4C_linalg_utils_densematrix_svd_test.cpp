@@ -21,14 +21,14 @@ namespace
    * \note The values for the matrix used in tests below are generated with python/numpy
    */
 
-  template <unsigned int N>
-  void AssertIsUnitaryMatrix(const Core::LinAlg::Matrix<N, N>& M)
+  template <unsigned int n>
+  void AssertIsUnitaryMatrix(const Core::LinAlg::Matrix<n, n>& M)
   {
-    Core::LinAlg::Matrix<N, N> MHM(false);
+    Core::LinAlg::Matrix<n, n> MHM(false);
     MHM.multiply_tn(M, M);
 
-    for (unsigned int i = 0; i < N; ++i)
-      for (unsigned int j = 0; j < N; ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
+    for (unsigned int i = 0; i < n; ++i)
+      for (unsigned int j = 0; j < n; ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
   }
 
   void AssertIsUnitaryMatrix(const Core::LinAlg::SerialDenseMatrix& M)

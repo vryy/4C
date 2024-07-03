@@ -34,7 +34,7 @@ namespace ScaTra::ScaTraUtils
       const int scatra_dofid);
 
   //! Calculate the reconstructed nodal gradient at a node by means of mean value averaging
-  template <const int dim, Core::FE::CellType DISTYPE>
+  template <const int dim, Core::FE::CellType distype>
   Core::LinAlg::Matrix<dim, 1> DoMeanValueAveragingOfElementGradientNode(
       Teuchos::RCP<Core::FE::Discretization> discret,
       std::vector<const Core::Elements::Element*> elements, Teuchos::RCP<Epetra_Vector> phinp_node,

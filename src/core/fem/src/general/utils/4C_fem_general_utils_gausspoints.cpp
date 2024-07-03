@@ -26,14 +26,14 @@ namespace Core::FE
   namespace
   {
     /// wrapper to intrepid gauss point implementation
-    template <class topology>
+    template <class Topology>
     class IntrepidGaussPoints : public GaussPoints
     {
      public:
       explicit IntrepidGaussPoints(int cubDegree)
       {
         // cell type: tetrahedron
-        shards::CellTopology cellType = shards::getCellTopologyData<topology>();
+        shards::CellTopology cellType = shards::getCellTopologyData<Topology>();
 
         // retrieve spatial dimension
         int spaceDim = cellType.getDimension();
@@ -66,7 +66,7 @@ namespace Core::FE
       void print() const override
       {
         // cell type: tetrahedron
-        shards::CellTopology cellType = shards::getCellTopologyData<topology>();
+        shards::CellTopology cellType = shards::getCellTopologyData<Topology>();
 
         std::cout << cellType.getName() << " gauss points:\n";
         for (int i = 0; i < NumPoints(); ++i)

@@ -30,13 +30,13 @@ namespace MIXTURE
 {
   namespace Details
   {
-    template <typename integer>
-    [[nodiscard]] integer integer_power(integer x, unsigned int p)
+    template <typename Integer>
+    [[nodiscard]] Integer integer_power(Integer x, unsigned int p)
     {
       if (p == 0) return 1;
       if (p == 1) return x;
 
-      integer tmp = integer_power(x, p / 2);
+      Integer tmp = integer_power(x, p / 2);
       if (p % 2 == 0)
         return tmp * tmp;
       else

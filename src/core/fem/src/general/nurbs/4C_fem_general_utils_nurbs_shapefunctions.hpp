@@ -848,7 +848,7 @@ namespace Core::FE::Nurbs
   \return TRUE, if successful
 
   */
-  template <int degree, typename scalar_type = double, class VF, class UV, class WG>
+  template <int degree, typename ScalarType = double, class VF, class UV, class WG>
   bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
@@ -930,22 +930,22 @@ namespace Core::FE::Nurbs
 
     // get mapped coordinates
 
-    scalar_type xi = (knots[0])(degree) + ((uv(0) + 1)) * Ju;
-    scalar_type eta = (knots[1])(degree) + ((uv(1) + 1)) * Jv;
+    ScalarType xi = (knots[0])(degree) + ((uv(0) + 1)) * Ju;
+    ScalarType eta = (knots[1])(degree) + ((uv(1) + 1)) * Jv;
 
     // -----------------------------------------------
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    std::vector<scalar_type> bezier_shape_funct(size);
+    std::vector<ScalarType> bezier_shape_funct(size);
 
     // allocate bspline polynomials for both direction
     Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots[0]);
     Core::FE::Nurbs::BsplinePolynomial bspline_eta(degree, knots[1]);
 
     // get temporary variables
-    scalar_type bspline_xi_value;
-    scalar_type bspline_eta_value;
+    ScalarType bspline_xi_value;
+    ScalarType bspline_eta_value;
 
     // define temporary int variable to compute the
     // number of the basis function from i,j
@@ -992,7 +992,7 @@ namespace Core::FE::Nurbs
     // -----------------------------------------------
 
     // alloc temporary variable, initialise to zero
-    scalar_type sum_funct_weight;
+    ScalarType sum_funct_weight;
 
     sum_funct_weight = 0.0;
 
@@ -1039,7 +1039,7 @@ namespace Core::FE::Nurbs
   /**
    * @brief Evaluate the 2D NURBS shape functions based on the discretization type of the element.
    */
-  template <typename scalar_type = double, class VF, class UV, class WG>
+  template <typename ScalarType = double, class VF, class UV, class WG>
   bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
@@ -1048,11 +1048,11 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs4:
       {
-        return nurbs_get_2D_funct<1, scalar_type>(nurbs_shape_funct, uv, knots, weights);
+        return nurbs_get_2D_funct<1, ScalarType>(nurbs_shape_funct, uv, knots, weights);
       }
       case Core::FE::CellType::nurbs9:
       {
-        return nurbs_get_2D_funct<2, scalar_type>(nurbs_shape_funct, uv, knots, weights);
+        return nurbs_get_2D_funct<2, ScalarType>(nurbs_shape_funct, uv, knots, weights);
       }
       default:
       {
@@ -1175,7 +1175,7 @@ namespace Core::FE::Nurbs
   \return TRUE, if successful
 
   */
-  template <int degree, typename scalar_type = double, class VF, class MD, class UV, class WG>
+  template <int degree, typename ScalarType = double, class VF, class MD, class UV, class WG>
   bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights)
   {
@@ -1257,25 +1257,25 @@ namespace Core::FE::Nurbs
 
     // get mapped coordinates
 
-    scalar_type xi = (knots[0])(degree) + ((uv(0) + 1)) * Ju;
-    scalar_type eta = (knots[1])(degree) + ((uv(1) + 1)) * Jv;
+    ScalarType xi = (knots[0])(degree) + ((uv(0) + 1)) * Ju;
+    ScalarType eta = (knots[1])(degree) + ((uv(1) + 1)) * Jv;
 
     // -----------------------------------------------
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    std::vector<scalar_type> bezier_shape_funct(size);
-    std::vector<std::vector<scalar_type>> bezier_shape_deriv(2, std::vector<scalar_type>(size));
+    std::vector<ScalarType> bezier_shape_funct(size);
+    std::vector<std::vector<ScalarType>> bezier_shape_deriv(2, std::vector<ScalarType>(size));
 
     // allocate bspline polynomials for both direction
     Core::FE::Nurbs::BsplinePolynomial bspline_xi(degree, knots[0]);
     Core::FE::Nurbs::BsplinePolynomial bspline_eta(degree, knots[1]);
 
     // get temporary variables
-    scalar_type bspline_xi_value;
-    scalar_type bspline_xi_derivative;
-    scalar_type bspline_eta_value;
-    scalar_type bspline_eta_derivative;
+    ScalarType bspline_xi_value;
+    ScalarType bspline_xi_derivative;
+    ScalarType bspline_eta_value;
+    ScalarType bspline_eta_derivative;
 
     // define temporary int variable to compute the
     // number of the basis function from i,j
@@ -1334,8 +1334,8 @@ namespace Core::FE::Nurbs
     // -----------------------------------------------
 
     // alloc temporary variable, initialise to zero
-    scalar_type sum_funct_weight;
-    scalar_type sum_deriv_weight[2];
+    ScalarType sum_funct_weight;
+    ScalarType sum_deriv_weight[2];
 
     sum_funct_weight = 0.0;
     sum_deriv_weight[0] = 0.0;
@@ -1449,7 +1449,7 @@ namespace Core::FE::Nurbs
    * @brief Evaluate the 2D NURBS shape functions and their 1st derivatives based on the
    * discretization type of the element.
    */
-  template <typename scalar_type = double, class VF, class MD, class UV, class WG>
+  template <typename ScalarType = double, class VF, class MD, class UV, class WG>
   bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
       const std::vector<Core::LinAlg::SerialDenseVector>& knots, const WG& weights,
       const Core::FE::CellType& distype)
@@ -1458,12 +1458,12 @@ namespace Core::FE::Nurbs
     {
       case Core::FE::CellType::nurbs4:
       {
-        return nurbs_get_2D_funct_deriv<1, scalar_type>(
+        return nurbs_get_2D_funct_deriv<1, ScalarType>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
       }
       case Core::FE::CellType::nurbs9:
       {
-        return nurbs_get_2D_funct_deriv<2, scalar_type>(
+        return nurbs_get_2D_funct_deriv<2, ScalarType>(
             nurbs_shape_funct, nurbs_shape_deriv, uv, knots, weights);
       }
       default:

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 // Forward declaration.
 namespace GEOMETRYPAIR
 {
-  template <typename scalar_type, typename line, typename volume>
+  template <typename ScalarType, typename Line, typename Volume>
   class GeometryPairLineToVolumeGaussPointProjectionCrossSection;
 }  // namespace GEOMETRYPAIR
 
@@ -34,13 +34,13 @@ namespace BEAMINTERACTION
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam solid Type from GEOMETRYPAIR::ElementDiscretization... representing the solid.
    */
-  template <typename beam, typename solid>
+  template <typename Beam, typename Solid>
   class BeamToSolidVolumeMeshtyingPair2D3DBase
-      : public BeamToSolidVolumeMeshtyingPairBase<beam, solid>
+      : public BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidVolumeMeshtyingPairBase<beam, solid>;
+    using base_class = BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>;
 
     //! Type to be used for scalar AD variables. This can not be inherited from the base class.
     using scalar_type = typename base_class::scalar_type;
@@ -82,11 +82,11 @@ namespace BEAMINTERACTION
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
     inline Teuchos::RCP<
-        GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam, solid>>
+        GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, Beam, Solid>>
     cast_geometry_pair() const
     {
       return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::
-              GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, beam, solid>>(
+              GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, Beam, Solid>>(
           this->geometry_pair_, true);
     };
 

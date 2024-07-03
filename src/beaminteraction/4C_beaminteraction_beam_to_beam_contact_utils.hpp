@@ -37,10 +37,10 @@ namespace BEAMINTERACTION
   /*!
   \brief Get closest distance between the endpoints of two lines
   */
-  template <typename type>
-  type GetClosestEndpointDist(Core::LinAlg::Matrix<3, 1, type> r1_a,
-      Core::LinAlg::Matrix<3, 1, type> r1_b, Core::LinAlg::Matrix<3, 1, type> r2_a,
-      Core::LinAlg::Matrix<3, 1, type> r2_b);
+  template <typename Type>
+  Type GetClosestEndpointDist(Core::LinAlg::Matrix<3, 1, Type> r1_a,
+      Core::LinAlg::Matrix<3, 1, Type> r1_b, Core::LinAlg::Matrix<3, 1, Type> r2_a,
+      Core::LinAlg::Matrix<3, 1, Type> r2_b);
 
   /*!
   \brief Set primary displacement DoFs for automatic differentiation with Sacado

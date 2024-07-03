@@ -130,33 +130,33 @@ namespace ParticleInteraction
 
    private:
     //! communicate specific history pairs
-    template <typename historypairtype>
+    template <typename Historypairtype>
     void communicate_specific_history_pairs(const std::vector<std::vector<int>>& particletargets,
-        std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
+        std::unordered_map<int, std::unordered_map<int, std::pair<bool, Historypairtype>>>&
             historydata);
 
     //! erase untouched history pairs
-    template <typename historypairtype>
+    template <typename Historypairtype>
     void erase_untouched_history_pairs(
-        std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
+        std::unordered_map<int, std::unordered_map<int, std::pair<bool, Historypairtype>>>&
             historydata);
 
     //! pack all history pairs
-    template <typename historypairtype>
+    template <typename Historypairtype>
     void pack_all_history_pairs(std::vector<char>& buffer,
-        const std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
+        const std::unordered_map<int, std::unordered_map<int, std::pair<bool, Historypairtype>>>&
             historydata) const;
 
     //! unpack history pairs
-    template <typename historypairtype>
+    template <typename Historypairtype>
     void unpack_history_pairs(const std::vector<char>& buffer,
-        std::unordered_map<int, std::unordered_map<int, std::pair<bool, historypairtype>>>&
+        std::unordered_map<int, std::unordered_map<int, std::pair<bool, Historypairtype>>>&
             historydata);
 
     //! add history pair to buffer
-    template <typename historypairtype>
+    template <typename Historypairtype>
     void add_history_pair_to_buffer(std::vector<char>& buffer, int globalid_i, int globalid_j,
-        const historypairtype& historypair) const;
+        const Historypairtype& historypair) const;
 
     //! communication
     const Epetra_Comm& comm_;

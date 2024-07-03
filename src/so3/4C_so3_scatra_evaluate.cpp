@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la)
 {
   if (la.Size() > 1)
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::Param
 
     // If you need a pointer to the scatra material, use these lines:
     // we assume that the second material of the structure is the scatra element material
-    // Teuchos::RCP<Core::Mat::Material> scatramat = so3_ele::Material(1);
+    // Teuchos::RCP<Core::Mat::Material> scatramat = So3Ele::Material(1);
     // params.set< Teuchos::RCP<Core::Mat::Material> >("scatramat",scatramat);
   }
 
@@ -177,8 +177,8 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::pre_evaluate(Teuchos::Param
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Scatra<so3_ele, distype>::evaluate(Teuchos::ParameterList& params,
+template <class So3Ele, Core::FE::CellType distype>
+int Discret::ELEMENTS::So3Scatra<So3Ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -224,7 +224,7 @@ int Discret::ELEMENTS::So3Scatra<so3_ele, distype>::evaluate(Teuchos::ParameterL
     default:
     {
       // call the base class routine
-      so3_ele::evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
+      So3Ele::evaluate(params, discretization, la[0].lm_, elemat1_epetra, elemat2_epetra,
           elevec1_epetra, elevec2_epetra, elevec3_epetra);
       break;
     }  // default
@@ -236,8 +236,8 @@ int Discret::ELEMENTS::So3Scatra<so3_ele, distype>::evaluate(Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::get_cauchy_n_dir_and_derivatives_at_xi(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::get_cauchy_n_dir_and_derivatives_at_xi(
     const Core::LinAlg::Matrix<3, 1>& xi, const std::vector<double>& disp_nodal_values,
     const std::vector<double>& scalar_nodal_values, const Core::LinAlg::Matrix<3, 1>& n,
     const Core::LinAlg::Matrix<3, 1>& dir, double& cauchy_n_dir,
@@ -249,7 +249,7 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::get_cauchy_n_dir_and_deriva
       Discret::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar_nodal_values);
   double d_cauchyndir_ds_gp(0.0);
   // call base class
-  so3_ele::get_cauchy_n_dir_and_derivatives_at_xi(xi, disp_nodal_values, n, dir, cauchy_n_dir,
+  So3Ele::get_cauchy_n_dir_and_derivatives_at_xi(xi, disp_nodal_values, n, dir, cauchy_n_dir,
       d_cauchyndir_dd, nullptr, nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir,
       d_cauchyndir_dxi, nullptr, nullptr, nullptr, scalar_values_at_xi.data(), &d_cauchyndir_ds_gp);
 
@@ -269,8 +269,8 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::get_cauchy_n_dir_and_deriva
  | evaluate only the mechanical-scatra stiffness term     schmidt 10/17 |
  | for monolithic SSI, contribution to k_dS (private)                   |
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::nln_kd_s_ssi(
     Core::Elements::Element::LocationArray& la,
     std::vector<double>& disp,                         // current displacement
     Core::LinAlg::SerialDenseMatrix& stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
@@ -397,8 +397,8 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::nln_kd_s_ssi(
 /*----------------------------------------------------------------------*
  | calculate the nonlinear B-operator (private)           schmidt 10/17 |
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::calculate_bop(
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::calculate_bop(
     Core::LinAlg::Matrix<numstr_, numdofperelement_>* bop,  //!< (o): nonlinear B-operator
     const Core::LinAlg::Matrix<numdim_, numdim_>* defgrad,  //!< (i): deformation gradient
     const Core::LinAlg::Matrix<numdim_, numnod_>* N_XYZ)
@@ -469,8 +469,8 @@ void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::calculate_bop(
 /*----------------------------------------------------------------------*
  | initialize element (private)                            schmidt 10/17|
  *----------------------------------------------------------------------*/
-template <class so3_ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Scatra<so3_ele, distype>::InitElement()
+template <class So3Ele, Core::FE::CellType distype>
+void Discret::ELEMENTS::So3Scatra<So3Ele, distype>::InitElement()
 {
   // resize gauss point coordinates, inverse of the jacobian and determinant of the jacobian
   xsi_.resize(numgpt_);

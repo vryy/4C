@@ -550,7 +550,7 @@ void XFEM::XfluidTimeintBase::call_x_to_xi_coords(
 
 
 //! compute local element coordinates and check whether the according point is inside the element
-template <Core::FE::CellType DISTYPE>
+template <Core::FE::CellType distype>
 void XFEM::XfluidTimeintBase::x_to_xi_coords(
     Core::LinAlg::SerialDenseMatrix& xyz,  /// node coordinates of element
     Core::LinAlg::Matrix<3, 1>& x,         /// global coordinates of point
@@ -559,13 +559,13 @@ void XFEM::XfluidTimeintBase::x_to_xi_coords(
 ) const
 {
   const int nsd = 3;                                 // dimension
-  const int numnode = Core::FE::num_nodes<DISTYPE>;  // number of nodes of
+  const int numnode = Core::FE::num_nodes<distype>;  // number of nodes of
                                                      // element
 
   Core::LinAlg::Matrix<nsd, numnode> xyze(xyz);
 
   Teuchos::RCP<Core::Geo::Cut::Position> pos =
-      Core::Geo::Cut::PositionFactory::build_position<3, DISTYPE>(xyze, x);
+      Core::Geo::Cut::PositionFactory::build_position<3, distype>(xyze, x);
   pos->Compute();
   pos->local_coordinates(xi);  // local coordinates
 
@@ -574,7 +574,7 @@ void XFEM::XfluidTimeintBase::x_to_xi_coords(
 
 
 //! data at an arbitrary point lying in an element
-template <const int numnode, Core::FE::CellType DISTYPE>
+template <const int numnode, Core::FE::CellType distype>
 void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
     Core::Elements::Element* element,            /// pointer to element
     Core::LinAlg::Matrix<3, 1>& xi,              /// local coordinates of point w.r.t element
@@ -594,7 +594,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
 
   //-------------------------------------------------------
   Core::FE::shape_function_3D(
-      shapeFcn, xi(0), xi(1), xi(2), DISTYPE);  // evaluate shape functions at xi
+      shapeFcn, xi(0), xi(1), xi(2), distype);  // evaluate shape functions at xi
 
   if (compute_deriv)
   {
@@ -632,7 +632,7 @@ void XFEM::XfluidTimeintBase::eval_shape_and_deriv(
 
     // shape function derivatives w.r.t local coordinates
     Core::LinAlg::Matrix<3, numnode> shapeFcnDeriv;
-    Core::FE::shape_function_3D_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), DISTYPE);
+    Core::FE::shape_function_3D_deriv1(shapeFcnDeriv, xi(0), xi(1), xi(2), distype);
 
     Core::LinAlg::Matrix<nsd, nsd> xjm(true);    // jacobi matrix
     xjm.multiply_nt(shapeFcnDeriv, nodecoords);  // jacobian J = (dx/dxi)^T
@@ -1107,7 +1107,7 @@ void XFEM::XfluidStd::getGPValues(Core::Elements::Element* ele,  ///< pointer to
 
 
 //! interpolate velocity and derivatives for a point in an element
-template <Core::FE::CellType DISTYPE>
+template <Core::FE::CellType distype>
 void XFEM::XfluidStd::getGPValuesT(Core::Elements::Element* ele,  ///< pointer to element
     Core::LinAlg::Matrix<3, 1>& xi,             ///< local coordinates of point w.r.t element
     std::vector<int>& nds,                      ///< nodal dofset of point for elemental nodes
@@ -1125,7 +1125,7 @@ void XFEM::XfluidStd::getGPValuesT(Core::Elements::Element* ele,  ///< pointer t
   const int nsd = 3;  // dimension
 
   const int numdofpernode = nsd + 1;
-  const int numnode = Core::FE::num_nodes<DISTYPE>;  // number of element
+  const int numnode = Core::FE::num_nodes<distype>;  // number of element
                                                      // nodes
 
   //-------------------------------------------------------
@@ -1174,7 +1174,7 @@ void XFEM::XfluidStd::getGPValuesT(Core::Elements::Element* ele,  ///< pointer t
 
 
   //-------------------------------------------------------
-  eval_shape_and_deriv<numnode, DISTYPE>(ele, xi, xji, shapeFcn, shapeFcnDeriv, compute_deriv);
+  eval_shape_and_deriv<numnode, distype>(ele, xi, xji, shapeFcn, shapeFcnDeriv, compute_deriv);
 
   //-------------------------------------------------------
   // interpolate velocity and pressure values at starting point

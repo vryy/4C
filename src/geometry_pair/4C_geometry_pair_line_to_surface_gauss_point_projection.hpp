@@ -28,19 +28,19 @@ namespace GEOMETRYPAIR
    * @tparam line Type of line element.
    * @tparam volume Type of volume element.
    */
-  template <typename scalar_type, typename line, typename surface>
+  template <typename ScalarType, typename Line, typename Surface>
   class GeometryPairLineToSurfaceGaussPointProjection
-      : public GeometryPairLineToSurface<scalar_type, line, surface>
+      : public GeometryPairLineToSurface<ScalarType, Line, Surface>
   {
    public:
     //! Public alias for scalar type so that other classes can use this type.
-    using t_scalar_type = scalar_type;
+    using t_scalar_type = ScalarType;
 
     //! Public alias for line type so that other classes can use this type.
-    using t_line = line;
+    using t_line = Line;
 
     //! Public alias for surface type so that other classes can use this type.
-    using t_other = surface;
+    using t_other = Surface;
 
    public:
     /**
@@ -65,9 +65,9 @@ namespace GEOMETRYPAIR
      * @param segments (out) Vector with the segments of this line to volume pair.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void pre_evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<surface, scalar_type>& element_data_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const override;
+    void pre_evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Surface, ScalarType>& element_data_surface,
+        std::vector<LineSegment<ScalarType>>& segments) const override;
 
     /**
      * \brief Check if a Gauss point projected valid for this pair in pre_evaluate.
@@ -81,9 +81,9 @@ namespace GEOMETRYPAIR
      * @param segments (out) Vector with the segments of this line to volume pair.
      * @param nodal_normals (in) Optional - Normals on the nodes.
      */
-    void evaluate(const ElementData<line, scalar_type>& element_data_line,
-        const ElementData<surface, scalar_type>& element_data_surface,
-        std::vector<LineSegment<scalar_type>>& segments) const override;
+    void evaluate(const ElementData<Line, ScalarType>& element_data_line,
+        const ElementData<Surface, ScalarType>& element_data_surface,
+        std::vector<LineSegment<ScalarType>>& segments) const override;
 
    private:
     /**

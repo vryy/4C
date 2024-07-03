@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Geo
 {
   //! calculates the length of an element in given configuration
-  template <Core::FE::CellType distype, class matrixtype>
-  double ElementLengthT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
+  template <Core::FE::CellType distype, class Matrixtype>
+  double ElementLengthT(const Matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
     static constexpr int numnode = Core::FE::num_nodes<distype>;
@@ -60,8 +60,8 @@ namespace Core::Geo
   }
 
   //! calculates the area of an element in given configuration
-  template <Core::FE::CellType distype, class matrixtype>
-  double ElementAreaT(const matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
+  template <Core::FE::CellType distype, class Matrixtype>
+  double ElementAreaT(const Matrixtype& xyze)  ///> xyze nsd = 3 coords, number of nodes
   {
     // gaussian points
     static constexpr int numnode = Core::FE::num_nodes<distype>;
@@ -103,8 +103,8 @@ namespace Core::Geo
   }
 
   //! calculates the volume of an element in given configuration          u.may
-  template <Core::FE::CellType distype, class matrixtype>
-  double ElementVolumeT(const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes)
+  template <Core::FE::CellType distype, class Matrixtype>
+  double ElementVolumeT(const Matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes)
   )
   {
     // number of nodes for element
@@ -152,8 +152,8 @@ namespace Core::Geo
    *  \params xyze    (in) : spatial coordinates of the elememnt nodes
    *                         (row = dim, col = number of nodes)
    */
-  template <class matrixtype>
-  double ElementLength(const Core::FE::CellType& distype, const matrixtype& xyze)
+  template <class Matrixtype>
+  double ElementLength(const Core::FE::CellType& distype, const Matrixtype& xyze)
   {
     if (distype != Core::FE::CellType::line2 or xyze.numCols() != 2)
       FOUR_C_THROW("Currently only line2 elements are supported!");
@@ -170,8 +170,8 @@ namespace Core::Geo
 
   /** \brief calculates the area of a surface element in given configuration
    */
-  template <class matrixtype>
-  double ElementArea(const Core::FE::CellType distype, const matrixtype& xyze)
+  template <class Matrixtype>
+  double ElementArea(const Core::FE::CellType distype, const Matrixtype& xyze)
   {
     switch (distype)
     {
@@ -200,9 +200,9 @@ namespace Core::Geo
   }
 
   //! calculates the volume of an element in given configuration          u.may
-  template <class matrixtype>
+  template <class Matrixtype>
   double ElementVolume(const Core::FE::CellType distype,
-      const matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes
+      const Matrixtype& xyze  ///> xyze nsd = 3 coords, number of nodes
   )
   {
     switch (distype)

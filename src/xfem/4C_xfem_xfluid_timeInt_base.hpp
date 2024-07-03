@@ -553,7 +553,7 @@ namespace XFEM
 
     //! compute local element coordinates and check whether the according point is inside the
     //! element
-    template <Core::FE::CellType DISTYPE>
+    template <Core::FE::CellType distype>
     void x_to_xi_coords(Core::LinAlg::SerialDenseMatrix& xyz,  /// node coordinates of element
         Core::LinAlg::Matrix<3, 1>& x,                         /// global coordinates of point
         Core::LinAlg::Matrix<3, 1>& xi,  /// determined local coordinates w.r.t ele
@@ -561,7 +561,7 @@ namespace XFEM
     ) const;
 
     //! data at an arbitrary point lying in an element
-    template <const int numnode, Core::FE::CellType DISTYPE>
+    template <const int numnode, Core::FE::CellType distype>
     void eval_shape_and_deriv(Core::Elements::Element* element,  /// pointer to element
         Core::LinAlg::Matrix<3, 1>& xi,              /// local coordinates of point w.r.t element
         Core::LinAlg::Matrix<3, 3>& xji,             /// inverse of jacobian
@@ -686,7 +686,7 @@ namespace XFEM
     ) const;
 
     //! interpolate velocity and derivatives for a point in an element
-    template <Core::FE::CellType DISTYPE>
+    template <Core::FE::CellType distype>
     void getGPValuesT(Core::Elements::Element* ele,  ///< pointer to element
         Core::LinAlg::Matrix<3, 1>& xi,              ///< local coordinates of point w.r.t element
         std::vector<int>& nds,                       ///< nodal dofset of point for elemental nodes

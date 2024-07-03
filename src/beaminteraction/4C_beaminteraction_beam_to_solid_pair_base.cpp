@@ -26,9 +26,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
-    solid>::BeamToSolidPairBase()
+template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
+BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
+    Solid>::BeamToSolidPairBase()
     : BeamContactPair(), line_to_3D_segments_()
 {
 }
@@ -37,8 +37,8 @@ BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
 /**
  *
  */
-template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::setup()
+template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::setup()
 {
   check_init();
 
@@ -46,18 +46,18 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
   BeamContactPair::setup();
 
   // Get the beam element data container
-  ele1posref_ = GEOMETRYPAIR::InitializeElementData<beam, double>::initialize(Element1());
-  ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::initialize(Element1());
+  ele1posref_ = GEOMETRYPAIR::InitializeElementData<Beam, double>::initialize(Element1());
+  ele1pos_ = GEOMETRYPAIR::InitializeElementData<Beam, ScalarType>::initialize(Element1());
 
   // Set reference nodal positions (and tangents) for beam element
-  for (unsigned int n = 0; n < beam::n_nodes_; ++n)
+  for (unsigned int n = 0; n < Beam::n_nodes_; ++n)
   {
     const Core::Nodes::Node* node = Element1()->Nodes()[n];
     for (int d = 0; d < 3; ++d)
-      ele1posref_.element_position_(3 * beam::n_val_ * n + d) = node->X()[d];
+      ele1posref_.element_position_(3 * Beam::n_val_ * n + d) = node->X()[d];
 
     // tangents
-    if (beam::n_val_ == 2)
+    if (Beam::n_val_ == 2)
     {
       Core::LinAlg::Matrix<3, 1> tan;
       const Core::Elements::ElementType& eot = Element1()->ElementType();
@@ -91,12 +91,12 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
       }
 
       for (int d = 0; d < 3; ++d)
-        ele1posref_.element_position_(3 * beam::n_val_ * n + d + 3) = tan(d, 0);
+        ele1posref_.element_position_(3 * Beam::n_val_ * n + d + 3) = tan(d, 0);
     }
   }
 
   // Initialize current nodal positions (and tangents) for beam element
-  for (unsigned int i = 0; i < beam::n_dof_; i++) ele1pos_.element_position_(i) = 0.0;
+  for (unsigned int i = 0; i < Beam::n_dof_; i++) ele1pos_.element_position_(i) = 0.0;
 
   issetup_ = true;
 }
@@ -104,23 +104,23 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
 /**
  *
  */
-template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
-    solid>::ResetState(const std::vector<double>& beam_centerline_dofvec,
+template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::ResetState(
+    const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
   // Set the current configuration of the beam element
-  ele1pos_ = GEOMETRYPAIR::InitializeElementData<beam, scalar_type>::initialize(Element1());
-  for (unsigned int i = 0; i < beam::n_dof_; i++)
-    ele1pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
-        beam::n_dof_ + solid::n_dof_, i, beam_centerline_dofvec[i]);
+  ele1pos_ = GEOMETRYPAIR::InitializeElementData<Beam, ScalarType>::initialize(Element1());
+  for (unsigned int i = 0; i < Beam::n_dof_; i++)
+    ele1pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<ScalarType>::apply(
+        Beam::n_dof_ + Solid::n_dof_, i, beam_centerline_dofvec[i]);
 }
 
 /**
  *
  */
-template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::
+template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::
     set_restart_displacement(const std::vector<std::vector<double>>& centerline_restart_vec_)
 {
   // Call the parent method.
@@ -130,8 +130,8 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
 /**
  *
  */
-template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam, solid>::print(
+template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, Solid>::print(
     std::ostream& out) const
 {
   check_init_setup();
@@ -150,9 +150,9 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
 /**
  *
  */
-template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
-    solid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
+template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
+    Solid>::print_summary_one_line_per_active_segment_pair(std::ostream& out) const
 {
   check_init_setup();
 
@@ -179,17 +179,17 @@ void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, bea
 /**
  *
  */
-template <typename scalar_type, typename segments_scalar_type, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidPairBase<scalar_type, segments_scalar_type, beam,
-    solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
+template <typename ScalarType, typename SegmentsScalarType, typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
+    Solid>::evaluate_beam_position_double(const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>&
                                               integration_point,
     Core::LinAlg::Matrix<3, 1, double>& r_beam, bool reference) const
 {
   if (reference)
-    GEOMETRYPAIR::EvaluatePosition<beam>(integration_point.GetEta(), ele1posref_, r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.GetEta(), ele1posref_, r_beam);
   else
-    GEOMETRYPAIR::EvaluatePosition<beam>(integration_point.GetEta(),
-        GEOMETRYPAIR::ElementDataToDouble<beam>::ToDouble(ele1pos_), r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(integration_point.GetEta(),
+        GEOMETRYPAIR::ElementDataToDouble<Beam>::ToDouble(ele1pos_), r_beam);
 }
 
 

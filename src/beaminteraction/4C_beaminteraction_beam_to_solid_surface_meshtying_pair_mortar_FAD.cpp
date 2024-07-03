@@ -31,9 +31,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::BeamToSolidSurfaceMeshtyingPairMortarFAD()
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
+    Mortar>::BeamToSolidSurfaceMeshtyingPairMortarFAD()
     : base_class()
 {
   // Empty constructor.
@@ -42,9 +42,9 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, sur
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssemble(const Core::FE::Discretization& discret,
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
+    Mortar>::EvaluateAndAssemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -65,15 +65,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
   std::vector<double> local_lambda_pos;
   Core::FE::ExtractMyValues(global_lambda, local_lambda_pos, lambda_gid_pos);
-  auto q_lambda = GEOMETRYPAIR::InitializeElementData<mortar, double>::initialize(nullptr);
+  auto q_lambda = GEOMETRYPAIR::InitializeElementData<Mortar, double>::initialize(nullptr);
   q_lambda.element_position_ =
-      Core::LinAlg::Matrix<mortar::n_dof_, 1, double>(local_lambda_pos.data());
+      Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>(local_lambda_pos.data());
 
   // Initialize variables for local values.
-  Core::LinAlg::Matrix<3, 1, scalar_type> coupling_vector(true);
+  Core::LinAlg::Matrix<3, 1, ScalarType> coupling_vector(true);
   Core::LinAlg::Matrix<3, 1, double> lambda(true);
   Core::LinAlg::Matrix<3, 1, double> dr_beam_ref(true);
-  scalar_type potential = 0.0;
+  ScalarType potential = 0.0;
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -95,7 +95,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
@@ -103,7 +103,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
 
       // Get the Gauss point contribution to the coupling potential.
       coupling_vector = this->evaluate_coupling(projected_gauss_point);
-      GEOMETRYPAIR::EvaluatePosition<mortar>(projected_gauss_point.GetEta(), q_lambda, lambda);
+      GEOMETRYPAIR::EvaluatePosition<Mortar>(projected_gauss_point.GetEta(), q_lambda, lambda);
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         potential += coupling_vector(i_dim) * lambda(i_dim) *
                      projected_gauss_point.GetGaussWeight() * segment_jacobian;
@@ -124,9 +124,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface,
-    mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
+    Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
     Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
@@ -148,11 +148,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for local values.
-  Core::LinAlg::Matrix<3, 1, scalar_type> coupling_vector(true);
-  Core::LinAlg::Matrix<mortar::n_dof_, 1, scalar_type> constraint_vector(true);
-  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_kappa(true);
+  Core::LinAlg::Matrix<3, 1, ScalarType> coupling_vector(true);
+  Core::LinAlg::Matrix<Mortar::n_dof_, 1, ScalarType> constraint_vector(true);
+  Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> local_kappa(true);
   Core::LinAlg::Matrix<3, 1, double> dr_beam_ref(true);
-  Core::LinAlg::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
+  Core::LinAlg::Matrix<1, Mortar::n_nodes_ * Mortar::n_val_, double> N_mortar(true);
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -174,39 +174,39 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
       segment_jacobian = dr_beam_ref.norm2() * beam_segmentation_factor;
 
       // Get the mortar shape functions.
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<Mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
 
       // Fill in the local mortar scaling vector kappa.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
+      for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-            local_kappa(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
-                N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
+            local_kappa(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
+                N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
                 projected_gauss_point.GetGaussWeight() * segment_jacobian;
 
       // Get the constraint vector. This is the coupling potentials variation w.r.t the discrete
       // Lagrange multiplier DOFs.
       coupling_vector = this->evaluate_coupling(projected_gauss_point);
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
+      for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-            constraint_vector(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
-                N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) * coupling_vector(i_dim) *
+            constraint_vector(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
+                N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) * coupling_vector(i_dim) *
                 projected_gauss_point.GetGaussWeight() * segment_jacobian;
     }
   }
 
 
   // Get the beam centerline GIDs.
-  Core::LinAlg::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
   BEAMINTERACTION::UTILS::GetElementCenterlineGIDIndices(
       discret, this->Element1(), beam_centerline_gid);
 
@@ -217,8 +217,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
   const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
 
   // Assemble into the matrices related to beam DOFs.
-  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
-    for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+  for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
+    for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; i_beam++)
     {
       const double val = Core::FADUtils::CastToDouble(constraint_vector(i_lambda).dx(i_beam));
       global_constraint_lin_beam.FEAssemble(
@@ -228,17 +228,17 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
     }
 
   // Assemble into the matrices related to solid DOFs.
-  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+  for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
     for (unsigned int i_patch = 0; i_patch < patch_gid.size(); i_patch++)
     {
       const double val =
-          Core::FADUtils::CastToDouble(constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch));
+          Core::FADUtils::CastToDouble(constraint_vector(i_lambda).dx(Beam::n_dof_ + i_patch));
       global_constraint_lin_solid.FEAssemble(val, lambda_gid_pos[i_lambda], patch_gid[i_patch]);
       global_force_solid_lin_lambda.FEAssemble(val, patch_gid[i_patch], lambda_gid_pos[i_lambda]);
     }
 
   // Assemble into global coupling vector.
-  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> constraint_vector_double =
+  Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> constraint_vector_double =
       Core::FADUtils::CastToDouble(constraint_vector);
   global_constraint.SumIntoGlobalValues(
       lambda_gid_pos.size(), lambda_gid_pos.data(), constraint_vector_double.data());
@@ -257,17 +257,17 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam
 /**
  *
  */
-template <typename surface, typename scalar_type_basis>
+template <typename Surface, typename ScalarTypeBasis>
 void GetSurfaceBasis(const Core::LinAlg::Matrix<3, 1, double>& xi,
-    const GEOMETRYPAIR::ElementData<surface, scalar_type_basis>& q_solid,
-    Core::LinAlg::Matrix<3, 3, scalar_type_basis>& surface_basis)
+    const GEOMETRYPAIR::ElementData<Surface, ScalarTypeBasis>& q_solid,
+    Core::LinAlg::Matrix<3, 3, ScalarTypeBasis>& surface_basis)
 {
   // Calculate surface basis vectors in the surface plane.
-  Core::LinAlg::Matrix<3, 2, scalar_type_basis> dr_surf(true);
-  GEOMETRYPAIR::EvaluatePositionDerivative1<surface>(xi, q_solid, dr_surf);
+  Core::LinAlg::Matrix<3, 2, ScalarTypeBasis> dr_surf(true);
+  GEOMETRYPAIR::EvaluatePositionDerivative1<Surface>(xi, q_solid, dr_surf);
 
-  Core::LinAlg::Matrix<3, 1, scalar_type_basis> dr_surf_0;
-  Core::LinAlg::Matrix<3, 1, scalar_type_basis> dr_surf_1;
+  Core::LinAlg::Matrix<3, 1, ScalarTypeBasis> dr_surf_0;
+  Core::LinAlg::Matrix<3, 1, ScalarTypeBasis> dr_surf_1;
   for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
   {
     dr_surf_0(i_dir) = dr_surf(i_dir, 0);
@@ -275,7 +275,7 @@ void GetSurfaceBasis(const Core::LinAlg::Matrix<3, 1, double>& xi,
   }
 
   // Calculate normal on the basis vectors.
-  Core::LinAlg::Matrix<3, 1, scalar_type_basis> element_surface_normal;
+  Core::LinAlg::Matrix<3, 1, ScalarTypeBasis> element_surface_normal;
   element_surface_normal.cross_product(dr_surf_0, dr_surf_1);
   element_surface_normal.scale(1.0 / Core::FADUtils::VectorNorm(element_surface_normal));
 
@@ -291,12 +291,12 @@ void GetSurfaceBasis(const Core::LinAlg::Matrix<3, 1, double>& xi,
 /**
  *
  */
-template <typename surface, typename scalar_type_rot_vec>
+template <typename Surface, typename ScalarTypeRotVec>
 void GetSurfaceRotationVectorAveraged(const Core::LinAlg::Matrix<3, 1, double>& xi,
-    const GEOMETRYPAIR::ElementData<surface, double>& q_solid_ref,
-    const GEOMETRYPAIR::ElementData<surface, scalar_type_rot_vec>& q_solid,
+    const GEOMETRYPAIR::ElementData<Surface, double>& q_solid_ref,
+    const GEOMETRYPAIR::ElementData<Surface, ScalarTypeRotVec>& q_solid,
     const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
-    Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec>& psi_solid)
+    Core::LinAlg::Matrix<3, 1, ScalarTypeRotVec>& psi_solid)
 {
   // Get beam basis vectors in reference configuration.
   Core::LinAlg::Matrix<3, 3, double> triad_beam_ref(true);
@@ -304,19 +304,19 @@ void GetSurfaceRotationVectorAveraged(const Core::LinAlg::Matrix<3, 1, double>& 
 
   // Calculate surface basis coordinate transformation matrix.
   Core::LinAlg::Matrix<3, 3, double> surface_basis_ref_inverse;
-  GetSurfaceBasis<surface>(xi, q_solid_ref, surface_basis_ref_inverse);
+  GetSurfaceBasis<Surface>(xi, q_solid_ref, surface_basis_ref_inverse);
   Core::LinAlg::Inverse(surface_basis_ref_inverse);
 
   // Calculate the current surface basis vectors.
-  Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_basis_current;
-  GetSurfaceBasis<surface>(xi, q_solid, surface_basis_current);
+  Core::LinAlg::Matrix<3, 3, ScalarTypeRotVec> surface_basis_current;
+  GetSurfaceBasis<Surface>(xi, q_solid, surface_basis_current);
 
   // Calculate the in plane surface deformation gradient.
-  Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_basis_ref_inverse_scalar_type;
+  Core::LinAlg::Matrix<3, 3, ScalarTypeRotVec> surface_basis_ref_inverse_scalar_type;
   for (unsigned int i_row = 0; i_row < 3; i_row++)
     for (unsigned int i_col = 0; i_col < 3; i_col++)
       surface_basis_ref_inverse_scalar_type(i_row, i_col) = surface_basis_ref_inverse(i_row, i_col);
-  Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_F;
+  Core::LinAlg::Matrix<3, 3, ScalarTypeRotVec> surface_F;
   surface_F.multiply(surface_basis_current, surface_basis_ref_inverse_scalar_type);
 
   // Get the solid rotation vector from the deformation gradient via construction in the cross
@@ -328,12 +328,12 @@ void GetSurfaceRotationVectorAveraged(const Core::LinAlg::Matrix<3, 1, double>& 
 /**
  *
  */
-template <typename surface, typename scalar_type_rot_vec>
+template <typename Surface, typename ScalarTypeRotVec>
 void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 1, double>& xi,
-    const GEOMETRYPAIR::ElementData<surface, double>& q_solid_ref,
-    const GEOMETRYPAIR::ElementData<surface, scalar_type_rot_vec>& q_solid,
+    const GEOMETRYPAIR::ElementData<Surface, double>& q_solid_ref,
+    const GEOMETRYPAIR::ElementData<Surface, ScalarTypeRotVec>& q_solid,
     const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
-    Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec>& psi_solid)
+    Core::LinAlg::Matrix<3, 1, ScalarTypeRotVec>& psi_solid)
 {
   // Get beam basis vectors in reference configuration.
   Core::LinAlg::Matrix<3, 3, double> triad_beam_ref(true);
@@ -341,11 +341,11 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
 
   // Get the surface basis vectors in the reference configuration.
   Core::LinAlg::Matrix<3, 3, double> surface_basis_ref;
-  GetSurfaceBasis<surface>(xi, q_solid_ref, surface_basis_ref);
+  GetSurfaceBasis<Surface>(xi, q_solid_ref, surface_basis_ref);
 
   // Get the surface basis vectors in the current configuration.
-  Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_basis_current;
-  GetSurfaceBasis<surface>(xi, q_solid, surface_basis_current);
+  Core::LinAlg::Matrix<3, 3, ScalarTypeRotVec> surface_basis_current;
+  GetSurfaceBasis<Surface>(xi, q_solid, surface_basis_current);
 
   // Get the surface material director (the intersection between the beam cross-section and the
   // surface tangent plane).
@@ -381,30 +381,30 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
   Core::LinAlg::Matrix<3, 3, double> surface_basis_ref_inverse;
   surface_basis_ref_inverse = surface_basis_ref;
   Core::LinAlg::Inverse(surface_basis_ref_inverse);
-  Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_basis_ref_inverse_scalar_type;
+  Core::LinAlg::Matrix<3, 3, ScalarTypeRotVec> surface_basis_ref_inverse_scalar_type;
   for (unsigned int i_row = 0; i_row < 3; i_row++)
     for (unsigned int i_col = 0; i_col < 3; i_col++)
       surface_basis_ref_inverse_scalar_type(i_row, i_col) = surface_basis_ref_inverse(i_row, i_col);
-  Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_F;
+  Core::LinAlg::Matrix<3, 3, ScalarTypeRotVec> surface_F;
   surface_F.multiply(surface_basis_current, surface_basis_ref_inverse_scalar_type);
 
   // Get the current material director.
-  Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_ref_fad;
+  Core::LinAlg::Matrix<3, 1, ScalarTypeRotVec> surface_material_director_ref_fad;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     surface_material_director_ref_fad(i_dim) = surface_material_director_ref(i_dim);
-  Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_current;
+  Core::LinAlg::Matrix<3, 1, ScalarTypeRotVec> surface_material_director_current;
   surface_material_director_current.multiply(surface_F, surface_material_director_ref_fad);
   surface_material_director_current.scale(
       1.0 / Core::FADUtils::VectorNorm(surface_material_director_current));
 
   // Get the current triad of the surface.
-  Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec> surface_normal_current;
+  Core::LinAlg::Matrix<3, 1, ScalarTypeRotVec> surface_normal_current;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     surface_normal_current(i_dim) = surface_basis_current(i_dim, 2);
-  Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec> surface_material_director_perpendicular_current;
+  Core::LinAlg::Matrix<3, 1, ScalarTypeRotVec> surface_material_director_perpendicular_current;
   surface_material_director_perpendicular_current.cross_product(
       surface_material_director_current, surface_normal_current);
-  Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_triad_current;
+  Core::LinAlg::Matrix<3, 3, ScalarTypeRotVec> surface_triad_current;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
   {
     surface_triad_current(i_dim, 0) = surface_material_director_current(i_dim);
@@ -413,20 +413,20 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
   }
 
   // Add the offset to the surface triad.
-  Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_triad_offset_fad;
+  Core::LinAlg::Matrix<3, 3, ScalarTypeRotVec> surface_triad_offset_fad;
   for (unsigned int i_row = 0; i_row < 3; i_row++)
     for (unsigned int i_col = 0; i_col < 3; i_col++)
       surface_triad_offset_fad(i_row, i_col) = surface_triad_offset(i_row, i_col);
-  Core::LinAlg::Matrix<3, 3, scalar_type_rot_vec> surface_triad_current_with_offset;
+  Core::LinAlg::Matrix<3, 3, ScalarTypeRotVec> surface_triad_current_with_offset;
   surface_triad_current_with_offset.multiply(surface_triad_current, surface_triad_offset_fad);
 
   // Get the rotation angle.
-  Core::LinAlg::Matrix<4, 1, scalar_type_rot_vec> rot_quat;
+  Core::LinAlg::Matrix<4, 1, ScalarTypeRotVec> rot_quat;
   Core::LargeRotations::triadtoquaternion(surface_triad_current_with_offset, rot_quat);
   Core::LargeRotations::quaterniontoangle(rot_quat, psi_solid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec> current_normal;
+  Core::LinAlg::Matrix<3, 1, ScalarTypeRotVec> current_normal;
   for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
     current_normal(i_dim) = surface_basis_current(i_dim, 2);
   if (abs(surface_material_director_current.dot(current_normal)) > 1e-10)
@@ -437,24 +437,24 @@ void GetSurfaceRotationVectorCrossSectionDirector(const Core::LinAlg::Matrix<3, 
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-template <typename scalar_type_rot_vec>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::get_surface_rotation_vector(const Core::LinAlg::Matrix<3, 1, double>& xi,
-    const GEOMETRYPAIR::ElementData<surface, double>& q_solid_ref,
-    const GEOMETRYPAIR::ElementData<surface, scalar_type_rot_vec>& q_solid,
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+template <typename ScalarTypeRotVec>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
+    Mortar>::get_surface_rotation_vector(const Core::LinAlg::Matrix<3, 1, double>& xi,
+    const GEOMETRYPAIR::ElementData<Surface, double>& q_solid_ref,
+    const GEOMETRYPAIR::ElementData<Surface, ScalarTypeRotVec>& q_solid,
     const Core::LinAlg::Matrix<4, 1, double>& quaternion_beam_ref,
     const Inpar::BeamToSolid::BeamToSolidSurfaceRotationCoupling surface_triad_type,
-    Core::LinAlg::Matrix<3, 1, scalar_type_rot_vec>& psi_solid) const
+    Core::LinAlg::Matrix<3, 1, ScalarTypeRotVec>& psi_solid) const
 {
   switch (surface_triad_type)
   {
     case Inpar::BeamToSolid::BeamToSolidSurfaceRotationCoupling::averaged:
-      GetSurfaceRotationVectorAveraged<surface>(
+      GetSurfaceRotationVectorAveraged<Surface>(
           xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid);
       break;
     case Inpar::BeamToSolid::BeamToSolidSurfaceRotationCoupling::surface_cross_section_director:
-      GetSurfaceRotationVectorCrossSectionDirector<surface>(
+      GetSurfaceRotationVectorCrossSectionDirector<Surface>(
           xi, q_solid_ref, q_solid, quaternion_beam_ref, psi_solid);
       break;
     default:
@@ -466,9 +466,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssemble(const Core::FE::Discretization& discret,
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
+    Mortar>::EvaluateAndAssemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -491,11 +491,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
   // Set the FAD variables for the solid DOFs. For the terms calculated here we need second
   // order derivatives.
-  GEOMETRYPAIR::ElementData<surface, scalar_type_rot_2nd> q_surface;
+  GEOMETRYPAIR::ElementData<Surface, scalar_type_rot_2nd> q_surface;
   q_surface.shape_function_data_ = this->face_element_->GetFaceElementData().shape_function_data_;
-  for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+  for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
     q_surface.element_position_(i_surface) =
-        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + surface::n_dof_,
+        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_2nd>::apply(3 + Surface::n_dof_,
             3 + i_surface,
             Core::FADUtils::CastToDouble(
                 this->face_element_->GetFaceElementData().element_position_(i_surface)));
@@ -504,8 +504,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
   const auto& [_, lambda_gid_rot] = mortar_manager->LocationVector(*this);
   std::vector<double> lambda_rot_double;
   Core::FE::ExtractMyValues(global_lambda, lambda_rot_double, lambda_gid_rot);
-  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> lambda_rot;
-  for (unsigned int i_dof = 0; i_dof < mortar::n_dof_; i_dof++)
+  Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> lambda_rot;
+  for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
     lambda_rot(i_dof) = lambda_rot_double[i_dof];
 
   // Get the type of surface triad construction.
@@ -514,9 +514,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
   // Initialize local matrices.
   Core::LinAlg::Matrix<n_dof_rot_, n_dof_rot_, double> local_stiff_BB(true);
-  Core::LinAlg::Matrix<n_dof_rot_, surface::n_dof_, double> local_stiff_BS(true);
-  Core::LinAlg::Matrix<surface::n_dof_, n_dof_rot_, double> local_stiff_SB(true);
-  Core::LinAlg::Matrix<surface::n_dof_, surface::n_dof_, double> local_stiff_SS(true);
+  Core::LinAlg::Matrix<n_dof_rot_, Surface::n_dof_, double> local_stiff_BS(true);
+  Core::LinAlg::Matrix<Surface::n_dof_, n_dof_rot_, double> local_stiff_SB(true);
+  Core::LinAlg::Matrix<Surface::n_dof_, Surface::n_dof_, double> local_stiff_SS(true);
 
   // Evaluate the pair wise terms.
   {
@@ -538,28 +538,28 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
     Core::LinAlg::Matrix<3, 3, scalar_type_rot_1st> T_surface_inv;
     Core::LinAlg::Matrix<3, 3, scalar_type_rot_1st> T_rel;
 
-    Core::LinAlg::Matrix<mortar::n_nodes_, 1, double> lambda_shape_functions;
-    Core::LinAlg::Matrix<3, mortar::n_dof_, scalar_type_rot_1st> lambda_shape_functions_full(true);
+    Core::LinAlg::Matrix<Mortar::n_nodes_, 1, double> lambda_shape_functions;
+    Core::LinAlg::Matrix<3, Mortar::n_dof_, scalar_type_rot_1st> lambda_shape_functions_full(true);
     Core::LinAlg::SerialDenseVector L_i(3);
     Core::LinAlg::Matrix<3, n_dof_rot_, scalar_type_rot_1st> L_full(true);
     std::vector<Core::LinAlg::Matrix<3, 3, double>> I_beam_tilde;
     Core::LinAlg::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
     Core::LinAlg::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
-    Core::LinAlg::Matrix<3, mortar::n_dof_, scalar_type_rot_1st> T_rel_tr_times_lambda_shape;
-    Core::LinAlg::Matrix<3, mortar::n_dof_, scalar_type_rot_1st>
+    Core::LinAlg::Matrix<3, Mortar::n_dof_, scalar_type_rot_1st> T_rel_tr_times_lambda_shape;
+    Core::LinAlg::Matrix<3, Mortar::n_dof_, scalar_type_rot_1st>
         T_surface_mtr_times_T_rel_tr_times_lambda_shape;
-    Core::LinAlg::Matrix<n_dof_rot_, mortar::n_dof_, scalar_type_rot_1st> d_fb_d_lambda_gp;
-    Core::LinAlg::Matrix<surface::n_dof_, mortar::n_dof_, scalar_type_rot_1st> d_fs_d_lambda_gp;
-    Core::LinAlg::Matrix<3, surface::n_dof_, scalar_type_rot_1st> d_psi_surface_d_q_surface;
-    Core::LinAlg::Matrix<mortar::n_dof_, 3, double> d_g_d_psi_beam;
-    Core::LinAlg::Matrix<mortar::n_dof_, surface::n_dof_, double> d_g_d_q_surface;
+    Core::LinAlg::Matrix<n_dof_rot_, Mortar::n_dof_, scalar_type_rot_1st> d_fb_d_lambda_gp;
+    Core::LinAlg::Matrix<Surface::n_dof_, Mortar::n_dof_, scalar_type_rot_1st> d_fs_d_lambda_gp;
+    Core::LinAlg::Matrix<3, Surface::n_dof_, scalar_type_rot_1st> d_psi_surface_d_q_surface;
+    Core::LinAlg::Matrix<Mortar::n_dof_, 3, double> d_g_d_psi_beam;
+    Core::LinAlg::Matrix<Mortar::n_dof_, Surface::n_dof_, double> d_g_d_q_surface;
     Core::LinAlg::Matrix<n_dof_rot_, 1, scalar_type_rot_1st> f_beam;
-    Core::LinAlg::Matrix<surface::n_dof_, 1, scalar_type_rot_1st> f_surface;
+    Core::LinAlg::Matrix<Surface::n_dof_, 1, scalar_type_rot_1st> f_surface;
     Core::LinAlg::Matrix<n_dof_rot_, 3, double> d_f_beam_d_phi;
-    Core::LinAlg::Matrix<surface::n_dof_, 3, double> d_f_surface_d_phi;
+    Core::LinAlg::Matrix<Surface::n_dof_, 3, double> d_f_surface_d_phi;
     Core::LinAlg::Matrix<n_dof_rot_, n_dof_rot_, double>
         d_f_beam_d_phi_times_T_beam_times_I_beam_tilde_full;
-    Core::LinAlg::Matrix<surface::n_dof_, n_dof_rot_, double>
+    Core::LinAlg::Matrix<Surface::n_dof_, n_dof_rot_, double>
         d_f_surface_d_phi_times_T_beam_times_I_beam_tilde_full;
 
     // Initialize scalar variables.
@@ -582,7 +582,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
         // Get the jacobian in the reference configuration.
-        GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+        GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
             projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
         // Jacobian including the segment length.
@@ -594,7 +594,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         Core::LargeRotations::quaterniontoangle(quaternion_beam_double, psi_beam_double);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           psi_beam(i_dim) = Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(
-              3 + surface::n_dof_, i_dim, psi_beam_double(i_dim));
+              3 + Surface::n_dof_, i_dim, psi_beam_double(i_dim));
         Core::LargeRotations::angletoquaternion(psi_beam, quaternion_beam);
         quaternion_beam_inv = Core::LargeRotations::inversequaternion(quaternion_beam);
 
@@ -621,9 +621,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         Core::LinAlg::Inverse(T_surface_inv);
 
         // Evaluate mortar shape functions.
-        GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
+        GEOMETRYPAIR::EvaluateShapeFunction<Mortar>::evaluate(
             lambda_shape_functions, projected_gauss_point.GetEta());
-        for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
+        for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
 
@@ -645,7 +645,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
         // Solid angle derived w.r.t. the surface DOFs.
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-          for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+          for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
             d_psi_surface_d_q_surface(i_dim, i_surface) = psi_surface(i_dim).dx(3 + i_surface);
 
         // Calculate the force terms derived w.r.t. the Lagrange multipliers.
@@ -662,18 +662,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // Calculate the force vectors.
         f_beam.put_scalar(0.0);
         for (unsigned int i_row = 0; i_row < n_dof_rot_; i_row++)
-          for (unsigned int i_col = 0; i_col < mortar::n_dof_; i_col++)
+          for (unsigned int i_col = 0; i_col < Mortar::n_dof_; i_col++)
             f_beam(i_row) += d_fb_d_lambda_gp(i_row, i_col) * lambda_rot(i_col);
         f_surface.put_scalar(0.0);
-        for (unsigned int i_row = 0; i_row < surface::n_dof_; i_row++)
-          for (unsigned int i_col = 0; i_col < mortar::n_dof_; i_col++)
+        for (unsigned int i_row = 0; i_row < Surface::n_dof_; i_row++)
+          for (unsigned int i_col = 0; i_col < Mortar::n_dof_; i_col++)
             f_surface(i_row) += d_fs_d_lambda_gp(i_row, i_col) * lambda_rot(i_col);
 
         // Derivatives of the force vectors.
         for (unsigned int i_row = 0; i_row < n_dof_rot_; i_row++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             d_f_beam_d_phi(i_row, i_dim) = f_beam(i_row).dx(i_dim);
-        for (unsigned int i_row = 0; i_row < surface::n_dof_; i_row++)
+        for (unsigned int i_row = 0; i_row < Surface::n_dof_; i_row++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             d_f_surface_d_phi(i_row, i_dim) = f_surface(i_row).dx(i_dim);
 
@@ -686,11 +686,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // Add to output matrices and vector.
         local_stiff_BB += d_f_beam_d_phi_times_T_beam_times_I_beam_tilde_full;
         for (unsigned int i_beam = 0; i_beam < n_dof_rot_; i_beam++)
-          for (unsigned int j_surface = 0; j_surface < surface::n_dof_; j_surface++)
+          for (unsigned int j_surface = 0; j_surface < Surface::n_dof_; j_surface++)
             local_stiff_BS(i_beam, j_surface) += f_beam(i_beam).dx(3 + j_surface);
         local_stiff_SB += d_f_surface_d_phi_times_T_beam_times_I_beam_tilde_full;
-        for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
-          for (unsigned int j_surface = 0; j_surface < surface::n_dof_; j_surface++)
+        for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
+          for (unsigned int j_surface = 0; j_surface < Surface::n_dof_; j_surface++)
             local_stiff_SS(i_surface, j_surface) += f_surface(i_surface).dx(3 + j_surface);
       }
     }
@@ -707,16 +707,16 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
     for (unsigned int j_dof_beam = 0; j_dof_beam < n_dof_rot_; j_dof_beam++)
       stiffness_matrix->FEAssemble(
           local_stiff_BB(i_dof_beam, j_dof_beam), gid_rot(i_dof_beam), gid_rot(j_dof_beam));
-    for (unsigned int j_dof_surface = 0; j_dof_surface < surface::n_dof_; j_dof_surface++)
+    for (unsigned int j_dof_surface = 0; j_dof_surface < Surface::n_dof_; j_dof_surface++)
       stiffness_matrix->FEAssemble(local_stiff_BS(i_dof_beam, j_dof_surface), gid_rot(i_dof_beam),
           gid_surface[j_dof_surface]);
   }
-  for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
+  for (unsigned int i_dof_surface = 0; i_dof_surface < Surface::n_dof_; i_dof_surface++)
   {
     for (unsigned int j_dof_beam = 0; j_dof_beam < n_dof_rot_; j_dof_beam++)
       stiffness_matrix->FEAssemble(local_stiff_SB(i_dof_surface, j_dof_beam),
           gid_surface[i_dof_surface], gid_rot(j_dof_beam));
-    for (unsigned int j_dof_surface = 0; j_dof_surface < surface::n_dof_; j_dof_surface++)
+    for (unsigned int j_dof_surface = 0; j_dof_surface < Surface::n_dof_; j_dof_surface++)
       stiffness_matrix->FEAssemble(local_stiff_SS(i_dof_surface, j_dof_surface),
           gid_surface[i_dof_surface], gid_surface[j_dof_surface]);
   }
@@ -725,9 +725,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
+    Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
     Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
@@ -753,22 +753,22 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
   // Set the FAD variables for the surface DOFs. For the terms calculated here we only need first
   // order derivatives.
-  GEOMETRYPAIR::ElementData<surface, scalar_type_rot_1st> q_surface;
+  GEOMETRYPAIR::ElementData<Surface, scalar_type_rot_1st> q_surface;
   q_surface.shape_function_data_ = this->face_element_->GetFaceElementData().shape_function_data_;
-  for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+  for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
     q_surface.element_position_(i_surface) =
-        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(3 + surface::n_dof_,
+        Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(3 + Surface::n_dof_,
             3 + i_surface,
             Core::FADUtils::CastToDouble(
                 this->face_element_->GetFaceElementData().element_position_(i_surface)));
 
   // Initialize local matrices.
-  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_g(true);
-  Core::LinAlg::Matrix<mortar::n_dof_, n_dof_rot_, double> local_GB(true);
-  Core::LinAlg::Matrix<mortar::n_dof_, surface::n_dof_, double> local_GS(true);
-  Core::LinAlg::Matrix<n_dof_rot_, mortar::n_dof_, double> local_FB(true);
-  Core::LinAlg::Matrix<surface::n_dof_, mortar::n_dof_, double> local_FS(true);
-  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_kappa(true);
+  Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> local_g(true);
+  Core::LinAlg::Matrix<Mortar::n_dof_, n_dof_rot_, double> local_GB(true);
+  Core::LinAlg::Matrix<Mortar::n_dof_, Surface::n_dof_, double> local_GS(true);
+  Core::LinAlg::Matrix<n_dof_rot_, Mortar::n_dof_, double> local_FB(true);
+  Core::LinAlg::Matrix<Surface::n_dof_, Mortar::n_dof_, double> local_FS(true);
+  Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> local_kappa(true);
 
   // Get the type of surface triad construction.
   const auto surface_triad_type =
@@ -793,22 +793,22 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
     Core::LinAlg::Matrix<3, 3, double> T_surface_inv;
     Core::LinAlg::Matrix<3, 3, double> T_rel;
 
-    Core::LinAlg::Matrix<mortar::n_nodes_, 1, double> lambda_shape_functions;
-    Core::LinAlg::Matrix<3, mortar::n_dof_, double> lambda_shape_functions_full(true);
+    Core::LinAlg::Matrix<Mortar::n_nodes_, 1, double> lambda_shape_functions;
+    Core::LinAlg::Matrix<3, Mortar::n_dof_, double> lambda_shape_functions_full(true);
     Core::LinAlg::SerialDenseVector L_i(3);
     Core::LinAlg::Matrix<3, n_dof_rot_, double> L_full(true);
     std::vector<Core::LinAlg::Matrix<3, 3, double>> I_beam_tilde;
     Core::LinAlg::Matrix<3, n_dof_rot_, double> I_beam_tilde_full;
     Core::LinAlg::Matrix<3, n_dof_rot_, double> T_beam_times_I_beam_tilde_full;
-    Core::LinAlg::Matrix<3, mortar::n_dof_, double> T_rel_tr_times_lambda_shape;
-    Core::LinAlg::Matrix<3, mortar::n_dof_, double> T_surface_mtr_times_T_rel_tr_times_lambda_shape;
-    Core::LinAlg::Matrix<n_dof_rot_, mortar::n_dof_, double> d_fb_d_lambda_gp;
-    Core::LinAlg::Matrix<surface::n_dof_, mortar::n_dof_, double> d_fs_d_lambda_gp;
-    Core::LinAlg::Matrix<mortar::n_dof_, 1, scalar_type_rot_1st> g_gp;
-    Core::LinAlg::Matrix<3, surface::n_dof_, double> d_psi_surface_d_q_surface;
-    Core::LinAlg::Matrix<mortar::n_dof_, 3, double> d_g_d_psi_beam;
-    Core::LinAlg::Matrix<mortar::n_dof_, n_dof_rot_, double> d_g_d_psi_beam_times_T_beam_I;
-    Core::LinAlg::Matrix<mortar::n_dof_, surface::n_dof_, double> d_g_d_q_surface;
+    Core::LinAlg::Matrix<3, Mortar::n_dof_, double> T_rel_tr_times_lambda_shape;
+    Core::LinAlg::Matrix<3, Mortar::n_dof_, double> T_surface_mtr_times_T_rel_tr_times_lambda_shape;
+    Core::LinAlg::Matrix<n_dof_rot_, Mortar::n_dof_, double> d_fb_d_lambda_gp;
+    Core::LinAlg::Matrix<Surface::n_dof_, Mortar::n_dof_, double> d_fs_d_lambda_gp;
+    Core::LinAlg::Matrix<Mortar::n_dof_, 1, scalar_type_rot_1st> g_gp;
+    Core::LinAlg::Matrix<3, Surface::n_dof_, double> d_psi_surface_d_q_surface;
+    Core::LinAlg::Matrix<Mortar::n_dof_, 3, double> d_g_d_psi_beam;
+    Core::LinAlg::Matrix<Mortar::n_dof_, n_dof_rot_, double> d_g_d_psi_beam_times_T_beam_I;
+    Core::LinAlg::Matrix<Mortar::n_dof_, Surface::n_dof_, double> d_g_d_q_surface;
 
     // Initialize scalar variables.
     double segment_jacobian = 0.0;
@@ -830,7 +830,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
             this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
         // Get the jacobian in the reference configuration.
-        GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+        GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
             projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
         // Jacobian including the segment length.
@@ -842,7 +842,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         Core::LargeRotations::quaterniontoangle(quaternion_beam_double, psi_beam_double);
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           psi_beam(i_dim) = Core::FADUtils::HigherOrderFadValue<scalar_type_rot_1st>::apply(
-              3 + surface::n_dof_, i_dim, psi_beam_double(i_dim));
+              3 + Surface::n_dof_, i_dim, psi_beam_double(i_dim));
         Core::LargeRotations::angletoquaternion(psi_beam, quaternion_beam);
         quaternion_beam_inv = Core::LargeRotations::inversequaternion(quaternion_beam);
 
@@ -867,9 +867,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         Core::LinAlg::Inverse(T_surface_inv);
 
         // Evaluate mortar shape functions.
-        GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
+        GEOMETRYPAIR::EvaluateShapeFunction<Mortar>::evaluate(
             lambda_shape_functions, projected_gauss_point.GetEta());
-        for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
+        for (unsigned int i_node = 0; i_node < Mortar::n_nodes_; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
 
@@ -891,7 +891,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
         // Solid angle derived w.r.t. the surface DOFs.
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-          for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+          for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
             d_psi_surface_d_q_surface(i_dim, i_surface) = psi_surface(i_dim).dx(3 + i_surface);
 
         // Calculate the force terms derived w.r.t. the Lagrange multipliers.
@@ -907,7 +907,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
         // Constraint vector.
         g_gp.put_scalar(0.0);
-        for (unsigned int i_row = 0; i_row < mortar::n_dof_; i_row++)
+        for (unsigned int i_row = 0; i_row < Mortar::n_dof_; i_row++)
           for (unsigned int i_col = 0; i_col < 3; i_col++)
             g_gp(i_row) += lambda_shape_functions_full(i_col, i_row) * psi_rel(i_col);
         g_gp.scale(projected_gauss_point.GetGaussWeight() * segment_jacobian);
@@ -915,13 +915,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // Derivatives of constraint vector.
         T_beam_times_I_beam_tilde_full.multiply(T_beam, I_beam_tilde_full);
 
-        for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+        for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
           for (unsigned int i_psi = 0; i_psi < 3; i_psi++)
             d_g_d_psi_beam(i_lambda, i_psi) = g_gp(i_lambda).dx(i_psi);
         d_g_d_psi_beam_times_T_beam_I.multiply(d_g_d_psi_beam, T_beam_times_I_beam_tilde_full);
 
-        for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
-          for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+        for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
+          for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
             d_g_d_q_surface(i_lambda, i_surface) = g_gp(i_lambda).dx(3 + i_surface);
 
         // Add to output matrices and vector.
@@ -932,7 +932,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         local_FS += d_fs_d_lambda_gp;
 
         // Calculate the scaling entries.
-        for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             local_kappa(i_mortar_node * 3 + i_dim) += lambda_shape_functions(i_mortar_node) *
                                                       projected_gauss_point.GetGaussWeight() *
@@ -959,7 +959,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
       lambda_gid_rot.size(), lambda_gid_rot.data(), local_kappa.data());
 
   // Assemble into global matrices.
-  for (unsigned int i_dof_lambda = 0; i_dof_lambda < mortar::n_dof_; i_dof_lambda++)
+  for (unsigned int i_dof_lambda = 0; i_dof_lambda < Mortar::n_dof_; i_dof_lambda++)
   {
     for (unsigned int i_dof_rot = 0; i_dof_rot < n_dof_rot_; i_dof_rot++)
     {
@@ -968,7 +968,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
       global_force_beam_lin_lambda.FEAssemble(
           local_FB(i_dof_rot, i_dof_lambda), gid_rot(i_dof_rot), lambda_gid_rot[i_dof_lambda]);
     }
-    for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
+    for (unsigned int i_dof_surface = 0; i_dof_surface < Surface::n_dof_; i_dof_surface++)
     {
       global_constraint_lin_solid.FEAssemble(local_GS(i_dof_lambda, i_dof_surface),
           lambda_gid_rot[i_dof_lambda], gid_surface[i_dof_surface]);
@@ -981,9 +981,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface,
-    mortar>::get_pair_rotational_gid(const Core::FE::Discretization& discret,
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
+    Mortar>::get_pair_rotational_gid(const Core::FE::Discretization& discret,
     std::vector<int>& gid_surface, Core::LinAlg::Matrix<n_dof_rot_, 1, int>& gid_rot) const
 {
   // Get the GIDs of the surface and beam.
@@ -998,7 +998,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation(const bool rotational_coupling)
 {
@@ -1007,16 +1007,16 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation(const bool rotatio
 
   if (!rotational_coupling)
     return Teuchos::rcp(
-        new BeamToSolidSurfaceMeshtyingPairMortarFAD<scalar_type, beam, surface, mortar>());
+        new BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface, Mortar>());
   else
     return Teuchos::rcp(
-        new BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_type, beam, surface, mortar>());
+        new BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface, Mortar>());
 }
 
 /**
  *
  */
-template <typename mortar>
+template <typename Mortar>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
     const Core::FE::CellType surface_shape, const bool rotational_coupling)
@@ -1028,23 +1028,23 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
   {
     case Core::FE::CellType::tri3:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
-          line_to_surface_patch_scalar_type, t_hermite, t_tri3, mortar>(rotational_coupling);
+          line_to_surface_patch_scalar_type, t_hermite, t_tri3, Mortar>(rotational_coupling);
     case Core::FE::CellType::tri6:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
-          line_to_surface_patch_scalar_type, t_hermite, t_tri6, mortar>(rotational_coupling);
+          line_to_surface_patch_scalar_type, t_hermite, t_tri6, Mortar>(rotational_coupling);
     case Core::FE::CellType::quad4:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
-          line_to_surface_patch_scalar_type, t_hermite, t_quad4, mortar>(rotational_coupling);
+          line_to_surface_patch_scalar_type, t_hermite, t_quad4, Mortar>(rotational_coupling);
     case Core::FE::CellType::quad8:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
-          line_to_surface_patch_scalar_type, t_hermite, t_quad8, mortar>(rotational_coupling);
+          line_to_surface_patch_scalar_type, t_hermite, t_quad8, Mortar>(rotational_coupling);
     case Core::FE::CellType::quad9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
-          line_to_surface_patch_scalar_type, t_hermite, t_quad9, mortar>(rotational_coupling);
+          line_to_surface_patch_scalar_type, t_hermite, t_quad9, Mortar>(rotational_coupling);
     case Core::FE::CellType::nurbs9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
-          mortar>(rotational_coupling);
+          Mortar>(rotational_coupling);
     default:
       FOUR_C_THROW("Wrong element type for surface element.");
       return Teuchos::null;
@@ -1054,7 +1054,7 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
 /**
  *
  */
-template <typename mortar>
+template <typename Mortar>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume(
     const Core::FE::CellType surface_shape, const bool rotational_coupling)
@@ -1067,15 +1067,15 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume(
     case Core::FE::CellType::quad4:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4,
-          mortar>(rotational_coupling);
+          Mortar>(rotational_coupling);
     case Core::FE::CellType::quad8:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8,
-          mortar>(rotational_coupling);
+          Mortar>(rotational_coupling);
     case Core::FE::CellType::quad9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
-          mortar>(rotational_coupling);
+          Mortar>(rotational_coupling);
     default:
       FOUR_C_THROW("Wrong element type for surface element.");
       return Teuchos::null;

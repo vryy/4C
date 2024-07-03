@@ -27,17 +27,17 @@ namespace BEAMINTERACTION
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
-  template <typename beam, typename surface>
+  template <typename Beam, typename Surface>
   class BeamToSolidSurfaceMeshtyingPairGaussPoint
       : public BeamToSolidSurfaceMeshtyingPairGaussPointBase<
-            GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>, beam, surface>
+            GEOMETRYPAIR::line_to_surface_scalar_type<Beam, Surface>, Beam, Surface>
   {
    private:
     //! Type to be used for scalar AD variables.
-    using scalar_type = GEOMETRYPAIR::line_to_surface_scalar_type<beam, surface>;
+    using scalar_type = GEOMETRYPAIR::line_to_surface_scalar_type<Beam, Surface>;
 
     //! Shortcut to the base class.
-    using base_class = BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam, surface>;
+    using base_class = BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, Beam, Surface>;
 
    public:
     /**

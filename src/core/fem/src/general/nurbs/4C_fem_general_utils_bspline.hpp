@@ -255,8 +255,8 @@ namespace Core::FE::Nurbs
      contained in bspline[0]
 
     */
-    template <typename scalar_type>
-    void EvaluateBspline(scalar_type& bspline_value, const scalar_type x, const int ldofid)
+    template <typename ScalarType>
+    void EvaluateBspline(ScalarType& bspline_value, const ScalarType x, const int ldofid)
     {
       //                        ^
       //             ****       ^        +-----------+
@@ -302,7 +302,7 @@ namespace Core::FE::Nurbs
        ******************************************************************/
 
       // define the vector of values at x of all initial polynomials
-      std::vector<scalar_type> bspline(degree_ + 1);
+      std::vector<ScalarType> bspline(degree_ + 1);
 
       // The nonzero initial bspline polynomial and the intervals
       // that define the compact support of the bspline number lid
@@ -406,7 +406,7 @@ namespace Core::FE::Nurbs
           // id of first bspline function of this combination
           int first = ldofid + rr;
 
-          scalar_type fact1;
+          ScalarType fact1;
           // the first part of the if statement allows to
           // enforce interpolation using multiple nodes
           // the second part is a part of the bspline recursion
@@ -420,7 +420,7 @@ namespace Core::FE::Nurbs
             fact1 /= (myknotvector_(first + p + 1) - myknotvector_(first));
           }
 
-          scalar_type fact2;
+          ScalarType fact2;
           // the first part of the if statement allows to
           // enforce interpolation using multiple nodes
           // the second part is a part of the bspline recursion
@@ -538,9 +538,9 @@ namespace Core::FE::Nurbs
      \endverbatim
 
     */
-    template <typename scalar_type>
+    template <typename ScalarType>
     void evaluate_bspline_and_deriv(
-        scalar_type& bsplineval, scalar_type& bsplineder, const scalar_type x, const int ldofid)
+        ScalarType& bsplineval, ScalarType& bsplineder, const ScalarType x, const int ldofid)
     {
       //                        ^
       //             ****       ^        +-----------+
@@ -586,7 +586,7 @@ namespace Core::FE::Nurbs
        ******************************************************************/
 
       // define the vector of values at x of all initial polynomials
-      std::vector<scalar_type> bspline(degree_ + 1);
+      std::vector<ScalarType> bspline(degree_ + 1);
 
       // The nonzero initial bspline polynomial and the intervals
       // that define the compact support of the bspline number lid
@@ -727,7 +727,7 @@ namespace Core::FE::Nurbs
           //           fact1                  fact2
           //
 
-          scalar_type fact1;
+          ScalarType fact1;
           // the first part of the if statement allows to
           // enforce interpolation using multiple nodes
           // the second part is a part of the bspline recursion
@@ -741,7 +741,7 @@ namespace Core::FE::Nurbs
             fact1 /= (myknotvector_(i + p + 1) - myknotvector_(i));
           }
 
-          scalar_type fact2;
+          ScalarType fact2;
           // the first part of the if statement allows to
           // enforce interpolation using multiple nodes
           // the second part is a part of the bspline recursion
@@ -763,7 +763,7 @@ namespace Core::FE::Nurbs
       // do computation of bspline value in the last level
       // corresponding to one row in the scheme above
 
-      scalar_type fact1;
+      ScalarType fact1;
       // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
@@ -777,7 +777,7 @@ namespace Core::FE::Nurbs
         fact1 /= (myknotvector_(ldofid + degree_) - myknotvector_(ldofid));
       }
 
-      scalar_type fact2;
+      ScalarType fact2;
       // the first part of the if statement allows to
       // enforce interpolation using multiple nodes
       // the second part is a part of the bspline recursion
@@ -969,9 +969,9 @@ namespace Core::FE::Nurbs
      \endverbatim
 
     */
-    template <typename scalar_type>
-    void evaluate_bspline_first_and_second_deriv(scalar_type& bsplineval, scalar_type& bsplineder,
-        scalar_type& bsplineder2, const scalar_type x, const int ldofid)
+    template <typename ScalarType>
+    void evaluate_bspline_first_and_second_deriv(ScalarType& bsplineval, ScalarType& bsplineder,
+        ScalarType& bsplineder2, const ScalarType x, const int ldofid)
     {
       /*
 

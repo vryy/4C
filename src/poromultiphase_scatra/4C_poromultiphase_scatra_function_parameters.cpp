@@ -27,20 +27,21 @@ namespace
    * @param function_name: name of the function whose parameters are checked
    */
 
-  template <int NumberOfParameters>
-  void CheckNamingAndOrderOfParameters(const std::array<std::string, NumberOfParameters>& param_map,
+  template <int number_of_parameters>
+  void CheckNamingAndOrderOfParameters(
+      const std::array<std::string, number_of_parameters>& param_map,
       const std::vector<std::pair<std::string, double>>& funct_params, std::string function_name)
   {
-    if (funct_params.size() != NumberOfParameters)
+    if (funct_params.size() != number_of_parameters)
     {
       std::string list_of_parameters{};
-      for (std::size_t i = 0; i < NumberOfParameters; ++i)
+      for (std::size_t i = 0; i < number_of_parameters; ++i)
       {
         list_of_parameters += param_map[i] + ", ";
       }
 
       auto const message = "Wrong size of funct_params for " + function_name +
-                           ", it should have exactly\n" + std::to_string(NumberOfParameters) +
+                           ", it should have exactly\n" + std::to_string(number_of_parameters) +
                            " funct_params (in this order): " + list_of_parameters;
 
       FOUR_C_THROW(message.c_str());

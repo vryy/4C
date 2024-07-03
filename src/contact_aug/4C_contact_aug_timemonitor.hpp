@@ -57,10 +57,10 @@ namespace CONTACT
      *
      *  See the specializations for more sophisticated solutions.
      *  \author hiermeier \date 05/18 */
-    template <typename enum_class>
-    inline std::string TimeID2Str(enum_class id)
+    template <typename EnumClass>
+    inline std::string TimeID2Str(EnumClass id)
     {
-      static_assert(std::is_same<unsigned, typename std::underlying_type<enum_class>::type>::value,
+      static_assert(std::is_same<unsigned, typename std::underlying_type<EnumClass>::type>::value,
           "The template ENUM_CLASS must use UNSIGNED INT as underlying type!");
 
       std::ostringstream oss;
@@ -96,7 +96,7 @@ namespace CONTACT
 
     /** \brief Execution time measuring with minimal overhead
      *  \author hiermeier \date 5/18 */
-    template <typename enum_class>
+    template <typename EnumClass>
     class TimeMonitor
     {
      public:
@@ -113,10 +113,10 @@ namespace CONTACT
       }
 
       /// start the timer for the corresponding enumerator
-      void start(const enum_class id);
+      void start(const EnumClass id);
 
       /// stop the timer for the corresponding enumerator
-      void stop(const enum_class id);
+      void stop(const EnumClass id);
 
       /// write the result overview to the provided stream (screen or file)
       void write(std::ostream& os);

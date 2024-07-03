@@ -113,18 +113,18 @@ namespace Discret
 
 
     //! implementation of ScaTraEleInternalVariableManagerSTIElch
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerSTIElch
-        : public ScaTraEleInternalVariableManager<NSD, NEN>
+        : public ScaTraEleInternalVariableManager<nsd, nen>
     {
      public:
       //! abbreviation
-      typedef ScaTraEleInternalVariableManager<NSD, NEN> vm;
+      typedef ScaTraEleInternalVariableManager<nsd, nen> vm;
 
       //! constructor
       ScaTraEleInternalVariableManagerSTIElch(const int& numscal)
           :  // call base class constructor
-            ScaTraEleInternalVariableManager<NSD, NEN>(numscal),
+            ScaTraEleInternalVariableManager<nsd, nen>(numscal),
 
             // initialize internal member variables
             conc_(0.),
@@ -136,23 +136,23 @@ namespace Discret
 
       //! set internal variables for element evaluation
       void set_internal_variables_sti_elch(
-          const Core::LinAlg::Matrix<NEN, 1>& funct,    //!< shape functions
-          const Core::LinAlg::Matrix<NSD, NEN>& derxy,  //!< spatial derivatives of shape functions
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const Core::LinAlg::Matrix<nen, 1>& funct,    //!< shape functions
+          const Core::LinAlg::Matrix<nsd, nen>& derxy,  //!< spatial derivatives of shape functions
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               etempnp,  //!< nodal temperature values at time t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>&
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>&
               etempn,  //!< nodal temperature values at time t_(n)
-          const Core::LinAlg::Matrix<NEN, 1>&
+          const Core::LinAlg::Matrix<nen, 1>&
               econcnp,  //!< nodal concentration values at time t_(n+1) or t_(n+alpha_F)
-          const Core::LinAlg::Matrix<NEN, 1>&
+          const Core::LinAlg::Matrix<nen, 1>&
               epotnp,  //!< nodal electric potential values at time t_(n+1) or t_(n+alpha_F)
-          const Core::LinAlg::Matrix<NSD, NEN>&
+          const Core::LinAlg::Matrix<nsd, nen>&
               econvelnp,  //!< nodal convective velocity values at time t_(n+1) or t_(n+alpha_F)
-          const std::vector<Core::LinAlg::Matrix<NEN, 1>>& ehist  //!< nodal history values
+          const std::vector<Core::LinAlg::Matrix<nen, 1>>& ehist  //!< nodal history values
       )
       {
         // call base class routine to set thermo variables
-        const Core::LinAlg::Matrix<NSD, NEN> eforcevelocity(true);
+        const Core::LinAlg::Matrix<nsd, nen> eforcevelocity(true);
         vm::set_internal_variables(funct, derxy, etempnp, etempn, econvelnp, ehist, eforcevelocity);
 
         // set local values of scatra variables at time t_(n+1) or t_(n+alpha_F)
@@ -167,19 +167,19 @@ namespace Discret
       const double& Conc() const { return conc_; };
 
       //! return gradient of concentration
-      const Core::LinAlg::Matrix<NSD, 1>& GradConc() const { return gradconc_; };
+      const Core::LinAlg::Matrix<nsd, 1>& GradConc() const { return gradconc_; };
 
       //! return gradient of electric potential
-      const Core::LinAlg::Matrix<NSD, 1>& GradPot() const { return gradpot_; };
+      const Core::LinAlg::Matrix<nsd, 1>& GradPot() const { return gradpot_; };
 
       //! concentration
       double conc_;
 
       //! gradient of concentration
-      Core::LinAlg::Matrix<NSD, 1> gradconc_;
+      Core::LinAlg::Matrix<nsd, 1> gradconc_;
 
       //! gradient of electric potential
-      Core::LinAlg::Matrix<NSD, 1> gradpot_;
+      Core::LinAlg::Matrix<nsd, 1> gradpot_;
     };  // class ScaTraEleInternalVariableManagerSTIElch
   }     // namespace ELEMENTS
 }  // namespace Discret

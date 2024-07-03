@@ -147,13 +147,13 @@ namespace FLD
 
     };  // class FluidCouplingWrapper
 
-    template <class red_D_time_int>
+    template <class RedDTimeInt>
 
     class FluidCouplingWrapper : public FluidCouplingWrapperBase
     {
      public:
       FluidCouplingWrapper(Teuchos::RCP<Core::FE::Discretization> dis_3D,
-          Teuchos::RCP<Core::FE::Discretization> dis_redD, Teuchos::RCP<red_D_time_int> time_intg,
+          Teuchos::RCP<Core::FE::Discretization> dis_redD, Teuchos::RCP<RedDTimeInt> time_intg,
           Core::IO::DiscretizationWriter& output, double dt_3d, double dt_rm)
           : FluidCouplingWrapperBase(dis_3D, dis_redD, output, dt_3d, dt_rm),
             reduced_d_time_integ_(time_intg)
@@ -173,7 +173,7 @@ namespace FLD
 
      private:
       //! Reduced-D artery network time integration
-      Teuchos::RCP<red_D_time_int> reduced_d_time_integ_;
+      Teuchos::RCP<RedDTimeInt> reduced_d_time_integ_;
     };
 
     //--------------------------------------------------------------------

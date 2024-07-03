@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename beam, typename surface, typename mortar>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
-    mortar>::BeamToSolidSurfaceMeshtyingPairMortar()
+template <typename Beam, typename Surface, typename Mortar>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
+    Mortar>::BeamToSolidSurfaceMeshtyingPairMortar()
     : base_class()
 {
   // Empty constructor.
@@ -34,9 +34,9 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
 /**
  *
  */
-template <typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
-    mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
+template <typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface,
+    Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
     Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
@@ -58,16 +58,16 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // Initialize variables for local mortar matrices.
-  Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double> local_D(false);
-  Core::LinAlg::Matrix<mortar::n_dof_, surface::n_dof_, double> local_M(false);
-  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_kappa(false);
-  Core::LinAlg::Matrix<mortar::n_dof_, 1, double> local_constraint(false);
+  Core::LinAlg::Matrix<Mortar::n_dof_, Beam::n_dof_, double> local_D(false);
+  Core::LinAlg::Matrix<Mortar::n_dof_, Surface::n_dof_, double> local_M(false);
+  Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> local_kappa(false);
+  Core::LinAlg::Matrix<Mortar::n_dof_, 1, double> local_constraint(false);
 
   // Evaluate the local mortar contributions.
   evaluate_dm(local_D, local_M, local_kappa, local_constraint);
 
   // Assemble into global matrices.
-  AssembleLocalMortarContributions<beam, surface, mortar>(this, discret, mortar_manager,
+  AssembleLocalMortarContributions<Beam, Surface, Mortar>(this, discret, mortar_manager,
       global_constraint_lin_beam, global_constraint_lin_solid, global_force_beam_lin_lambda,
       global_force_solid_lin_lambda, global_constraint, global_kappa, global_lambda_active, local_D,
       local_M, local_kappa, local_constraint);
@@ -76,12 +76,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface,
 /**
  *
  */
-template <typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, mortar>::evaluate_dm(
-    Core::LinAlg::Matrix<mortar::n_dof_, beam::n_dof_, double>& local_D,
-    Core::LinAlg::Matrix<mortar::n_dof_, surface::n_dof_, double>& local_M,
-    Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_kappa,
-    Core::LinAlg::Matrix<mortar::n_dof_, 1, double>& local_constraint) const
+template <typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<Beam, Surface, Mortar>::evaluate_dm(
+    Core::LinAlg::Matrix<Mortar::n_dof_, Beam::n_dof_, double>& local_D,
+    Core::LinAlg::Matrix<Mortar::n_dof_, Surface::n_dof_, double>& local_M,
+    Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_kappa,
+    Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>& local_constraint) const
 {
   // Initialize the local mortar matrices.
   local_D.put_scalar(0.0);
@@ -90,9 +90,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
   local_constraint.put_scalar(0.0);
 
   // Initialize variables for shape function values.
-  Core::LinAlg::Matrix<1, mortar::n_nodes_ * mortar::n_val_, double> N_mortar(true);
-  Core::LinAlg::Matrix<1, beam::n_nodes_ * beam::n_val_, double> N_beam(true);
-  Core::LinAlg::Matrix<1, surface::n_nodes_ * surface::n_val_, double> N_surface(true);
+  Core::LinAlg::Matrix<1, Mortar::n_nodes_ * Mortar::n_val_, double> N_mortar(true);
+  Core::LinAlg::Matrix<1, Beam::n_nodes_ * Beam::n_val_, double> N_beam(true);
+  Core::LinAlg::Matrix<1, Surface::n_nodes_ * Surface::n_val_, double> N_surface(true);
 
   // Initialize variable for beam position derivative.
   Core::LinAlg::Matrix<3, 1, double> dr_beam_ref(true);
@@ -118,7 +118,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.
@@ -128,53 +128,53 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
       N_mortar.clear();
       N_beam.clear();
       N_surface.clear();
-      GEOMETRYPAIR::EvaluateShapeFunction<mortar>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<Mortar>::evaluate(
           N_mortar, projected_gauss_point.GetEta());
-      GEOMETRYPAIR::EvaluateShapeFunction<beam>::evaluate(
+      GEOMETRYPAIR::EvaluateShapeFunction<Beam>::evaluate(
           N_beam, projected_gauss_point.GetEta(), this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunction<surface>::evaluate(N_surface,
+      GEOMETRYPAIR::EvaluateShapeFunction<Surface>::evaluate(N_surface,
           projected_gauss_point.GetXi(),
           this->face_element_->GetFaceElementData().shape_function_data_);
 
       // Fill in the local templated mortar matrix D.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
-          for (unsigned int i_beam_node = 0; i_beam_node < beam::n_nodes_; i_beam_node++)
-            for (unsigned int i_beam_val = 0; i_beam_val < beam::n_val_; i_beam_val++)
+      for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
+          for (unsigned int i_beam_node = 0; i_beam_node < Beam::n_nodes_; i_beam_node++)
+            for (unsigned int i_beam_val = 0; i_beam_val < Beam::n_val_; i_beam_val++)
               for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-                local_D(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
-                    i_beam_node * beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
-                    N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
-                    N_beam(i_beam_node * beam::n_val_ + i_beam_val) *
+                local_D(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
+                    i_beam_node * Beam::n_val_ * 3 + i_beam_val * 3 + i_dim) +=
+                    N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
+                    N_beam(i_beam_node * Beam::n_val_ + i_beam_val) *
                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
 
       // Fill in the local templated mortar matrix M.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
-          for (unsigned int i_surface_node = 0; i_surface_node < surface::n_nodes_;
+      for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
+          for (unsigned int i_surface_node = 0; i_surface_node < Surface::n_nodes_;
                i_surface_node++)
-            for (unsigned int i_surface_val = 0; i_surface_val < surface::n_val_; i_surface_val++)
+            for (unsigned int i_surface_val = 0; i_surface_val < Surface::n_val_; i_surface_val++)
               for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-                local_M(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
-                    i_surface_node * surface::n_val_ * 3 + i_surface_val * 3 + i_dim) +=
-                    N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
-                    N_surface(i_surface_node * surface::n_val_ + i_surface_val) *
+                local_M(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim,
+                    i_surface_node * Surface::n_val_ * 3 + i_surface_val * 3 + i_dim) +=
+                    N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
+                    N_surface(i_surface_node * Surface::n_val_ + i_surface_val) *
                     projected_gauss_point.GetGaussWeight() * segment_jacobian;
 
       // Fill in the local templated mortar scaling vector kappa.
-      for (unsigned int i_mortar_node = 0; i_mortar_node < mortar::n_nodes_; i_mortar_node++)
-        for (unsigned int i_mortar_val = 0; i_mortar_val < mortar::n_val_; i_mortar_val++)
+      for (unsigned int i_mortar_node = 0; i_mortar_node < Mortar::n_nodes_; i_mortar_node++)
+        for (unsigned int i_mortar_val = 0; i_mortar_val < Mortar::n_val_; i_mortar_val++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
-            local_kappa(i_mortar_node * mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
-                N_mortar(i_mortar_node * mortar::n_val_ + i_mortar_val) *
+            local_kappa(i_mortar_node * Mortar::n_val_ * 3 + i_mortar_val * 3 + i_dim) +=
+                N_mortar(i_mortar_node * Mortar::n_val_ + i_mortar_val) *
                 projected_gauss_point.GetGaussWeight() * segment_jacobian;
     }
   }
 
   // Add the local constraint contributions. For this we multiply the local mortar matrices with the
   // positions / displacements to get the actual constraint terms for this pair.
-  Core::LinAlg::Matrix<beam::n_dof_, 1, double> beam_coupling_dof(true);
-  Core::LinAlg::Matrix<surface::n_dof_, 1, double> surface_coupling_dof(true);
+  Core::LinAlg::Matrix<Beam::n_dof_, 1, double> beam_coupling_dof(true);
+  Core::LinAlg::Matrix<Surface::n_dof_, 1, double> surface_coupling_dof(true);
   switch (this->Params()->beam_to_solid_surface_meshtying_params()->GetCouplingType())
   {
     case Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
@@ -197,11 +197,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortar<beam, surface, morta
     default:
       FOUR_C_THROW("Wrong coupling type.");
   }
-  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+  for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
   {
-    for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+    for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; i_beam++)
       local_constraint(i_lambda) += local_D(i_lambda, i_beam) * beam_coupling_dof(i_beam);
-    for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+    for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
       local_constraint(i_lambda) -= local_M(i_lambda, i_surface) * surface_coupling_dof(i_surface);
   }
 }

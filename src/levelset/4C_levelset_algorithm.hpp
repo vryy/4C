@@ -265,7 +265,7 @@ namespace ScaTra
     };
 
     /// project node into the boundary cell space (2D) (helper function for reinit_geo())
-    template <Core::FE::CellType DISTYPE>
+    template <Core::FE::CellType distype>
     bool project_node_on_patch(const Core::LinAlg::Matrix<3, 1>& node,
         const Core::Geo::BoundaryIntCell& patch, const Core::LinAlg::SerialDenseMatrix& patchcoord,
         const Core::LinAlg::Matrix<3, 1>& normal, Core::LinAlg::Matrix<2, 1>& eta, double& alpha);

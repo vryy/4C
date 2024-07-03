@@ -40,7 +40,7 @@ namespace FLD
     class TotalTractionCorrector;
     class FluidCouplingWrapperBase;
     class VolumetricFlowMapExtractor;
-    template <class red_D_time_int>
+    template <class RedDTimeInt>
     class FluidCouplingWrapper;
   }  // namespace UTILS
 

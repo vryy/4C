@@ -35,12 +35,12 @@ namespace Core::LinAlg
 }  // namespace Core::LinAlg
 namespace GEOMETRYPAIR
 {
-  template <typename scalar_type, typename line, typename surface>
+  template <typename ScalarType, typename Line, typename Surface>
   class GeometryPairLineToSurface;
 
   class FaceElement;
 
-  template <typename surface, typename scalar_type>
+  template <typename Surface, typename ScalarType>
   class FaceElementTemplate;
 }  // namespace GEOMETRYPAIR
 namespace BEAMINTERACTION
@@ -57,13 +57,13 @@ namespace BEAMINTERACTION
    * @tparam beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    * @tparam surface Type from GEOMETRYPAIR::ElementDiscretization... representing the surface.
    */
-  template <typename scalar_type, typename beam, typename surface>
+  template <typename ScalarType, typename Beam, typename Surface>
   class BeamToSolidSurfaceContactPairBase
-      : public BeamToSolidPairBase<scalar_type, scalar_type, beam, surface>
+      : public BeamToSolidPairBase<ScalarType, ScalarType, Beam, Surface>
   {
    protected:
     //! Shortcut to the base class.
-    using base_class = BeamToSolidPairBase<scalar_type, scalar_type, beam, surface>;
+    using base_class = BeamToSolidPairBase<ScalarType, ScalarType, Beam, Surface>;
 
    public:
     /**
@@ -114,7 +114,7 @@ namespace BEAMINTERACTION
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
-    Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<scalar_type, beam, surface>>
+    Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Beam, Surface>>
     cast_geometry_pair() const;
 
     /**
@@ -127,7 +127,7 @@ namespace BEAMINTERACTION
    protected:
     //! Pointer to the face element object which manages the positions on the surface, including the
     //! averaged nodal normals.
-    Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>> face_element_;
+    Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>> face_element_;
   };
 }  // namespace BEAMINTERACTION
 

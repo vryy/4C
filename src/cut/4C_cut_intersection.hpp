@@ -138,20 +138,21 @@ namespace Core::Geo
         options_ptr_ = options;
 
         if (static_cast<unsigned>(xyze_lineElement.numRows()) != prob_dim() or
-            static_cast<unsigned>(xyze_lineElement.numCols()) != num_nodes_edge())
+            static_cast<unsigned>(xyze_lineElement.numCols()) != get_num_nodes_edge())
           FOUR_C_THROW(
               "Dimension mismatch of xyze_lineElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
-              prob_dim(), num_nodes_edge(), xyze_lineElement.numRows(), xyze_lineElement.numCols());
+              prob_dim(), get_num_nodes_edge(), xyze_lineElement.numRows(),
+              xyze_lineElement.numCols());
 
         if (static_cast<unsigned>(xyze_surfaceElement.numRows()) != prob_dim() or
-            static_cast<unsigned>(xyze_surfaceElement.numCols()) != num_nodes_side())
+            static_cast<unsigned>(xyze_surfaceElement.numCols()) != get_num_nodes_side())
           FOUR_C_THROW(
               "Dimension mismatch of xyze_surfaceElement! \n"
               "expected input: %d x %d (rows x cols)\n"
               "current input : %d x %d (rows x cols)",
-              prob_dim(), num_nodes_side(), xyze_surfaceElement.numRows(),
+              prob_dim(), get_num_nodes_side(), xyze_surfaceElement.numRows(),
               xyze_surfaceElement.numCols());
 
         set_coordinates(xyze_surfaceElement.values(), xyze_lineElement.values());
@@ -282,8 +283,8 @@ namespace Core::Geo
       }
 
       virtual unsigned prob_dim() const = 0;
-      virtual unsigned num_nodes_side() const = 0;
-      virtual unsigned num_nodes_edge() const = 0;
+      virtual unsigned get_num_nodes_side() const = 0;
+      virtual unsigned get_num_nodes_edge() const = 0;
 
       virtual void set_coordinates() = 0;
       virtual void set_coordinates(double* xyze_surfaceElement, double* xyze_lineElement) = 0;
@@ -394,8 +395,8 @@ namespace Core::Geo
     template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype,
         bool debug = false, unsigned dimedge = Core::FE::dim<edgetype>,
         unsigned dimside = Core::FE::dim<sidetype>,
-        unsigned numNodesEdge = Core::FE::num_nodes<edgetype>,
-        unsigned numNodesSide = Core::FE::num_nodes<sidetype>>
+        unsigned num_nodes_edge = Core::FE::num_nodes<edgetype>,
+        unsigned num_nodes_side = Core::FE::num_nodes<sidetype>>
     class Intersection : public IntersectionBase
     {
      public:
@@ -468,9 +469,9 @@ namespace Core::Geo
 
         Core::LinAlg::Matrix<probdim, 1> x_edge_1;
         x_edge_1 = 0;
-        Core::LinAlg::Matrix<numNodesEdge, 1> edge_funct_1;
+        Core::LinAlg::Matrix<num_nodes_edge, 1> edge_funct_1;
         Core::FE::shape_function<edgetype>(xsi_edge_, edge_funct_1);
-        for (unsigned inode = 0; inode < numNodesEdge; ++inode)
+        for (unsigned inode = 0; inode < num_nodes_edge; ++inode)
           for (unsigned isd = 0; isd < probdim; ++isd)
             x_edge_1(isd) += xyze_lineElement_(isd, inode) * edge_funct_1(inode);
 
@@ -480,9 +481,9 @@ namespace Core::Geo
 
         Core::LinAlg::Matrix<probdim, 1> x_edge_2;
         x_edge_2 = 0;
-        Core::LinAlg::Matrix<numNodesSide, 1> edge_funct_2;
+        Core::LinAlg::Matrix<num_nodes_side, 1> edge_funct_2;
         Core::FE::shape_function<sidetype>(xsi_side_, edge_funct_2);
-        for (unsigned inode = 0; inode < numNodesSide; ++inode)
+        for (unsigned inode = 0; inode < num_nodes_side; ++inode)
           for (unsigned isd = 0; isd < probdim; ++isd)
             x_edge_2(isd) += xyze_surfaceElement_(isd, inode) * edge_funct_2(inode);
 
@@ -535,9 +536,9 @@ namespace Core::Geo
 
         // get final point
         x = 0;
-        Core::LinAlg::Matrix<numNodesEdge, 1> lineFunct;
+        Core::LinAlg::Matrix<num_nodes_edge, 1> lineFunct;
         Core::FE::shape_function<edgetype>(xsi_edge, lineFunct);
-        for (unsigned inode = 0; inode < numNodesEdge; ++inode)
+        for (unsigned inode = 0; inode < num_nodes_edge; ++inode)
           for (unsigned isd = 0; isd < probdim; ++isd)
             x(isd) += xyze_lineElement_(isd, inode) * lineFunct(inode);
 
@@ -572,7 +573,7 @@ namespace Core::Geo
         bool signeddistance = false;
         double distance = 0;
         Core::LinAlg::Matrix<dim, 1> xsi;
-        Core::LinAlg::Matrix<dim, numNodesEdge> xyze_edge;
+        Core::LinAlg::Matrix<dim, num_nodes_edge> xyze_edge;
         const std::vector<Edge*>& side_edges = get_side().Edges();
 
         for (std::vector<int>::iterator it = touching_edges.begin(); it != touching_edges.end();)
@@ -817,10 +818,10 @@ namespace Core::Geo
       unsigned prob_dim() const override { return probdim; }
 
       /// access the number of nodes of the side ( or 2-nd edge ) element
-      unsigned num_nodes_side() const override { return numNodesSide; }
+      unsigned get_num_nodes_side() const override { return num_nodes_side; }
 
       /// access the number of nodes of the edge
-      unsigned num_nodes_edge() const override { return numNodesEdge; }
+      unsigned get_num_nodes_edge() const override { return num_nodes_edge; }
 
       /// set the edge and side coordinates
       void set_coordinates() override;
@@ -863,12 +864,12 @@ namespace Core::Geo
         {
           GetElementShift<probdim>(xyze_surfaceElement_, shift_);
 
-          for (unsigned i = 0; i < numNodesSide; ++i)
+          for (unsigned i = 0; i < num_nodes_side; ++i)
           {
             Core::LinAlg::Matrix<probdim, 1> x1(&xyze_surfaceElement_(0, i), true);
             x1.update(-1, shift_, 1);
           }
-          for (unsigned i = 0; i < numNodesEdge; ++i)
+          for (unsigned i = 0; i < num_nodes_edge; ++i)
           {
             Core::LinAlg::Matrix<probdim, 1> x1(&xyze_lineElement_(0, i), true);
             x1.update(-1, shift_, 1);
@@ -980,7 +981,7 @@ namespace Core::Geo
 
         Core::LinAlg::Matrix<3, 3> xyze_triElement;
         get_triangle(xyze_triElement, triangleid);
-        Core::LinAlg::Matrix<3, numNodesEdge> xyze_lineElement(xyze_lineElement_.data(), true);
+        Core::LinAlg::Matrix<3, num_nodes_edge> xyze_lineElement(xyze_lineElement_.data(), true);
 
         bool conv = ci(xyze_triElement, xyze_lineElement);
         location = ci.GetSideLocation();
@@ -1029,7 +1030,7 @@ namespace Core::Geo
 
         Core::LinAlg::Matrix<3, 3> xyze_triElement;
         get_triangle(xyze_triElement, triangleid);
-        Core::LinAlg::Matrix<3, numNodesEdge> xyze_lineElement(xyze_lineElement_.data(), true);
+        Core::LinAlg::Matrix<3, num_nodes_edge> xyze_lineElement(xyze_lineElement_.data(), true);
 
         bool conv = ci(xyze_triElement, xyze_lineElement);
 
@@ -1158,13 +1159,14 @@ namespace Core::Geo
       }
 
       /// Detects in the point is close to an endpoint of the edge
-      template <unsigned int numNodes, unsigned int probDim>
-      bool is_close_to_endpoints(const Core::LinAlg::Matrix<probDim, numNodes>& surf,
-          const Core::LinAlg::Matrix<probDim, 1>& p, double tol = TOPOLOGICAL_TOLERANCE)
+      template <unsigned int num_nodes, unsigned int prob_dim>
+      bool is_close_to_endpoints(const Core::LinAlg::Matrix<prob_dim, num_nodes>& surf,
+          const Core::LinAlg::Matrix<prob_dim, 1>& p, double tol = TOPOLOGICAL_TOLERANCE)
       {
-        for (unsigned int node_id = 0; node_id < numNodes; ++node_id)
+        for (unsigned int node_id = 0; node_id < num_nodes; ++node_id)
         {
-          const Core::LinAlg::Matrix<probDim, 1> edge_point(surf.data() + node_id * probDim, true);
+          const Core::LinAlg::Matrix<prob_dim, 1> edge_point(
+              surf.data() + node_id * prob_dim, true);
           if (Core::Geo::Cut::DistanceBetweenPoints(edge_point, p) <= tol) return true;
         }
         return false;
@@ -1287,8 +1289,8 @@ namespace Core::Geo
       bool refined_bb_overlap_check(int maxstep = 10);
 
      protected:
-      static Core::LinAlg::Matrix<probdim, numNodesEdge> xyze_lineElement_;
-      static Core::LinAlg::Matrix<probdim, numNodesSide> xyze_surfaceElement_;
+      static Core::LinAlg::Matrix<probdim, num_nodes_edge> xyze_lineElement_;
+      static Core::LinAlg::Matrix<probdim, num_nodes_side> xyze_surfaceElement_;
 
       static Core::LinAlg::Matrix<dimedge + dimside, 1> xsi_;
       Core::LinAlg::Matrix<dimside, 1> xsi_side_;
@@ -1323,21 +1325,21 @@ namespace Core::Geo
           Core::FE::CellType edge_type, Core::FE::CellType side_type) const;
 
      private:
-      template <Core::FE::CellType edgeType>
+      template <Core::FE::CellType edge_type>
       IntersectionBase* create_intersection(Core::FE::CellType side_type, int probdim) const
       {
         switch (side_type)
         {
           case Core::FE::CellType::quad4:
-            return create_concrete_intersection<edgeType, Core::FE::CellType::quad4>(probdim);
+            return create_concrete_intersection<edge_type, Core::FE::CellType::quad4>(probdim);
           case Core::FE::CellType::quad8:
-            return create_concrete_intersection<edgeType, Core::FE::CellType::quad8>(probdim);
+            return create_concrete_intersection<edge_type, Core::FE::CellType::quad8>(probdim);
           case Core::FE::CellType::quad9:
-            return create_concrete_intersection<edgeType, Core::FE::CellType::quad9>(probdim);
+            return create_concrete_intersection<edge_type, Core::FE::CellType::quad9>(probdim);
           case Core::FE::CellType::tri3:
-            return create_concrete_intersection<edgeType, Core::FE::CellType::tri3>(probdim);
+            return create_concrete_intersection<edge_type, Core::FE::CellType::tri3>(probdim);
           case Core::FE::CellType::line2:
-            return create_concrete_intersection<edgeType, Core::FE::CellType::line2>(probdim);
+            return create_concrete_intersection<edge_type, Core::FE::CellType::line2>(probdim);
           default:
             FOUR_C_THROW(
                 "Unsupported SideType! If meaningful, add your sideType here. \n"
@@ -1348,17 +1350,17 @@ namespace Core::Geo
         exit(EXIT_FAILURE);
       }
 
-      template <Core::FE::CellType edgeType, Core::FE::CellType sideType>
+      template <Core::FE::CellType edge_type, Core::FE::CellType side_type>
       IntersectionBase* create_concrete_intersection(const int& probdim) const
       {
         Core::Geo::Cut::IntersectionBase* inter_ptr = nullptr;
         switch (probdim)
         {
           case 2:
-            inter_ptr = new Core::Geo::Cut::Intersection<2, edgeType, sideType>();
+            inter_ptr = new Core::Geo::Cut::Intersection<2, edge_type, side_type>();
             break;
           case 3:
-            inter_ptr = new Core::Geo::Cut::Intersection<3, edgeType, sideType>();
+            inter_ptr = new Core::Geo::Cut::Intersection<3, edge_type, side_type>();
             break;
           default:
             FOUR_C_THROW("Unsupported ProbDim! ( probdim = %d )", probdim);
@@ -1374,21 +1376,21 @@ namespace Core::Geo
 
 // static members of intersection base class
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
-    unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
-Core::LinAlg::Matrix<probdim, numNodesEdge> Core::Geo::Cut::Intersection<probdim, edgetype,
-    sidetype, debug, dimedge, dimside, numNodesEdge, numNodesSide>::xyze_lineElement_;
+    unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
+Core::LinAlg::Matrix<probdim, num_nodes_edge> Core::Geo::Cut::Intersection<probdim, edgetype,
+    sidetype, debug, dimedge, dimside, num_nodes_edge, num_nodes_side>::xyze_lineElement_;
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
-    unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
-Core::LinAlg::Matrix<probdim, numNodesSide> Core::Geo::Cut::Intersection<probdim, edgetype,
-    sidetype, debug, dimedge, dimside, numNodesEdge, numNodesSide>::xyze_surfaceElement_;
+    unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
+Core::LinAlg::Matrix<probdim, num_nodes_side> Core::Geo::Cut::Intersection<probdim, edgetype,
+    sidetype, debug, dimedge, dimside, num_nodes_edge, num_nodes_side>::xyze_surfaceElement_;
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
-    unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
+    unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
 Core::LinAlg::Matrix<dimedge + dimside, 1> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype,
-    debug, dimedge, dimside, numNodesEdge, numNodesSide>::xsi_;
+    debug, dimedge, dimside, num_nodes_edge, num_nodes_side>::xsi_;
 template <unsigned probdim, Core::FE::CellType edgetype, Core::FE::CellType sidetype, bool debug,
-    unsigned dimedge, unsigned dimside, unsigned numNodesEdge, unsigned numNodesSide>
+    unsigned dimedge, unsigned dimside, unsigned num_nodes_edge, unsigned num_nodes_side>
 Core::LinAlg::Matrix<probdim, 1> Core::Geo::Cut::Intersection<probdim, edgetype, sidetype, debug,
-    dimedge, dimside, numNodesEdge, numNodesSide>::x_;
+    dimedge, dimside, num_nodes_edge, num_nodes_side>::x_;
 
 FOUR_C_NAMESPACE_CLOSE
 

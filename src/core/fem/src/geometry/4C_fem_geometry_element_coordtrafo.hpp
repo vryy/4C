@@ -32,19 +32,19 @@ namespace Core::Geo
   \param xsi                  (in)        : element coordinates
   \param x                    (out)       : position in physical coordinates (x, y, z)
   */
-  template <FE::CellType DISTYPE, class V, class M, unsigned probDim>
+  template <FE::CellType distype, class V, class M, unsigned prob_dim>
   static inline void elementToCurrentCoordinatesT(
-      const M& xyze, const V& xsi, Core::LinAlg::Matrix<probDim, 1>& x)
+      const M& xyze, const V& xsi, Core::LinAlg::Matrix<prob_dim, 1>& x)
   {
-    const int numNodes = Core::FE::num_nodes<DISTYPE>;
+    const int numNodes = Core::FE::num_nodes<distype>;
     static Core::LinAlg::Matrix<numNodes, 1> funct;
 
-    Core::FE::shape_function<DISTYPE>(xsi, funct);
+    Core::FE::shape_function<distype>(xsi, funct);
 
     // set to zero
     x.clear();
     for (int i = 0; i < numNodes; i++)
-      for (unsigned j = 0; j < probDim; j++) x(j) += xyze(j, i) * funct(i);
+      for (unsigned j = 0; j < prob_dim; j++) x(j) += xyze(j, i) * funct(i);
 
     return;
   }
@@ -57,9 +57,9 @@ namespace Core::Geo
   \param xsi                  (in)        : element coordinates
   \param x                    (out)       : position in physical coordinates (x, y, z)
   */
-  template <class V, class M, unsigned probDim>
+  template <class V, class M, unsigned prob_dim>
   static inline void elementToCurrentCoordinates(
-      const FE::CellType distype, const M& xyze, const V& xsi, Core::LinAlg::Matrix<probDim, 1>& x)
+      const FE::CellType distype, const M& xyze, const V& xsi, Core::LinAlg::Matrix<prob_dim, 1>& x)
   {
     switch (distype)
     {
@@ -580,15 +580,15 @@ namespace Core::Geo
   \tparam dim   dimension of the problem
 
   */
-  template <FE::CellType DISTYPE, int dim, class M1, class V, class M2>
+  template <FE::CellType distype, int dim, class M1, class V, class M2>
   static inline void updateAForNWE(M1& A,  ///< system matrix
       const V& xsi,                        ///< vector of element coordinates
       const M2& xyze                       ///< nodal position array (3,numNodes)
   )
   {
-    const int numNodes = Core::FE::num_nodes<DISTYPE>;
+    const int numNodes = Core::FE::num_nodes<distype>;
     static Core::LinAlg::Matrix<dim, numNodes> deriv1;
-    Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv1);
+    Core::FE::shape_function_deriv1<distype>(xsi, deriv1);
 
     A.clear();
     for (int isd = 0; isd < 3; ++isd)
@@ -602,7 +602,7 @@ namespace Core::Geo
          computation whether a node in current coordinates lies within an element
 
   */
-  template <FE::CellType DISTYPE,  ///< shape of the element
+  template <FE::CellType distype,  ///< shape of the element
       int dim, class V1, class V2, class V3, class M1>
   static inline void updateRHSForNWE(V1& b,  ///< right-hand-sid
       const V2& xsi,                         ///< vector of element coordinates
@@ -610,10 +610,10 @@ namespace Core::Geo
       const M1& xyze                         ///< nodal coordinates of an element with shape DISTYPE
   )
   {
-    const int numNodes = Core::FE::num_nodes<DISTYPE>;
+    const int numNodes = Core::FE::num_nodes<distype>;
     static Core::LinAlg::Matrix<numNodes, 1> funct;
     funct.clear();
-    Core::FE::shape_function<DISTYPE>(xsi, funct);
+    Core::FE::shape_function<distype>(xsi, funct);
 
     for (int isd = 0; isd < 3; ++isd)
     {
@@ -633,7 +633,7 @@ namespace Core::Geo
   \param xsi                  (inout)     : node in element coordinates
   \param fastinitguess        (in)        : if true, fast (but approximate) initial guess is used
   */
-  template <FE::CellType DISTYPE, class M1, class V3>
+  template <FE::CellType distype, class M1, class V3>
   static inline bool currentToVolumeElementCoordinatesT(const M1& xyze,  ///< nodal position array
       const V3& x,                                                       ///< (x,y,z)
       Core::LinAlg::Matrix<3, 1>& xsi,                                   ///< (r,s,t)
@@ -651,10 +651,10 @@ namespace Core::Geo
     // work for elements far away from the origin as well. (27.07.2015 winter & seitz)
 
     // number space dimensions for element
-    const size_t dim = Core::FE::dim<DISTYPE>;
+    const size_t dim = Core::FE::dim<distype>;
 
     // number of nodes of element
-    const size_t nen = Core::FE::num_nodes<DISTYPE>;
+    const size_t nen = Core::FE::num_nodes<distype>;
     bool nodeWithinElement = true;
     const int maxiter = 20;  // 40;
     double residual = 1.0;
@@ -670,13 +670,13 @@ namespace Core::Geo
     // initial guess
     if (fastinitguess == false)
     {
-      startingValueCurrentToElementCoords<DISTYPE>(xsi);
+      startingValueCurrentToElementCoords<distype>(xsi);
     }
     else
     {
       // either get good initial guess and continue or
       // leave here when outside (which is just an approximation and can be incorrect)
-      nodeWithinElement = FastInitialGuess<DISTYPE>(xyze, x, xsi);
+      nodeWithinElement = FastInitialGuess<distype>(xyze, x, xsi);
       if (nodeWithinElement == false) return nodeWithinElement;
     }
 
@@ -710,12 +710,12 @@ namespace Core::Geo
       x_scaled(j) *= scale_vector(j);
     }
 
-    updateRHSForNWE<DISTYPE, dim>(b, xsi, x_scaled, xyze_scaled);
+    updateRHSForNWE<distype, dim>(b, xsi, x_scaled, xyze_scaled);
 
     int iter = 0;
     while (residual > Core::Geo::TOL14)
     {
-      updateAForNWE<DISTYPE, dim>(A, xsi, xyze_scaled);
+      updateAForNWE<distype, dim>(A, xsi, xyze_scaled);
 
       double det = Core::LinAlg::gaussElimination<true, 3>(A, b, dx);
 
@@ -725,7 +725,7 @@ namespace Core::Geo
       }
 
       xsi += dx;
-      updateRHSForNWE<DISTYPE, dim>(b, xsi, x_scaled, xyze_scaled);
+      updateRHSForNWE<distype, dim>(b, xsi, x_scaled, xyze_scaled);
 
       residual = b.norm2();
       iter++;
@@ -739,7 +739,7 @@ namespace Core::Geo
 
     // final check whether node is within element
     if (nodeWithinElement == true)
-      nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, DISTYPE);
+      nodeWithinElement = checkPositionWithinElementParameterSpace(xsi, distype);
 
     return nodeWithinElement;
   }
@@ -813,14 +813,14 @@ namespace Core::Geo
   \param xsi                  (in) :  node in element coordinates (r, s)
   \param xyze_surfaceElement  (in) :  element nodal coordinates
   */
-  template <FE::CellType DISTYPE, class M>
+  template <FE::CellType distype, class M>
   static inline void updateJacobianForMap3To2(Core::LinAlg::Matrix<3, 2>& Jacobi,
       const Core::LinAlg::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
   {
-    const int numNodes = Core::FE::num_nodes<DISTYPE>;
+    const int numNodes = Core::FE::num_nodes<distype>;
 
     static Core::LinAlg::Matrix<2, numNodes> deriv1;
-    Core::FE::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), DISTYPE);
+    Core::FE::shape_function_2D_deriv1(deriv1, xsi(0), xsi(1), distype);
 
     Jacobi.clear();
     for (int isd = 0; isd < 3; isd++)
@@ -839,14 +839,14 @@ namespace Core::Geo
   \param x                    (in) :  node in physical coordinates
   \param xyze_surfaceElement  (in) :  element nodal coordinates
   */
-  template <FE::CellType DISTYPE, class M>
+  template <FE::CellType distype, class M>
   static inline void updateFForMap3To2(Core::LinAlg::Matrix<3, 1>& F,
       const Core::LinAlg::Matrix<2, 1>& xsi, const Core::LinAlg::Matrix<3, 1>& x,
       const M& xyze_surfaceElement)
   {
-    const int numNodes = Core::FE::num_nodes<DISTYPE>;
+    const int numNodes = Core::FE::num_nodes<distype>;
     static Core::LinAlg::Matrix<numNodes, 1> funct;
-    Core::FE::shape_function_2D(funct, xsi(0), xsi(1), DISTYPE);
+    Core::FE::shape_function_2D(funct, xsi(0), xsi(1), distype);
 
     F.clear();
     for (int isd = 0; isd < 3; ++isd)
@@ -866,14 +866,14 @@ namespace Core::Geo
   \param xsi                  (in) :  node in element coordinates (r, s)
   \param xyze_surfaceElement  (in) :  element nodal coordinates
   */
-  template <FE::CellType DISTYPE, class M>
+  template <FE::CellType distype, class M>
   static void updateAForMap3To2(Core::LinAlg::Matrix<2, 2>& A,
       const Core::LinAlg::Matrix<3, 2>& Jacobi, const Core::LinAlg::Matrix<3, 1>& F,
       const Core::LinAlg::Matrix<2, 1>& xsi, const M& xyze_surfaceElement)
   {
-    const int numNodes = Core::FE::num_nodes<DISTYPE>;
+    const int numNodes = Core::FE::num_nodes<distype>;
     static Core::LinAlg::Matrix<3, numNodes> deriv2;
-    Core::FE::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), DISTYPE);
+    Core::FE::shape_function_2D_deriv2(deriv2, xsi(0), xsi(1), distype);
 
     // third order tensor 3 x 2 x 2 stored as 3x2 and 3x2 so 3x4
     static Core::LinAlg::Matrix<3, 4> tensor3order;
@@ -900,11 +900,11 @@ namespace Core::Geo
   \param physCoord                (in) :  physical coordinates (x,y,z)
   \param eleCoord                 (in) :  element coordinates (r,s)
    */
-  template <FE::CellType DISTYPE, class M>
+  template <FE::CellType distype, class M>
   static void currentToSurfaceElementCoordinatesT(const M& xyze_surfaceElement,
       const Core::LinAlg::Matrix<3, 1>& physCoord, Core::LinAlg::Matrix<2, 1>& eleCoord)
   {
-    startingValueCurrentToElementCoords<DISTYPE>(eleCoord);
+    startingValueCurrentToElementCoords<distype>(eleCoord);
 
     const int maxiter = 20;
     int iter = 0;
@@ -915,8 +915,8 @@ namespace Core::Geo
       // compute Jacobian, f and b
       static Core::LinAlg::Matrix<3, 2> Jacobi;
       static Core::LinAlg::Matrix<3, 1> F;
-      updateJacobianForMap3To2<DISTYPE>(Jacobi, eleCoord, xyze_surfaceElement);
-      updateFForMap3To2<DISTYPE>(F, eleCoord, physCoord, xyze_surfaceElement);
+      updateJacobianForMap3To2<distype>(Jacobi, eleCoord, xyze_surfaceElement);
+      updateFForMap3To2<distype>(F, eleCoord, physCoord, xyze_surfaceElement);
       static Core::LinAlg::Matrix<2, 1> b;
       b.clear();
 
@@ -931,7 +931,7 @@ namespace Core::Geo
 
       // compute system matrix A
       static Core::LinAlg::Matrix<2, 2> A;
-      updateAForMap3To2<DISTYPE>(A, Jacobi, F, eleCoord, xyze_surfaceElement);
+      updateAForMap3To2<distype>(A, Jacobi, F, eleCoord, xyze_surfaceElement);
 
       static Core::LinAlg::Matrix<2, 1> dx;
       dx = 0.0;
@@ -996,18 +996,18 @@ namespace Core::Geo
   \param physCoord                (in) :  physical coordinates (x,y,z)
   \param eleCoord                 (in) :  element coordinates (r)
    */
-  template <FE::CellType DISTYPE, class M>
+  template <FE::CellType distype, class M>
   static void currentToLineElementCoordinatesT(const M& xyze_lineElement,
       const Core::LinAlg::Matrix<3, 1>& physCoord, Core::LinAlg::Matrix<1, 1>& eleCoord)
   {
-    const int numNodes = Core::FE::num_nodes<DISTYPE>;
+    const int numNodes = Core::FE::num_nodes<distype>;
 
     const int maxiter = 20;
     int iter = 0;
     double residual = 1.0;
 
     // starting value
-    startingValueCurrentToElementCoords<DISTYPE>(eleCoord);
+    startingValueCurrentToElementCoords<distype>(eleCoord);
 
     while (residual > Core::Geo::TOL13)
     {
@@ -1015,13 +1015,13 @@ namespace Core::Geo
 
       // determine shapefunction, 1. and 2. derivative at current solutiom
       static Core::LinAlg::Matrix<numNodes, 1> funct;
-      Core::FE::shape_function_1D(funct, eleCoord(0), DISTYPE);
+      Core::FE::shape_function_1D(funct, eleCoord(0), distype);
 
       static Core::LinAlg::Matrix<1, numNodes> deriv1;
-      Core::FE::shape_function_1D_deriv1(deriv1, eleCoord(0), DISTYPE);
+      Core::FE::shape_function_1D_deriv1(deriv1, eleCoord(0), distype);
 
       static Core::LinAlg::Matrix<1, numNodes> deriv2;
-      Core::FE::shape_function_1D_deriv2(deriv2, eleCoord(0), DISTYPE);
+      Core::FE::shape_function_1D_deriv2(deriv2, eleCoord(0), distype);
 
       // compute nonlinear system
       static Core::LinAlg::Matrix<3, 1> F;
@@ -1099,16 +1099,16 @@ namespace Core::Geo
   \param x (out) : global coordinates of the point
   \param xsi (in) : local element coordinates of the point (parameter space)
   */
-  template <Core::FE::CellType DISTYPE>
+  template <Core::FE::CellType distype>
   static bool ComputeLocalCoordinates(
-      Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, Core::FE::num_nodes<DISTYPE>>& xyze,
-      Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, 1>& x,
-      Core::LinAlg::Matrix<Core::FE::dim<DISTYPE>, 1>& xsi)
+      Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& xyze,
+      Core::LinAlg::Matrix<Core::FE::dim<distype>, 1>& x,
+      Core::LinAlg::Matrix<Core::FE::dim<distype>, 1>& xsi)
   {
     bool inelement = true;
 
-    const int numDim = Core::FE::dim<DISTYPE>;
-    const int numNodes = Core::FE::num_nodes<DISTYPE>;
+    const int numDim = Core::FE::dim<distype>;
+    const int numNodes = Core::FE::num_nodes<distype>;
 
     const int maxiter = 20;
     double residual = 1.0;
@@ -1126,16 +1126,16 @@ namespace Core::Geo
     Core::LinAlg::Matrix<numDim, numNodes> deriv1(true);
 
     // initial guess
-    startingValueCurrentToElementCoords<DISTYPE>(xsi);
+    startingValueCurrentToElementCoords<distype>(xsi);
 
     // update rhs b= -(x(xi)-x_point)
-    Core::FE::shape_function<DISTYPE>(xsi, funct);
+    Core::FE::shape_function<distype>(xsi, funct);
 
     // newton loop
     int iter = 0;
     while (residual > Core::Geo::TOL12 or dx.Norm2() > Core::Geo::TOL12)
     {
-      Core::FE::shape_function_deriv1<DISTYPE>(xsi, deriv1);
+      Core::FE::shape_function_deriv1<distype>(xsi, deriv1);
 
       // get the jacobian
       A.clear();
@@ -1152,7 +1152,7 @@ namespace Core::Geo
       }
 
       // update rhs b= -(x(xi)-x_point)
-      Core::FE::shape_function<DISTYPE>(xsi, funct);
+      Core::FE::shape_function<distype>(xsi, funct);
       for (int isd = 0; isd < numDim; ++isd)
       {
         b(isd) = x(isd);
@@ -1174,7 +1174,7 @@ namespace Core::Geo
       }
     }
 
-    inelement = checkPositionWithinElementParameterSpace(xsi, DISTYPE);
+    inelement = checkPositionWithinElementParameterSpace(xsi, distype);
 
     return inelement;
   }

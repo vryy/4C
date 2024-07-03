@@ -33,7 +33,7 @@ namespace Discret
     class LubricationEleParameter;
 
     class LubricationEleViscManager;
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class LubricationEleInternalVariableManager;
 
     /// Lubrication element implementation
@@ -405,7 +405,7 @@ namespace Discret
       All formulation-specific internal variables are stored and managed by a class derived from
       this class.
     */
-    template <int NSD, int NEN>
+    template <int nsd, int nen>
     class LubricationEleInternalVariableManager
     {
      public:
@@ -415,10 +415,10 @@ namespace Discret
 
       // compute and set internal variables
       void set_internal_variables(
-          Core::LinAlg::Matrix<NEN, 1>& funct,  //! array for shape functions
-          Core::LinAlg::Matrix<NSD, NEN>&
+          Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
+          Core::LinAlg::Matrix<nsd, nen>&
               derxy,  //! global derivatives of shape functions w.r.t x,y,z
-          Core::LinAlg::Matrix<NEN, 1>& eprenp  //! pressure at t_(n+1) or t_(n+alpha_F)
+          Core::LinAlg::Matrix<nen, 1>& eprenp  //! pressure at t_(n+1) or t_(n+alpha_F)
       )
       {
         // calculate pressure at t_(n+1) or t_(n+alpha_F)
@@ -436,7 +436,7 @@ namespace Discret
       //! return pressure values at t_(n+1) or t_(n+alpha_F)
       virtual const double& Prenp() const { return prenp_; };
       //! return spatial gradient of all pressure values
-      virtual const Core::LinAlg::Matrix<NSD, 1>& GradPre() const { return gradpre_; };
+      virtual const Core::LinAlg::Matrix<nsd, 1>& GradPre() const { return gradpre_; };
 
      protected:
       /*========================================================================*/
@@ -446,7 +446,7 @@ namespace Discret
       //! pressure
       double prenp_;
       //! spatial gradient of current pressure value
-      Core::LinAlg::Matrix<NSD, 1> gradpre_;
+      Core::LinAlg::Matrix<nsd, 1> gradpre_;
     };
 
     /// Lubrication diffusion manager

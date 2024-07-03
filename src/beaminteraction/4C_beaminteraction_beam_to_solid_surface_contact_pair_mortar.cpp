@@ -38,9 +38,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, surface,
-    mortar>::BeamToSolidSurfaceContactPairMortar()
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+    Mortar>::BeamToSolidSurfaceContactPairMortar()
     : base_class()
 {
   // Empty constructor.
@@ -49,9 +49,9 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, surface,
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, surface,
-    mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+    Mortar>::evaluate_and_assemble_mortar_contributions(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     Core::LinAlg::SparseMatrix& global_constraint_lin_beam,
     Core::LinAlg::SparseMatrix& global_constraint_lin_solid,
@@ -80,26 +80,25 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 
   // Initialize variables for contact kinematics
-  Core::LinAlg::Matrix<3, 1, scalar_type> surface_normal;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_beam;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface;
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_rel;
-  scalar_type gap = 0.0;
+  Core::LinAlg::Matrix<3, 1, ScalarType> surface_normal;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_beam;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface;
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_rel;
+  ScalarType gap = 0.0;
 
   // Initialize variables for the shape function matrices
-  Core::LinAlg::Matrix<mortar_trial::spatial_dim_, mortar_trial::n_dof_, scalar_type>
-      N_lambda_trial;
-  Core::LinAlg::Matrix<mortar::spatial_dim_, mortar::n_dof_, scalar_type> N_lambda;
-  Core::LinAlg::Matrix<beam::spatial_dim_, beam::n_dof_, scalar_type> N_beam;
-  Core::LinAlg::Matrix<surface::spatial_dim_, surface::n_dof_, scalar_type> N_surface;
+  Core::LinAlg::Matrix<mortar_trial::spatial_dim_, mortar_trial::n_dof_, ScalarType> N_lambda_trial;
+  Core::LinAlg::Matrix<Mortar::spatial_dim_, Mortar::n_dof_, ScalarType> N_lambda;
+  Core::LinAlg::Matrix<Beam::spatial_dim_, Beam::n_dof_, ScalarType> N_beam;
+  Core::LinAlg::Matrix<Surface::spatial_dim_, Surface::n_dof_, ScalarType> N_surface;
 
   // Initialize variables for local vectors
-  Core::LinAlg::Matrix<mortar_trial::n_dof_, 1, scalar_type> constraint_vector(true);
-  Core::LinAlg::Matrix<mortar_trial::n_dof_, 1, scalar_type> kappa(true);
-  Core::LinAlg::Matrix<3, mortar::n_dof_, scalar_type> normal_times_lambda_shape(true);
-  Core::LinAlg::Matrix<beam::n_dof_, mortar::n_dof_, scalar_type>
+  Core::LinAlg::Matrix<mortar_trial::n_dof_, 1, ScalarType> constraint_vector(true);
+  Core::LinAlg::Matrix<mortar_trial::n_dof_, 1, ScalarType> kappa(true);
+  Core::LinAlg::Matrix<3, Mortar::n_dof_, ScalarType> normal_times_lambda_shape(true);
+  Core::LinAlg::Matrix<Beam::n_dof_, Mortar::n_dof_, ScalarType>
       beam_shape_times_normal_times_lambda_shape_gp(true);
-  Core::LinAlg::Matrix<surface::n_dof_, mortar::n_dof_, scalar_type>
+  Core::LinAlg::Matrix<Surface::n_dof_, Mortar::n_dof_, ScalarType>
       surface_shape_times_normal_times_lambda_shape_gp(true);
   beam_shape_times_normal_times_lambda_shape_.put_scalar(0.0);
   surface_shape_times_normal_times_lambda_shape_.put_scalar(0.0);
@@ -116,17 +115,17 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
 
       // Get the current Gauss integration factor. This includes everything, e.g., Gauss weight,
       // segment Jacobian and beam Jacobian.
-      const scalar_type gauss_factor = projected_gauss_point.GetGaussWeight() *  //
-                                       0.5 * segment.GetSegmentLength() *
-                                       get_jacobian_for_configuration(eta, contact_defined_on);
+      const ScalarType gauss_factor = projected_gauss_point.GetGaussWeight() *  //
+                                      0.5 * segment.GetSegmentLength() *
+                                      get_jacobian_for_configuration(eta, contact_defined_on);
 
       // Get the surface normal vector
-      GEOMETRYPAIR::EvaluateSurfaceNormal<surface>(
+      GEOMETRYPAIR::EvaluateSurfaceNormal<Surface>(
           xi, this->face_element_->GetFaceElementData(), surface_normal);
 
       // Evaluate the current position of beam and solid
-      GEOMETRYPAIR::EvaluatePosition<beam>(eta, this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<surface>(
+      GEOMETRYPAIR::EvaluatePosition<Beam>(eta, this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<Surface>(
           xi, this->face_element_->GetFaceElementData(), r_surface);
 
       // Evaluate the gap function
@@ -136,10 +135,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
 
       // Get the shape function matrices
       GEOMETRYPAIR::EvaluateShapeFunctionMatrix<mortar_trial>(N_lambda_trial, eta);
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<mortar>(N_lambda, eta);
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<beam>(
+      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Mortar>(N_lambda, eta);
+      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Beam>(
           N_beam, eta, this->ele1pos_.shape_function_data_);
-      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<surface>(
+      GEOMETRYPAIR::EvaluateShapeFunctionMatrix<Surface>(
           N_surface, xi, this->face_element_->GetFaceElementData().shape_function_data_);
 
       // Weighted gap
@@ -161,7 +160,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
       // Scaling vector
       Core::LinAlg::Matrix<mortar_trial::spatial_dim_, 1, double> ones(true);
       ones.put_scalar(1.0);
-      Core::LinAlg::Matrix<mortar_trial::n_dof_, 1, scalar_type> N_lambda_trial_flat(true);
+      Core::LinAlg::Matrix<mortar_trial::n_dof_, 1, ScalarType> N_lambda_trial_flat(true);
       N_lambda_trial_flat.multiply_tn(N_lambda_trial, ones);
       N_lambda_trial_flat.scale(gauss_factor);
       kappa += N_lambda_trial_flat;
@@ -169,7 +168,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
   }
 
   // Get the beam centerline GIDs.
-  Core::LinAlg::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
   BEAMINTERACTION::UTILS::GetElementCenterlineGIDIndices(
       discret, this->Element1(), beam_centerline_gid);
 
@@ -180,9 +179,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
   const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
 
   // Assemble into the matrix in the beam row and lambda column
-  for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+  for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; i_beam++)
   {
-    for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+    for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
     {
       const double value = Core::FADUtils::CastToDouble(
           beam_shape_times_normal_times_lambda_shape_(i_beam, i_lambda));
@@ -192,9 +191,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
   }
 
   // Assemble into the matrix in the surface row and lambda column
-  for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+  for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
   {
-    for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+    for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
     {
       const double value = Core::FADUtils::CastToDouble(
           surface_shape_times_normal_times_lambda_shape_(i_surface, i_lambda));
@@ -204,10 +203,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
   }
 
   // Assemble into the in the lambda row
-  for (unsigned int i_lambda = 0; i_lambda < mortar::n_dof_; i_lambda++)
+  for (unsigned int i_lambda = 0; i_lambda < Mortar::n_dof_; i_lambda++)
   {
     // Assemble into the beam column
-    for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+    for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; i_beam++)
     {
       const double value = constraint_vector(i_lambda).dx(i_beam);
       global_constraint_lin_beam.FEAssemble(
@@ -221,10 +220,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
     // Assemble into the solid column
     for (unsigned int i_patch = 0; i_patch < patch_gid.size(); i_patch++)
     {
-      const double value = constraint_vector(i_lambda).dx(beam::n_dof_ + i_patch);
+      const double value = constraint_vector(i_lambda).dx(Beam::n_dof_ + i_patch);
       global_constraint_lin_solid.FEAssemble(value, lambda_gid_pos[i_lambda], patch_gid[i_patch]);
 
-      const double value_kappa_linearization = kappa(i_lambda).dx(beam::n_dof_ + i_patch);
+      const double value_kappa_linearization = kappa(i_lambda).dx(Beam::n_dof_ + i_patch);
       global_kappa_lin_solid.FEAssemble(
           value_kappa_linearization, lambda_gid_pos[i_lambda], patch_gid[i_patch]);
     }
@@ -247,9 +246,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, surface,
-    mortar>::EvaluateAndAssemble(const Core::FE::Discretization& discret,
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+    Mortar>::EvaluateAndAssemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
     const Teuchos::RCP<Epetra_FEVector>& force_vector,
     const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
@@ -270,43 +269,43 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
   const auto& [lambda_gid_pos, _] = mortar_manager->LocationVector(*this);
   std::vector<double> lambda_pos_vector;
   Core::FE::ExtractMyValues(global_lambda, lambda_pos_vector, lambda_gid_pos);
-  const auto lambda_pos = Core::LinAlg::Matrix<mortar::n_dof_, 1, double>(lambda_pos_vector.data());
+  const auto lambda_pos = Core::LinAlg::Matrix<Mortar::n_dof_, 1, double>(lambda_pos_vector.data());
 
   // Multiply with the matrices evaluated in evaluate_and_assemble_mortar_contributions
-  auto force_beam = Core::LinAlg::Matrix<beam::n_dof_, 1, scalar_type>(true);
+  auto force_beam = Core::LinAlg::Matrix<Beam::n_dof_, 1, ScalarType>(true);
   force_beam.multiply(beam_shape_times_normal_times_lambda_shape_, lambda_pos);
-  auto force_surface = Core::LinAlg::Matrix<surface::n_dof_, 1, scalar_type>(true);
+  auto force_surface = Core::LinAlg::Matrix<Surface::n_dof_, 1, ScalarType>(true);
   force_surface.multiply(surface_shape_times_normal_times_lambda_shape_, lambda_pos);
 
   // Assemble the terms to the global stiffness matrix
-  Core::LinAlg::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
   BEAMINTERACTION::UTILS::GetElementCenterlineGIDIndices(
       discret, this->Element1(), beam_centerline_gid);
   const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
 
-  for (unsigned int i_beam = 0; i_beam < beam::n_dof_; i_beam++)
+  for (unsigned int i_beam = 0; i_beam < Beam::n_dof_; i_beam++)
   {
-    for (unsigned int j_beam = 0; j_beam < beam::n_dof_; j_beam++)
+    for (unsigned int j_beam = 0; j_beam < Beam::n_dof_; j_beam++)
     {
       const double value = force_beam(i_beam).dx(j_beam);
       stiffness_matrix->FEAssemble(value, beam_centerline_gid(i_beam), beam_centerline_gid(j_beam));
     }
     for (unsigned int j_patch = 0; j_patch < patch_gid.size(); j_patch++)
     {
-      const double value = force_beam(i_beam).dx(beam::n_dof_ + j_patch);
+      const double value = force_beam(i_beam).dx(Beam::n_dof_ + j_patch);
       stiffness_matrix->FEAssemble(value, beam_centerline_gid(i_beam), patch_gid[j_patch]);
     }
   }
-  for (unsigned int i_surface = 0; i_surface < surface::n_dof_; i_surface++)
+  for (unsigned int i_surface = 0; i_surface < Surface::n_dof_; i_surface++)
   {
-    for (unsigned int j_beam = 0; j_beam < beam::n_dof_; j_beam++)
+    for (unsigned int j_beam = 0; j_beam < Beam::n_dof_; j_beam++)
     {
       const double value = force_surface(i_surface).dx(j_beam);
       stiffness_matrix->FEAssemble(value, patch_gid[i_surface], beam_centerline_gid(j_beam));
     }
     for (unsigned int j_patch = 0; j_patch < patch_gid.size(); j_patch++)
     {
-      const double value = force_surface(i_surface).dx(beam::n_dof_ + j_patch);
+      const double value = force_surface(i_surface).dx(Beam::n_dof_ + j_patch);
       stiffness_matrix->FEAssemble(value, patch_gid[i_surface], patch_gid[j_patch]);
     }
   }
@@ -315,22 +314,22 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, sur
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface, typename mortar>
-scalar_type BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, beam, surface,
-    mortar>::get_jacobian_for_configuration(const scalar_type& eta,
+template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
+ScalarType BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surface,
+    Mortar>::get_jacobian_for_configuration(const ScalarType& eta,
     const Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn mortar_configuration) const
 {
-  Core::LinAlg::Matrix<3, 1, scalar_type> dr_beam;
+  Core::LinAlg::Matrix<3, 1, ScalarType> dr_beam;
   switch (mortar_configuration)
   {
     case Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn::reference_configuration:
     {
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1posref_, dr_beam);
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(eta, this->ele1posref_, dr_beam);
       return Core::FADUtils::VectorNorm(dr_beam);
     }
     case Inpar::BeamToSolid::BeamToSolidSurfaceContactMortarDefinedIn::current_configuration:
     {
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(eta, this->ele1pos_, dr_beam);
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(eta, this->ele1pos_, dr_beam);
       return Core::FADUtils::VectorNorm(dr_beam);
     }
     default:
@@ -341,7 +340,7 @@ scalar_type BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type, be
 /**
  * @brief Factory function templated on the type of beam element and the surface shape
  */
-template <typename beam, typename surface, typename scalar_type>
+template <typename Beam, typename Surface, typename ScalarType>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BeamToSolidSurfaceContactPairMortarFactoryTemplateBeamSurface(
     const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceContactParams>
@@ -352,8 +351,8 @@ BeamToSolidSurfaceContactPairMortarFactoryTemplateBeamSurface(
   switch (beam_to_surface_contact_params->get_mortar_shape_function_type())
   {
     case Inpar::BeamToSolid::BeamToSolidMortarShapefunctions::line2:
-      return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<scalar_type,
-          beam, surface, t_line2_scalar>);
+      return Teuchos::rcp(new BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam,
+          Surface, t_line2_scalar>);
     default:
       FOUR_C_THROW("Got unexpected mortar shape function");
   }
@@ -362,7 +361,7 @@ BeamToSolidSurfaceContactPairMortarFactoryTemplateBeamSurface(
 /**
  * @brief Factory function templated on the type of beam element
  */
-template <typename beam>
+template <typename Beam>
 Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BeamToSolidSurfaceContactPairMortarFactoryTemplateBeam(
     const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceContactParams>
@@ -374,7 +373,7 @@ BeamToSolidSurfaceContactPairMortarFactoryTemplateBeam(
   switch (surface_type)
   {
     case Core::FE::CellType::quad4:
-      return BeamToSolidSurfaceContactPairMortarFactoryTemplateBeamSurface<beam, t_quad4,
+      return BeamToSolidSurfaceContactPairMortarFactoryTemplateBeamSurface<Beam, t_quad4,
           line_to_surface_patch_scalar_type_1st_order>(beam_to_surface_contact_params);
     default:
       FOUR_C_THROW("Got unexpected surface shape");

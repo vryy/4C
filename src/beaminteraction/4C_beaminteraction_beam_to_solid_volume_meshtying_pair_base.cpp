@@ -31,9 +31,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename beam, typename solid>
-BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
-    solid>::BeamToSolidVolumeMeshtyingPairBase()
+template <typename Beam, typename Solid>
+BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam,
+    Solid>::BeamToSolidVolumeMeshtyingPairBase()
     : base_class(), meshtying_is_evaluated_(false)
 {
   // Empty constructor.
@@ -42,36 +42,36 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::setup()
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::setup()
 {
   // Call setup of base class first.
   base_class::setup();
 
   // Get the solid element data container
-  ele2posref_ = GEOMETRYPAIR::InitializeElementData<solid, double>::initialize(this->Element2());
-  ele2pos_ = GEOMETRYPAIR::InitializeElementData<solid, scalar_type>::initialize(this->Element2());
+  ele2posref_ = GEOMETRYPAIR::InitializeElementData<Solid, double>::initialize(this->Element2());
+  ele2pos_ = GEOMETRYPAIR::InitializeElementData<Solid, scalar_type>::initialize(this->Element2());
 
   // Set reference nodal positions for the solid element
-  for (unsigned int n = 0; n < solid::n_nodes_; ++n)
+  for (unsigned int n = 0; n < Solid::n_nodes_; ++n)
   {
     const Core::Nodes::Node* node = this->Element2()->Nodes()[n];
     for (int d = 0; d < 3; ++d) ele2posref_.element_position_(3 * n + d) = node->X()[d];
   }
 
   // Initialize current nodal positions for the solid element
-  for (unsigned int i = 0; i < solid::n_dof_; i++) ele2pos_.element_position_(i) = 0.0;
+  for (unsigned int i = 0; i < Solid::n_dof_; i++) ele2pos_.element_position_(i) = 0.0;
 }
 
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::CreateGeometryPair(
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::CreateGeometryPair(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, beam, solid>(
+  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToVolumeFactory<double, Beam, Solid>(
       element1, element2, geometry_evaluation_data_ptr);
 }
 
@@ -79,14 +79,14 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::CreateGeo
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::pre_evaluate()
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
   {
-    GEOMETRYPAIR::ElementData<beam, double> beam_coupling_ref;
-    GEOMETRYPAIR::ElementData<solid, double> solid_coupling_ref;
+    GEOMETRYPAIR::ElementData<Beam, double> beam_coupling_ref;
+    GEOMETRYPAIR::ElementData<Solid, double> solid_coupling_ref;
     this->get_coupling_reference_position(beam_coupling_ref, solid_coupling_ref);
     cast_geometry_pair()->pre_evaluate(
         beam_coupling_ref, solid_coupling_ref, this->line_to_3D_segments_);
@@ -96,8 +96,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::pre_evalu
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::ResetState(
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::ResetState(
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
@@ -105,18 +105,18 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::ResetStat
   base_class::ResetState(beam_centerline_dofvec, solid_nodal_dofvec);
 
   // Solid element.
-  for (unsigned int i = 0; i < solid::n_dof_; i++)
+  for (unsigned int i = 0; i < Solid::n_dof_; i++)
   {
     ele2pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<scalar_type>::apply(
-        beam::n_dof_ + solid::n_dof_, beam::n_dof_ + i, solid_nodal_dofvec[i]);
+        Beam::n_dof_ + Solid::n_dof_, Beam::n_dof_ + i, solid_nodal_dofvec[i]);
   }
 }
 
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::set_restart_displacement(
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::set_restart_displacement(
     const std::vector<std::vector<double>>& centerline_restart_vec_)
 {
   // Call the parent method.
@@ -125,11 +125,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::set_resta
   // We only set the restart displacement, if the current section has the restart coupling flag.
   if (this->Params()->beam_to_solid_volume_meshtying_params()->get_couple_restart_state())
   {
-    for (unsigned int i_dof = 0; i_dof < beam::n_dof_; i_dof++)
+    for (unsigned int i_dof = 0; i_dof < Beam::n_dof_; i_dof++)
       ele1posref_offset_(i_dof) = centerline_restart_vec_[0][i_dof];
 
     // Add the displacement at the restart step to the solid reference position.
-    for (unsigned int i_dof = 0; i_dof < solid::n_dof_; i_dof++)
+    for (unsigned int i_dof = 0; i_dof < Solid::n_dof_; i_dof++)
       ele2posref_offset_(i_dof) = centerline_restart_vec_[1][i_dof];
   }
 }
@@ -138,8 +138,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::set_resta
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_visualization(
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam, Solid>::get_pair_visualization(
     Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -186,8 +186,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_
       // Add the left and right boundary point of the segment.
       for (const auto& segmentation_point : {segment.GetEtadata(), segment.GetEtaB()})
       {
-        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1posref_, X);
-        GEOMETRYPAIR::EvaluatePosition<beam>(segmentation_point, this->ele1pos_, r);
+        GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1posref_, X);
+        GEOMETRYPAIR::EvaluatePosition<Beam>(segmentation_point, this->ele1pos_, r);
         u = r;
         u -= X;
         for (unsigned int dim = 0; dim < 3; dim++)
@@ -239,8 +239,8 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_
         this->evaluate_beam_position_double(projection_point, r, false);
         u = r;
         u -= X;
-        GEOMETRYPAIR::EvaluatePosition<solid>(projection_point.GetXi(),
-            GEOMETRYPAIR::ElementDataToDouble<solid>::ToDouble(this->ele2pos_), r_solid);
+        GEOMETRYPAIR::EvaluatePosition<Solid>(projection_point.GetXi(),
+            GEOMETRYPAIR::ElementDataToDouble<Solid>::ToDouble(this->ele2pos_), r_solid);
         evaluate_penalty_force_double(r, r_solid, force_integration_point);
         for (unsigned int dim = 0; dim < 3; dim++)
         {
@@ -262,9 +262,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::get_pair_
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
-    solid>::evaluate_penalty_force_double(const Core::LinAlg::Matrix<3, 1, double>& r_beam,
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam,
+    Solid>::evaluate_penalty_force_double(const Core::LinAlg::Matrix<3, 1, double>& r_beam,
     const Core::LinAlg::Matrix<3, 1, double>& r_solid,
     Core::LinAlg::Matrix<3, 1, double>& force) const
 {
@@ -277,11 +277,11 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
 /**
  *
  */
-template <typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam,
-    solid>::get_coupling_reference_position(GEOMETRYPAIR::ElementData<beam, double>&
+template <typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<Beam,
+    Solid>::get_coupling_reference_position(GEOMETRYPAIR::ElementData<Beam, double>&
                                                 beam_coupling_ref,
-    GEOMETRYPAIR::ElementData<solid, double>& solid_coupling_ref) const
+    GEOMETRYPAIR::ElementData<Solid, double>& solid_coupling_ref) const
 {
   // Add the offset to the reference position.
   beam_coupling_ref = this->ele1posref_;

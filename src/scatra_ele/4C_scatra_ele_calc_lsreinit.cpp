@@ -26,16 +26,16 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>*
-Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Instance(
+template <Core::FE::CellType distype, unsigned prob_dim>
+Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>*
+Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::Instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::UTILS::MakeSingletonMap<std::string>(
       [](const int numdofpernode, const int numscal, const std::string& disname)
       {
-        return std::unique_ptr<ScaTraEleCalcLsReinit<distype, probDim>>(
-            new ScaTraEleCalcLsReinit<distype, probDim>(numdofpernode, numscal, disname));
+        return std::unique_ptr<ScaTraEleCalcLsReinit<distype, prob_dim>>(
+            new ScaTraEleCalcLsReinit<distype, prob_dim>(numdofpernode, numscal, disname));
       });
 
   return singleton_map[disname].Instance(
@@ -45,10 +45,10 @@ Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::ScaTraEleCalcLsReinit(
+template <Core::FE::CellType distype, unsigned prob_dim>
+Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::ScaTraEleCalcLsReinit(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype, probDim>::ScaTraEleCalc(
+    : Discret::ELEMENTS::ScaTraEleCalc<distype, prob_dim>::ScaTraEleCalc(
           numdofpernode, numscal, disname),
       ephizero_(my::numscal_),  // size of vector
       lsreinitparams_(
@@ -78,8 +78,8 @@ Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::ScaTraEleCalcLsReini
 /*----------------------------------------------------------------------*
  | Action type: Evaluate                                rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate(
+template <Core::FE::CellType distype, unsigned prob_dim>
+int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -106,15 +106,15 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitialization(
     const Epetra_Vector& phinp, const std::vector<int>& lm, Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
 {
   // --- standard case --------------------------------------------------------
-  if (probDim == this->nsd_ele_)
+  if (prob_dim == this->nsd_ele_)
   {
     eval_reinitialization_std(
         phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
@@ -129,8 +129,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitiali
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization_embedded(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitialization_embedded(
     const std::vector<int>& lm, Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)
@@ -221,8 +221,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitiali
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::elliptic_newton_system(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::elliptic_newton_system(
     Core::LinAlg::SerialDenseMatrix* emat, Core::LinAlg::SerialDenseVector* erhs,
     const Core::LinAlg::Matrix<nen_, 1>& el2sysmat_diag_inv,
     const Core::Geo::BoundaryIntCellPtrs& bcell)
@@ -345,8 +345,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::elliptic_newton
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitialization_std(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitialization_std(
     const Epetra_Vector& phinp, const std::vector<int>& lm, Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -421,8 +421,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::eval_reinitiali
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)             rasthofer 12/13 |
 *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_hyperbolic(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_hyperbolic(
     Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
 )
@@ -782,8 +782,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_hyperbol
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)             rasthofer 09/14 |
 *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_elliptic(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_elliptic(
     Core::LinAlg::SerialDenseMatrix& emat,       ///< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs,       ///< element rhs to calculate
     const Core::Geo::BoundaryIntCellPtrs& bcell  ///< interface for penalty term
@@ -913,8 +913,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sysmat_elliptic
 /*----------------------------------------------------------------------*
  |  sign function                                       rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sign_function(double& sign_phi,
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sign_function(double& sign_phi,
     const double charelelength, const double phizero,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphizero, const double phi,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi)
@@ -961,8 +961,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::sign_function(d
 /*----------------------------------------------------------------------*
  | derivative of sign function                          rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::deriv_sign_function(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::deriv_sign_function(
     double& deriv_sign, const double charelelength, const double phizero)
 {
   // compute interface thickness
@@ -982,8 +982,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::deriv_sign_func
 /*----------------------------------------------------------------------*
  |  calculation of characteristic element length        rasthofer 12/13 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-double Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_char_ele_length_reinit(
+template <Core::FE::CellType distype, unsigned prob_dim>
+double Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_char_ele_length_reinit(
     const double vol, const Core::LinAlg::Matrix<nsd_, 1>& gradphizero)
 {
   // define and initialize length
@@ -1053,8 +1053,8 @@ double Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_char_ele
  | calculation of diffusive element matrix            rasthofer 12/13 |
  | here we consider both isotropic and crosswind artificial diffusion |
  *--------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_mat_diff(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_mat_diff(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   // flag for anisotropic diffusion
@@ -1093,8 +1093,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_mat_diff(
 /*-------------------------------------------------------------------- *
  |  standard Galerkin diffusive term on right hand side rasthofer 12/13 |
  *---------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_rhs_diff(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_rhs_diff(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi)
 {
@@ -1135,8 +1135,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_rhs_diff(
  | calculation of interface penalty term for elliptic reinitialization |
  |                                                     rasthofer 09/14 |
  *---------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_interface_term(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_interface_term(
     Core::LinAlg::SerialDenseMatrix* emat,       //!< element matrix to calculate
     Core::LinAlg::SerialDenseVector* erhs,       //!< element vector to calculate
     const Core::Geo::BoundaryIntCellPtrs& bcell  //!< interface for penalty term
@@ -1182,8 +1182,8 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::evaluate_interf
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_term_0_d(
+template <Core::FE::CellType distype, unsigned prob_dim>
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_penalty_term_0_d(
     Core::LinAlg::SerialDenseMatrix* emat, Core::LinAlg::SerialDenseVector* erhs,
     const Core::Geo::BoundaryIntCell& cell)
 {
@@ -1220,9 +1220,9 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_te
  | calculation of interface penalty term for elliptic reinitialization |
  | gauss loop                                          rasthofer 09/14 |
  *---------------------------------------------------------------------*/
-template <Core::FE::CellType distype, unsigned probDim>
+template <Core::FE::CellType distype, unsigned prob_dim>
 template <Core::FE::CellType celldistype>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::calc_penalty_term(
+void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_penalty_term(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to calculate
     const Core::Geo::BoundaryIntCell& cell  //!< interface cell

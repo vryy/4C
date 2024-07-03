@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 // Forward declarations.
 namespace Core::LinAlg
 {
-  template <unsigned int rows, unsigned int cols, class value_type>
+  template <unsigned int rows, unsigned int cols, class ValueType>
   class Matrix;
 }
 namespace Core::FE
@@ -35,10 +35,10 @@ namespace GEOMETRYPAIR
 {
   enum class ProjectionResult;
 
-  template <typename scalar_type>
+  template <typename ScalarType>
   class ProjectionPoint1DTo3D;
 
-  template <typename scalar_type>
+  template <typename ScalarType>
   class LineSegment;
 }  // namespace GEOMETRYPAIR
 
@@ -58,18 +58,18 @@ namespace GEOMETRYPAIR
    * @tparam pair_type Class of the line-to-xxx pair that the segmentation / Gauss-point-projection
    * will be performed on.
    */
-  template <typename pair_type>
+  template <typename PairType>
   class LineTo3DBase
   {
    private:
     //! Alias for the scalar type.
-    using scalar_type = typename pair_type::t_scalar_type;
+    using scalar_type = typename PairType::t_scalar_type;
 
     //! Alias for the line type.
-    using line = typename pair_type::t_line;
+    using line = typename PairType::t_line;
 
     //! Alias for the other geometry type.
-    using other = typename pair_type::t_other;
+    using other = typename PairType::t_other;
 
    public:
     /**
@@ -82,7 +82,7 @@ namespace GEOMETRYPAIR
      * start values for the Newton iteration.
      * @param projection_result (out) Flag for the result of the projection.
      */
-    static void project_point_on_line_to_other(const pair_type* pair,
+    static void project_point_on_line_to_other(const PairType* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other, const scalar_type& eta,
         Core::LinAlg::Matrix<3, 1, scalar_type>& xi, ProjectionResult& projection_result);
@@ -99,7 +99,7 @@ namespace GEOMETRYPAIR
      * @param n_projections_valid (out) Number of valid projections.
      * @param n_projections (out) Number of points, where the nonlinear system could be solved.
      */
-    static void project_points_on_line_to_other(const pair_type* pair,
+    static void project_points_on_line_to_other(const PairType* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
@@ -116,7 +116,7 @@ namespace GEOMETRYPAIR
      * xi are the start values for the iteration.
      * @param n_projections_valid (out) Number of valid projections.
      */
-    static void project_points_on_line_to_other(const pair_type* pair,
+    static void project_points_on_line_to_other(const PairType* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points,
@@ -132,7 +132,7 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param segment (in/out) Vector with found projection points.
      */
-    static void project_gauss_points_on_segment_to_other(const pair_type* pair,
+    static void project_gauss_points_on_segment_to_other(const PairType* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         LineSegment<scalar_type>& segment);
@@ -146,7 +146,7 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param intersection_points (out) vector with the found surface intersections.
      */
-    static void intersect_line_with_other(const pair_type* pair,
+    static void intersect_line_with_other(const PairType* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<ProjectionPoint1DTo3D<scalar_type>>& intersection_points);
@@ -158,18 +158,18 @@ namespace GEOMETRYPAIR
    * @tparam pair_type Class of the line-to-xxx pair that the segmentation / Gauss-point-projection
    * will be performed on.
    */
-  template <typename pair_type>
-  class LineTo3DGaussPointProjection : public LineTo3DBase<pair_type>
+  template <typename PairType>
+  class LineTo3DGaussPointProjection : public LineTo3DBase<PairType>
   {
    private:
     //! Alias for the scalar type.
-    using scalar_type = typename pair_type::t_scalar_type;
+    using scalar_type = typename PairType::t_scalar_type;
 
     //! Alias for the line type.
-    using line = typename pair_type::t_line;
+    using line = typename PairType::t_line;
 
     //! Alias for the other geometry type.
-    using other = typename pair_type::t_other;
+    using other = typename PairType::t_other;
 
    public:
     /**
@@ -185,7 +185,7 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the geometry.
      * @param segments (out) Vector with the segments of this line to xxx pair.
      */
-    static void pre_evaluate(const pair_type* pair,
+    static void pre_evaluate(const PairType* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<LineSegment<scalar_type>>& segments);
@@ -202,7 +202,7 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param segments (out) Vector with the segments of this line-to-xxx pair.
      */
-    static void evaluate(const pair_type* pair,
+    static void evaluate(const PairType* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<LineSegment<scalar_type>>& segments);
@@ -213,7 +213,7 @@ namespace GEOMETRYPAIR
      * @param pair (in) Pointer to the pair object that is being evaluated.
      * @return  reference to line projection vector.
      */
-    static std::vector<bool>& get_line_projection_vector(const pair_type* pair);
+    static std::vector<bool>& get_line_projection_vector(const PairType* pair);
   };
 
 
@@ -222,18 +222,18 @@ namespace GEOMETRYPAIR
    * @tparam pair_type Class of the line-to-xxx pair that the segmentation / Gauss-point-projection
    * will be performed on.
    */
-  template <typename pair_type>
-  class LineTo3DSegmentation : public LineTo3DBase<pair_type>
+  template <typename PairType>
+  class LineTo3DSegmentation : public LineTo3DBase<PairType>
   {
    private:
     //! Alias for the scalar type.
-    using scalar_type = typename pair_type::t_scalar_type;
+    using scalar_type = typename PairType::t_scalar_type;
 
     //! Alias for the line type.
-    using line = typename pair_type::t_line;
+    using line = typename PairType::t_line;
 
     //! Alias for the other geometry type.
-    using other = typename pair_type::t_other;
+    using other = typename PairType::t_other;
 
    public:
     /**
@@ -268,7 +268,7 @@ namespace GEOMETRYPAIR
      * @param element_data_other (in) Degrees of freedom for the other geometry.
      * @param segments (out) Vector with the segments of this line to other geometry pair.
      */
-    static void evaluate(const pair_type* pair,
+    static void evaluate(const PairType* pair,
         const ElementData<line, scalar_type>& element_data_line,
         const ElementData<other, scalar_type>& element_data_other,
         std::vector<LineSegment<scalar_type>>& segments);
@@ -281,7 +281,7 @@ namespace GEOMETRYPAIR
      * case.
      * @return Reference to segment tracking vector.
      */
-    static std::set<LineSegment<double>>& get_segment_tracking_set(const pair_type* pair);
+    static std::set<LineSegment<double>>& get_segment_tracking_set(const PairType* pair);
   };
 
 }  // namespace GEOMETRYPAIR

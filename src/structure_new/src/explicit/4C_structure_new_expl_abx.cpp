@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <int TOrder>
-Solid::EXPLICIT::AdamsBashforthX<TOrder>::AdamsBashforthX()
+template <int t_order>
+Solid::EXPLICIT::AdamsBashforthX<t_order>::AdamsBashforthX()
     : fvisconp_ptr_(Teuchos::null),
       fviscon_ptr_(Teuchos::null),
       finertianp_ptr_(Teuchos::null),
@@ -34,8 +34,8 @@ Solid::EXPLICIT::AdamsBashforthX<TOrder>::AdamsBashforthX()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <int TOrder>
-void Solid::EXPLICIT::AdamsBashforthX<TOrder>::setup()
+template <int t_order>
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::setup()
 {
   check_init();
 
@@ -54,7 +54,7 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::setup()
   // ---------------------------------------------------------------------------
   // resizing of multi-step quantities
   // ---------------------------------------------------------------------------
-  constexpr int nhist = TOrder - 1;
+  constexpr int nhist = t_order - 1;
   global_state().get_multi_time()->Resize(-nhist, 0, true);
   global_state().get_delta_time()->Resize(-nhist, 0, true);
   global_state().get_multi_dis()->Resize(-nhist, 0, global_state().dof_row_map_view(), true);
@@ -80,8 +80,8 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <int TOrder>
-void Solid::EXPLICIT::AdamsBashforthX<TOrder>::post_setup()
+template <int t_order>
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::post_setup()
 {
   check_init_setup();
   equilibrate_initial_state();
@@ -89,8 +89,8 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <int TOrder>
-void Solid::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
+template <int t_order>
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -99,7 +99,7 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> accnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_acc_np()->Scale(1.0, *accnp_ptr);
-  if (compute_phase_ < TOrder)
+  if (compute_phase_ < t_order)
   {
     const double dt = (*global_state().get_delta_time())[0];
 
@@ -117,7 +117,7 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
   }
   else
   {
-    constexpr int nhist = TOrder - 1;
+    constexpr int nhist = t_order - 1;
 
     const double dt = (*global_state().get_delta_time())[0];
 
@@ -139,9 +139,9 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
     // new end-point velocities
     // ---------------------------------------------------------------------------
     global_state().get_vel_np()->Update(1.0, (*(global_state().get_multi_vel()))[0], 0.0);
-    for (int i = 0; i < TOrder; ++i)
+    for (int i = 0; i < t_order; ++i)
     {
-      double c = AdamsBashforthHelper<TOrder>::exc[i];
+      double c = AdamsBashforthHelper<t_order>::exc[i];
       global_state().get_vel_np()->Update(c * dt, (*(global_state().get_multi_acc()))[-i], 1.0);
     }
 
@@ -149,9 +149,9 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
     // new end-point displacements
     // ---------------------------------------------------------------------------
     global_state().get_dis_np()->Update(1.0, (*(global_state().get_multi_dis()))[0], 0.0);
-    for (int i = 0; i < TOrder; ++i)
+    for (int i = 0; i < t_order; ++i)
     {
-      double c = AdamsBashforthHelper<TOrder>::exc[i];
+      double c = AdamsBashforthHelper<t_order>::exc[i];
       global_state().get_dis_np()->Update(c * dt, (*(global_state().get_multi_vel()))[-i], 1.0);
     }
   }
@@ -165,8 +165,8 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <int TOrder>
-void Solid::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(Epetra_Vector& f) const
+template <int t_order>
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -174,8 +174,8 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(Epet
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <int TOrder>
-void Solid::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(
+template <int t_order>
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
@@ -185,8 +185,8 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <int TOrder>
-void Solid::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
+template <int t_order>
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -198,9 +198,9 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
   iowriter.write_int("compute_phase", compute_phase_);
 
   // write velocities and accelerations
-  if (compute_phase_ >= TOrder)
+  if (compute_phase_ >= t_order)
   {
-    for (int i = 0; i < TOrder; ++i)
+    for (int i = 0; i < t_order; ++i)
     {
       std::stringstream velname;
       velname << "histvel_" << i;
@@ -221,8 +221,8 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <int TOrder>
-void Solid::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(
+template <int t_order>
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::read_restart(
     Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
@@ -241,9 +241,9 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(
   }
 
   // read velocities and accelerations
-  if (compute_phase_ >= TOrder)
+  if (compute_phase_ >= t_order)
   {
-    for (int i = TOrder - 1; i >= 0; --i)
+    for (int i = t_order - 1; i >= 0; --i)
     {
       std::stringstream velname;
       velname << "histvel_" << i;
@@ -267,8 +267,8 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-template <int TOrder>
-void Solid::EXPLICIT::AdamsBashforthX<TOrder>::update_step_state()
+template <int t_order>
+void Solid::EXPLICIT::AdamsBashforthX<t_order>::update_step_state()
 {
   check_init_setup();
 
@@ -288,7 +288,7 @@ void Solid::EXPLICIT::AdamsBashforthX<TOrder>::update_step_state()
   model_eval().update_step_state(0.0);
 
   // update the compute phase step flag
-  if (compute_phase_ < TOrder) ++compute_phase_;
+  if (compute_phase_ < t_order) ++compute_phase_;
 }
 
 /*----------------------------------------------------------------------------*

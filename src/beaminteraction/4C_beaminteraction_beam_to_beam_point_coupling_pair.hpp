@@ -35,7 +35,7 @@ namespace BEAMINTERACTION
    * \brief Class for point-wise beam to beam mesh tying.
    * @param beam Type from GEOMETRYPAIR::ElementDiscretization... representing the beam.
    */
-  template <typename beam>
+  template <typename Beam>
   class BeamToBeamPointCouplingPair : public BeamContactPair
   {
    protected:
@@ -44,7 +44,7 @@ namespace BEAMINTERACTION
     using scalar_type_rot = typename Sacado::Fad::SLFad<double, 6>;
 
     //! FAD type for positional coupling.
-    using scalar_type_pos = typename Sacado::Fad::SLFad<double, 2 * beam::n_dof_>;
+    using scalar_type_pos = typename Sacado::Fad::SLFad<double, 2 * Beam::n_dof_>;
 
    public:
     /**

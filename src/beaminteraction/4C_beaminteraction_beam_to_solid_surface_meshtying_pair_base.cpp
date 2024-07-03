@@ -27,9 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::BeamToSolidSurfaceMeshtyingPairBase()
+template <typename ScalarType, typename Beam, typename Surface>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+    Surface>::BeamToSolidSurfaceMeshtyingPairBase()
     : base_class(), meshtying_is_evaluated_(false)
 {
   // Empty constructor.
@@ -38,25 +38,23 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
 /**
  *
  */
-template <typename scalar_type_fad, typename beam, typename solid>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type_fad, beam, solid>::ResetState(
+template <typename ScalarTypeFad, typename Beam, typename Solid>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarTypeFad, Beam, Solid>::ResetState(
     const std::vector<double>& beam_centerline_dofvec,
     const std::vector<double>& solid_nodal_dofvec)
 {
   // Beam element.
   const int n_patch_dof = face_element_->GetPatchGID().size();
-  for (unsigned int i = 0; i < beam::n_dof_; i++)
-    this->ele1pos_.element_position_(i) =
-        Core::FADUtils::HigherOrderFadValue<scalar_type_fad>::apply(
-            beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
+  for (unsigned int i = 0; i < Beam::n_dof_; i++)
+    this->ele1pos_.element_position_(i) = Core::FADUtils::HigherOrderFadValue<ScalarTypeFad>::apply(
+        Beam::n_dof_ + n_patch_dof, i, beam_centerline_dofvec[i]);
 }
 
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::pre_evaluate()
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::pre_evaluate()
 {
   // Call pre_evaluate on the geometry Pair.
   if (!meshtying_is_evaluated_)
@@ -69,9 +67,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+    Surface>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
                                          visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -107,8 +105,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::
     add_visualization_integration_points(
         const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>&
             visualization_writer,
@@ -118,7 +116,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
   auto& visualization_data = visualization_writer->get_visualization_data();
 
   // Setup variables.
-  Core::LinAlg::Matrix<3, 1, scalar_type> X_beam, u_beam, r_beam, r_solid, projection_dir;
+  Core::LinAlg::Matrix<3, 1, ScalarType> X_beam, u_beam, r_beam, r_solid, projection_dir;
 
   // Get the visualization vectors.
   std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
@@ -140,12 +138,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
 
   for (const auto& point : points)
   {
-    GEOMETRYPAIR::EvaluatePosition<beam>(point.GetEta(), this->ele1posref_, X_beam);
-    GEOMETRYPAIR::EvaluatePosition<beam>(point.GetEta(), this->ele1pos_, r_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(point.GetEta(), this->ele1posref_, X_beam);
+    GEOMETRYPAIR::EvaluatePosition<Beam>(point.GetEta(), this->ele1pos_, r_beam);
     u_beam = r_beam;
     u_beam -= X_beam;
 
-    GEOMETRYPAIR::EvaluatePosition<surface>(
+    GEOMETRYPAIR::EvaluatePosition<Surface>(
         point.GetXi(), this->face_element_->GetFaceElementData(), r_solid);
     projection_dir = r_solid;
     projection_dir -= r_beam;
@@ -168,26 +166,25 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::CreateGeometryPair(const Core::Elements::Element* element1,
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+    Surface>::CreateGeometryPair(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
     const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
-  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<double, beam, surface>(
+  this->geometry_pair_ = GEOMETRYPAIR::GeometryPairLineToSurfaceFactory<double, Beam, Surface>(
       element1, element2, geometry_evaluation_data_ptr);
 }
 
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
+template <typename ScalarType, typename Beam, typename Surface>
+void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+    Surface>::SetFaceElement(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
 {
-  face_element_ =
-      Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>>(
-          face_element, true);
+  face_element_ = Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>>(
+      face_element, true);
 
   // Set the number of (centerline) degrees of freedom for the beam element in the face element
   face_element_->set_number_of_dof_other_element(
@@ -200,27 +197,27 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
-    surface>::cast_geometry_pair() const
+template <typename ScalarType, typename Beam, typename Surface>
+Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, Beam, Surface>>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam,
+    Surface>::cast_geometry_pair() const
 {
-  return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToSurface<double, beam, surface>>(
+  return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::GeometryPairLineToSurface<double, Beam, Surface>>(
       this->geometry_pair_, true);
 }
 
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-Core::LinAlg::Matrix<3, 1, scalar_type>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::evaluate_coupling(
+template <typename ScalarType, typename Beam, typename Surface>
+Core::LinAlg::Matrix<3, 1, ScalarType>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::evaluate_coupling(
     const GEOMETRYPAIR::ProjectionPoint1DTo3D<double>& evaluation_point) const
 {
   using namespace Inpar::BeamToSolid;
 
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_beam(true);
-  Core::LinAlg::Matrix<3, 1, scalar_type> r_surface(true);
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_beam(true);
+  Core::LinAlg::Matrix<3, 1, ScalarType> r_surface(true);
 
   const BeamToSolidSurfaceCoupling coupling_type =
       this->Params()->beam_to_solid_surface_meshtying_params()->GetCouplingType();
@@ -233,14 +230,14 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
       auto beam_dof = this->ele1pos_;
       auto surface_dof = this->face_element_->GetFaceElementData();
 
-      for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
+      for (unsigned int i_dof_beam = 0; i_dof_beam < Beam::n_dof_; i_dof_beam++)
         beam_dof.element_position_(i_dof_beam) -= this->ele1posref_.element_position_(i_dof_beam);
-      for (unsigned int i_dof_surface = 0; i_dof_surface < surface::n_dof_; i_dof_surface++)
+      for (unsigned int i_dof_surface = 0; i_dof_surface < Surface::n_dof_; i_dof_surface++)
         surface_dof.element_position_(i_dof_surface) -=
             this->face_element_->get_face_reference_element_data().element_position_(i_dof_surface);
 
-      GEOMETRYPAIR::EvaluatePosition<beam>(evaluation_point.GetEta(), beam_dof, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<surface>(evaluation_point.GetXi(), surface_dof, r_surface);
+      GEOMETRYPAIR::EvaluatePosition<Beam>(evaluation_point.GetEta(), beam_dof, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<Surface>(evaluation_point.GetXi(), surface_dof, r_surface);
 
       r_beam -= r_surface;
       return r_beam;
@@ -248,8 +245,8 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
     case BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero:
     case BeamToSolidSurfaceCoupling::reference_configuration_forced_to_zero_fad:
     {
-      GEOMETRYPAIR::EvaluatePosition<beam>(evaluation_point.GetEta(), this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluatePosition<surface>(
+      GEOMETRYPAIR::EvaluatePosition<Beam>(evaluation_point.GetEta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluatePosition<Surface>(
           evaluation_point.GetXi(), this->face_element_->GetFaceElementData(), r_surface);
 
       r_beam -= r_surface;
@@ -257,8 +254,8 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
     }
     case BeamToSolidSurfaceCoupling::consistent_fad:
     {
-      GEOMETRYPAIR::EvaluatePosition<beam>(evaluation_point.GetEta(), this->ele1pos_, r_beam);
-      GEOMETRYPAIR::EvaluateSurfacePosition<surface>(
+      GEOMETRYPAIR::EvaluatePosition<Beam>(evaluation_point.GetEta(), this->ele1pos_, r_beam);
+      GEOMETRYPAIR::EvaluateSurfacePosition<Surface>(
           evaluation_point.GetXi(), this->face_element_->GetFaceElementData(), r_surface);
 
       r_beam -= r_surface;
@@ -275,25 +272,25 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
+template <typename ScalarType, typename Beam, typename Surface>
 std::vector<int>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, surface>::get_pair_gid(
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<ScalarType, Beam, Surface>::get_pair_gid(
     const Core::FE::Discretization& discret) const
 {
   // Get the beam centerline GIDs.
-  Core::LinAlg::Matrix<beam::n_dof_, 1, int> beam_centerline_gid;
+  Core::LinAlg::Matrix<Beam::n_dof_, 1, int> beam_centerline_gid;
   UTILS::GetElementCenterlineGIDIndices(discret, this->Element1(), beam_centerline_gid);
 
   // Get the patch (in this case just the one face element) GIDs.
   const std::vector<int>& patch_gid = this->face_element_->GetPatchGID();
   std::vector<int> pair_gid;
-  pair_gid.resize(beam::n_dof_ + patch_gid.size());
+  pair_gid.resize(Beam::n_dof_ + patch_gid.size());
 
   // Combine beam and solid GIDs into one vector.
-  for (unsigned int i_dof_beam = 0; i_dof_beam < beam::n_dof_; i_dof_beam++)
+  for (unsigned int i_dof_beam = 0; i_dof_beam < Beam::n_dof_; i_dof_beam++)
     pair_gid[i_dof_beam] = beam_centerline_gid(i_dof_beam);
   for (unsigned int i_dof_patch = 0; i_dof_patch < patch_gid.size(); i_dof_patch++)
-    pair_gid[beam::n_dof_ + i_dof_patch] = patch_gid[i_dof_patch];
+    pair_gid[Beam::n_dof_ + i_dof_patch] = patch_gid[i_dof_patch];
 
   return pair_gid;
 }

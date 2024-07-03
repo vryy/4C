@@ -22,9 +22,9 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam,
-    surface>::BeamToSolidSurfaceMeshtyingPairGaussPointBase()
+template <typename ScalarType, typename Beam, typename Surface>
+BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
+    Surface>::BeamToSolidSurfaceMeshtyingPairGaussPointBase()
     : base_class()
 {
   // Empty constructor.
@@ -33,9 +33,9 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam,
-    surface>::get_energy() const
+template <typename ScalarType, typename Beam, typename Surface>
+double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
+    Surface>::get_energy() const
 {
   return Core::FADUtils::CastToDouble(get_penalty_potential());
 }
@@ -43,9 +43,9 @@ double BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_typ
 /**
  *
  */
-template <typename scalar_type, typename beam, typename surface>
-scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scalar_type, beam,
-    surface>::get_penalty_potential() const
+template <typename ScalarType, typename Beam, typename Surface>
+ScalarType BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<ScalarType, Beam,
+    Surface>::get_penalty_potential() const
 {
   using namespace Inpar::BeamToSolid;
 
@@ -54,8 +54,8 @@ scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scala
 
   // Initialize variables for position and potential.
   Core::LinAlg::Matrix<3, 1, double> dr_beam_ref;
-  Core::LinAlg::Matrix<3, 1, scalar_type> coupling_vector;
-  scalar_type potential = 0.0;
+  Core::LinAlg::Matrix<3, 1, ScalarType> coupling_vector;
+  ScalarType potential = 0.0;
 
   // Initialize scalar variables.
   double segment_jacobian = 0.0;
@@ -79,7 +79,7 @@ scalar_type BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairGaussPointBase<scala
           this->line_to_3D_segments_[i_segment].GetProjectionPoints()[i_gp];
 
       // Get the Jacobian in the reference configuration.
-      GEOMETRYPAIR::EvaluatePositionDerivative1<beam>(
+      GEOMETRYPAIR::EvaluatePositionDerivative1<Beam>(
           projected_gauss_point.GetEta(), this->ele1posref_, dr_beam_ref);
 
       // Jacobian including the segment length.

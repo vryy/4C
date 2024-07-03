@@ -17,9 +17,9 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
 {
-  template <bool do_piv, unsigned dim, typename valtype>
-  valtype gaussElimination(Core::LinAlg::Matrix<dim, dim, valtype>& A,
-      Core::LinAlg::Matrix<dim, 1, valtype>& b, Core::LinAlg::Matrix<dim, 1, valtype>& x)
+  template <bool do_piv, unsigned dim, typename Valtype>
+  Valtype gaussElimination(Core::LinAlg::Matrix<dim, dim, Valtype>& A,
+      Core::LinAlg::Matrix<dim, 1, Valtype>& b, Core::LinAlg::Matrix<dim, 1, Valtype>& x)
   {
     if (dim > 1)
     {
@@ -56,8 +56,8 @@ namespace Core::LinAlg
           // search for pivot element
           for (unsigned i = k + 1; i < dim; ++i)
           {
-            pivot = (Core::MathOperations<valtype>::abs(A(pivot, k)) <
-                        Core::MathOperations<valtype>::abs(A(i, k)))
+            pivot = (Core::MathOperations<Valtype>::abs(A(pivot, k)) <
+                        Core::MathOperations<Valtype>::abs(A(i, k)))
                         ? i
                         : pivot;
           }
@@ -109,7 +109,7 @@ namespace Core::LinAlg
         }
         x(i, 0) = b(i, 0) * A(i, i);
       }
-      valtype det = 1.0;
+      Valtype det = 1.0;
       for (unsigned i = 0; i < dim; ++i) det *= 1.0 / A(i, i);
 
       if (changesign) det *= -1.0;

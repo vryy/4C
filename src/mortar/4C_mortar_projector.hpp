@@ -277,7 +277,7 @@ namespace Mortar
   \brief A class to perform element based projections of nodes onto opposing elements
 
   */
-  template <Core::FE::CellType distypeS, Core::FE::CellType distypeM>
+  template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
   class ProjectorCalcEleBased : public Projector
   {
    public:
@@ -285,17 +285,17 @@ namespace Mortar
     ProjectorCalcEleBased();
 
     /// Singleton access method
-    static ProjectorCalcEleBased<distypeS, distypeM>* Instance(
+    static ProjectorCalcEleBased<distype_s, distype_m>* Instance(
         Core::UTILS::SingletonAction action = Core::UTILS::SingletonAction::create);
 
     //! ns_: number of slave element nodes
-    static constexpr int ns_ = Core::FE::num_nodes<distypeS>;
+    static constexpr int ns_ = Core::FE::num_nodes<distype_s>;
 
     //! nm_: number of master element nodes
-    static constexpr int nm_ = Core::FE::num_nodes<distypeM>;
+    static constexpr int nm_ = Core::FE::num_nodes<distype_m>;
 
     //! number of space dimensions ("+1" due to considering only interface elements)
-    static constexpr int ndim_ = Core::FE::dim<distypeS> + 1;
+    static constexpr int ndim_ = Core::FE::dim<distype_s> + 1;
 
     //! @name 2D and 3D projection methods
 

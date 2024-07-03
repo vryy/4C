@@ -344,7 +344,7 @@ namespace XFEM
      Return prescribed velocities and traction vectors for a GNBC boundary condition.
      Also returns the projection matrix (to the plane of the surface) needed for the GNBC condition.
      */
-    template <Core::FE::CellType DISTYPE, class V1, class V2, class X1, class T1, class M1,
+    template <Core::FE::CellType distype, class V1, class V2, class X1, class T1, class M1,
         class M2, class M3>
     void evaluate_coupling_conditions(V1& ivel,   ///< prescribed velocity at interface
         V2& itraction,                            ///< prescribed traction at interface
@@ -360,7 +360,7 @@ namespace XFEM
         double& visc_s    ///< slave sided dynamic viscosity
     )
     {
-      eval_projection_matrix<DISTYPE>(projection_matrix, eid, funct, derxy, normal);
+      eval_projection_matrix<distype>(projection_matrix, eid, funct, derxy, normal);
       evaluate_coupling_conditions(ivel, itraction, x, cond);
 
       if (has_neumann_jump_)
@@ -403,7 +403,7 @@ namespace XFEM
     /*!
      Return a smoothed/non-smoothed tangiential projection of the level set surface.
      */
-    template <Core::FE::CellType DISTYPE, class T1, class M1, class M2, class M3>
+    template <Core::FE::CellType distype, class T1, class M1, class M2, class M3>
     void eval_projection_matrix(T1& projection_matrix,  ///< Projection matrix
         int eid,                                        ///< element ID
         M1& funct,  ///< local shape function for Gauss Point (from fluid element)
@@ -420,10 +420,10 @@ namespace XFEM
       //-------------------------------------------------------------------------
 
       // number space dimensions for element
-      const size_t nsd = Core::FE::dim<DISTYPE>;
+      const size_t nsd = Core::FE::dim<distype>;
 
       // number of nodes of element
-      const size_t nen = Core::FE::num_nodes<DISTYPE>;
+      const size_t nen = Core::FE::num_nodes<distype>;
 
       // Should this be provided as well by the input?
       Core::Elements::Element* actele = cutter_dis_->gElement(eid);
@@ -559,7 +559,7 @@ namespace XFEM
   void get_interface_slave_material(
       Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat);
 
-  template <Core::FE::CellType DISTYPE, class M1, class M2>
+  template <Core::FE::CellType distype, class M1, class M2>
   void EvaluateCurvature(double& icurvature,  ///< curvature to be computed
       int eid,                                ///< element ID
       M1& funct,  ///< local shape function for Gauss Point (from fluid element)
@@ -567,10 +567,10 @@ namespace XFEM
   )
   {
     // number space dimensions for element
-    const size_t nsd = Core::FE::dim<DISTYPE>;
+    const size_t nsd = Core::FE::dim<distype>;
 
     // number of nodes of element
-    const size_t nen = Core::FE::num_nodes<DISTYPE>;
+    const size_t nen = Core::FE::num_nodes<distype>;
 
     // smoothed normal at cutter element nodes, the Gaussian point lies in
     Core::LinAlg::SerialDenseMatrix esmoothedgradphi(nsd, nen);
@@ -582,7 +582,7 @@ namespace XFEM
     return;
   }
 
-  template <Core::FE::CellType DISTYPE, class M1, class M2>
+  template <Core::FE::CellType distype, class M1, class M2>
   void GetPhiAtGP(double& phi_gp,  ///< phi at gausspoint
       int eid,                     ///< element ID
       M1& funct,                   ///< local shape function for Gauss Point (from fluid element)
@@ -593,7 +593,7 @@ namespace XFEM
     //    const size_t nsd = Core::FE::dim<DISTYPE>;
 
     // number of nodes of element
-    const size_t nen = Core::FE::num_nodes<DISTYPE>;
+    const size_t nen = Core::FE::num_nodes<distype>;
 
     // smoothed normal at cutter element nodes, the Gaussian point lies in
     Core::LinAlg::SerialDenseMatrix ephinp(nen, 1);
@@ -602,19 +602,19 @@ namespace XFEM
     phi_gp = funct.Dot(ephinp_T);
   }
 
-  template <Core::FE::CellType DISTYPE, class M1, class M2, class M3, class M4>
+  template <Core::FE::CellType distype, class M1, class M2, class M3, class M4>
   double InterpolateCurvature(const M1& funct, const M2& derxy, const M3& esmoothedgradphi_T,
       const M4& esmoothedcurvature_T, const int numnode)
   {
     // number space dimensions for element
-    const size_t nsd = Core::FE::dim<DISTYPE>;
+    const size_t nsd = Core::FE::dim<distype>;
 
     double icurvature = 0.0;
     return icurvature;
   }
 
 
-  template <Core::FE::CellType DISTYPE, class T1, class M1, class M2>
+  template <Core::FE::CellType distype, class T1, class M1, class M2>
   void eval_projection_matrix(
       T1& itraction_jump_matrix,  ///< Laplace-Beltrami matrix for surface tension calculations
       int eid,                    ///< element ID
@@ -623,7 +623,7 @@ namespace XFEM
   )
   {
     // number space dimensions for element
-    const size_t nsd = Core::FE::dim<DISTYPE>;
+    const size_t nsd = Core::FE::dim<distype>;
 
     Core::LinAlg::Matrix<nsd, nsd> p_matrix(false);
     Core::LinAlg::Matrix<nsd, nsd> p_smoothed_matrix(false);
