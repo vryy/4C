@@ -29,21 +29,21 @@ namespace NOX
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
     class BaseDataSDyn;
     class BaseDataGlobalState;
   }  // namespace TimeInt
-}  // namespace STR
+}  // namespace Solid
 
 namespace Core::LinAlg
 {
   class SparseMatrix;
 }
 
-namespace STR
+namespace Solid
 {
   namespace Nln
   {
@@ -53,8 +53,8 @@ namespace STR
       {
        public:
         //! Constructor.
-        StcScaling(
-            const STR::TimeInt::BaseDataSDyn& DataSDyn, STR::TimeInt::BaseDataGlobalState& GState);
+        StcScaling(const Solid::TimeInt::BaseDataSDyn& DataSDyn,
+            Solid::TimeInt::BaseDataGlobalState& GState);
 
         //! Scales the linear system.
         void scaleLinearSystem(Epetra_LinearProblem& problem) override;
@@ -67,7 +67,7 @@ namespace STR
         Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_scaled_;
 
         //! scale thickness of shells
-        const enum Inpar::STR::StcScale stcscale_;
+        const enum Inpar::Solid::StcScale stcscale_;
 
         //! number of layers for multilayered case
         const int stclayer_;
@@ -77,7 +77,7 @@ namespace STR
       };
     }  // namespace LinSystem
   }    // namespace Nln
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

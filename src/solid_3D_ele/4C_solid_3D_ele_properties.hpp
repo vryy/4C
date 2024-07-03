@@ -20,7 +20,7 @@ namespace Core::Communication
 {
   class PackBuffer;
 }
-namespace STR::ELEMENTS
+namespace Solid::ELEMENTS
 {
   enum class EasType;
 }
@@ -109,7 +109,7 @@ namespace Discret::ELEMENTS
   struct SolidElementProperties
   {
     //! kinematic type
-    Inpar::STR::KinemType kintype{Inpar::STR::KinemType::vague};
+    Inpar::Solid::KinemType kintype{Inpar::Solid::KinemType::vague};
 
     //! element technology (none, F-Bar, EAS full, EAS mild)
     ElementTechnology element_technology{ElementTechnology::none};

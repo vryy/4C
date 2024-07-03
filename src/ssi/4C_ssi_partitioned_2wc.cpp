@@ -54,8 +54,8 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
   // do some checks
   {
     auto structtimealgo =
-        Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(structparams, "DYNAMICTYP");
-    if (structtimealgo == Inpar::STR::dyna_statics)
+        Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP");
+    if (structtimealgo == Inpar::Solid::dyna_statics)
     {
       FOUR_C_THROW(
           "If you use statics as the structural time integrator no velocities will be calculated "
@@ -248,7 +248,7 @@ void SSI::SSIPart2WC::update_and_output()
   if (SSIInterfaceContact())
   {
     // re-evaluate the contact to re-obtain the displ state
-    const auto& model_eval = structure_field()->ModelEvaluator(Inpar::STR::model_structure);
+    const auto& model_eval = structure_field()->ModelEvaluator(Inpar::Solid::model_structure);
     const auto& cparams = model_eval.eval_data().ContactPtr();
     nitsche_strategy_ssi()->Integrate(*cparams);
   }

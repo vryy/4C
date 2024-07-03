@@ -84,15 +84,15 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
           Global::Problem::Instance()->IOParams(), "VERBOSITY")));
   discret_->compute_null_space_if_necessary(solver_->Params());
 
-  Inpar::STR::PredEnum pred =
-      Core::UTILS::IntegralValue<Inpar::STR::PredEnum>(sdyn_micro, "PREDICT");
+  Inpar::Solid::PredEnum pred =
+      Core::UTILS::IntegralValue<Inpar::Solid::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
   combdisifres_ =
-      Core::UTILS::IntegralValue<Inpar::STR::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
-  normtypedisi_ = Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdyn_micro, "NORM_DISP");
-  normtypefres_ = Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdyn_micro, "NORM_RESF");
-  Inpar::STR::VectorNorm iternorm =
-      Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(sdyn_micro, "ITERNORM");
+      Core::UTILS::IntegralValue<Inpar::Solid::BinaryOp>(sdyn_micro, "NORMCOMBI_RESFDISP");
+  normtypedisi_ = Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_DISP");
+  normtypefres_ = Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdyn_micro, "NORM_RESF");
+  Inpar::Solid::VectorNorm iternorm =
+      Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(sdyn_micro, "ITERNORM");
   iternorm_ = iternorm;
 
   dt_ = sdyn_macro.get<double>("TIMESTEP");
@@ -116,15 +116,15 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   restartevry_ = sdyn_macro.get<int>("RESTARTEVRY");
   iodisp_ = Core::UTILS::IntegralValue<int>(ioflags, "STRUCT_DISP");
   resevrydisp_ = sdyn_micro.get<int>("RESULTSEVRY");
-  Inpar::STR::StressType iostress =
-      Core::UTILS::IntegralValue<Inpar::STR::StressType>(ioflags, "STRUCT_STRESS");
+  Inpar::Solid::StressType iostress =
+      Core::UTILS::IntegralValue<Inpar::Solid::StressType>(ioflags, "STRUCT_STRESS");
   iostress_ = iostress;
   resevrystrs_ = sdyn_micro.get<int>("RESULTSEVRY");
-  Inpar::STR::StrainType iostrain =
-      Core::UTILS::IntegralValue<Inpar::STR::StrainType>(ioflags, "STRUCT_STRAIN");
+  Inpar::Solid::StrainType iostrain =
+      Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioflags, "STRUCT_STRAIN");
   iostrain_ = iostrain;
-  Inpar::STR::StrainType ioplstrain =
-      Core::UTILS::IntegralValue<Inpar::STR::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
+  Inpar::Solid::StrainType ioplstrain =
+      Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioflags, "STRUCT_PLASTIC_STRAIN");
   ioplstrain_ = ioplstrain;
   iosurfactant_ = Core::UTILS::IntegralValue<int>(ioflags, "STRUCT_SURFACTANT");
 
@@ -277,9 +277,9 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
 
 void MultiScale::MicroStatic::Predictor(Core::LinAlg::Matrix<3, 3>* defgrd)
 {
-  if (pred_ == Inpar::STR::pred_constdis)
+  if (pred_ == Inpar::Solid::pred_constdis)
     PredictConstDis(defgrd);
-  else if (pred_ == Inpar::STR::pred_tangdis)
+  else if (pred_ == Inpar::Solid::pred_tangdis)
     PredictTangDis(defgrd);
   else
     FOUR_C_THROW("requested predictor not implemented on the micro-scale");
@@ -351,7 +351,7 @@ void MultiScale::MicroStatic::PredictConstDis(Core::LinAlg::Matrix<3, 3>* defgrd
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
-  normfres_ = STR::calculate_vector_norm(iternorm_, fresn_);
+  normfres_ = Solid::calculate_vector_norm(iternorm_, fresn_);
 
   return;
 }  // MultiScale::MicroStatic::Predictor()
@@ -449,7 +449,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
   solver_->reset();
 
   // store norm of displacement increments
-  normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
+  normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
 
   //---------------------------------- update mid configuration values
   // set Dirichlet increments in displacement increments
@@ -512,7 +512,7 @@ void MultiScale::MicroStatic::PredictTangDis(Core::LinAlg::Matrix<3, 3>* defgrd)
   fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
   // store norm of residual
-  normfres_ = STR::calculate_vector_norm(iternorm_, fresn_);
+  normfres_ = Solid::calculate_vector_norm(iternorm_, fresn_);
 
   return;
 }
@@ -528,7 +528,7 @@ void MultiScale::MicroStatic::FullNewton()
   // if TangDis-Predictor is employed, the number of iterations needs
   // to be increased by one, since it involves already one solution of
   // the non-linear system!
-  if (pred_ == Inpar::STR::pred_tangdis) numiter_++;
+  if (pred_ == Inpar::Solid::pred_tangdis) numiter_++;
 
   // store norms of old displacements and maximum of norms of
   // internal, external and inertial forces (needed for relative convergence
@@ -606,9 +606,9 @@ void MultiScale::MicroStatic::FullNewton()
     fresn_->Multiply(1.0, *invtoggle_, fresncopy, 0.0);
 
     //---------------------------------------------- build residual norm
-    normdisi_ = STR::calculate_vector_norm(iternorm_, disi_);
+    normdisi_ = Solid::calculate_vector_norm(iternorm_, disi_);
 
-    normfres_ = STR::calculate_vector_norm(iternorm_, fresn_);
+    normfres_ = Solid::calculate_vector_norm(iternorm_, fresn_);
 
     //--------------------------------- increment equilibrium loop index
     ++numiter_;
@@ -630,7 +630,7 @@ void MultiScale::MicroStatic::FullNewton()
  *----------------------------------------------------------------------*/
 void MultiScale::MicroStatic::prepare_output()
 {
-  if (resevrystrs_ and !(stepn_ % resevrystrs_) and iostress_ != Inpar::STR::stress_none)
+  if (resevrystrs_ and !(stepn_ % resevrystrs_) and iostress_ != Inpar::Solid::stress_none)
   {
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -700,7 +700,7 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
   }
 
   //------------------------------------- stress/strain output
-  if (resevrystrs_ and !(step % resevrystrs_) and iostress_ != Inpar::STR::stress_none)
+  if (resevrystrs_ and !(step % resevrystrs_) and iostress_ != Inpar::Solid::stress_none)
   {
     if (!isdatawritten) output->new_step(step, time);
     isdatawritten = true;
@@ -710,13 +710,13 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
 
     switch (iostress_)
     {
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
         output->write_vector("gauss_cauchy_stresses_xyz", *stress_, *discret_->ElementRowMap());
         break;
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
         output->write_vector("gauss_2PK_stresses_xyz", *stress_, *discret_->ElementRowMap());
         break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not supported");
@@ -725,13 +725,13 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
 
     switch (iostrain_)
     {
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
         output->write_vector("gauss_EA_strains_xyz", *strain_, *discret_->ElementRowMap());
         break;
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
         output->write_vector("gauss_GL_strains_xyz", *strain_, *discret_->ElementRowMap());
         break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not supported");
@@ -740,13 +740,13 @@ void MultiScale::MicroStatic::output(Teuchos::RCP<Core::IO::DiscretizationWriter
 
     switch (ioplstrain_)
     {
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
         output->write_vector("gauss_pl_EA_strains_xyz", *plstrain_, *discret_->ElementRowMap());
         break;
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
         output->write_vector("gauss_pl_GL_strains_xyz", *plstrain_, *discret_->ElementRowMap());
         break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested plastic strain type not supported");

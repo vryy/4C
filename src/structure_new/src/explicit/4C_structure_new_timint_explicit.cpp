@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::Explicit::Explicit() : STR::TimeInt::Base()
+Solid::TimeInt::Explicit::Explicit() : Solid::TimeInt::Base()
 {
   // empty
 }
@@ -32,35 +32,35 @@ STR::TimeInt::Explicit::Explicit() : STR::TimeInt::Base()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::setup()
+void Solid::TimeInt::Explicit::setup()
 {
   // safety check
   check_init();
-  STR::TimeInt::Base::setup();
+  Solid::TimeInt::Base::setup();
   // ---------------------------------------------------------------------------
   // cast the base class integrator
   // ---------------------------------------------------------------------------
-  explint_ptr_ = Teuchos::rcp_dynamic_cast<STR::EXPLICIT::Generic>(integrator_ptr(), true);
+  explint_ptr_ = Teuchos::rcp_dynamic_cast<Solid::EXPLICIT::Generic>(integrator_ptr(), true);
   // ---------------------------------------------------------------------------
   // build NOX interface
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TimeInt::NoxInterface> noxinterface_ptr =
-      Teuchos::rcp(new STR::TimeInt::NoxInterface);
+  Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr =
+      Teuchos::rcp(new Solid::TimeInt::NoxInterface);
   noxinterface_ptr->init(
       data_global_state_ptr(), explint_ptr_, dbc_ptr(), Teuchos::rcp(this, false));
   noxinterface_ptr->setup();
   // ---------------------------------------------------------------------------
   // build non-linear solver
   // ---------------------------------------------------------------------------
-  enum Inpar::STR::NonlinSolTech nlnSolverType = data_sdyn().get_nln_solver_type();
-  if (nlnSolverType != Inpar::STR::soltech_singlestep)
+  enum Inpar::Solid::NonlinSolTech nlnSolverType = data_sdyn().get_nln_solver_type();
+  if (nlnSolverType != Inpar::Solid::soltech_singlestep)
   {
     std::cout << "WARNING!!!Nonlinear solver for explicit dynamics is given (in the dat file) as "
-              << Inpar::STR::NonlinSolTechString(nlnSolverType)
+              << Inpar::Solid::NonlinSolTechString(nlnSolverType)
               << ". This is not compatible. singlestep solver will be selected." << std::endl;
-    nlnSolverType = Inpar::STR::soltech_singlestep;
+    nlnSolverType = Inpar::Solid::soltech_singlestep;
   }
-  nlnsolver_ptr_ = STR::Nln::SOLVER::build_nln_solver(nlnSolverType);
+  nlnsolver_ptr_ = Solid::Nln::SOLVER::build_nln_solver(nlnSolverType);
   nlnsolver_ptr_->init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, explint_ptr_,
       Teuchos::rcp(this, false));
   nlnsolver_ptr_->setup();
@@ -71,7 +71,7 @@ void STR::TimeInt::Explicit::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::prepare_time_step()
+void Solid::TimeInt::Explicit::prepare_time_step()
 {
   check_init_setup();
   // things that need to be done before predict
@@ -83,7 +83,7 @@ void STR::TimeInt::Explicit::prepare_time_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::update_state_incrementally(
+void Solid::TimeInt::Explicit::update_state_incrementally(
     Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   check_init_setup();
@@ -95,11 +95,11 @@ void STR::TimeInt::Explicit::update_state_incrementally(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::determine_stress_strain() { expl_int().determine_stress_strain(); }
+void Solid::TimeInt::Explicit::determine_stress_strain() { expl_int().determine_stress_strain(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void Solid::TimeInt::Explicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   check_init_setup();
   FOUR_C_THROW(
@@ -110,7 +110,7 @@ void STR::TimeInt::Explicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiteri
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::evaluate()
+void Solid::TimeInt::Explicit::evaluate()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
@@ -131,7 +131,7 @@ void STR::TimeInt::Explicit::evaluate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
+void Solid::TimeInt::Explicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 {
   FOUR_C_THROW(
       "All coupled problems work with implicit time "
@@ -141,31 +141,31 @@ void STR::TimeInt::Explicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::reset_step()
+void Solid::TimeInt::Explicit::reset_step()
 {
   // calling the base reset
-  STR::TimeInt::Base::reset_step();
+  Solid::TimeInt::Base::reset_step();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::STR::ConvergenceStatus STR::TimeInt::Explicit::Solve()
+Inpar::Solid::ConvergenceStatus Solid::TimeInt::Explicit::Solve()
 {
   check_init_setup();
   IntegrateStep();
-  return Inpar::STR::conv_success;
+  return Inpar::Solid::conv_success;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::prepare_partition_step()
+void Solid::TimeInt::Explicit::prepare_partition_step()
 {
   // do nothing for explicit time integrators
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::Update(double endtime)
+void Solid::TimeInt::Explicit::Update(double endtime)
 {
   check_init_setup();
   FOUR_C_THROW("Not implemented. No time adaptivity available for explicit time integration.");
@@ -174,7 +174,7 @@ void STR::TimeInt::Explicit::Update(double endtime)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::print_step()
+void Solid::TimeInt::Explicit::print_step()
 {
   check_init_setup();
 
@@ -210,17 +210,17 @@ void STR::TimeInt::Explicit::print_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::STR::StcScale STR::TimeInt::Explicit::get_stc_algo()
+Inpar::Solid::StcScale Solid::TimeInt::Explicit::get_stc_algo()
 {
   check_init_setup();
   FOUR_C_THROW("get_stc_algo() has not been tested for explicit time integration.");
-  return Inpar::STR::stc_none;
+  return Inpar::Solid::stc_none;
 };
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::Explicit::get_stc_mat()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::Explicit::get_stc_mat()
 {
   check_init_setup();
   FOUR_C_THROW("get_stc_mat() has not been tested for explicit time integration.");
@@ -230,7 +230,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::Explicit::get_stc_mat()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Explicit::Integrate()
+int Solid::TimeInt::Explicit::Integrate()
 {
   FOUR_C_THROW(
       "The function is unused since the Adapter::StructureTimeLoop "
@@ -241,7 +241,7 @@ int STR::TimeInt::Explicit::Integrate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Explicit::IntegrateStep()
+int Solid::TimeInt::Explicit::IntegrateStep()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
@@ -255,7 +255,7 @@ int STR::TimeInt::Explicit::IntegrateStep()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::TimeInt::Explicit::initial_guess()
+Teuchos::RCP<const Epetra_Vector> Solid::TimeInt::Explicit::initial_guess()
 {
   FOUR_C_THROW("initial_guess() is not available for explicit time integration");
   return Teuchos::null;
@@ -264,7 +264,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TimeInt::Explicit::initial_guess()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::TimeInt::Explicit::get_f() const
+Teuchos::RCP<const Epetra_Vector> Solid::TimeInt::Explicit::get_f() const
 {
   FOUR_C_THROW("RHS() is not available for explicit time integration");
   return Teuchos::null;
@@ -273,7 +273,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TimeInt::Explicit::get_f() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TimeInt::Explicit::freact()
+Teuchos::RCP<Epetra_Vector> Solid::TimeInt::Explicit::freact()
 {
   check_init_setup();
   FOUR_C_THROW("Not implemented!");
@@ -283,7 +283,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimeInt::Explicit::freact()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::Explicit::system_matrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::Explicit::system_matrix()
 {
   FOUR_C_THROW("system_matrix() is not available for explicit time integration");
   return Teuchos::null;
@@ -292,7 +292,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::Explicit::system_matrix()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> STR::TimeInt::Explicit::block_system_matrix()
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Solid::TimeInt::Explicit::block_system_matrix()
 {
   FOUR_C_THROW("block_system_matrix() is not available for explicit time integration");
   return Teuchos::null;
@@ -301,7 +301,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> STR::TimeInt::Explicit::block_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Explicit::use_block_matrix(
+void Solid::TimeInt::Explicit::use_block_matrix(
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps)
 {
@@ -311,39 +311,39 @@ void STR::TimeInt::Explicit::use_block_matrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::DynamicType STR::TimeInt::Explicit::method_name() const
+enum Inpar::Solid::DynamicType Solid::TimeInt::Explicit::method_name() const
 {
   return explint_ptr_->method_name();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Explicit::method_steps() const { return explint_ptr_->method_steps(); }
+int Solid::TimeInt::Explicit::method_steps() const { return explint_ptr_->method_steps(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Explicit::method_order_of_accuracy_dis() const
+int Solid::TimeInt::Explicit::method_order_of_accuracy_dis() const
 {
   return explint_ptr_->method_order_of_accuracy_dis();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Explicit::method_order_of_accuracy_vel() const
+int Solid::TimeInt::Explicit::method_order_of_accuracy_vel() const
 {
   return explint_ptr_->method_order_of_accuracy_vel();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::Explicit::method_lin_err_coeff_dis() const
+double Solid::TimeInt::Explicit::method_lin_err_coeff_dis() const
 {
   return explint_ptr_->method_lin_err_coeff_dis();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::Explicit::method_lin_err_coeff_vel() const
+double Solid::TimeInt::Explicit::method_lin_err_coeff_vel() const
 {
   return explint_ptr_->method_lin_err_coeff_vel();
 }

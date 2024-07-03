@@ -287,7 +287,7 @@ void EHL::Base::set_lubrication_solution(Teuchos::RCP<const Epetra_Vector> press
 {
   // Provide the structure field with the force vector
   // Note that the mid-point values (gen-alpha) of the interface forces are evaluated in
-  // STR::TimIntGenAlpha::evaluate_force_residual()
+  // Solid::TimIntGenAlpha::evaluate_force_residual()
   structure_->SetForceInterface(EvaluateFluidForce(pressure));
 }
 

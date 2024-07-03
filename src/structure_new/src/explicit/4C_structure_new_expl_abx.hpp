@@ -34,7 +34,7 @@ the first p-1 steps. For a restart analysis, those values are restored from the 
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace EXPLICIT
   {
@@ -89,9 +89,9 @@ namespace STR
       //@{
 
       //! Return time integrator name
-      [[nodiscard]] enum Inpar::STR::DynamicType method_name() const override
+      [[nodiscard]] enum Inpar::Solid::DynamicType method_name() const override
       {
-        return Inpar::STR::dyna_ab4;
+        return Inpar::Solid::dyna_ab4;
       }
 
       //! Provide number of steps, e.g. a single-step method returns 1,
@@ -147,7 +147,7 @@ namespace STR
     struct AdamsBashforthHelper<2>
     {
       static constexpr std::array<double, 2> exc{{1.5, -0.5}};  // extrapolation coefficients
-      static enum Inpar::STR::DynamicType MethodName() { return Inpar::STR::dyna_ab2; }
+      static enum Inpar::Solid::DynamicType MethodName() { return Inpar::Solid::dyna_ab2; }
     };
 
     template <>
@@ -155,12 +155,12 @@ namespace STR
     {
       static constexpr std::array<double, 4> exc{
           {55.0 / 24.0, -59.0 / 24.0, 37.0 / 24.0, -9.0 / 24.0}};  // extrapolation coefficients
-      static enum Inpar::STR::DynamicType MethodName() { return Inpar::STR::dyna_ab4; }
+      static enum Inpar::Solid::DynamicType MethodName() { return Inpar::Solid::dyna_ab4; }
     };
 
     //@}
   }  // namespace EXPLICIT
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

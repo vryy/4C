@@ -106,9 +106,9 @@ void Discret::ELEMENTS::SoPyramid5Type::setup_element_definition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoPyramid5::SoPyramid5(int id, int owner)
-    : SoBase(id, owner), pstype_(Inpar::STR::PreStress::none), pstime_(0.0), time_(0.0)
+    : SoBase(id, owner), pstype_(Inpar::Solid::PreStress::none), pstime_(0.0), time_(0.0)
 {
-  kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+  kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   invJ_.resize(NUMGPT_SOP5, Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>(true));
   detJ_.resize(NUMGPT_SOP5, 0.0);
 
@@ -220,7 +220,7 @@ void Discret::ELEMENTS::SoPyramid5::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Element::unpack(basedata);
   // kintype_
-  kintype_ = static_cast<Inpar::STR::KinemType>(extract_int(position, data));
+  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
 
   // detJ_
   extract_from_pack(position, data, detJ_);
@@ -231,7 +231,7 @@ void Discret::ELEMENTS::SoPyramid5::unpack(const std::vector<char>& data)
   for (int i = 0; i < size; ++i) extract_from_pack(position, data, invJ_[i]);
 
   // Extract prestress_
-  pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
+  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))

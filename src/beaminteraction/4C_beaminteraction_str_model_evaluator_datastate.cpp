@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::BeamInteractionDataState::BeamInteractionDataState()
+Solid::MODELEVALUATOR::BeamInteractionDataState::BeamInteractionDataState()
     : isinit_(false),
       issetup_(false),
       myrank_(0),
@@ -47,7 +47,7 @@ STR::MODELEVALUATOR::BeamInteractionDataState::BeamInteractionDataState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionDataState::init()
+void Solid::MODELEVALUATOR::BeamInteractionDataState::init()
 {
   // We have to call setup() after init()
   issetup_ = false;
@@ -63,7 +63,7 @@ void STR::MODELEVALUATOR::BeamInteractionDataState::init()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionDataState::setup(
+void Solid::MODELEVALUATOR::BeamInteractionDataState::setup(
     Teuchos::RCP<const Core::FE::Discretization> const& ia_discret)
 {
   // safety check

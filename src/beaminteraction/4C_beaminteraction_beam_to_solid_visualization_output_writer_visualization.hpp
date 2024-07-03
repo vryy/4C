@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 // Forward declarations.
 
-namespace STR::TimeInt
+namespace Solid::TimeInt
 {
   class ParamsRuntimeOutput;
 }
@@ -53,7 +53,7 @@ namespace BEAMINTERACTION
      */
     BeamToSolidOutputWriterVisualization(const std::string& writer_full_name,
         Core::IO::VisualizationParameters visualization_params,
-        Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params);
+        Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params);
 
     /**
      * \brief Destructor.
@@ -91,7 +91,7 @@ namespace BEAMINTERACTION
 
    private:
     //! Global parameters of visualization output.
-    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params_;
+    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params_;
 
     //! Full name of this visualization.
     const std::string writer_full_name_;

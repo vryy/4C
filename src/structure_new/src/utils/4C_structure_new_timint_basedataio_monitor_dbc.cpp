@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-STR::TimeInt::ParamsMonitorDBC::ParamsMonitorDBC()
+Solid::TimeInt::ParamsMonitorDBC::ParamsMonitorDBC()
     : isinit_(false),
       issetup_(false),
       output_interval_steps_(-1),
@@ -32,7 +32,7 @@ STR::TimeInt::ParamsMonitorDBC::ParamsMonitorDBC()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsMonitorDBC::init(
+void Solid::TimeInt::ParamsMonitorDBC::init(
     const Teuchos::ParameterList& IO_monitor_dbc_structure_paramslist)
 {
   // We have to call setup() after init()
@@ -59,7 +59,7 @@ void STR::TimeInt::ParamsMonitorDBC::init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsMonitorDBC::setup()
+void Solid::TimeInt::ParamsMonitorDBC::setup()
 {
   FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
@@ -70,7 +70,7 @@ void STR::TimeInt::ParamsMonitorDBC::setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsMonitorDBC::check_init_setup() const
+void Solid::TimeInt::ParamsMonitorDBC::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }

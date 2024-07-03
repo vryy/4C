@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void Adapter::StructureTimeAdaZienXie::integrate_step_auxiliar()
 {
-  const STR::TimeInt::Base& stm = *stm_;
-  const STR::TimeInt::BaseDataGlobalState& gstate = stm.data_global_state();
+  const Solid::TimeInt::Base& stm = *stm_;
+  const Solid::TimeInt::BaseDataGlobalState& gstate = stm.data_global_state();
 
   // get state vectors of marching integrator
   Teuchos::RCP<const Epetra_Vector> dis = gstate.get_dis_n();    // D_{n}^{A2}

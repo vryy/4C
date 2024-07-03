@@ -236,17 +236,17 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force_str,  // structure force
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-          Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,  ///< stress output option
-          const Inpar::STR::StrainType iostrain   ///< strain output option
+          Teuchos::ParameterList& params,           ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,  ///< stress output option
+          const Inpar::Solid::StrainType iostrain   ///< strain output option
       );
 
       /// Return stress at Gauss point
       void Stress(Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
-                      elestress,                  ///< store the stress herein
-          const Inpar::STR::StressType iostress,  ///< stress type
-          const int gp,                           ///< Gauss point index
-          const double& detdefgrd,                ///< determinant of (assumed) deformation gradient
+                      elestress,                    ///< store the stress herein
+          const Inpar::Solid::StressType iostress,  ///< stress type
+          const int gp,                             ///< Gauss point index
+          const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
           const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>&
               defgrd,  ///< (assumed) deformation gradient
           const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress  ///< Cauchy stress vector
@@ -254,10 +254,10 @@ namespace Discret
 
       /// Return strain at Gauss point
       void Strain(Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
-                      elestrain,                  ///< store the strain herein
-          const Inpar::STR::StrainType iostrain,  ///< strain type to store for post-proc
-          const int gp,                           ///< Gauss point index
-          const double& detdefgrd,                ///< determinant of (assumed) deformation gradient
+                      elestrain,                    ///< store the strain herein
+          const Inpar::Solid::StrainType iostrain,  ///< strain type to store for post-proc
+          const int gp,                             ///< Gauss point index
+          const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
           const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,  ///< deformation gradient
           const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>&
               glstrain  ///< Green-Lagrange strain vector

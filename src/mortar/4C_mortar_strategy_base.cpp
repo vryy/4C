@@ -34,7 +34,7 @@ Mortar::StratDataContainer::StratDataContainer()
       parredist_(false),
       maxdof_(0),
       systype_(Inpar::CONTACT::system_none),
-      dyntype_(Inpar::STR::dyna_statics),
+      dyntype_(Inpar::Solid::dyna_statics),
       dynparam_n_(0.0)
 {
 }
@@ -71,18 +71,18 @@ Mortar::StrategyBase::StrategyBase(const Teuchos::RCP<Mortar::StratDataContainer
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::StrategyBase::set_time_integration_info(
-    const double time_fac, const Inpar::STR::DynamicType dyntype)
+    const double time_fac, const Inpar::Solid::DynamicType dyntype)
 {
   // Get weight for contribution from last time step
 
   data().SetDynType(dyntype);
   switch (dyntype)
   {
-    case Inpar::STR::dyna_statics:
+    case Inpar::Solid::dyna_statics:
       data().SetDynParameterN(0.0);
       break;
-    case Inpar::STR::dyna_genalpha:
-    case Inpar::STR::dyna_onesteptheta:
+    case Inpar::Solid::dyna_genalpha:
+    case Inpar::Solid::dyna_onesteptheta:
       data().SetDynParameterN(time_fac);
       break;
     default:

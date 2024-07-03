@@ -325,7 +325,7 @@ namespace
 
 }  // namespace
 
-Teuchos::SerialDenseMatrix<int, double> STR::UTILS::Shell::ComputeShellNullSpace(
+Teuchos::SerialDenseMatrix<int, double> Solid::UTILS::Shell::ComputeShellNullSpace(
     Core::Nodes::Node& node, const double* x0, const Core::LinAlg::Matrix<3, 1>& dir)
 {
   const auto& x = node.X();
@@ -377,7 +377,7 @@ Teuchos::SerialDenseMatrix<int, double> STR::UTILS::Shell::ComputeShellNullSpace
   return nullspace;
 }
 
-void STR::UTILS::Shell::NodalBlockInformationShell(
+void Solid::UTILS::Shell::NodalBlockInformationShell(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 6;
@@ -385,7 +385,7 @@ void STR::UTILS::Shell::NodalBlockInformationShell(
   nv = 3;
 }
 
-void STR::UTILS::Shell::Director::SetupDirectorForElement(
+void Solid::UTILS::Shell::Director::SetupDirectorForElement(
     const Core::Elements::Element& ele, Core::LinAlg::SerialDenseMatrix& nodal_directors)
 {
   constexpr auto num_dim = Discret::ELEMENTS::Shell::DETAIL::num_dim;
@@ -426,7 +426,7 @@ void STR::UTILS::Shell::Director::SetupDirectorForElement(
   }
 }
 
-void STR::UTILS::Shell::Director::AverageDirector(const Core::LinAlg::Matrix<3, 8>& dir_list,
+void Solid::UTILS::Shell::Director::AverageDirector(const Core::LinAlg::Matrix<3, 8>& dir_list,
     const int num_directors, Core::LinAlg::Matrix<3, 1>& nodal_director)
 {
   Core::LinAlg::Matrix<3, 1> davn(true);
@@ -491,7 +491,7 @@ void STR::UTILS::Shell::Director::AverageDirector(const Core::LinAlg::Matrix<3, 
   }
 }
 
-void STR::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
+void Solid::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
@@ -540,7 +540,7 @@ void STR::UTILS::Shell::Director::ExportDirectorMapFromRowToColMap(
 }
 
 
-void STR::UTILS::Shell::Director::AverageDirectorsAtNodes(
+void Solid::UTILS::Shell::Director::AverageDirectorsAtNodes(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis,
     std::map<int, std::vector<double>>& director_map)
 {
@@ -608,7 +608,7 @@ void STR::UTILS::Shell::Director::AverageDirectorsAtNodes(
   }
 }
 
-void STR::UTILS::Shell::Director::SetupShellElementDirectors(
+void Solid::UTILS::Shell::Director::SetupShellElementDirectors(
     const Core::Elements::ElementType& eletype, const Core::FE::Discretization& dis)
 {
   for (const auto& actele : dis.MyColElementRange())
@@ -646,7 +646,7 @@ void STR::UTILS::Shell::Director::SetupShellElementDirectors(
 
 
 
-void STR::UTILS::Shell::LumpMassMatrix(Core::LinAlg::SerialDenseMatrix& mass_matrix)
+void Solid::UTILS::Shell::LumpMassMatrix(Core::LinAlg::SerialDenseMatrix& mass_matrix)
 {
   // lump mass matrix
   FOUR_C_ASSERT(mass_matrix.numRows() == mass_matrix.numCols(),
@@ -666,8 +666,8 @@ void STR::UTILS::Shell::LumpMassMatrix(Core::LinAlg::SerialDenseMatrix& mass_mat
 }
 
 
-void STR::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(const Core::FE::CellType& distype,
-    Input::LineDefinition* linedef, STR::ELEMENTS::ShellLockingTypes& locking_types)
+void Solid::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(const Core::FE::CellType& distype,
+    Input::LineDefinition* linedef, Solid::ELEMENTS::ShellLockingTypes& locking_types)
 {
   std::string type;
   switch (distype)
@@ -708,14 +708,14 @@ void STR::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(const Core::FE::Cell
                         locking_types.transverse_shear_strain_lin;
 }
 
-int STR::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(Input::LineDefinition* linedef)
+int Solid::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(Input::LineDefinition* linedef)
 {
   int material = 0;
   linedef->extract_int("MAT", material);
   return material;
 }
 
-int STR::UTILS::Shell::ReadElement::ReadAndSetNumANS(const Core::FE::CellType& distype)
+int Solid::UTILS::Shell::ReadElement::ReadAndSetNumANS(const Core::FE::CellType& distype)
 {
   switch (distype)
   {

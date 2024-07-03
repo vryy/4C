@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* belongs to structure namespace */
-namespace STR
+namespace Solid
 {
   /*====================================================================*/
   /*!
@@ -69,9 +69,9 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum Inpar::STR::TimAdaKind MethodName() const override
+    enum Inpar::Solid::TimAdaKind MethodName() const override
     {
-      return Inpar::STR::timada_kind_zienxie;
+      return Inpar::Solid::timada_kind_zienxie;
     }
 
     //! Provide local order of accuracy
@@ -99,7 +99,7 @@ namespace STR
     TimAdaZienXie(const TimAdaZienXie& old);
   };
 
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

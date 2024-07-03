@@ -30,13 +30,13 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // forward declarations
-namespace STR
+namespace Solid
 {
   namespace Aux
   {
     class MapExtractor;
   }
-}  // namespace STR
+}  // namespace Solid
 
 namespace Core::LinAlg
 {
@@ -130,7 +130,7 @@ namespace Adapter
       return structure_->get_constraint_manager();
     };
 
-    Inpar::STR::StcScale get_stc_algo() override { return structure_->get_stc_algo(); };
+    Inpar::Solid::StcScale get_stc_algo() override { return structure_->get_stc_algo(); };
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {

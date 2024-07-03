@@ -30,7 +30,7 @@ namespace NOX
     class Group;
   }  // namespace Nln
 }  // namespace NOX
-namespace STR
+namespace Solid
 {
   namespace Predict
   {
@@ -59,7 +59,7 @@ namespace STR
       bool apply_linear_reaction_forces_;
     };  // class TangDis
   }     // namespace Predict
-}  // namespace STR
+}  // namespace Solid
 
 namespace NOX
 {
@@ -73,7 +73,7 @@ namespace NOX
          *
          *  This class is an implementation of the NOX::Nln::Abstract::PrePostOperator
          *  and is used to modify the computeF() routines of the given NOX::Nln::Group
-         *  (see STR::Predict::TangDis). It's called by the wrapper class
+         *  (see Solid::Predict::TangDis). It's called by the wrapper class
          *  NOX::Nln::GROUP::PrePostOperator.
          *
          *  \author Michael Hiermeier */
@@ -81,14 +81,14 @@ namespace NOX
         {
          public:
           //! constructor
-          TangDis(const Teuchos::RCP<const STR::Predict::TangDis>& tang_predict_ptr);
+          TangDis(const Teuchos::RCP<const Solid::Predict::TangDis>& tang_predict_ptr);
 
           //! add the linear reaction forces
           void runPostComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
 
          private:
           //! pointer to the tangdis object (read-only)
-          Teuchos::RCP<const STR::Predict::TangDis> tang_predict_ptr_;
+          Teuchos::RCP<const Solid::Predict::TangDis> tang_predict_ptr_;
         };  // class TangDis
       }     // namespace PrePostOp
     }       // namespace GROUP

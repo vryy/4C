@@ -201,7 +201,8 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
       if (IsParamsInterface())
       {
         // new structural time integration
-        params_interface().add_contribution_to_energy_type(int_energy, STR::internal_energy);
+        params_interface().add_contribution_to_energy_type(
+            int_energy, FourC::Solid::internal_energy);
       }
       else
       {

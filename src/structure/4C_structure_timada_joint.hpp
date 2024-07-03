@@ -1,6 +1,6 @@
 /*======================================================================*/
 /*! \file
-\brief Indicator based on general STR::TimInt object
+\brief Indicator based on general Solid::TimInt object
 
 \level 1
 
@@ -41,11 +41,11 @@ namespace Core::IO
 
 /*----------------------------------------------------------------------*/
 /* belongs to structure namespace */
-namespace STR
+namespace Solid
 {
   /*====================================================================*/
   /*!
-   * \brief Time step size adaptivity with general STR::TimInt scheme
+   * \brief Time step size adaptivity with general Solid::TimInt scheme
    *
    * \author bborn
    * \date 10/07
@@ -54,25 +54,25 @@ namespace STR
   class TimAdaJoint : public TimAda
   {
    public:
-    //! Map STR::TimInt::NameEnum to STR::TimAda::NameEnum
-    enum Inpar::STR::TimAdaKind map_name_tim_int_to_tim_ada(
-        const enum Inpar::STR::DynamicType term  //!< input enum term
+    //! Map Solid::TimInt::NameEnum to Solid::TimAda::NameEnum
+    enum Inpar::Solid::TimAdaKind map_name_tim_int_to_tim_ada(
+        const enum Inpar::Solid::DynamicType term  //!< input enum term
     ) const
     {
       switch (term)
       {
-        case Inpar::STR::dyna_ab2:
-          return Inpar::STR::timada_kind_ab2;
+        case Inpar::Solid::dyna_ab2:
+          return Inpar::Solid::timada_kind_ab2;
           break;
-        case Inpar::STR::dyna_expleuler:
-          return Inpar::STR::timada_kind_expleuler;
+        case Inpar::Solid::dyna_expleuler:
+          return Inpar::Solid::timada_kind_expleuler;
           break;
-        case Inpar::STR::dyna_centrdiff:
-          return Inpar::STR::timada_kind_centraldiff;
+        case Inpar::Solid::dyna_centrdiff:
+          return Inpar::Solid::timada_kind_centraldiff;
           break;
         default:
           FOUR_C_THROW("Cannot handle requested time integrator");
-          return Inpar::STR::timada_kind_none;
+          return Inpar::Solid::timada_kind_none;
           break;
       }
     }
@@ -186,7 +186,7 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum Inpar::STR::TimAdaKind MethodName() const override
+    enum Inpar::Solid::TimAdaKind MethodName() const override
     {
       return map_name_tim_int_to_tim_ada(sti_->MethodName());
     }
@@ -228,7 +228,7 @@ namespace STR
     Teuchos::RCP<T> sta_;
   };
 
-}  // namespace STR
+}  // namespace Solid
 
 
 

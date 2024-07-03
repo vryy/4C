@@ -129,7 +129,7 @@ const int& Mortar::STRATEGY::Factory::dim() const
 {
   if (dim_ == -1)
     FOUR_C_THROW(
-        "Call the STR::MODELEVEALUATOR::setup() routine first to "
+        "Call the Solid::MODELEVEALUATOR::setup() routine first to "
         "set the problem dimension variable!");
   return dim_;
 }

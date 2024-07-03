@@ -470,7 +470,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtPenaltyStrategy::GetRhsBlockPtr(
     }
     default:
     {
-      FOUR_C_THROW("Unknown STR::VecBlockType!");
+      FOUR_C_THROW("Unknown Solid::VecBlockType!");
       break;
     }
   }
@@ -491,7 +491,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::MtPenaltyStrategy::GetMatrixBl
       mat_ptr = stiff_;
       break;
     default:
-      FOUR_C_THROW("Unknown STR::MatBlockType!");
+      FOUR_C_THROW("Unknown Solid::MatBlockType!");
       break;
   }
   return mat_ptr;

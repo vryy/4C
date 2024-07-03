@@ -30,12 +30,12 @@ bool Discret::ELEMENTS::SoTet4::ReadElement(
   // geometrically linear
   if (buffer == "linear")
   {
-    kintype_ = Inpar::STR::KinemType::linear;
+    kintype_ = Inpar::Solid::KinemType::linear;
   }
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
   {

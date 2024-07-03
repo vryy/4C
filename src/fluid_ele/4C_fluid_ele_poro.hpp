@@ -145,9 +145,9 @@ namespace Discret
       }
 
 
-      void SetKinematicType(Inpar::STR::KinemType kintype) { kintype_ = kintype; }
+      void SetKinematicType(Inpar::Solid::KinemType kintype) { kintype_ = kintype; }
 
-      Inpar::STR::KinemType KinematicType() const { return kintype_; }
+      Inpar::Solid::KinemType KinematicType() const { return kintype_; }
 
       //! Set anisotropic permeability directions obtained from structure element during cloning
       void set_anisotropic_permeability_directions(
@@ -215,7 +215,7 @@ namespace Discret
       FluidPoro& operator=(const FluidPoro& old);
 
       //! kinematic type
-      Inpar::STR::KinemType kintype_;
+      Inpar::Solid::KinemType kintype_;
 
       //! directions for anisotropic permeability
       std::vector<std::vector<double>> anisotropic_permeability_directions_;

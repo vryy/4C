@@ -29,7 +29,7 @@ namespace Adapter
   class StructureBaseAlgorithmNew;
 }  // namespace Adapter
 
-namespace STR
+namespace Solid
 {
   class Integrator;
   class Dbc;
@@ -52,35 +52,35 @@ namespace STR
     virtual ~Factory() = default;
 
     //! build the internal integrator
-    Teuchos::RCP<STR::Integrator> build_integrator(
-        const STR::TimeInt::BaseDataSDyn& datasdyn) const;
+    Teuchos::RCP<Solid::Integrator> build_integrator(
+        const Solid::TimeInt::BaseDataSDyn& datasdyn) const;
 
     //! build the desired  dirichlet boundary condition object
-    Teuchos::RCP<STR::Dbc> build_dbc(const STR::TimeInt::BaseDataSDyn& datasdyn) const;
+    Teuchos::RCP<Solid::Dbc> build_dbc(const Solid::TimeInt::BaseDataSDyn& datasdyn) const;
 
    protected:
     //! build the implicit integrator
-    Teuchos::RCP<STR::Integrator> build_implicit_integrator(
-        const STR::TimeInt::BaseDataSDyn& datasdyn) const;
+    Teuchos::RCP<Solid::Integrator> build_implicit_integrator(
+        const Solid::TimeInt::BaseDataSDyn& datasdyn) const;
 
     //! build the explicit integrator
-    Teuchos::RCP<STR::Integrator> build_explicit_integrator(
-        const STR::TimeInt::BaseDataSDyn& datasdyn) const;
+    Teuchos::RCP<Solid::Integrator> build_explicit_integrator(
+        const Solid::TimeInt::BaseDataSDyn& datasdyn) const;
 
   };  // class Factory
 
-  /*! \brief Non-member function, which relates to the STR::Factory
+  /*! \brief Non-member function, which relates to the Solid::Factory
    *
    * \note Call this method from outside!
    */
-  Teuchos::RCP<STR::Integrator> build_integrator(const STR::TimeInt::BaseDataSDyn& datasdyn);
+  Teuchos::RCP<Solid::Integrator> build_integrator(const Solid::TimeInt::BaseDataSDyn& datasdyn);
 
-  /*! \brief Non-member function, which relates to the STR::Factory class
+  /*! \brief Non-member function, which relates to the Solid::Factory class
    *
    * \note Call this method from outside!
    */
-  Teuchos::RCP<STR::Dbc> build_dbc(const STR::TimeInt::BaseDataSDyn& datasdyn);
-}  // namespace STR
+  Teuchos::RCP<Solid::Dbc> build_dbc(const Solid::TimeInt::BaseDataSDyn& datasdyn);
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

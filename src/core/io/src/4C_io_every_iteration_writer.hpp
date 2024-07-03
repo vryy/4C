@@ -35,7 +35,7 @@ namespace Core::IO
    *  routines. All methods which have to be accessed are summarized in this
    *  EveryIterationWriterInterface class. Just add this class as base to your
    *  inheritance hierarchy of the class which contains these functions.
-   *  See STR::TimeInt::Base for an example.
+   *  See Solid::TimeInt::Base for an example.
    *
    *  @author hiermeier @date 08/17 */
   class EveryIterationWriterInterface
@@ -91,7 +91,7 @@ namespace Core::IO
    *  All methods which have to be accessed are summarized in the
    *  EveryIterationWriterInterface class. Just add the abstract interface class
    *  as base to your inheritance hierarchy of the class which contains these
-   *  functions. See STR::TimeInt::Base for an example.
+   *  functions. See Solid::TimeInt::Base for an example.
    *
    *  Finally, such that the output is actually written you have to call the
    *  public class methods at the correct point in your implementation.

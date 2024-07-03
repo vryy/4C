@@ -52,7 +52,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::init()
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::setup(
     const Core::IO::VisualizationParameters& visualization_params,
-    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
+    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr)
 {
   check_init();

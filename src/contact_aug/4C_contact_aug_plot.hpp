@@ -44,13 +44,13 @@ namespace Core::Nodes
   class Node;
 }
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
     class Contact;
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 namespace NOX
 {
   namespace Nln
@@ -257,7 +257,7 @@ namespace CONTACT
       /// full discretization
       const Core::FE::Discretization* discret_ = nullptr;
 
-      STR::MODELEVALUATOR::Contact* model_ = nullptr;
+      Solid::MODELEVALUATOR::Contact* model_ = nullptr;
 
       const int* curr_step_np_ = nullptr;
 

@@ -350,7 +350,7 @@ namespace Discret
 
 
       /// prestressing switch & time
-      Inpar::STR::PreStress pstype_;
+      Inpar::Solid::PreStress pstype_;
       double pstime_;
       double time_;
       /// Prestressing object
@@ -383,11 +383,11 @@ namespace Discret
           Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>*
-              eleplstrain,                           ///< plastic strains at GP
-          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,     ///< stress output option
-          const Inpar::STR::StrainType iostrain,     ///< strain output option
-          const Inpar::STR::StrainType ioplstrain);  ///< plastic strain output option
+              eleplstrain,                             ///< plastic strains at GP
+          Teuchos::ParameterList& params,              ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,     ///< stress output option
+          const Inpar::Solid::StrainType iostrain,     ///< strain output option
+          const Inpar::Solid::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void soh27_nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -405,11 +405,11 @@ namespace Discret
           Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>*
-              eleplstrain,                           ///< plastic strains at GP
-          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,     ///< stress output option
-          const Inpar::STR::StrainType iostrain,     ///< strain output option
-          const Inpar::STR::StrainType ioplstrain);  ///< plastic strain output option
+              eleplstrain,                             ///< plastic strains at GP
+          Teuchos::ParameterList& params,              ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,     ///< stress output option
+          const Inpar::Solid::StrainType iostrain,     ///< strain output option
+          const Inpar::Solid::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
       void soh27_lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass);

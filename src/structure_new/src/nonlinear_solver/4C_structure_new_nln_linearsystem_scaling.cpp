@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::Nln::LinSystem::StcScaling::StcScaling(
-    const STR::TimeInt::BaseDataSDyn& DataSDyn, STR::TimeInt::BaseDataGlobalState& GState)
+Solid::Nln::LinSystem::StcScaling::StcScaling(
+    const Solid::TimeInt::BaseDataSDyn& DataSDyn, Solid::TimeInt::BaseDataGlobalState& GState)
     : stcscale_(DataSDyn.get_stc_algo_type()),
       stclayer_(DataSDyn.get_stc_layer()),
       stcmat_(Teuchos::null)
@@ -80,7 +80,7 @@ STR::Nln::LinSystem::StcScaling::StcScaling(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& problem)
+void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& problem)
 {
   // get stiffness matrix
   Epetra_CrsMatrix* stiffmat = dynamic_cast<Epetra_CrsMatrix*>(problem.GetMatrix());
@@ -95,7 +95,7 @@ void STR::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& pr
   stiff_scaled_ = MLMultiply(*stiff_linalg, *stcmat_, true, false, true);
 
   // left multiplication of stiffness matrix and rhs
-  if (stcscale_ == Inpar::STR::stc_currsym)
+  if (stcscale_ == Inpar::Solid::stc_currsym)
   {
     stiff_scaled_ = MLMultiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);
 
@@ -111,7 +111,7 @@ void STR::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& pr
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::Nln::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem& problem)
+void Solid::Nln::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem& problem)
 {
   Teuchos::RCP<Epetra_MultiVector> disisdc =
       Core::LinAlg::CreateVector(problem.GetLHS()->Map(), true);

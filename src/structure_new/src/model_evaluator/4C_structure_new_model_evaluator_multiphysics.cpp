@@ -17,27 +17,27 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Multiphysics::Multiphysics() : active_mt_(mt_none)
+Solid::MODELEVALUATOR::Multiphysics::Multiphysics() : active_mt_(mt_none)
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::init(
-    const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
-    const Teuchos::RCP<STR::Integrator>& int_ptr,
-    const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset)
+void Solid::MODELEVALUATOR::Multiphysics::init(
+    const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
+    const Teuchos::RCP<Solid::Integrator>& int_ptr,
+    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr, const int& dof_offset)
 {
-  STR::MODELEVALUATOR::Generic::init(
+  Solid::MODELEVALUATOR::Generic::init(
       eval_data_ptr, gstate_ptr, gio_ptr, int_ptr, timint_ptr, dof_offset);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::setup()
+void Solid::MODELEVALUATOR::Multiphysics::setup()
 {
   check_init();
   issetup_ = true;
@@ -46,7 +46,7 @@ void STR::MODELEVALUATOR::Multiphysics::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::reset(const Epetra_Vector& x)
+void Solid::MODELEVALUATOR::Multiphysics::reset(const Epetra_Vector& x)
 {
   check_active_model_type();
 
@@ -56,7 +56,7 @@ void STR::MODELEVALUATOR::Multiphysics::reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Multiphysics::assemble_force(
+bool Solid::MODELEVALUATOR::Multiphysics::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   check_active_model_type();
@@ -68,7 +68,7 @@ bool STR::MODELEVALUATOR::Multiphysics::assemble_force(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Multiphysics::assemble_jacobian(
+bool Solid::MODELEVALUATOR::Multiphysics::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_active_model_type();
@@ -80,7 +80,7 @@ bool STR::MODELEVALUATOR::Multiphysics::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Multiphysics::evaluate_force()
+bool Solid::MODELEVALUATOR::Multiphysics::evaluate_force()
 {
   check_active_model_type();
 
@@ -91,7 +91,7 @@ bool STR::MODELEVALUATOR::Multiphysics::evaluate_force()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Multiphysics::evaluate_stiff()
+bool Solid::MODELEVALUATOR::Multiphysics::evaluate_stiff()
 {
   check_active_model_type();
 
@@ -102,7 +102,7 @@ bool STR::MODELEVALUATOR::Multiphysics::evaluate_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Multiphysics::evaluate_force_stiff()
+bool Solid::MODELEVALUATOR::Multiphysics::evaluate_force_stiff()
 {
   check_active_model_type();
 
@@ -113,7 +113,7 @@ bool STR::MODELEVALUATOR::Multiphysics::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Multiphysics::update_step_state(const double& timefac_n)
+void Solid::MODELEVALUATOR::Multiphysics::update_step_state(const double& timefac_n)
 {
   check_active_model_type();
 

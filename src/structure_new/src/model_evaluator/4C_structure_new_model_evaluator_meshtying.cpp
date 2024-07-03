@@ -40,7 +40,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Meshtying::Meshtying() : strategy_ptr_(Teuchos::null)
+Solid::MODELEVALUATOR::Meshtying::Meshtying() : strategy_ptr_(Teuchos::null)
 {
   // empty
 }
@@ -48,20 +48,20 @@ STR::MODELEVALUATOR::Meshtying::Meshtying() : strategy_ptr_(Teuchos::null)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::init(
-    const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
-    const Teuchos::RCP<STR::Integrator>& int_ptr,
-    const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset)
+void Solid::MODELEVALUATOR::Meshtying::init(
+    const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
+    const Teuchos::RCP<Solid::Integrator>& int_ptr,
+    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr, const int& dof_offset)
 {
-  STR::MODELEVALUATOR::Generic::init(
+  Solid::MODELEVALUATOR::Generic::init(
       eval_data_ptr, gstate_ptr, gio_ptr, int_ptr, timint_ptr, dof_offset);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::setup()
+void Solid::MODELEVALUATOR::Meshtying::setup()
 {
   check_init();
 
@@ -158,7 +158,7 @@ void STR::MODELEVALUATOR::Meshtying::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::assemble_force(
+bool Solid::MODELEVALUATOR::Meshtying::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
@@ -195,7 +195,7 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_force(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
+bool Solid::MODELEVALUATOR::Meshtying::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> block_ptr = Teuchos::null;
@@ -247,7 +247,7 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
     if (not block_ptr.is_null())
     {
       //      block_ptr->Scale(timefac_np);
-      global_state().assign_model_block(jac, *block_ptr, Type(), STR::MatBlockType::displ_lm);
+      global_state().assign_model_block(jac, *block_ptr, Type(), Solid::MatBlockType::displ_lm);
       // reset the block pointer, just to be on the safe side
       block_ptr = Teuchos::null;
     }
@@ -256,7 +256,7 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
     block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::lm_displ);
     if (not block_ptr.is_null())
     {
-      global_state().assign_model_block(jac, *block_ptr, Type(), STR::MatBlockType::lm_displ);
+      global_state().assign_model_block(jac, *block_ptr, Type(), Solid::MatBlockType::lm_displ);
       // reset the block pointer, just to be on the safe side
       block_ptr = Teuchos::null;
     }
@@ -265,7 +265,7 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
     block_ptr = Strategy().GetMatrixBlockPtr(CONTACT::MatBlockType::lm_lm);
     if (not block_ptr.is_null())
     {
-      global_state().assign_model_block(jac, *block_ptr, Type(), STR::MatBlockType::lm_lm);
+      global_state().assign_model_block(jac, *block_ptr, Type(), Solid::MatBlockType::lm_lm);
       // reset the block pointer, just to be on the safe side
       block_ptr = Teuchos::null;
     }
@@ -276,7 +276,7 @@ bool STR::MODELEVALUATOR::Meshtying::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<CONTACT::MtAbstractStrategy>& STR::MODELEVALUATOR::Meshtying::StrategyPtr()
+const Teuchos::RCP<CONTACT::MtAbstractStrategy>& Solid::MODELEVALUATOR::Meshtying::StrategyPtr()
 {
   check_init_setup();
   return strategy_ptr_;
@@ -284,7 +284,7 @@ const Teuchos::RCP<CONTACT::MtAbstractStrategy>& STR::MODELEVALUATOR::Meshtying:
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::MtAbstractStrategy& STR::MODELEVALUATOR::Meshtying::Strategy()
+CONTACT::MtAbstractStrategy& Solid::MODELEVALUATOR::Meshtying::Strategy()
 {
   check_init_setup();
   return *strategy_ptr_;
@@ -292,7 +292,7 @@ CONTACT::MtAbstractStrategy& STR::MODELEVALUATOR::Meshtying::Strategy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const CONTACT::MtAbstractStrategy& STR::MODELEVALUATOR::Meshtying::Strategy() const
+const CONTACT::MtAbstractStrategy& Solid::MODELEVALUATOR::Meshtying::Strategy() const
 {
   check_init_setup();
   return *strategy_ptr_;
@@ -301,7 +301,7 @@ const CONTACT::MtAbstractStrategy& STR::MODELEVALUATOR::Meshtying::Strategy() co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::get_block_dof_row_map_ptr() const
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::Meshtying::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
   if (Strategy().LMDoFRowMapPtr(true) == Teuchos::null)
@@ -320,7 +320,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Meshtying::get_block_dof_row
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_current_solution_ptr() const
+Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::Meshtying::get_current_solution_ptr() const
 {
   //  //TODO: this should be removed!
   //  Global::Problem* problem = Global::Problem::Instance();
@@ -347,8 +347,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_current_so
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_last_time_step_solution_ptr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+Solid::MODELEVALUATOR::Meshtying::get_last_time_step_solution_ptr() const
 {
   //  Global::Problem* problem = Global::Problem::Instance();
   //  enum Inpar::CONTACT::SystemType systype =
@@ -373,7 +373,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Meshtying::get_last_time_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs,
+void Solid::MODELEVALUATOR::Meshtying::run_pre_apply_jacobian_inverse(const Epetra_Vector& rhs,
     Epetra_Vector& result, const Epetra_Vector& xold, const NOX::Nln::Group& grp)
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd = global_state().jacobian_displ_block();
@@ -383,7 +383,7 @@ void STR::MODELEVALUATOR::Meshtying::run_pre_apply_jacobian_inverse(const Epetra
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::run_post_apply_jacobian_inverse(const Epetra_Vector& rhs,
+void Solid::MODELEVALUATOR::Meshtying::run_post_apply_jacobian_inverse(const Epetra_Vector& rhs,
     Epetra_Vector& result, const Epetra_Vector& xold, const NOX::Nln::Group& grp)
 {
   const_cast<CONTACT::MtAbstractStrategy&>(Strategy()).run_post_apply_jacobian_inverse(result);
@@ -391,36 +391,36 @@ void STR::MODELEVALUATOR::Meshtying::run_post_apply_jacobian_inverse(const Epetr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix> STR::MODELEVALUATOR::Meshtying::GetJacobianBlock(
-    const STR::MatBlockType bt) const
+Teuchos::RCP<const Core::LinAlg::SparseMatrix> Solid::MODELEVALUATOR::Meshtying::GetJacobianBlock(
+    const Solid::MatBlockType bt) const
 {
   return global_state().get_jacobian_block(Type(), bt);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::evaluate_force()
+bool Solid::MODELEVALUATOR::Meshtying::evaluate_force()
 {
   return Strategy().evaluate_force(global_state().get_dis_np());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::evaluate_force_stiff()
+bool Solid::MODELEVALUATOR::Meshtying::evaluate_force_stiff()
 {
   return Strategy().evaluate_force_stiff(global_state().get_dis_np());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Meshtying::evaluate_stiff()
+bool Solid::MODELEVALUATOR::Meshtying::evaluate_stiff()
 {
   return Strategy().evaluate_stiff(global_state().get_dis_np());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
+void Solid::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
     Teuchos::RCP<const Epetra_Vector> Xslavemod)
 {
   // check modified positions vector
@@ -477,7 +477,7 @@ void STR::MODELEVALUATOR::Meshtying::apply_mesh_initialization(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::run_post_compute_x(
+void Solid::MODELEVALUATOR::Meshtying::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   check_init_setup();
@@ -487,7 +487,7 @@ void STR::MODELEVALUATOR::Meshtying::run_post_compute_x(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs)
+void Solid::MODELEVALUATOR::Meshtying::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs)
 {
   check_init_setup();
 
@@ -496,7 +496,7 @@ void STR::MODELEVALUATOR::Meshtying::remove_condensed_contributions_from_rhs(Epe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::write_restart(
+void Solid::MODELEVALUATOR::Meshtying::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   if (mesh_relocation_ != Teuchos::null)
@@ -511,7 +511,7 @@ void STR::MODELEVALUATOR::Meshtying::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::MODELEVALUATOR::Meshtying::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   mesh_relocation_ = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map(), true));
   ioreader.read_vector(mesh_relocation_, "mesh_relocation");
@@ -522,10 +522,10 @@ void STR::MODELEVALUATOR::Meshtying::read_restart(Core::IO::DiscretizationReader
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Meshtying::set_time_integration_info(
+void Solid::MODELEVALUATOR::Meshtying::set_time_integration_info(
     CONTACT::MtAbstractStrategy& strategy) const
 {
-  const Inpar::STR::DynamicType dyntype = tim_int().get_data_sdyn().get_dynamic_type();
+  const Inpar::Solid::DynamicType dyntype = tim_int().get_data_sdyn().get_dynamic_type();
   const double time_fac = integrator().get_int_param();
 
   strategy.set_time_integration_info(time_fac, dyntype);

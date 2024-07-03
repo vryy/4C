@@ -45,7 +45,7 @@ namespace Core::Conditions
   class LocsysManager;
 }
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -71,7 +71,7 @@ namespace STR
     //! Initialize class variables
     virtual void init(const Teuchos::RCP<Core::FE::Discretization>& discret,
         const Teuchos::RCP<Epetra_Vector>& freact,
-        const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
+        const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
 
     //! Setup class variables
     virtual void setup();
@@ -199,7 +199,7 @@ namespace STR
     Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_loc_sys_trafo() const;
 
     //! Get the global state
-    const STR::TimeInt::BaseDataGlobalState& g_state() const;
+    const Solid::TimeInt::BaseDataGlobalState& g_state() const;
 
     //! Has #locsysman_ be defined?
     bool is_loc_sys() const { return islocsys_; };
@@ -236,7 +236,7 @@ namespace STR
     Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
 
     //! pointer to the overlying time integrator (read-only)
-    Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
+    Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
 
     //! Pointer to the local coordinate system manager
     Teuchos::RCP<Core::Conditions::LocsysManager> locsysman_ptr_;
@@ -251,8 +251,8 @@ namespace STR
     //! Reaction force
     Epetra_Vector* freact_ptr_;
 
-  };  // namespace STR
-}  // namespace STR
+  };  // namespace Solid
+}  // namespace Solid
 
 namespace NOX
 {
@@ -275,7 +275,7 @@ namespace NOX
         {
          public:
           //! constructor
-          Dbc(const Teuchos::RCP<const STR::Dbc>& dbc_ptr);
+          Dbc(const Teuchos::RCP<const Solid::Dbc>& dbc_ptr);
 
           //! \brief Apply the DBC and rotate the system of equations if necessary (derived)
           void run_pre_apply_jacobian_inverse(::NOX::Abstract::Vector& rhs,
@@ -283,7 +283,7 @@ namespace NOX
 
          private:
           //! pointer to the underlying class, which provides the whole functionality
-          Teuchos::RCP<const STR::Dbc> dbc_ptr_;
+          Teuchos::RCP<const Solid::Dbc> dbc_ptr_;
 
         };  // class Dbc (pre/post operator)
       }     // namespace PrePostOp

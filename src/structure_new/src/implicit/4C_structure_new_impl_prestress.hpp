@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace IMPLICIT
   {
@@ -66,7 +66,7 @@ namespace STR
       double absolute_displacement_norm_;
     };
   }  // namespace IMPLICIT
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

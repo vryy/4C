@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
-namespace STR
+namespace Solid
 {
   // forward declarations
   class TimInt;
@@ -32,16 +32,16 @@ namespace STR
   //! Create auxiliary time integrator convenience routine
   //!
   //! \author bborn \date 07/08
-  Teuchos::RCP<STR::TimAda> TimAdaCreate(
+  Teuchos::RCP<Solid::TimAda> TimAdaCreate(
       const Teuchos::ParameterList& ioflags,     //!< input-output-flags
       const Teuchos::ParameterList& timeparams,  //!< structural dynamic flags
       const Teuchos::ParameterList& sdyn,        //!< structural dynamic flags
       const Teuchos::ParameterList& xparams,     //!< extra flags
       const Teuchos::ParameterList& tap,         //!< adaptive input flags
-      Teuchos::RCP<STR::TimInt> tis              //!< marching time integrator
+      Teuchos::RCP<Solid::TimInt> tis            //!< marching time integrator
   );
 
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -19,10 +19,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace STR::TimeInt
+namespace Solid::TimeInt
 {
   class Base;
-}  // namespace STR::TimeInt
+}  // namespace Solid::TimeInt
 
 namespace Adapter
 {
@@ -67,7 +67,7 @@ namespace Adapter
      */
     static Teuchos::RCP<Structure> Create(
         const Teuchos::ParameterList& taflags,  //!< adaptive input flags
-        Teuchos::RCP<STR::TimeInt::Base> ti_strategy);
+        Teuchos::RCP<Solid::TimeInt::Base> ti_strategy);
 
     /// setup of the adaptive time integration
     void setup() override;
@@ -97,7 +97,7 @@ namespace Adapter
     void PostOutput() override{};
 
     //! Provide the name
-    virtual enum Inpar::STR::TimAdaKind MethodName() const = 0;
+    virtual enum Inpar::Solid::TimAdaKind MethodName() const = 0;
 
     //! Provide the name as std::string
     virtual std::string MethodTitle() const = 0;
@@ -120,7 +120,7 @@ namespace Adapter
     virtual enum AdaEnum MethodAdaptDis() const = 0;
 
    protected:
-    Teuchos::RCP<STR::TimeInt::Base> stm_;  //!< marching time integrator
+    Teuchos::RCP<Solid::TimeInt::Base> stm_;  //!< marching time integrator
 
     //! @name Plain time integration constants
     //@{
@@ -134,18 +134,18 @@ namespace Adapter
 
     //! @name Adaptive time integration constants
     //@{
-    double stepsizemax_;                   //!< maximum time step size (upper limit)
-    double stepsizemin_;                   //!< minimum time step size (lower limit)
-    double sizeratiomax_;                  //!< maximally permitted increase of current step size
-                                           //!< relative to last converged one
-    double sizeratiomin_;                  //!< minimally permitted increase
-                                           //!< (or maximally permitted decrease)
-                                           //!< of current step size relative to last converged one
-    double sizeratioscale_;                //!< safety factor, should be lower than 1.0
-    enum CtrlEnum errctrl_;                //!< type of control, see #CtrlEnum
-    enum Inpar::STR::VectorNorm errnorm_;  //!< norm for local error vector
-    double errtol_;                        //!< target local error tolerance
-    int errorder_;                         //!< order of local error indication
+    double stepsizemax_;     //!< maximum time step size (upper limit)
+    double stepsizemin_;     //!< minimum time step size (lower limit)
+    double sizeratiomax_;    //!< maximally permitted increase of current step size
+                             //!< relative to last converged one
+    double sizeratiomin_;    //!< minimally permitted increase
+                             //!< (or maximally permitted decrease)
+                             //!< of current step size relative to last converged one
+    double sizeratioscale_;  //!< safety factor, should be lower than 1.0
+    enum CtrlEnum errctrl_;  //!< type of control, see #CtrlEnum
+    enum Inpar::Solid::VectorNorm errnorm_;  //!< norm for local error vector
+    double errtol_;                          //!< target local error tolerance
+    int errorder_;                           //!< order of local error indication
     int adaptstepmax_;  //!< maximally permitted trials to find tolerable step size
     //@}
 
@@ -272,15 +272,15 @@ namespace Adapter
     );
 
     /// Determine norm of force residual
-    double calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,  ///< type of norm to use
+    double calculate_vector_norm(const enum Inpar::Solid::VectorNorm norm,  ///< type of norm to use
         const Teuchos::RCP<Epetra_Vector> vect,  ///< the vector of interest
         const int numneglect =
             0  ///< number of DOFs that have to be neglected for possible length scaling
     );
 
     /// Perform error action once the nonlinear iteration fails
-    Inpar::STR::ConvergenceStatus PerformErrorAction(
-        const Inpar::STR::DivContAct& action, double& stepsizenew);
+    Inpar::Solid::ConvergenceStatus PerformErrorAction(
+        const Inpar::Solid::DivContAct& action, double& stepsizenew);
   };
 
 }  // namespace Adapter

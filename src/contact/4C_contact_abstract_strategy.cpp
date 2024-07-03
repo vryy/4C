@@ -2996,7 +2996,7 @@ void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
       break;
     }
     // -------------------------------------------------------------------
-    // run before an evaluate call in the STR::ModelEvaluator class
+    // run before an evaluate call in the Solid::ModelEvaluator class
     // -------------------------------------------------------------------
     case Mortar::eval_run_pre_evaluate:
     {
@@ -3004,7 +3004,7 @@ void CONTACT::AbstractStrategy::evaluate(CONTACT::ParamsInterface& cparams,
       break;
     }
     // -------------------------------------------------------------------
-    // run after an evaluate call in the STR::ModelEvaluator class
+    // run after an evaluate call in the Solid::ModelEvaluator class
     // -------------------------------------------------------------------
     case Mortar::eval_run_post_evaluate:
     {

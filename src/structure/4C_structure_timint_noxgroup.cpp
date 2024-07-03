@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-NOX::STR::Group::Group(FourC::STR::TimIntImpl& sti, Teuchos::ParameterList& printParams,
+NOX::Solid::Group::Group(FourC::Solid::TimIntImpl& sti, Teuchos::ParameterList& printParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& i, const ::NOX::Epetra::Vector& x,
     const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys)
     : ::NOX::Epetra::Group(printParams, i, x, linSys)
@@ -27,7 +27,7 @@ NOX::STR::Group::Group(FourC::STR::TimIntImpl& sti, Teuchos::ParameterList& prin
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::STR::Group::computeF()
+::NOX::Abstract::Group::ReturnType NOX::Solid::Group::computeF()
 {
   ::NOX::Abstract::Group::ReturnType ret = ::NOX::Epetra::Group::computeF();
 
@@ -42,7 +42,7 @@ NOX::STR::Group::Group(FourC::STR::TimIntImpl& sti, Teuchos::ParameterList& prin
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-::NOX::Abstract::Group::ReturnType NOX::STR::Group::computeJacobian()
+::NOX::Abstract::Group::ReturnType NOX::Solid::Group::computeJacobian()
 {
   ::NOX::Abstract::Group::ReturnType ret = ::NOX::Epetra::Group::computeJacobian();
   if (ret == ::NOX::Abstract::Group::Ok)

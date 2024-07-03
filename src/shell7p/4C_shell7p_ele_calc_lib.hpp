@@ -1164,19 +1164,19 @@ namespace Discret::ELEMENTS::Shell
    * @param thickness_weight (in) : Weighting factor to consider thickness integration
    */
   template <Core::FE::CellType distype>
-  void AssembleStrainTypeToMatrixRow(const Strains& strains, Inpar::STR::StrainType strain_type,
+  void AssembleStrainTypeToMatrixRow(const Strains& strains, Inpar::Solid::StrainType strain_type,
       Core::LinAlg::SerialDenseMatrix& data, int row, const double thickness_weight)
   {
     switch (strain_type)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> gl_strain_stress_like;
         Core::LinAlg::Voigt::Strains::to_stress_like(strains.gl_strain_, gl_strain_stress_like);
         assemble_vector_to_matrix_row(gl_strain_stress_like, data, row, thickness_weight);
         return;
       }
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> ea;
         green_lagrange_to_euler_almansi<distype>(strains.gl_strain_, strains.defgrd_, ea);
@@ -1185,7 +1185,7 @@ namespace Discret::ELEMENTS::Shell
         assemble_vector_to_matrix_row(ea_stress_like, data, row, thickness_weight);
         return;
       }
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         return;
       default:
         FOUR_C_THROW("strain type not supported");
@@ -1203,24 +1203,24 @@ namespace Discret::ELEMENTS::Shell
    */
   template <Core::FE::CellType distype>
   void assemble_stress_type_to_matrix_row(const Strains& strains,
-      const Stress<Mat::NUM_STRESS_3D> stress, Inpar::STR::StressType stress_type,
+      const Stress<Mat::NUM_STRESS_3D> stress, Inpar::Solid::StressType stress_type,
       Core::LinAlg::SerialDenseMatrix& data, int row, const double thickness_weight)
   {
     switch (stress_type)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         assemble_vector_to_matrix_row(stress.pk2_, data, row, thickness_weight);
         return;
       }
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> cauchy;
         Pk2ToCauchy<distype>(stress.pk2_, strains.defgrd_, cauchy);
         assemble_vector_to_matrix_row(cauchy, data, row, thickness_weight);
         return;
       }
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         return;
       default:
         FOUR_C_THROW("stress type not supported");

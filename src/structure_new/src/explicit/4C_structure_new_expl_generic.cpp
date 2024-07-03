@@ -27,12 +27,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::setup()
+void Solid::EXPLICIT::Generic::setup()
 {
   check_init();
 
   // call base class first
-  STR::Integrator::setup();
+  Solid::Integrator::setup();
 
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
@@ -63,7 +63,7 @@ void STR::EXPLICIT::Generic::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::EXPLICIT::Generic::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
+bool Solid::EXPLICIT::Generic::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
 {
   check_init_setup();
 
@@ -78,7 +78,8 @@ bool STR::EXPLICIT::Generic::apply_force(const Epetra_Vector& x, Epetra_Vector& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::EXPLICIT::Generic::apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
+bool Solid::EXPLICIT::Generic::apply_stiff(
+    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -98,7 +99,7 @@ bool STR::EXPLICIT::Generic::apply_stiff(const Epetra_Vector& x, Core::LinAlg::S
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::EXPLICIT::Generic::apply_force_stiff(
+bool Solid::EXPLICIT::Generic::apply_force_stiff(
     const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
@@ -118,7 +119,7 @@ bool STR::EXPLICIT::Generic::apply_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::EXPLICIT::Generic::calc_ref_norm_force(
+double Solid::EXPLICIT::Generic::calc_ref_norm_force(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
@@ -127,7 +128,7 @@ double STR::EXPLICIT::Generic::calc_ref_norm_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
+void Solid::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
@@ -135,8 +136,8 @@ void STR::EXPLICIT::Generic::compute_jacobian_contributions_from_element_level_f
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::EXPLICIT::Generic::assemble_force(
-    Epetra_Vector& f, const std::vector<Inpar::STR::ModelType>* without_these_models) const
+bool Solid::EXPLICIT::Generic::assemble_force(
+    Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   FOUR_C_THROW("%s is not yet implemented", __FUNCTION__);
   return false;
@@ -144,14 +145,14 @@ bool STR::EXPLICIT::Generic::assemble_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
+void Solid::EXPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
   model_eval().remove_condensed_contributions_from_rhs(rhs);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::update_step_element()
+void Solid::EXPLICIT::Generic::update_step_element()
 {
   check_init_setup();
   model_eval().update_step_element();
@@ -159,15 +160,15 @@ void STR::EXPLICIT::Generic::update_step_element()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::update_constant_state_contributions() {}
+void Solid::EXPLICIT::Generic::update_constant_state_contributions() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::post_update() { update_constant_state_contributions(); }
+void Solid::EXPLICIT::Generic::post_update() { update_constant_state_contributions(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::EXPLICIT::Generic::get_default_step_length() const
+double Solid::EXPLICIT::Generic::get_default_step_length() const
 {
   // default: return a step length of 1.0
   return 1.0;
@@ -175,7 +176,7 @@ double STR::EXPLICIT::Generic::get_default_step_length() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::Generic::reset_eval_params()
+void Solid::EXPLICIT::Generic::reset_eval_params()
 {
   // set the time step dependent parameters for the element evaluation
   eval_data().set_total_time(global_state().get_time_np());

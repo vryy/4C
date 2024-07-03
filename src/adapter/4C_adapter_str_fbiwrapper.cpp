@@ -23,9 +23,9 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::FBIStructureWrapper::FBIStructureWrapper(Teuchos::RCP<Structure> structure)
     : FSIStructureWrapper(structure)
 {
-  const bool is_prestress = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+  const bool is_prestress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
                                 Global::Problem::Instance()->structural_dynamic_params(),
-                                "PRESTRESS") != Inpar::STR::PreStress::none;
+                                "PRESTRESS") != Inpar::Solid::PreStress::none;
   if (is_prestress)
   {
     FOUR_C_THROW("Prestressing for fluid-beam interaction not tested yet.");
@@ -117,7 +117,7 @@ void Adapter::FBIStructureWrapper::setup_multi_map_extractor()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> Adapter::FBIStructureWrapper::GetIOData()
+Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> Adapter::FBIStructureWrapper::GetIOData()
 {
   return fsi_model_evaluator()->GetInOutput().get_runtime_output_params();
 }

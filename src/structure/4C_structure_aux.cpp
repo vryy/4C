@@ -21,32 +21,32 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double STR::calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,
+double Solid::calculate_vector_norm(const enum Inpar::Solid::VectorNorm norm,
     const Teuchos::RCP<Epetra_Vector> vect, const int numneglect)
 {
   // L1 norm
-  if (norm == Inpar::STR::norm_l1)
+  if (norm == Inpar::Solid::norm_l1)
   {
     double vectnorm;
     vect->Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
-  else if (norm == Inpar::STR::norm_l2)
+  else if (norm == Inpar::Solid::norm_l2)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
-  else if (norm == Inpar::STR::norm_rms)
+  else if (norm == Inpar::Solid::norm_rms)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
     return vectnorm / sqrt((double)(vect->GlobalLength() - numneglect));
   }
   // infinity/maximum norm
-  else if (norm == Inpar::STR::norm_inf)
+  else if (norm == Inpar::Solid::norm_inf)
   {
     double vectnorm;
     vect->NormInf(&vectnorm);
@@ -61,7 +61,7 @@ double STR::calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::MapExtractor::setup(
+void Solid::MapExtractor::setup(
     const Core::FE::Discretization& dis, const Epetra_Map& fullmap, bool overlapping)
 {
   const int ndim = Global::Problem::Instance()->NDim();
@@ -88,7 +88,7 @@ void STR::MapExtractor::setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> STR::MapExtractor::conditioned_element_map(
+Teuchos::RCP<std::set<int>> Solid::MapExtractor::conditioned_element_map(
     const Core::FE::Discretization& dis) const
 {
   Teuchos::RCP<std::set<int>> condelements =

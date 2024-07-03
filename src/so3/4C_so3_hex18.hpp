@@ -380,10 +380,10 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
           Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-          Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,  ///< stress output option
-          const Inpar::STR::StrainType iostrain   ///< strain output option
-      );                                          ///< plastic strain output option
+          Teuchos::ParameterList& params,           ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,  ///< stress output option
+          const Inpar::Solid::StrainType iostrain   ///< strain output option
+      );                                            ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
       void lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass);

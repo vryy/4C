@@ -47,7 +47,7 @@ namespace Adapter
     void setup();
 
     /// communication object at the interface
-    virtual Teuchos::RCP<const STR::MapExtractor> Interface() const
+    virtual Teuchos::RCP<const Solid::MapExtractor> Interface() const
     {
       return structure_->Interface();
     }

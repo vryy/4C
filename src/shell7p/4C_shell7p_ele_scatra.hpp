@@ -146,7 +146,7 @@ namespace Discret::ELEMENTS
       return (not interface_ptr_.is_null());
     }
 
-    [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& str_params_interface() const
+    [[nodiscard]] inline Solid::ELEMENTS::ParamsInterface& str_params_interface() const
     {
       if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
@@ -155,7 +155,7 @@ namespace Discret::ELEMENTS
     void set_params_interface_ptr(const Teuchos::ParameterList& p) override;
     //! @}
 
-    [[nodiscard]] const std::set<Inpar::STR::EleTech>& GetEleTech() const { return eletech_; }
+    [[nodiscard]] const std::set<Inpar::Solid::EleTech>& GetEleTech() const { return eletech_; }
 
     [[nodiscard]] Teuchos::RCP<Mat::So3Material> SolidMaterial(int nummat = 0) const;
 
@@ -189,10 +189,10 @@ namespace Discret::ELEMENTS
     Core::FE::CellType distype_ = Core::FE::CellType::dis_none;
 
     //! interface ptr, data exchange between the element and the time integrator.
-    Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_ = Teuchos::null;
+    Teuchos::RCP<Solid::ELEMENTS::ParamsInterface> interface_ptr_ = Teuchos::null;
 
     //! element technology
-    std::set<Inpar::STR::EleTech> eletech_ = {};
+    std::set<Inpar::Solid::EleTech> eletech_ = {};
 
     //! shell thickness in reference frame
     double thickness_ = 0.0;

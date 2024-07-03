@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
-namespace STR
+namespace Solid
 {
   /*====================================================================*/
   /*!
@@ -124,7 +124,7 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum Inpar::STR::DynamicType MethodName() const override { return Inpar::STR::dyna_ab2; }
+    enum Inpar::Solid::DynamicType MethodName() const override { return Inpar::Solid::dyna_ab2; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
@@ -190,7 +190,7 @@ namespace STR
 
   };  // class TimIntAB2
 
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

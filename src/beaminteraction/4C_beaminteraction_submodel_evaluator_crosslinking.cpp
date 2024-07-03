@@ -231,7 +231,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::init_submodel_dependencies(
-    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
+    Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
   // no active influence on other submodels
@@ -1090,16 +1090,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_update_step_element(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_energy()
+std::map<Solid::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_energy()
     const
 {
   check_init_setup();
-  std::map<STR::EnergyType, double> cl_energies;
+  std::map<Solid::EnergyType, double> cl_energies;
 
   for (auto db_iter : doublebondcl_)
   {
-    cl_energies[STR::beam_to_beam_link_internal_energy] += db_iter.second->GetInternalEnergy();
-    cl_energies[STR::beam_to_beam_link_kinetic_energy] += db_iter.second->GetKineticEnergy();
+    cl_energies[Solid::beam_to_beam_link_internal_energy] += db_iter.second->GetInternalEnergy();
+    cl_energies[Solid::beam_to_beam_link_kinetic_energy] += db_iter.second->GetKineticEnergy();
   }
 
   return cl_energies;

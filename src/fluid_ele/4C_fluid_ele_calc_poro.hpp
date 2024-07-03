@@ -1090,7 +1090,7 @@ namespace Discret
       bool const_permeability_;
 
       //! kinematic type
-      Inpar::STR::KinemType kintype_;
+      Inpar::Solid::KinemType kintype_;
 
       //! directions for anisotropic permeability
       std::vector<std::vector<double>> anisotropic_permeability_directions_;

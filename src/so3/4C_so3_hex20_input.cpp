@@ -29,11 +29,11 @@ bool Discret::ELEMENTS::SoHex20::ReadElement(
 
   if (buffer == "linear")
   {
-    kintype_ = Inpar::STR::KinemType::linear;
+    kintype_ = Inpar::Solid::KinemType::linear;
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_HEX20 element failed KINEM unknown");

@@ -73,7 +73,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
       printiter_(true),  // ADD INPUT PARAMETER
       zeros_(Teuchos::null),
       strmethodname_(
-          Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(structparams, "DYNAMICTYP")),
+          Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP")),
       ehldyn_(Global::Problem::Instance()->elasto_hydro_dynamic_params()),
       ehldynmono_(
           (Global::Problem::Instance()->elasto_hydro_dynamic_params()).sublist("MONOLITHIC")),
@@ -512,8 +512,8 @@ void EHL::Monolithic::NewtonFull()
   {
     print_newton_conv();
   }
-  else if (Core::UTILS::IntegralValue<Inpar::STR::DivContAct>(sdyn_, "DIVERCONT") ==
-           Inpar::STR::divcont_continue)
+  else if (Core::UTILS::IntegralValue<Inpar::Solid::DivContAct>(sdyn_, "DIVERCONT") ==
+           Inpar::Solid::divcont_continue)
     ;
   else if (iter_ >= itermax_)
     FOUR_C_THROW("Newton unconverged in %d iterations", iter_);
@@ -662,14 +662,14 @@ void EHL::Monolithic::setup_system_matrix()
 
   // Time integration specific parameters..
   double alphaf = -1.;
-  switch (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn_, "DYNAMICTYP"))
+  switch (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn_, "DYNAMICTYP"))
   {
-    case Inpar::STR::dyna_genalpha:
+    case Inpar::Solid::dyna_genalpha:
     {
       alphaf = sdyn_.sublist("GENALPHA").get<double>("ALPHA_F");
       break;
     }
-    case Inpar::STR::dyna_statics:
+    case Inpar::Solid::dyna_statics:
     {
       alphaf = 0.;
       break;
@@ -1036,13 +1036,13 @@ bool EHL::Monolithic::Converged()
   // structural residual forces
   switch (normtypestrrhs_)
   {
-    case Inpar::STR::convnorm_abs:
+    case Inpar::Solid::convnorm_abs:
       convstrrhs = normstrrhs_ < tolstrrhs_;
       break;
-    case Inpar::STR::convnorm_rel:
+    case Inpar::Solid::convnorm_rel:
       convstrrhs = normstrrhs_ < std::max(normstrrhsiter0_ * tolstrrhs_, 1e-15);
       break;
-    case Inpar::STR::convnorm_mix:
+    case Inpar::Solid::convnorm_mix:
       convstrrhs = ((normstrrhs_ < tolstrrhs_) or
                     (normstrrhs_ < std::max(normstrrhsiter0_ * tolstrrhs_, 1e-15)));
       break;
@@ -1054,13 +1054,13 @@ bool EHL::Monolithic::Converged()
   // residual displacements
   switch (normtypedisi_)
   {
-    case Inpar::STR::convnorm_abs:
+    case Inpar::Solid::convnorm_abs:
       convdisp = normdisi_ < toldisi_;
       break;
-    case Inpar::STR::convnorm_rel:
+    case Inpar::Solid::convnorm_rel:
       convdisp = normdisi_ < std::max(normdisiiter0_ * toldisi_, 1e-15);
       break;
-    case Inpar::STR::convnorm_mix:
+    case Inpar::Solid::convnorm_mix:
       convdisp =
           ((normdisi_ < toldisi_) or (normdisi_ < std::max(normdisiiter0_ * toldisi_, 1e-15)));
       break;
@@ -1196,13 +1196,13 @@ void EHL::Monolithic::print_newton_iter_header(FILE* ofile)
   // ---------------------------------------------------------- structure
   switch (normtypestrrhs_)
   {
-    case Inpar::STR::convnorm_rel:
+    case Inpar::Solid::convnorm_rel:
       oss << std::setw(18) << "rel-str-res-norm";
       break;
-    case Inpar::STR::convnorm_abs:
+    case Inpar::Solid::convnorm_abs:
       oss << std::setw(18) << "abs-str-res-norm";
       break;
-    case Inpar::STR::convnorm_mix:
+    case Inpar::Solid::convnorm_mix:
       oss << std::setw(18) << "mix-str-res-norm";
       break;
     default:
@@ -1212,13 +1212,13 @@ void EHL::Monolithic::print_newton_iter_header(FILE* ofile)
 
   switch (normtypedisi_)
   {
-    case Inpar::STR::convnorm_rel:
+    case Inpar::Solid::convnorm_rel:
       oss << std::setw(16) << "rel-dis-norm";
       break;
-    case Inpar::STR::convnorm_abs:
+    case Inpar::Solid::convnorm_abs:
       oss << std::setw(16) << "abs-dis-norm";
       break;
-    case Inpar::STR::convnorm_mix:
+    case Inpar::Solid::convnorm_mix:
       oss << std::setw(16) << "mix-dis-norm";
       break;
     default:
@@ -1342,14 +1342,14 @@ void EHL::Monolithic::print_newton_iter_text(FILE* ofile)
   // displacement
   switch (normtypestrrhs_)
   {
-    case Inpar::STR::convnorm_abs:
+    case Inpar::Solid::convnorm_abs:
       oss << std::setw(18) << std::setprecision(5) << std::scientific << normstrrhs_;
       break;
-    case Inpar::STR::convnorm_rel:
+    case Inpar::Solid::convnorm_rel:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << normstrrhs_ / normstrrhsiter0_;
       break;
-    case Inpar::STR::convnorm_mix:
+    case Inpar::Solid::convnorm_mix:
       oss << std::setw(18) << std::setprecision(5) << std::scientific
           << std::min(normstrrhs_, normstrrhs_ / normstrrhsiter0_);
       break;
@@ -1360,13 +1360,13 @@ void EHL::Monolithic::print_newton_iter_text(FILE* ofile)
 
   switch (normtypedisi_)
   {
-    case Inpar::STR::convnorm_abs:
+    case Inpar::Solid::convnorm_abs:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
       break;
-    case Inpar::STR::convnorm_rel:
+    case Inpar::Solid::convnorm_rel:
       oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_ / normdisiiter0_;
       break;
-    case Inpar::STR::convnorm_mix:
+    case Inpar::Solid::convnorm_mix:
       oss << std::setw(16) << std::setprecision(5) << std::scientific
           << std::min(normdisi_, normdisi_ / normdisiiter0_);
       break;
@@ -1682,10 +1682,10 @@ void EHL::Monolithic::set_default_parameters()
   normtypeinc_ = Core::UTILS::IntegralValue<Inpar::EHL::ConvNorm>(ehldynmono_, "NORM_INC");
   normtyperhs_ = Core::UTILS::IntegralValue<Inpar::EHL::ConvNorm>(ehldynmono_, "NORM_RESF");
   // what kind of norm do we wanna test for the single fields
-  normtypedisi_ = Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdyn_, "NORM_DISP");
-  normtypestrrhs_ = Core::UTILS::IntegralValue<Inpar::STR::ConvNorm>(sdyn_, "NORM_RESF");
-  enum Inpar::STR::VectorNorm striternorm =
-      Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(sdyn_, "ITERNORM");
+  normtypedisi_ = Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdyn_, "NORM_DISP");
+  normtypestrrhs_ = Core::UTILS::IntegralValue<Inpar::Solid::ConvNorm>(sdyn_, "NORM_RESF");
+  enum Inpar::Solid::VectorNorm striternorm =
+      Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(sdyn_, "ITERNORM");
   normtypeprei_ = Core::UTILS::IntegralValue<Inpar::LUBRICATION::ConvNorm>(ldyn, "NORM_PRE");
   normtypelubricationrhs_ =
       Core::UTILS::IntegralValue<Inpar::LUBRICATION::ConvNorm>(ldyn, "NORM_RESF");
@@ -1747,19 +1747,19 @@ void EHL::Monolithic::set_default_parameters()
   // what norm is used for structure
   switch (striternorm)
   {
-    case Inpar::STR::norm_l1:
+    case Inpar::Solid::norm_l1:
       iternormstr_ = Inpar::EHL::norm_l1;
       break;
-    case Inpar::STR::norm_l2:
+    case Inpar::Solid::norm_l2:
       iternormstr_ = Inpar::EHL::norm_l2;
       break;
-    case Inpar::STR::norm_rms:
+    case Inpar::Solid::norm_rms:
       iternormstr_ = Inpar::EHL::norm_rms;
       break;
-    case Inpar::STR::norm_inf:
+    case Inpar::Solid::norm_inf:
       iternormstr_ = Inpar::EHL::norm_inf;
       break;
-    case Inpar::STR::norm_vague:
+    case Inpar::Solid::norm_vague:
     default:
       FOUR_C_THROW("STR norm is not determined");
       break;

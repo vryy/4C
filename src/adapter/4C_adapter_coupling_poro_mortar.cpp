@@ -342,8 +342,8 @@ void Adapter::CouplingPoroMortar::create_strategy(Teuchos::RCP<Core::FE::Discret
   // problem and not a value of 0.5 a proper disctinction is necessary if poro meshtying is expanded
   // to other time integration strategies
 
-  if (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(stru, "DYNAMICTYP") ==
-      Inpar::STR::dyna_statics)
+  if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(stru, "DYNAMICTYP") ==
+      Inpar::Solid::dyna_statics)
   {
     theta = 1.0;
   }

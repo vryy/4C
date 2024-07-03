@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace EXPLICIT
   {
@@ -66,9 +66,9 @@ namespace STR
       //@{
 
       //! Return time integrator name
-      [[nodiscard]] enum Inpar::STR::DynamicType method_name() const override
+      [[nodiscard]] enum Inpar::Solid::DynamicType method_name() const override
       {
-        return Inpar::STR::dyna_centrdiff;
+        return Inpar::Solid::dyna_centrdiff;
       }
 
       //! Provide number of steps, e.g. a single-step method returns 1,
@@ -115,7 +115,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> finertian_ptr_;
     };
   }  // namespace EXPLICIT
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

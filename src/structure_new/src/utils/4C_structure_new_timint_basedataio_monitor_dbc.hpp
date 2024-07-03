@@ -24,7 +24,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -125,7 +125,7 @@ namespace STR
     };
 
   }  // namespace TimeInt
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

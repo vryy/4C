@@ -166,11 +166,11 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
     //                      --> PoroFluid FPSI-Interface
 
     Teuchos::RCP<const Epetra_Map> s_other_map = Core::LinAlg::MergeMap(
-        poro_field()->structure_field()->Interface()->Map(STR::MapExtractor::cond_other),
-        poro_field()->structure_field()->Interface()->Map(STR::MapExtractor::cond_fsi));
+        poro_field()->structure_field()->Interface()->Map(Solid::MapExtractor::cond_other),
+        poro_field()->structure_field()->Interface()->Map(Solid::MapExtractor::cond_fsi));
     vecSpaces.push_back(s_other_map);  // other map
     vecSpaces.push_back(poro_field()->structure_field()->Interface()->Map(
-        STR::MapExtractor::cond_fpsi));                      // fpsi_coupling
+        Solid::MapExtractor::cond_fpsi));                    // fpsi_coupling
     vecSpaces.push_back(porofluid_extractor_->other_map());  // other map
     vecSpaces.push_back(porofluid_extractor_->cond_map());   // fpsi_coupling
 

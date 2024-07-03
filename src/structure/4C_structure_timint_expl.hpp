@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
-namespace STR
+namespace Solid
 {
   namespace Aux
   {
@@ -33,7 +33,7 @@ namespace STR
    *        with \b explicit time integrators
    *
    * <h3> About </h3>
-   * This object bridges the gap between the base time integator STR::TimInt
+   * This object bridges the gap between the base time integator Solid::TimInt
    * and the specific implementation of explicit time integrators.
    *
    * \author bborn
@@ -158,7 +158,7 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum Inpar::STR::DynamicType MethodName() const override = 0;
+    enum Inpar::Solid::DynamicType MethodName() const override = 0;
 
     //! These time integrators are all explicit (mark their name)
     bool MethodImplicit() override { return false; }
@@ -341,10 +341,10 @@ namespace STR
     };
 
     //! Get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale get_stc_algo() override
+    Inpar::Solid::StcScale get_stc_algo() override
     {
       FOUR_C_THROW("get_stc_algo() has not been tested for explicit time integrators");
-      return Inpar::STR::stc_none;
+      return Inpar::Solid::stc_none;
     };
 
     //! Access to scaling matrix for STC
@@ -374,10 +374,10 @@ namespace STR
     /// Do the nonlinear solve, i.e. (multiple) corrector,
     /// for the time step. All boundary conditions have
     /// been set.
-    Inpar::STR::ConvergenceStatus Solve() final
+    Inpar::Solid::ConvergenceStatus Solve() final
     {
       IntegrateStep();
-      return Inpar::STR::conv_success;
+      return Inpar::Solid::conv_success;
     }
 
     //! prepare partiton step
@@ -395,7 +395,7 @@ namespace STR
     //@}
   };
 
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::TimIntAB2::TimIntAB2(const Teuchos::ParameterList& timeparams,
+Solid::TimIntAB2::TimIntAB2(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams,
     // const Teuchos::ParameterList& ab2params,
@@ -48,12 +48,12 @@ STR::TimIntAB2::TimIntAB2(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntAB2::init(const Teuchos::ParameterList& timeparams,
+void Solid::TimIntAB2::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
-  STR::TimIntExpl::init(timeparams, sdynparams, xparams, actdis, solver);
+  Solid::TimIntExpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
 
   // info to user
@@ -68,10 +68,10 @@ void STR::TimIntAB2::init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntAB2::setup()
+void Solid::TimIntAB2::setup()
 {
   // call setup() in base class
-  STR::TimIntExpl::setup();
+  Solid::TimIntExpl::setup();
 
 
   // determine mass, damping and initial accelerations
@@ -93,7 +93,7 @@ void STR::TimIntAB2::setup()
 
 /*----------------------------------------------------------------------*/
 /* Resizing of multi-step quantities */
-void STR::TimIntAB2::ResizeMStep()
+void Solid::TimIntAB2::ResizeMStep()
 {
   // resize time and step size fields
   time_->Resize(-1, 0, (*time_)[0]);
@@ -110,7 +110,7 @@ void STR::TimIntAB2::ResizeMStep()
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-int STR::TimIntAB2::IntegrateStep()
+int Solid::TimIntAB2::IntegrateStep()
 {
   // safety checks
   check_is_init();
@@ -169,7 +169,7 @@ int STR::TimIntAB2::IntegrateStep()
   // *********** time measurement ***********
 
   // viscous forces due Rayleigh damping
-  if (damping_ == Inpar::STR::damp_rayleigh)
+  if (damping_ == Inpar::Solid::damp_rayleigh)
   {
     damp_->Multiply(false, *veln_, *fviscn_);
   }
@@ -199,7 +199,7 @@ int STR::TimIntAB2::IntegrateStep()
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
-  if (damping_ == Inpar::STR::damp_rayleigh)
+  if (damping_ == Inpar::Solid::damp_rayleigh)
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }
@@ -258,7 +258,7 @@ int STR::TimIntAB2::IntegrateStep()
 
 /*----------------------------------------------------------------------*/
 /* Update step */
-void STR::TimIntAB2::UpdateStepState()
+void Solid::TimIntAB2::UpdateStepState()
 {
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}, D_{n-1} := D_{n}
@@ -279,7 +279,7 @@ void STR::TimIntAB2::UpdateStepState()
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
-void STR::TimIntAB2::UpdateStepElement()
+void Solid::TimIntAB2::UpdateStepElement()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -296,7 +296,7 @@ void STR::TimIntAB2::UpdateStepElement()
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
-void STR::TimIntAB2::ReadRestartForce()
+void Solid::TimIntAB2::ReadRestartForce()
 {
   FOUR_C_THROW("No restart ability for Adams-Bashforth 2nd order time integrator!");
   return;
@@ -304,7 +304,7 @@ void STR::TimIntAB2::ReadRestartForce()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntAB2::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Solid::TimIntAB2::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   return;
 }

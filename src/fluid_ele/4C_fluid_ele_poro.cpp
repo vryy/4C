@@ -82,7 +82,7 @@ void Discret::ELEMENTS::FluidPoroEleType::setup_element_definition(
 }
 
 Discret::ELEMENTS::FluidPoro::FluidPoro(int id, int owner)
-    : Fluid(id, owner), kintype_(Inpar::STR::KinemType::vague)
+    : Fluid(id, owner), kintype_(Inpar::Solid::KinemType::vague)
 {
   anisotropic_permeability_directions_.resize(3, std::vector<double>(1, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(3, std::vector<double>(1, 0.0));
@@ -134,7 +134,7 @@ void Discret::ELEMENTS::FluidPoro::unpack(const std::vector<char>& data)
   Core::Communication::ExtractAndAssertId(position, data, UniqueParObjectId());
 
   // kintype_
-  kintype_ = static_cast<Inpar::STR::KinemType>(extract_int(position, data));
+  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
 
   // anisotropic_permeability_directions_
   int size = 0;

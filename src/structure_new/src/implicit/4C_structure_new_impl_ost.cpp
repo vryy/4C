@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::OneStepTheta::OneStepTheta()
+Solid::IMPLICIT::OneStepTheta::OneStepTheta()
     : theta_(-1.0),
       fvisconp_ptr_(Teuchos::null),
       fviscon_ptr_(Teuchos::null),
@@ -41,7 +41,7 @@ STR::IMPLICIT::OneStepTheta::OneStepTheta()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::setup()
+void Solid::IMPLICIT::OneStepTheta::setup()
 {
   check_init();
   // Call the setup() of the abstract base class first.
@@ -82,11 +82,11 @@ void STR::IMPLICIT::OneStepTheta::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::post_setup()
+void Solid::IMPLICIT::OneStepTheta::post_setup()
 {
   check_init_setup();
 
-  if (sdyn().get_mass_lin_type() != Inpar::STR::ml_rotations and !sdyn().NeglectInertia())
+  if (sdyn().get_mass_lin_type() != Inpar::Solid::ml_rotations and !sdyn().NeglectInertia())
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
@@ -124,19 +124,19 @@ void STR::IMPLICIT::OneStepTheta::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::OneStepTheta::get_theta() const
+double Solid::IMPLICIT::OneStepTheta::get_theta() const
 {
   if (is_init() and is_setup()) return theta_;
 
-  const STR::TimeInt::OneStepThetaDataSDyn& onesteptheta_sdyn =
-      dynamic_cast<const STR::TimeInt::OneStepThetaDataSDyn&>(tim_int().get_data_sdyn());
+  const Solid::TimeInt::OneStepThetaDataSDyn& onesteptheta_sdyn =
+      dynamic_cast<const Solid::TimeInt::OneStepThetaDataSDyn&>(tim_int().get_data_sdyn());
 
   return onesteptheta_sdyn.get_theta();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::set_state(const Epetra_Vector& x)
+void Solid::IMPLICIT::OneStepTheta::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -166,7 +166,7 @@ void STR::IMPLICIT::OneStepTheta::set_state(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::update_constant_state_contributions()
+void Solid::IMPLICIT::OneStepTheta::update_constant_state_contributions()
 {
   const double& dt = (*global_state().get_delta_time())[0];
 
@@ -188,7 +188,7 @@ void STR::IMPLICIT::OneStepTheta::update_constant_state_contributions()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
+bool Solid::IMPLICIT::OneStepTheta::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
 {
   check_init_setup();
 
@@ -202,7 +202,7 @@ bool STR::IMPLICIT::OneStepTheta::apply_force(const Epetra_Vector& x, Epetra_Vec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::apply_stiff(
+bool Solid::IMPLICIT::OneStepTheta::apply_stiff(
     const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
@@ -223,7 +223,7 @@ bool STR::IMPLICIT::OneStepTheta::apply_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::apply_force_stiff(
+bool Solid::IMPLICIT::OneStepTheta::apply_force_stiff(
     const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
@@ -243,15 +243,15 @@ bool STR::IMPLICIT::OneStepTheta::apply_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::assemble_force(
-    Epetra_Vector& f, const std::vector<Inpar::STR::ModelType>* without_these_models) const
+bool Solid::IMPLICIT::OneStepTheta::assemble_force(
+    Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   return model_eval().assemble_force(theta_, f, without_these_models);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Epetra_Vector& f) const
+void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n}
   Core::LinAlg::AssembleMyVector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
@@ -266,7 +266,7 @@ void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(Epetra_Vector& f)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
+void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
@@ -274,13 +274,13 @@ void STR::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->Add(*global_state().get_mass_matrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
   // add Rayleigh damping contributions
-  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::STR::damp_rayleigh)
+  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
     stiff_ptr->Add(*global_state().get_damp_matrix(), false, 1.0 / dt, 1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::write_restart(
+void Solid::IMPLICIT::OneStepTheta::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -293,7 +293,7 @@ void STR::IMPLICIT::OneStepTheta::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::IMPLICIT::OneStepTheta::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.read_vector(finertian_ptr_, "finert");
@@ -305,7 +305,7 @@ void STR::IMPLICIT::OneStepTheta::read_restart(Core::IO::DiscretizationReader& i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::OneStepTheta::calc_ref_norm_force(
+double Solid::IMPLICIT::OneStepTheta::calc_ref_norm_force(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   FOUR_C_THROW("Not yet implemented! (see the Statics integration for an example)");
@@ -314,11 +314,11 @@ double STR::IMPLICIT::OneStepTheta::calc_ref_norm_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::OneStepTheta::get_int_param() const { return (1.0 - get_theta()); }
+double Solid::IMPLICIT::OneStepTheta::get_int_param() const { return (1.0 - get_theta()); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::update_step_state()
+void Solid::IMPLICIT::OneStepTheta::update_step_state()
 {
   check_init_setup();
   // ---------------------------------------------------------------------------
@@ -339,7 +339,7 @@ void STR::IMPLICIT::OneStepTheta::update_step_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::update_step_element()
+void Solid::IMPLICIT::OneStepTheta::update_step_element()
 {
   check_init_setup();
   model_eval().update_step_element();
@@ -347,11 +347,11 @@ void STR::IMPLICIT::OneStepTheta::update_step_element()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::post_update() { update_constant_state_contributions(); }
+void Solid::IMPLICIT::OneStepTheta::post_update() { update_constant_state_contributions(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
+void Solid::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -378,7 +378,7 @@ void STR::IMPLICIT::OneStepTheta::predict_const_dis_consist_vel_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
+bool Solid::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -406,7 +406,7 @@ bool STR::IMPLICIT::OneStepTheta::predict_const_vel_consist_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::OneStepTheta::predict_const_acc(
+bool Solid::IMPLICIT::OneStepTheta::predict_const_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -435,10 +435,10 @@ bool STR::IMPLICIT::OneStepTheta::predict_const_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::OneStepTheta::reset_eval_params()
+void Solid::IMPLICIT::OneStepTheta::reset_eval_params()
 {
   // call base class
-  STR::IMPLICIT::Generic::reset_eval_params();
+  Solid::IMPLICIT::Generic::reset_eval_params();
 
   // set the time step dependent parameters for the element evaluation
   const double& dt = (*global_state().get_delta_time())[0];

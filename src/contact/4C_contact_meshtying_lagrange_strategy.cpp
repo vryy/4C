@@ -1095,7 +1095,7 @@ Teuchos::RCP<const Epetra_Vector> CONTACT::MtLagrangeStrategy::GetRhsBlockPtr(
     }
     default:
     {
-      FOUR_C_THROW("Unknown STR::VecBlockType!");
+      FOUR_C_THROW("Unknown Solid::VecBlockType!");
       break;
     }
   }
@@ -1127,7 +1127,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::MtLagrangeStrategy::GetMatrixB
       mat_ptr = lm_diag_matrix_;
       break;
     default:
-      FOUR_C_THROW("Unknown STR::MatBlockType!");
+      FOUR_C_THROW("Unknown Solid::MatBlockType!");
       break;
   }
   return mat_ptr;

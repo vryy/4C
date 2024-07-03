@@ -1160,7 +1160,7 @@ Input::ValidConditions()
 
   Inpar::CARDIOVASCULAR0D::SetValidConditions(condlist);
 
-  Inpar::STR::SetValidConditions(condlist);
+  Inpar::Solid::SetValidConditions(condlist);
 
   Inpar::THR::SetValidConditions(condlist);
 

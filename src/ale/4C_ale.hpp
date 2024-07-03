@@ -100,7 +100,7 @@ namespace ALE
    *       No. 3-4, pp. 305-316, 2002
    *  </ul>
    *
-   *  \sa STR::TimInt, FLD::TimInt, ALE::AleLinear
+   *  \sa Solid::TimInt, FLD::TimInt, ALE::AleLinear
    *
    *  \author mayr.mt \date 10/2014
    */

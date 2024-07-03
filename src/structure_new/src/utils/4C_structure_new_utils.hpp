@@ -54,7 +54,7 @@ namespace NOX
   }      // namespace Nln
 }  // namespace NOX
 
-namespace STR
+namespace Solid
 {
   class Integrator;
 
@@ -68,7 +68,7 @@ namespace STR
   {
     //! Convert the structural vector types to a corresponding nox norm type
     enum ::NOX::Abstract::Vector::NormType Convert2NoxNormType(
-        const enum Inpar::STR::VectorNorm& normtype);
+        const enum Inpar::Solid::VectorNorm& normtype);
 
     /*! Convert the structural model type enums to nox nln solution
      *  type enums
@@ -79,8 +79,8 @@ namespace STR
      */
     void ConvertModelType2SolType(std::vector<enum NOX::Nln::SolutionType>& soltypes,
         std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& slinsolvers,
-        const std::set<enum Inpar::STR::ModelType>& modeltypes,
-        const std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>&
+        const std::set<enum Inpar::Solid::ModelType>& modeltypes,
+        const std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>&
             mlinsolvers);
 
     /*! \brief Convert the structural model type enumerator to a nox nln solution
@@ -89,14 +89,14 @@ namespace STR
      *  \param modeltype (in) : Model type enumerator which has to be converted
      *  \param do_check  (in) : Check if a corresponding solution type exists */
     enum NOX::Nln::SolutionType ConvertModelType2SolType(
-        const enum Inpar::STR::ModelType& modeltype, const bool& do_check);
+        const enum Inpar::Solid::ModelType& modeltype, const bool& do_check);
 
     /*! \brief Convert the structural model type enumerator to a nox nln solution
      *  type enumerator and check if the conversion was successful
      *
      *  \param modeltype (in) : Model type enumerator which has to be converted. */
     inline enum NOX::Nln::SolutionType ConvertModelType2SolType(
-        const enum Inpar::STR::ModelType& modeltype)
+        const enum Inpar::Solid::ModelType& modeltype)
     {
       return ConvertModelType2SolType(modeltype, true);
     }
@@ -106,14 +106,14 @@ namespace STR
      *
      *  \param soltype (in)   : Solution type enumerator which has to be converted.
      *  \param do_check  (in) : Check if a corresponding model type exists. */
-    enum Inpar::STR::ModelType ConvertSolType2ModelType(
+    enum Inpar::Solid::ModelType ConvertSolType2ModelType(
         const enum NOX::Nln::SolutionType& soltype, const bool& do_check);
 
     /*! \brief Convert the structural model type enumerator to a nox nln solution
      *  type enumerator and check if the conversion was successful
      *
      *  \param soltype (in) : Solution type enumerator which has to be converted. */
-    inline enum Inpar::STR::ModelType ConvertSolType2ModelType(
+    inline enum Inpar::Solid::ModelType ConvertSolType2ModelType(
         const enum NOX::Nln::SolutionType& soltype)
     {
       return ConvertSolType2ModelType(soltype, true);
@@ -124,14 +124,14 @@ namespace STR
      *
      *  \param qtype (in)    : Quantity type enumerator which has to be converted.
      *  \param do_check (in) : Check if a corresponding model type exists. */
-    enum Inpar::STR::ModelType ConvertQuantityType2ModelType(
+    enum Inpar::Solid::ModelType ConvertQuantityType2ModelType(
         const enum NOX::Nln::StatusTest::QuantityType& qtype, const bool& do_check);
 
     /*! \brief Convert the nox nln statustest quantity type enumerator to a structural model
      *  type enumerator and check if the conversion was successful
      *
      *  \param qtype (in) : Quantity type enumerator which has to be converted. */
-    inline enum Inpar::STR::ModelType ConvertQuantityType2ModelType(
+    inline enum Inpar::Solid::ModelType ConvertQuantityType2ModelType(
         const enum NOX::Nln::StatusTest::QuantityType& qtype)
     {
       return ConvertQuantityType2ModelType(qtype, true);
@@ -141,7 +141,7 @@ namespace STR
      *  type enumerator
      *
      *  \param qtype (in)    : Quantity type enumerator which has to be converted. */
-    enum Inpar::STR::EleTech ConvertQuantityType2EleTech(
+    enum Inpar::Solid::EleTech ConvertQuantityType2EleTech(
         const enum NOX::Nln::StatusTest::QuantityType& qtype);
 
     //! Returns the optimization type of the underlying structural problem
@@ -150,25 +150,25 @@ namespace STR
 
     /// convert structure condition number type to a nox condition number type
     NOX::Nln::LinSystem::ConditionNumber Convert2NoxConditionNumberType(
-        const Inpar::STR::ConditionNumber stype);
+        const Inpar::Solid::ConditionNumber stype);
 
     //! Set the constraint interfaces
     void CreateConstraintInterfaces(
         std::map<enum NOX::Nln::SolutionType,
             Teuchos::RCP<NOX::Nln::CONSTRAINT::Interface::Required>>& iconstr,
-        STR::Integrator& integrator, const std::vector<enum NOX::Nln::SolutionType>& soltypes);
+        Solid::Integrator& integrator, const std::vector<enum NOX::Nln::SolutionType>& soltypes);
 
     //! Set the constraint preconditioner interfaces
     void CreateConstraintPreconditioner(
         std::map<NOX::Nln::SolutionType,
             Teuchos::RCP<NOX::Nln::CONSTRAINT::Interface::Preconditioner>>& iconstr_prec,
-        STR::Integrator& integrator, const std::vector<enum NOX::Nln::SolutionType>& soltypes);
+        Solid::Integrator& integrator, const std::vector<enum NOX::Nln::SolutionType>& soltypes);
 
     //! Create object to scale linear system
     void CreateScaling(Teuchos::RCP<::NOX::Epetra::Scaling>& iscale,
-        const STR::TimeInt::BaseDataSDyn& DataSDyn, STR::TimeInt::BaseDataGlobalState& GState);
+        const Solid::TimeInt::BaseDataSDyn& DataSDyn, Solid::TimeInt::BaseDataGlobalState& GState);
   }  // namespace Nln
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

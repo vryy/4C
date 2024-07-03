@@ -186,8 +186,9 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
 
     case calc_stc_matrix_inverse:
     {
-      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == Inpar::STR::stc_none)
+      const auto stc_scaling =
+          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
@@ -199,8 +200,9 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
 
     case calc_stc_matrix:
     {
-      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == Inpar::STR::stc_none)
+      const auto stc_scaling =
+          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
@@ -234,7 +236,7 @@ int Discret::ELEMENTS::Nurbs::SoNurbs27::evaluate(Teuchos::ParameterList& params
  | calc. scaled thickness matrix for thin shell-like structs   (public) |
  *----------------------------------------------------------------------*/
 void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matrix<81, 81>& elemat1,
-    const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
+    const Inpar::Solid::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
     Core::FE::Discretization& discretization, bool do_inverse)
 {
   // --------------------------------------------------
@@ -425,7 +427,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::do_calc_stc_matrix(Core::LinAlg::Matri
 
 
   double C = 1.0;
-  if (stc_scaling == Inpar::STR::stc_currsym)
+  if (stc_scaling == Inpar::Solid::stc_currsym)
   {
     C = ratio;
   }

@@ -31,7 +31,7 @@ namespace Adapter
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
  *---------------------------------------------------------------------------*/
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -55,7 +55,10 @@ namespace STR
       //! @{
 
       //! [derived]
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_partitioned_coupling; }
+      Inpar::Solid::ModelType Type() const override
+      {
+        return Inpar::Solid::model_partitioned_coupling;
+      }
 
       //! reset class variables (without jacobian) [derived]
       void reset(const Epetra_Vector& x) override { return; };
@@ -131,7 +134,7 @@ namespace STR
       void output_step_state(Core::IO::DiscretizationWriter& iowriter) const override { return; };
 
       //! [derived]
-      void Predict(const Inpar::STR::PredEnum& pred_type) override { return; };
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! [derived]
       void reset_step_state() override { return; };
@@ -157,7 +160,7 @@ namespace STR
 
   }  // namespace MODELEVALUATOR
 
-}  // namespace STR
+}  // namespace Solid
 
 /*---------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

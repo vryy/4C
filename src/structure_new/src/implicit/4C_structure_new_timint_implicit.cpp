@@ -33,23 +33,23 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::setup()
+void Solid::TimeInt::Implicit::setup()
 {
   // safety check
   check_init();
 
-  STR::TimeInt::Base::setup();
+  Solid::TimeInt::Base::setup();
 
   // ---------------------------------------------------------------------------
   // cast the base class integrator
   // ---------------------------------------------------------------------------
-  implint_ptr_ = Teuchos::rcp_dynamic_cast<STR::IMPLICIT::Generic>(integrator_ptr());
+  implint_ptr_ = Teuchos::rcp_dynamic_cast<Solid::IMPLICIT::Generic>(integrator_ptr());
 
   // ---------------------------------------------------------------------------
   // build NOX interface
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TimeInt::NoxInterface> noxinterface_ptr =
-      Teuchos::rcp(new STR::TimeInt::NoxInterface);
+  Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr =
+      Teuchos::rcp(new Solid::TimeInt::NoxInterface);
   noxinterface_ptr->init(
       data_global_state_ptr(), implint_ptr_, dbc_ptr(), Teuchos::rcp(this, false));
   noxinterface_ptr->setup();
@@ -57,8 +57,8 @@ void STR::TimeInt::Implicit::setup()
   // ---------------------------------------------------------------------------
   // build predictor
   // ---------------------------------------------------------------------------
-  const enum Inpar::STR::PredEnum& predtype = data_sdyn().get_predictor_type();
-  predictor_ptr_ = STR::Predict::build_predictor(predtype);
+  const enum Inpar::Solid::PredEnum& predtype = data_sdyn().get_predictor_type();
+  predictor_ptr_ = Solid::Predict::build_predictor(predtype);
   predictor_ptr_->init(predtype, implint_ptr_, dbc_ptr(), data_global_state_ptr(), data_io_ptr(),
       data_sdyn().get_nox_params_ptr());
   predictor_ptr_->setup();
@@ -66,13 +66,13 @@ void STR::TimeInt::Implicit::setup()
   // ---------------------------------------------------------------------------
   // build non-linear solver
   // ---------------------------------------------------------------------------
-  const enum Inpar::STR::NonlinSolTech& nlnSolverType = data_sdyn().get_nln_solver_type();
-  if (nlnSolverType == Inpar::STR::soltech_singlestep)
+  const enum Inpar::Solid::NonlinSolTech& nlnSolverType = data_sdyn().get_nln_solver_type();
+  if (nlnSolverType == Inpar::Solid::soltech_singlestep)
     std::cout << "WARNING!!! You are trying to solve implicitly using the \"singlestep\" nonlinear "
                  "solver. This is not encouraged, since it only works for linear statics analysis. "
                  "Please use NLNSOL as \"fullnewton\" for reliable result."
               << std::endl;
-  nlnsolver_ptr_ = STR::Nln::SOLVER::build_nln_solver(nlnSolverType);
+  nlnsolver_ptr_ = Solid::Nln::SOLVER::build_nln_solver(nlnSolverType);
   nlnsolver_ptr_->init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, implint_ptr_,
       Teuchos::rcp(this, false));
   nlnsolver_ptr_->setup();
@@ -83,7 +83,7 @@ void STR::TimeInt::Implicit::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
+void Solid::TimeInt::Implicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 {
   integrator_ptr()->set_state(*x);
   ::NOX::Epetra::Vector x_nox(x, ::NOX::Epetra::Vector::CreateView);
@@ -93,7 +93,7 @@ void STR::TimeInt::Implicit::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::prepare_partition_step()
+void Solid::TimeInt::Implicit::prepare_partition_step()
 {
   check_init_setup();
   FOUR_C_THROW("Not yet implemented!");
@@ -101,7 +101,7 @@ void STR::TimeInt::Implicit::prepare_partition_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::prepare_time_step()
+void Solid::TimeInt::Implicit::prepare_time_step()
 {
   check_init_setup();
   // update end time \f$t_{n+1}\f$ of this time step to cope with time step size adaptivity
@@ -118,7 +118,7 @@ void STR::TimeInt::Implicit::prepare_time_step()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Implicit::Integrate()
+int Solid::TimeInt::Implicit::Integrate()
 {
   check_init_setup();
   FOUR_C_THROW(
@@ -129,7 +129,7 @@ int STR::TimeInt::Implicit::Integrate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Implicit::IntegrateStep()
+int Solid::TimeInt::Implicit::IntegrateStep()
 {
   check_init_setup();
   // do the predictor step
@@ -140,21 +140,21 @@ int STR::TimeInt::Implicit::IntegrateStep()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::Solve()
+Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::Solve()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
   // reset the non-linear solver
   nln_solver().reset();
   // solve the non-linear problem
-  Inpar::STR::ConvergenceStatus convstatus = nln_solver().Solve();
+  Inpar::Solid::ConvergenceStatus convstatus = nln_solver().Solve();
   // return convergence status
   return PerformErrorAction(convstatus);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::update_state_incrementally(
+void Solid::TimeInt::Implicit::update_state_incrementally(
     Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   if (disiterinc == Teuchos::null) return;
@@ -185,11 +185,11 @@ void STR::TimeInt::Implicit::update_state_incrementally(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::determine_stress_strain() { impl_int().determine_stress_strain(); }
+void Solid::TimeInt::Implicit::determine_stress_strain() { impl_int().determine_stress_strain(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
+void Solid::TimeInt::Implicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc)
 {
   update_state_incrementally(disiterinc);
 
@@ -198,7 +198,7 @@ void STR::TimeInt::Implicit::evaluate(Teuchos::RCP<const Epetra_Vector> disiteri
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::evaluate()
+void Solid::TimeInt::Implicit::evaluate()
 {
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
@@ -219,7 +219,7 @@ void STR::TimeInt::Implicit::evaluate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::Abstract::Group& STR::TimeInt::Implicit::get_solution_group() const
+const ::NOX::Abstract::Group& Solid::TimeInt::Implicit::get_solution_group() const
 {
   check_init_setup();
   return nln_solver().get_solution_group();
@@ -227,7 +227,7 @@ const ::NOX::Abstract::Group& STR::TimeInt::Implicit::get_solution_group() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Abstract::Group> STR::TimeInt::Implicit::solution_group_ptr()
+Teuchos::RCP<::NOX::Abstract::Group> Solid::TimeInt::Implicit::solution_group_ptr()
 {
   check_init_setup();
   return Teuchos::rcpFromRef(nln_solver().SolutionGroup());
@@ -235,19 +235,19 @@ Teuchos::RCP<::NOX::Abstract::Group> STR::TimeInt::Implicit::solution_group_ptr(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
-    Inpar::STR::ConvergenceStatus nonlinsoldiv)
+Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::PerformErrorAction(
+    Inpar::Solid::ConvergenceStatus nonlinsoldiv)
 {
   check_init_setup();
 
-  if (nonlinsoldiv == Inpar::STR::conv_success)
+  if (nonlinsoldiv == Inpar::Solid::conv_success)
   {
     // Only relevant, if the input parameter DIVERCONT is used and set to divcontype_ == adapt_step:
     // In this case, the time step size is halved as consequence of a non-converging nonlinear
     // solver. After a prescribed number of converged time steps, the time step is doubled again.
     // The following methods checks, if the time step size can be increased again.
     check_for_time_step_increase(nonlinsoldiv);
-    return Inpar::STR::conv_success;
+    return Inpar::Solid::conv_success;
   }
   // get ID of actual processor in parallel
   const int& myrank = data_global_state().get_my_rank();
@@ -255,17 +255,17 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
   // what to do when nonlinear solver does not converge
   switch (GetDivergenceAction())
   {
-    case Inpar::STR::divcont_stop:
+    case Inpar::Solid::divcont_stop:
     {
       // write restart output of last converged step before stopping
       output(true);
 
       // we should not get here, FOUR_C_THROW for safety
       FOUR_C_THROW("Nonlinear solver did not converge! ");
-      return Inpar::STR::conv_nonlin_fail;
+      return Inpar::Solid::conv_nonlin_fail;
       break;
     }
-    case Inpar::STR::divcont_continue:
+    case Inpar::Solid::divcont_continue:
     {
       if (myrank == 0)
       {
@@ -274,10 +274,10 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
                " did not converge in the current time step.\n"
             << Core::IO::endl;
       }
-      return Inpar::STR::conv_success;
+      return Inpar::Solid::conv_success;
       break;
     }
-    case Inpar::STR::divcont_repeat_step:
+    case Inpar::Solid::divcont_repeat_step:
     {
       if (myrank == 0)
         Core::IO::cout << "Nonlinear solver failed to converge repeat time step" << Core::IO::endl;
@@ -285,10 +285,10 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
       // reset step (e.g. quantities on element level or model specific stuff)
       reset_step();
 
-      return Inpar::STR::conv_fail_repeat;
+      return Inpar::Solid::conv_fail_repeat;
       break;
     }
-    case Inpar::STR::divcont_halve_step:
+    case Inpar::Solid::divcont_halve_step:
     {
       if (myrank == 0)
       {
@@ -314,10 +314,10 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
 
       integrator().update_constant_state_contributions();
 
-      return Inpar::STR::conv_fail_repeat;
+      return Inpar::Solid::conv_fail_repeat;
       break;
     }
-    case Inpar::STR::divcont_adapt_step:
+    case Inpar::Solid::divcont_adapt_step:
     {
       if (myrank == 0)
       {
@@ -351,11 +351,11 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
 
       integrator().update_constant_state_contributions();
 
-      return Inpar::STR::conv_fail_repeat;
+      return Inpar::Solid::conv_fail_repeat;
       break;
     }
-    case Inpar::STR::divcont_rand_adapt_step:
-    case Inpar::STR::divcont_rand_adapt_step_ele_err:
+    case Inpar::Solid::divcont_rand_adapt_step:
+    case Inpar::Solid::divcont_rand_adapt_step_ele_err:
     {
       // generate random number between 0.51 and 1.99 (as mean value of random
       // numbers generated on all processors), alternating values larger
@@ -395,30 +395,30 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
 
       integrator().update_constant_state_contributions();
 
-      return Inpar::STR::conv_fail_repeat;
+      return Inpar::Solid::conv_fail_repeat;
       break;
     }
-    case Inpar::STR::divcont_adapt_penaltycontact:
+    case Inpar::Solid::divcont_adapt_penaltycontact:
     {
       // adapt penalty and search parameter
       FOUR_C_THROW("Not yet implemented for new structure time integration");
       break;
     }
-    case Inpar::STR::divcont_repeat_simulation:
+    case Inpar::Solid::divcont_repeat_simulation:
     {
-      if (nonlinsoldiv == Inpar::STR::conv_nonlin_fail and myrank == 0)
+      if (nonlinsoldiv == Inpar::Solid::conv_nonlin_fail and myrank == 0)
       {
         Core::IO::cout << "Nonlinear solver failed to converge and DIVERCONT = "
                           "repeat_simulation, hence leaving structural time integration "
                        << Core::IO::endl;
       }
-      else if (nonlinsoldiv == Inpar::STR::conv_lin_fail and myrank == 0)
+      else if (nonlinsoldiv == Inpar::Solid::conv_lin_fail and myrank == 0)
       {
         Core::IO::cout << "Linear solver failed to converge and DIVERCONT = "
                           "repeat_simulation, hence leaving structural time integration "
                        << Core::IO::endl;
       }
-      else if (nonlinsoldiv == Inpar::STR::conv_ele_fail and myrank == 0)
+      else if (nonlinsoldiv == Inpar::Solid::conv_ele_fail and myrank == 0)
       {
         Core::IO::cout
             << "Element failure in form of a negative Jacobian determinant and DIVERCONT = "
@@ -430,25 +430,25 @@ Inpar::STR::ConvergenceStatus STR::TimeInt::Implicit::PerformErrorAction(
     }
     default:
       FOUR_C_THROW("Unknown DIVER_CONT case");
-      return Inpar::STR::conv_nonlin_fail;
+      return Inpar::Solid::conv_nonlin_fail;
       break;
   }
-  return Inpar::STR::conv_success;  // make compiler happy
+  return Inpar::Solid::conv_success;  // make compiler happy
 }  // PerformErrorAction()
 
 /*-----------------------------------------------------------------------------*
  * check, if according to divercont flag                             meier 01/15
  * time step size can be increased
  *-----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::check_for_time_step_increase(Inpar::STR::ConvergenceStatus& status)
+void Solid::TimeInt::Implicit::check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status)
 {
   check_init_setup();
 
   const int maxnumfinestep = 4;
 
-  if (GetDivergenceAction() != Inpar::STR::divcont_adapt_step)
+  if (GetDivergenceAction() != Inpar::Solid::divcont_adapt_step)
     return;
-  else if (status == Inpar::STR::conv_success and get_div_con_refine_level() != 0)
+  else if (status == Inpar::Solid::conv_success and get_div_con_refine_level() != 0)
   {
     set_div_con_num_fine_step(get_div_con_num_fine_step() + 1);
 
@@ -479,7 +479,8 @@ void STR::TimeInt::Implicit::check_for_time_step_increase(Inpar::STR::Convergenc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::print_jacobian_in_matlab_format(const NOX::Nln::Group& curr_grp) const
+void Solid::TimeInt::Implicit::print_jacobian_in_matlab_format(
+    const NOX::Nln::Group& curr_grp) const
 {
   typedef Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>
       LinalgBlockSparseMatrix;
@@ -543,17 +544,17 @@ void STR::TimeInt::Implicit::print_jacobian_in_matlab_format(const NOX::Nln::Gro
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp) const
+void Solid::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp) const
 {
   std::string name_prefix;
 
   double max_rev = -1.0;
   double min_rev = -1.0;
 
-  const Inpar::STR::ConditionNumber cond_type = get_data_io().condition_number_type();
+  const Inpar::Solid::ConditionNumber cond_type = get_data_io().condition_number_type();
   switch (cond_type)
   {
-    case Inpar::STR::ConditionNumber::gmres_estimate:
+    case Inpar::Solid::ConditionNumber::gmres_estimate:
     {
       const_cast<NOX::Nln::Group&>(grp).computeJacobianConditionNumber(1000, 1.0e-3, 1000, true);
 
@@ -561,12 +562,12 @@ void STR::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp
 
       break;
     }
-    case Inpar::STR::ConditionNumber::max_min_ev_ratio:
-    case Inpar::STR::ConditionNumber::one_norm:
-    case Inpar::STR::ConditionNumber::inf_norm:
+    case Inpar::Solid::ConditionNumber::max_min_ev_ratio:
+    case Inpar::Solid::ConditionNumber::one_norm:
+    case Inpar::Solid::ConditionNumber::inf_norm:
     {
       const NOX::Nln::LinSystem::ConditionNumber nox_cond_type =
-          STR::Nln::Convert2NoxConditionNumberType(cond_type);
+          Solid::Nln::Convert2NoxConditionNumberType(cond_type);
       const std::string nox_cond_type_str(
           NOX::Nln::LinSystem::ConditionNumber2String(nox_cond_type));
 
@@ -575,7 +576,7 @@ void STR::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp
 
       name_prefix = nox_cond_type_str + "_";
 
-      if (cond_type == Inpar::STR::ConditionNumber::max_min_ev_ratio)
+      if (cond_type == Inpar::Solid::ConditionNumber::max_min_ev_ratio)
       {
         max_rev = grp.get_jacobian_max_real_eigenvalue();
         min_rev = grp.get_jacobian_min_real_eigenvalue();
@@ -583,7 +584,7 @@ void STR::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp
 
       break;
     }
-    case Inpar::STR::ConditionNumber::none:
+    case Inpar::Solid::ConditionNumber::none:
       return;
     default:
       FOUR_C_THROW("Unknown condition_number type!");
@@ -629,39 +630,39 @@ void STR::TimeInt::Implicit::compute_condition_number(const NOX::Nln::Group& grp
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::DynamicType STR::TimeInt::Implicit::method_name() const
+enum Inpar::Solid::DynamicType Solid::TimeInt::Implicit::method_name() const
 {
   return implint_ptr_->method_name();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Implicit::method_steps() const { return implint_ptr_->method_steps(); }
+int Solid::TimeInt::Implicit::method_steps() const { return implint_ptr_->method_steps(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Implicit::method_order_of_accuracy_dis() const
+int Solid::TimeInt::Implicit::method_order_of_accuracy_dis() const
 {
   return implint_ptr_->method_order_of_accuracy_dis();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::Implicit::method_order_of_accuracy_vel() const
+int Solid::TimeInt::Implicit::method_order_of_accuracy_vel() const
 {
   return implint_ptr_->method_order_of_accuracy_vel();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::Implicit::method_lin_err_coeff_dis() const
+double Solid::TimeInt::Implicit::method_lin_err_coeff_dis() const
 {
   return implint_ptr_->method_lin_err_coeff_dis();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::Implicit::method_lin_err_coeff_vel() const
+double Solid::TimeInt::Implicit::method_lin_err_coeff_vel() const
 {
   return implint_ptr_->method_lin_err_coeff_vel();
 }

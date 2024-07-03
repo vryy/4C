@@ -124,7 +124,7 @@ void CONTACT::Aug::ComboStrategy::create_strategy_linear_solvers(
 
   Core::FE::Discretization* str_discret = cparams_interface->get<Core::FE::Discretization>();
 
-  strat_lin_solvers.push_back(STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
+  strat_lin_solvers.push_back(Solid::SOLVER::Factory::build_meshtying_contact_lin_solver(
       *str_discret, strategy.Type(), strategy.SystemType(), ls_id));
 }
 

@@ -245,10 +245,10 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
     // get source of deformation for this OD block depending on the differentiation type
     auto source(PAR::InelasticSource::none);
     const int differentiationtype =
-        params.get<int>("differentiationtype", static_cast<int>(STR::DifferentiationType::none));
-    if (differentiationtype == static_cast<int>(STR::DifferentiationType::elch))
+        params.get<int>("differentiationtype", static_cast<int>(Solid::DifferentiationType::none));
+    if (differentiationtype == static_cast<int>(Solid::DifferentiationType::elch))
       source = PAR::InelasticSource::concentration;
-    else if (differentiationtype == static_cast<int>(STR::DifferentiationType::temp))
+    else if (differentiationtype == static_cast<int>(Solid::DifferentiationType::temp))
       source = PAR::InelasticSource::temperature;
     else
       FOUR_C_THROW("unknown scalaratype");

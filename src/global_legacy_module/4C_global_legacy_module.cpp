@@ -362,7 +362,7 @@ namespace
   void AttachFunctionDefinitions(Core::UTILS::FunctionManager& function_manager)
   {
     AddValidBuiltinFunctions(function_manager);
-    STR::AddValidStructureFunctions(function_manager);
+    Solid::AddValidStructureFunctions(function_manager);
     FLD::AddValidFluidFunctions(function_manager);
     Discret::UTILS::AddValidCombustFunctions(function_manager);
     Discret::UTILS::AddValidXfluidFunctions(function_manager);

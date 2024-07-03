@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-STR::EXPLICIT::AdamsBashforthX<TOrder>::AdamsBashforthX()
+Solid::EXPLICIT::AdamsBashforthX<TOrder>::AdamsBashforthX()
     : fvisconp_ptr_(Teuchos::null),
       fviscon_ptr_(Teuchos::null),
       finertianp_ptr_(Teuchos::null),
@@ -35,7 +35,7 @@ STR::EXPLICIT::AdamsBashforthX<TOrder>::AdamsBashforthX()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::setup()
+void Solid::EXPLICIT::AdamsBashforthX<TOrder>::setup()
 {
   check_init();
 
@@ -81,7 +81,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::post_setup()
+void Solid::EXPLICIT::AdamsBashforthX<TOrder>::post_setup()
 {
   check_init_setup();
   equilibrate_initial_state();
@@ -90,7 +90,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::post_setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
+void Solid::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -166,7 +166,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::set_state(const Epetra_Vector& x)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(Epetra_Vector& f) const
+void Solid::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -175,7 +175,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(Epetra
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(
+void Solid::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
@@ -186,7 +186,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::add_visco_mass_contributions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
+void Solid::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -222,7 +222,8 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::write_restart(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(
+    Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   // read dynamic forces
@@ -267,7 +268,7 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::read_restart(Core::IO::Discretizati
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <int TOrder>
-void STR::EXPLICIT::AdamsBashforthX<TOrder>::update_step_state()
+void Solid::EXPLICIT::AdamsBashforthX<TOrder>::update_step_state()
 {
   check_init_setup();
 
@@ -293,8 +294,8 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::update_step_state()
 /*----------------------------------------------------------------------------*
  | Template instantiation for supported order                                 |
  *----------------------------------------------------------------------------*/
-template class STR::EXPLICIT::AdamsBashforthX<2>;
-// template class STR::EXPLICIT::AdamsBashforthX<3>;
-template class STR::EXPLICIT::AdamsBashforthX<4>;
+template class Solid::EXPLICIT::AdamsBashforthX<2>;
+// template class Solid::EXPLICIT::AdamsBashforthX<3>;
+template class Solid::EXPLICIT::AdamsBashforthX<4>;
 
 FOUR_C_NAMESPACE_CLOSE

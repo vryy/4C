@@ -535,11 +535,11 @@ namespace Discret::ELEMENTS
   SpatialMaterialMapping<celltype> evaluate_spatial_material_mapping(
       const JacobianMapping<celltype>& jacobian_mapping,
       const ElementNodes<celltype>& nodal_coordinates, const double scale_defgrd = 1.0,
-      const Inpar::STR::KinemType& kinematictype = Inpar::STR::KinemType::nonlinearTotLag)
+      const Inpar::Solid::KinemType& kinematictype = Inpar::Solid::KinemType::nonlinearTotLag)
   {
     SpatialMaterialMapping<celltype> spatial_material_mapping;
 
-    if (kinematictype == Inpar::STR::KinemType::nonlinearTotLag)
+    if (kinematictype == Inpar::Solid::KinemType::nonlinearTotLag)
     {
       if constexpr (celltype == Core::FE::CellType::hex8)
       {

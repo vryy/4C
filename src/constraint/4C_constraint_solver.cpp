@@ -45,7 +45,7 @@ void CONSTRAINTS::ConstraintSolver::setup(Teuchos::RCP<Core::FE::Discretization>
 {
   solver_ = Teuchos::rcp(&solver, false);
 
-  algochoice_ = Core::UTILS::IntegralValue<Inpar::STR::ConSolveAlgo>(params, "UZAWAALGO");
+  algochoice_ = Core::UTILS::IntegralValue<Inpar::Solid::ConSolveAlgo>(params, "UZAWAALGO");
 
   // different setup for #adapttol_
   isadapttol_ = true;
@@ -76,13 +76,13 @@ void CONSTRAINTS::ConstraintSolver::Solve(Teuchos::RCP<Core::LinAlg::SparseMatri
 {
   switch (algochoice_)
   {
-    case Inpar::STR::consolve_uzawa:
+    case Inpar::Solid::consolve_uzawa:
       solve_uzawa(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
-    case Inpar::STR::consolve_direct:
+    case Inpar::Solid::consolve_direct:
       solve_direct(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
-    case Inpar::STR::consolve_simple:
+    case Inpar::Solid::consolve_simple:
       solve_simple(stiff, constr, constrT, dispinc, lagrinc, rhsstand, rhsconstr);
       break;
     default:

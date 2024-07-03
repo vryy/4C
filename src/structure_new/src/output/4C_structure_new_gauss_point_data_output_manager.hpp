@@ -30,14 +30,14 @@ namespace Discret
   class Exporter;
 }
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
     class GaussPointDataOutputManager
     {
      public:
-      explicit GaussPointDataOutputManager(Inpar::STR::GaussPointDataOutputType output_type);
+      explicit GaussPointDataOutputManager(Inpar::Solid::GaussPointDataOutputType output_type);
 
       void add_quantity_if_not_existant(const std::string& name, int size);
 
@@ -105,7 +105,7 @@ namespace STR
         return quantities_;
       }
 
-      inline Inpar::STR::GaussPointDataOutputType get_output_type() const { return output_type_; }
+      inline Inpar::Solid::GaussPointDataOutputType get_output_type() const { return output_type_; }
 
      private:
       static constexpr int MPI_TAG = 545;
@@ -131,7 +131,7 @@ namespace STR
       void prepare_gauss_point_data_vectors(const Epetra_Map& element_col_map);
 
       //! output type of the data
-      Inpar::STR::GaussPointDataOutputType output_type_;
+      Inpar::Solid::GaussPointDataOutputType output_type_;
 
       //! maximum number of Gauss points of all elements
       int max_num_gp_;
@@ -153,7 +153,7 @@ namespace STR
       std::unordered_map<std::string, int> quantities_;
     };
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

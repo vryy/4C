@@ -24,13 +24,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace STR
+namespace Solid
 {
   namespace ELEMENTS
   {
     class ParamsInterface;
   }  // namespace ELEMENTS
-}  // namespace STR
+}  // namespace Solid
 
 namespace Discret
 {
@@ -282,7 +282,7 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline STR::ELEMENTS::ParamsInterface& params_interface()
+      inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface()
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -299,7 +299,7 @@ namespace Discret
       /*! \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> interface_ptr_;
 
       //! Bending potential
       BendingPotential bendingpotential_;

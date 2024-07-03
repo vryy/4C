@@ -29,7 +29,7 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace STR
+namespace Solid
 {
   class Dbc;
   namespace TimeInt
@@ -69,9 +69,9 @@ namespace STR
     MonitorDbc() = default;
 
     /// initialize class members
-    void init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
-        Core::FE::Discretization& discret, STR::TimeInt::BaseDataGlobalState& gstate,
-        STR::Dbc& dbc);
+    void init(const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& io_ptr,
+        Core::FE::Discretization& discret, Solid::TimeInt::BaseDataGlobalState& gstate,
+        Solid::Dbc& dbc);
 
     /// setup new class members
     void setup();
@@ -138,8 +138,8 @@ namespace STR
 
    private:
     Core::FE::Discretization* discret_ptr_ = nullptr;
-    STR::TimeInt::BaseDataGlobalState* gstate_ptr_ = nullptr;
-    STR::Dbc* dbc_ptr_ = nullptr;
+    Solid::TimeInt::BaseDataGlobalState* gstate_ptr_ = nullptr;
+    Solid::Dbc* dbc_ptr_ = nullptr;
 
     std::vector<std::string> full_filepaths_ = std::vector<std::string>();
 
@@ -153,7 +153,7 @@ namespace STR
     bool issetup_ = false;
   };
 
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

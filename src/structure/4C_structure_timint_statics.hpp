@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
-namespace STR
+namespace Solid
 {
   /*====================================================================*/
   /*!
@@ -109,7 +109,10 @@ namespace STR
     //@{
 
     //! Return name
-    enum Inpar::STR::DynamicType MethodName() const override { return Inpar::STR::dyna_statics; }
+    enum Inpar::Solid::DynamicType MethodName() const override
+    {
+      return Inpar::Solid::dyna_statics;
+    }
 
     //! Provide number of steps, a single-step method returns 1
     int MethodSteps() const override { return 1; }
@@ -256,7 +259,7 @@ namespace STR
 
   };  // class TimIntStatics
 
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

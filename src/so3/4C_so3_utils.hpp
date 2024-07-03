@@ -82,13 +82,13 @@ namespace Discret
       template <Core::FE::CellType distype>
       void compute_deformation_gradient(
           Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& defgrd,
-          Inpar::STR::KinemType kinemType,
+          Inpar::Solid::KinemType kinemType,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xdisp,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xcurr,
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>&
               inverseJacobian,
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
-          const Inpar::STR::PreStress prestressType,
+          const Inpar::Solid::PreStress prestressType,
           const Teuchos::RCP<Discret::ELEMENTS::PreStress> mulfHistory, int gp);
 
       /*!

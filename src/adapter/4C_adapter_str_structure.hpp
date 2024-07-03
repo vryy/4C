@@ -73,10 +73,10 @@ namespace TimeInt
   class TimIntMStep;
 }
 
-namespace STR::MODELEVALUATOR
+namespace Solid::MODELEVALUATOR
 {
   class Generic;
-}  // namespace STR::MODELEVALUATOR
+}  // namespace Solid::MODELEVALUATOR
 
 namespace Adapter
 {
@@ -213,14 +213,14 @@ namespace Adapter
     virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() = 0;
 
     /// do we have this model
-    virtual bool HaveModel(Inpar::STR::ModelType model)
+    virtual bool HaveModel(Inpar::Solid::ModelType model)
     {
       FOUR_C_THROW("new time integration only");
       return false;
     }
 
     /// return model evaluator
-    virtual STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) = 0;
+    virtual Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) = 0;
 
     // access to locsys manager
     virtual Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() = 0;
@@ -241,7 +241,7 @@ namespace Adapter
     virtual Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    virtual Inpar::STR::StcScale get_stc_algo() = 0;
+    virtual Inpar::Solid::StcScale get_stc_algo() = 0;
 
     /// Access to scaling matrix for STC
     virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() = 0;
@@ -303,8 +303,8 @@ namespace Adapter
     virtual int Integrate() = 0;
 
     //! do something in case nonlinear solution does not converge for some reason
-    virtual Inpar::STR::ConvergenceStatus PerformErrorAction(
-        Inpar::STR::ConvergenceStatus nonlinsoldiv) = 0;
+    virtual Inpar::Solid::ConvergenceStatus PerformErrorAction(
+        Inpar::Solid::ConvergenceStatus nonlinsoldiv) = 0;
 
     /// tests if there are more time steps to do
     [[nodiscard]] virtual bool not_finished() const = 0;
@@ -436,7 +436,7 @@ namespace Adapter
     for the time step. All boundary conditions have
     been set.
     */
-    virtual Inpar::STR::ConvergenceStatus Solve() = 0;
+    virtual Inpar::Solid::ConvergenceStatus Solve() = 0;
 
     /*!
     \brief linear structure solve with just a interface load
@@ -542,14 +542,14 @@ namespace Adapter
     Teuchos::RCP<Structure> structure_field() { return structure_; }
 
     /// structural field solver
-    // Teuchos::RCP<STR::TimInt> StructureTimeIntegrator() { return str_tim_int_; }
+    // Teuchos::RCP<Solid::TimInt> StructureTimeIntegrator() { return str_tim_int_; }
 
    private:
     /// Create structure algorithm
     void create_structure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
         Teuchos::RCP<Core::FE::Discretization> actdis);
 
-    /// setup structure algorithm of STR::TimIntImpl type
+    /// setup structure algorithm of Solid::TimIntImpl type
     void create_tim_int(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
         Teuchos::RCP<Core::FE::Discretization> actdis);
 

@@ -139,16 +139,16 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       for (int i = 0; i < (int)mydispmat.size(); ++i) mydispmat[i] = 0.0;
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, actmat, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
         w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, actmat, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       break;
     }
@@ -174,16 +174,16 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       }
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         w1_linstiffmass(lm, mydisp, mydispmat, myres, myknots, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, actmat, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
         w1_nlnstiffmass(lm, mydisp, mydispmat, myres, myknots, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, actmat, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
 
       if (act == Core::Elements::struct_calc_nlnstifflmass) w1_lumpmass(&elemat2);
@@ -211,16 +211,16 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       }
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, nullptr, &elevec1, nullptr,
-            nullptr, actmat, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
         w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, nullptr, &elevec1, nullptr,
-            nullptr, actmat, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       break;
     }
@@ -249,16 +249,16 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       }
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &myemat, nullptr, &elevec1, nullptr,
-            nullptr, actmat, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
         w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &myemat, nullptr, &elevec1, nullptr,
-            nullptr, actmat, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, actmat, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       break;
     }
@@ -319,8 +319,8 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
-      Inpar::STR::StressType iostress = Inpar::STR::stress_none;
-      Inpar::STR::StrainType iostrain = Inpar::STR::strain_none;
+      Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
+      Inpar::Solid::StrainType iostrain = Inpar::Solid::strain_none;
       if (IsParamsInterface())
       {
         stressdata = str_params_interface().stress_data_ptr();
@@ -333,10 +333,10 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-            params, "iostress", Inpar::STR::stress_none);
-        iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-            params, "iostrain", Inpar::STR::strain_none);
+        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+            params, "iostress", Inpar::Solid::stress_none);
+        iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+            params, "iostrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
@@ -357,7 +357,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::SerialDenseMatrix strain(intpoints.nquad, Wall1::numstr_);
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, nullptr, nullptr, nullptr, &stress,
             &strain, actmat, params, iostress, iostrain);
@@ -598,7 +598,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
           Core::Elements::GetMinimalJacDeterminantAtNodes<Core::FE::CellType::quad4>(xcurr);
 
       if (min_detj < 0.0)
-        error_handling(min_detj, params, __LINE__, STR::ELEMENTS::ele_error_determinant_analysis);
+        error_handling(min_detj, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_analysis);
 
       break;
     }
@@ -883,7 +883,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector* force, Core::LinAlg::SerialDenseMatrix* elestress,
     Core::LinAlg::SerialDenseMatrix* elestrain, Teuchos::RCP<const Core::Mat::Material> material,
     Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress, const Inpar::STR::StrainType iostrain)
+    const Inpar::Solid::StressType iostress, const Inpar::Solid::StrainType iostrain)
 {
   const int numnode = num_node();
   const int numdf = 2;
@@ -1133,7 +1133,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       // return gp strains (only in case of strain output)
       switch (iostrain)
       {
-        case Inpar::STR::strain_gl:
+        case Inpar::Solid::strain_gl:
         {
           if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           (*elestrain)(ip, 0) = strain(0);
@@ -1142,9 +1142,9 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
           (*elestrain)(ip, 3) = strain(3);
         }
         break;
-        case Inpar::STR::strain_none:
+        case Inpar::Solid::strain_none:
           break;
-        case Inpar::STR::strain_ea:
+        case Inpar::Solid::strain_ea:
         default:
           FOUR_C_THROW("requested strain type not supported");
           break;
@@ -1153,7 +1153,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       // return gp stresses (only in case of stress output)
       switch (iostress)
       {
-        case Inpar::STR::stress_2pk:
+        case Inpar::Solid::stress_2pk:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
           (*elestress)(ip, 0) = stress(0, 0);
@@ -1162,13 +1162,13 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
           (*elestress)(ip, 3) = stress(0, 2);
         }
         break;
-        case Inpar::STR::stress_cauchy:
+        case Inpar::Solid::stress_cauchy:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
           stress_cauchy(ip, F_tot(0, 0), F_tot(1, 1), F_tot(0, 2), F_tot(1, 2), stress, elestress);
         }
         break;
-        case Inpar::STR::stress_none:
+        case Inpar::Solid::stress_none:
           break;
         default:
           FOUR_C_THROW("requested stress type not supported");
@@ -1194,7 +1194,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       // return gp strains (only in case of strain output)
       switch (iostrain)
       {
-        case Inpar::STR::strain_gl:
+        case Inpar::Solid::strain_gl:
         {
           if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           (*elestrain)(ip, 0) = strain(0);
@@ -1203,9 +1203,9 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
           (*elestrain)(ip, 3) = strain(3);
         }
         break;
-        case Inpar::STR::strain_none:
+        case Inpar::Solid::strain_none:
           break;
-        case Inpar::STR::strain_ea:
+        case Inpar::Solid::strain_ea:
         default:
           FOUR_C_THROW("requested strain type not supported");
           break;
@@ -1214,7 +1214,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       // return gp stresses (only in case of stress output)
       switch (iostress)
       {
-        case Inpar::STR::stress_2pk:
+        case Inpar::Solid::stress_2pk:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
           (*elestress)(ip, 0) = stress(0, 0);
@@ -1223,13 +1223,13 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
           (*elestress)(ip, 3) = stress(0, 2);
         }
         break;
-        case Inpar::STR::stress_cauchy:
+        case Inpar::Solid::stress_cauchy:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
           stress_cauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
         }
         break;
-        case Inpar::STR::stress_none:
+        case Inpar::Solid::stress_none:
           break;
         default:
           FOUR_C_THROW("requested stress type not supported");
@@ -1301,8 +1301,8 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector* force, Core::LinAlg::SerialDenseMatrix* elestress,
     Core::LinAlg::SerialDenseMatrix* elestrain, Teuchos::RCP<const Core::Mat::Material> material,
-    Teuchos::ParameterList& params, const Inpar::STR::StressType iostress,
-    const Inpar::STR::StrainType iostrain)
+    Teuchos::ParameterList& params, const Inpar::Solid::StressType iostress,
+    const Inpar::Solid::StrainType iostrain)
 {
   const int numnode = num_node();
   const int numdf = 2;
@@ -1426,7 +1426,7 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     // return gp strains (only in case of strain output)
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
         (*elestrain)(ip, 0) = strain(0);
@@ -1435,9 +1435,9 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
         (*elestrain)(ip, 3) = strain(3);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       default:
         FOUR_C_THROW("requested strain type not supported");
         break;
@@ -1446,7 +1446,7 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     // return gp stresses (only in case of stress output)
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         (*elestress)(ip, 0) = stress(0, 0);
@@ -1455,13 +1455,13 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
         (*elestress)(ip, 3) = stress(0, 2);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         stress_cauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not supported");
@@ -1966,7 +1966,7 @@ void Discret::ELEMENTS::Wall1::energy(Teuchos::ParameterList& params, const std:
 
   if (IsParamsInterface())  // new structural time integration
   {
-    str_params_interface().add_contribution_to_energy_type(internal_energy, STR::internal_energy);
+    str_params_interface().add_contribution_to_energy_type(internal_energy, Solid::internal_energy);
   }
   else if (energies)  // old structural time integration
   {

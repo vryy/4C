@@ -31,7 +31,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Nln::SOLVER::Nox::Nox()
+Solid::Nln::SOLVER::Nox::Nox()
 {
   // empty constructor
 }
@@ -39,7 +39,7 @@ STR::Nln::SOLVER::Nox::Nox()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::Nox::setup()
+void Solid::Nln::SOLVER::Nox::setup()
 {
   check_init();
 
@@ -66,26 +66,26 @@ void STR::Nln::SOLVER::Nox::setup()
   std::vector<enum NOX::Nln::SolutionType> soltypes(0);
   // map of linear solvers, the key is the solution type
   NOX::Nln::LinearSystem::SolverMap linsolvers;
-  /* convert the Inpar::STR::ModelType to a NOX::Nln::SolType
+  /* convert the Inpar::Solid::ModelType to a NOX::Nln::SolType
    * and fill the linear solver map. */
-  STR::Nln::ConvertModelType2SolType(
+  Solid::Nln::ConvertModelType2SolType(
       soltypes, linsolvers, data_sdyn().get_model_types(), data_sdyn().GetLinSolvers());
 
   // define and initialize the optimization type
-  const NOX::Nln::OptimizationProblemType opttype = STR::Nln::OptimizationType(soltypes);
+  const NOX::Nln::OptimizationProblemType opttype = Solid::Nln::OptimizationType(soltypes);
 
   // map of constraint interfaces, the key is the solution type
   NOX::Nln::CONSTRAINT::ReqInterfaceMap iconstr;
   // set constraint interfaces
-  STR::Nln::CreateConstraintInterfaces(iconstr, integrator(), soltypes);
+  Solid::Nln::CreateConstraintInterfaces(iconstr, integrator(), soltypes);
 
   // preconditioner map for constraint problems
   NOX::Nln::CONSTRAINT::PrecInterfaceMap iconstr_prec;
-  STR::Nln::CreateConstraintPreconditioner(iconstr_prec, integrator(), soltypes);
+  Solid::Nln::CreateConstraintPreconditioner(iconstr_prec, integrator(), soltypes);
 
   // create object to scale linear system
   Teuchos::RCP<::NOX::Epetra::Scaling> iscale = Teuchos::null;
-  STR::Nln::CreateScaling(iscale, data_sdyn(), data_global_state());
+  Solid::Nln::CreateScaling(iscale, data_sdyn(), data_global_state());
 
   // build the global data container for the nox_nln_solver
   nlnglobaldata_ = Teuchos::rcp(
@@ -124,7 +124,7 @@ void STR::Nln::SOLVER::Nox::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::Nox::reset()
+void Solid::Nln::SOLVER::Nox::reset()
 {
   // safety check
   check_init_setup();
@@ -146,7 +146,7 @@ void STR::Nln::SOLVER::Nox::reset()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::Nox::reset_params()
+void Solid::Nln::SOLVER::Nox::reset_params()
 {
   // safety check
   check_init_setup();
@@ -183,7 +183,7 @@ void STR::Nln::SOLVER::Nox::reset_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::Nox::Solve()
+enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::Solve()
 {
   check_init_setup();
 
@@ -192,7 +192,7 @@ enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::Nox::Solve()
 
   // Check if we do something special if the non-linear solver fails,
   // otherwise an error is thrown.
-  if (data_sdyn().get_divergence_action() == Inpar::STR::divcont_stop)
+  if (data_sdyn().get_divergence_action() == Inpar::Solid::divcont_stop)
     problem_->CheckFinalStatus(finalstatus);
 
   // copy the solution group into the class variable
@@ -204,29 +204,29 @@ enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::Nox::Solve()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::Nox::convert_final_status(
+enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::convert_final_status(
     const ::NOX::StatusTest::StatusType& finalstatus) const
 {
   check_init_setup();
 
-  Inpar::STR::ConvergenceStatus convstatus = Inpar::STR::conv_success;
+  Inpar::Solid::ConvergenceStatus convstatus = Inpar::Solid::conv_success;
 
   switch (finalstatus)
   {
     case ::NOX::StatusTest::Unevaluated:
-      convstatus = Inpar::STR::conv_ele_fail;
+      convstatus = Inpar::Solid::conv_ele_fail;
       break;
     case ::NOX::StatusTest::Unconverged:
     case ::NOX::StatusTest::Failed:
-      convstatus = Inpar::STR::conv_nonlin_fail;
+      convstatus = Inpar::Solid::conv_nonlin_fail;
       break;
     case ::NOX::StatusTest::Converged:
-      convstatus = Inpar::STR::conv_success;
+      convstatus = Inpar::Solid::conv_success;
       break;
     default:
       FOUR_C_THROW(
           "Conversion of the ::NOX::StatusTest::StatusType to "
-          "a Inpar::STR::ConvergenceStatus is not possible!");
+          "a Inpar::Solid::ConvergenceStatus is not possible!");
       break;
   }
 
@@ -235,7 +235,7 @@ enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::Nox::convert_final_status(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::Nln::SOLVER::Nox::get_num_nln_iterations() const
+int Solid::Nln::SOLVER::Nox::get_num_nln_iterations() const
 {
   if (not nlnsolver_.is_null()) return nlnsolver_->getNumIterations();
   return 0;

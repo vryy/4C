@@ -26,18 +26,18 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::Generic::Generic() : ispredictor_state_(false)
+Solid::IMPLICIT::Generic::Generic() : ispredictor_state_(false)
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::setup()
+void Solid::IMPLICIT::Generic::setup()
 {
   check_init();
   // call base class first
-  STR::Integrator::setup();
+  Solid::Integrator::setup();
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------
@@ -67,22 +67,25 @@ void STR::IMPLICIT::Generic::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::set_is_predictor_state(const bool ispredictor_state)
+void Solid::IMPLICIT::Generic::set_is_predictor_state(const bool ispredictor_state)
 {
   ispredictor_state_ = ispredictor_state;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Generic::is_predictor_state() const { return ispredictor_state_; }
+bool Solid::IMPLICIT::Generic::is_predictor_state() const { return ispredictor_state_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::ParameterList& STR::IMPLICIT::Generic::get_nox_params() { return sdyn().get_nox_params(); }
+Teuchos::ParameterList& Solid::IMPLICIT::Generic::get_nox_params()
+{
+  return sdyn().get_nox_params();
+}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Generic::get_default_step_length() const
+double Solid::IMPLICIT::Generic::get_default_step_length() const
 {
   const Teuchos::ParameterList& p_nox = tim_int().get_data_sdyn().GetNoxParams();
   const std::string& nln_solver = p_nox.get<std::string>("Nonlinear Solver");
@@ -100,7 +103,7 @@ double STR::IMPLICIT::Generic::get_default_step_length() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::reset_eval_params()
+void Solid::IMPLICIT::Generic::reset_eval_params()
 {
   // set the time step dependent parameters for the element evaluation
   eval_data().set_total_time(global_state().get_time_np());
@@ -111,18 +114,19 @@ void STR::IMPLICIT::Generic::reset_eval_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::print_jacobian_in_matlab_format(const NOX::Nln::Group& curr_grp) const
+void Solid::IMPLICIT::Generic::print_jacobian_in_matlab_format(
+    const NOX::Nln::Group& curr_grp) const
 {
-  const STR::TimeInt::Implicit& timint_impl =
-      dynamic_cast<const STR::TimeInt::Implicit&>(tim_int());
+  const Solid::TimeInt::Implicit& timint_impl =
+      dynamic_cast<const Solid::TimeInt::Implicit&>(tim_int());
 
   timint_impl.print_jacobian_in_matlab_format(curr_grp);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::CorrectionType type,
-    const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+bool Solid::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::CorrectionType type,
+    const std::vector<Inpar::Solid::ModelType>& constraint_models, const Epetra_Vector& x,
     Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
@@ -168,10 +172,10 @@ bool STR::IMPLICIT::Generic::apply_correction_system(const enum NOX::Nln::Correc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::condition_number(const NOX::Nln::Group& grp) const
+void Solid::IMPLICIT::Generic::condition_number(const NOX::Nln::Group& grp) const
 {
-  const STR::TimeInt::Implicit& timint_impl =
-      dynamic_cast<const STR::TimeInt::Implicit&>(tim_int());
+  const Solid::TimeInt::Implicit& timint_impl =
+      dynamic_cast<const Solid::TimeInt::Implicit&>(tim_int());
 
   timint_impl.compute_condition_number(grp);
 }
@@ -249,8 +253,8 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_post_apply_jacobian_inverse(
   impl_.condition_number(grp);
 
   // reset any possible set correction type at this point
-  const STR::MODELEVALUATOR::Data& eval_data = impl_.eval_data();
-  const_cast<STR::MODELEVALUATOR::Data&>(eval_data).set_correction_type(
+  const Solid::MODELEVALUATOR::Data& eval_data = impl_.eval_data();
+  const_cast<Solid::MODELEVALUATOR::Data&>(eval_data).set_correction_type(
       NOX::Nln::CorrectionType::vague);
 }
 
@@ -320,7 +324,7 @@ int NOX::Nln::PrePostOp::IMPLICIT::Generic::get_number_of_modified_newton_correc
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
+void Solid::IMPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
 {
   model_eval().compute_jacobian_contributions_from_element_level_for_ptc(scalingMatrixOpPtr);
@@ -328,7 +332,7 @@ void STR::IMPLICIT::Generic::compute_jacobian_contributions_from_element_level_f
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
+void Solid::IMPLICIT::Generic::remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) const
 {
   model_eval().remove_condensed_contributions_from_rhs(rhs);
 }

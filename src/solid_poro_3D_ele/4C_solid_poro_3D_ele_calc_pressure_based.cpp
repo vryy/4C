@@ -35,7 +35,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::poro_setup(
 template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_force_stiffness(
     const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
-    Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::STR::KinemType& kinematictype,
+    Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::Solid::KinemType& kinematictype,
     const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix)
@@ -158,7 +158,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
 template <Core::FE::CellType celltype>
 void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_poroelast(
     const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
-    Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::STR::KinemType& kinematictype,
+    Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::Solid::KinemType& kinematictype,
     const Core::FE::Discretization& discretization, Core::Elements::Element::LocationArray& la,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& stiffness_matrix)
 {
@@ -240,11 +240,11 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_stress
     const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
-  auto iocouplingstress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-      params, "iocouplstress", Inpar::STR::stress_none);
+  auto iocouplingstress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+      params, "iocouplstress", Inpar::Solid::stress_none);
 
   // check for output of coupling stress
-  if (iocouplingstress == Inpar::STR::stress_none)
+  if (iocouplingstress == Inpar::Solid::stress_none)
   {
     // nothing to do for calculation of effective stress
     return;

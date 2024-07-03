@@ -33,7 +33,7 @@ namespace Core::LinAlg
 
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
-namespace STR
+namespace Solid
 {
   namespace Aux
   {
@@ -202,13 +202,13 @@ namespace STR
      *  Apply all sets of forces (external, internal, damping, inertia, ...)
      *  and corresponding stiffnesses based on the current solution state.
      *
-     *  On the level of STR::TimIntImpl, we deal with forces and their stiffness
+     *  On the level of Solid::TimIntImpl, we deal with forces and their stiffness
      *  contributions since an implicit time integration in 4C often requires
      *  full linearization.
      *
-     *  For application of forces only (without stiffness), see STR::TimInt.
+     *  For application of forces only (without stiffness), see Solid::TimInt.
      *
-     *  \sa STR::TimInt
+     *  \sa Solid::TimInt
      */
     //@{
 
@@ -377,7 +377,7 @@ namespace STR
 
     \return Enum to indicate convergence status or failure
     */
-    Inpar::STR::ConvergenceStatus Solve() final;
+    Inpar::Solid::ConvergenceStatus Solve() final;
 
     //! Do full Newton-Raphson iteration
     //!
@@ -686,7 +686,7 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    enum Inpar::STR::DynamicType MethodName() const override = 0;
+    enum Inpar::Solid::DynamicType MethodName() const override = 0;
 
     //! These time integrators are all implicit (mark their name)
     bool MethodImplicit() override { return true; }
@@ -732,7 +732,7 @@ namespace STR
     }
 
     //! Get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale get_stc_algo() override { return stcscale_; }
+    Inpar::Solid::StcScale get_stc_algo() override { return stcscale_; }
 
     //! Access to scaling matrix for STC
     Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
@@ -771,10 +771,10 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override;
 
     //! check, if according to divercont flag time step size can be increased
-    void check_for_time_step_increase(Inpar::STR::ConvergenceStatus& status);
+    void check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status);
 
     //! check, if according to divercont flag 3D0D PTC can be reset to normal Newton
-    void check_for3_d0_dptc_reset(Inpar::STR::ConvergenceStatus& status);
+    void check_for3_d0_dptc_reset(Inpar::Solid::ConvergenceStatus& status);
 
     /*! \brief Prepare system for solving with Newton's method
      *
@@ -928,48 +928,49 @@ namespace STR
 
     //! @name General purpose algorithm parameters
     //@{
-    enum Inpar::STR::PredEnum pred_;  //!< predictor
+    enum Inpar::Solid::PredEnum pred_;  //!< predictor
     //@}
 
     //! @name Iterative solution technique
     //@{
-    enum Inpar::STR::NonlinSolTech
+    enum Inpar::Solid::NonlinSolTech
         itertype_;  //!< kind of iteration technique or non-linear solution technique
 
-    enum Inpar::STR::ConvNorm normtypedisi_;   //!< convergence check for residual displacements
-    enum Inpar::STR::ConvNorm normtypefres_;   //!< convergence check for residual forces
-    enum Inpar::STR::ConvNorm normtypepres_;   //!< convergence check for residual pressure
-    enum Inpar::STR::ConvNorm normtypepfres_;  //!< convergence check for residual pressure forces
-    enum Inpar::STR::ConvNorm normtypecontconstr_;  //!< convergence check for contact constraints
-                                                    //!< (saddlepoint formulation only)
-    enum Inpar::STR::ConvNorm normtypeplagrincr_;   //!< convergence check for Lagrange multiplier
-                                                    //!< increment (saddlepoint formulation only)
-    enum Inpar::STR::BinaryOp
+    enum Inpar::Solid::ConvNorm normtypedisi_;   //!< convergence check for residual displacements
+    enum Inpar::Solid::ConvNorm normtypefres_;   //!< convergence check for residual forces
+    enum Inpar::Solid::ConvNorm normtypepres_;   //!< convergence check for residual pressure
+    enum Inpar::Solid::ConvNorm normtypepfres_;  //!< convergence check for residual pressure forces
+    enum Inpar::Solid::ConvNorm normtypecontconstr_;  //!< convergence check for contact constraints
+                                                      //!< (saddlepoint formulation only)
+    enum Inpar::Solid::ConvNorm normtypeplagrincr_;   //!< convergence check for Lagrange multiplier
+                                                      //!< increment (saddlepoint formulation only)
+    enum Inpar::Solid::BinaryOp
         combfresplconstr_;  //!< binary operator to combine field norms (forces and plastic
                             //!< constraints, semi-smooth plasticity only)
-    enum Inpar::STR::BinaryOp
+    enum Inpar::Solid::BinaryOp
         combdisiLp_;  //!< binary operator to combine field norms (displacement increments and Lp
                       //!< increments, semi-smooth plasticity only)
-    enum Inpar::STR::BinaryOp combfresEasres_;  //!< binary operator to combine field norms (forces
-                                                //!< and EAS residuals, semi-smooth plasticity only)
-    enum Inpar::STR::BinaryOp
+    enum Inpar::Solid::BinaryOp
+        combfresEasres_;  //!< binary operator to combine field norms (forces
+                          //!< and EAS residuals, semi-smooth plasticity only)
+    enum Inpar::Solid::BinaryOp
         combdisiEasIncr_;  //!< binary operator to combine field norms (displacement increments and
                            //!< EAS increments, semi-smooth plasticity only)
 
-    enum Inpar::STR::BinaryOp combdispre_;     //!< binary operator to combine field norms
-    enum Inpar::STR::BinaryOp combfrespfres_;  //!< binary operator to combine field norms
-    enum Inpar::STR::BinaryOp
+    enum Inpar::Solid::BinaryOp combdispre_;     //!< binary operator to combine field norms
+    enum Inpar::Solid::BinaryOp combfrespfres_;  //!< binary operator to combine field norms
+    enum Inpar::Solid::BinaryOp
         combdisifres_;  //!< binary operator to combine displacement and forces
-    enum Inpar::STR::BinaryOp
+    enum Inpar::Solid::BinaryOp
         combfrescontconstr_;  //!< binary operator to combine field norms (forces and contact
                               //!< constraints, contact/meshtying in saddlepoint formulation only)
-    enum Inpar::STR::BinaryOp
+    enum Inpar::Solid::BinaryOp
         combdisilagr_;  //!< binary operator to combine field norms (displacement increments and LM
                         //!< increments, contact/meshtying in saddlepoint formulation only)
 
-    enum Inpar::STR::VectorNorm iternorm_;  //!< vector norm to check with
-    int itermax_;                           //!< maximally permitted iterations
-    int itermin_;                           //!< minimally requested iterations
+    enum Inpar::Solid::VectorNorm iternorm_;  //!< vector norm to check with
+    int itermax_;                             //!< maximally permitted iterations
+    int itermin_;                             //!< minimally requested iterations
 
     double toldisi_;        //!< tolerance residual displacements
     double tolfres_;        //!< tolerance force residual
@@ -1037,7 +1038,7 @@ namespace STR
 
     //! @name STC Scaling for thin shell structures
     //@{
-    enum Inpar::STR::StcScale stcscale_;               //!< scale thickness of shells?
+    enum Inpar::Solid::StcScale stcscale_;             //!< scale thickness of shells?
     double stcfact_;                                   //!< scaling factor for STC
     int stclayer_;                                     //! number of layers for multilayered case
     Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat_;  //!< scaling matrix for STC
@@ -1052,7 +1053,7 @@ namespace STR
 
   };  // class TimIntImpl
 
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

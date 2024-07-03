@@ -31,7 +31,7 @@ namespace NOX
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   class Dbc;
   namespace IMPLICIT
@@ -55,18 +55,18 @@ namespace STR
       virtual ~Generic() = default;
 
       //! initialize the base class variables
-      virtual void init(const enum Inpar::STR::PredEnum& type,
-          const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr,
-          const Teuchos::RCP<STR::Dbc>& dbc_ptr,
-          const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<STR::TimeInt::BaseDataIO>& iodata_ptr,
+      virtual void init(const enum Inpar::Solid::PredEnum& type,
+          const Teuchos::RCP<Solid::IMPLICIT::Generic>& implint_ptr,
+          const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& iodata_ptr,
           const Teuchos::RCP<Teuchos::ParameterList>& noxparams_ptr);
 
       //! setup of the specific predictor
       virtual void setup() = 0;
 
       //! Get the predictor type enum
-      const Inpar::STR::PredEnum& get_type() const { return type_; };
+      const Inpar::Solid::PredEnum& get_type() const { return type_; };
 
       //! returns the name of the used predictor
       virtual std::string Name() const;
@@ -84,7 +84,7 @@ namespace STR
       virtual void post_predict(::NOX::Abstract::Group& grp);
 
       //! return a constant reference to the global state object (read only)
-      const STR::TimeInt::BaseDataGlobalState& global_state() const;
+      const Solid::TimeInt::BaseDataGlobalState& global_state() const;
 
       //! print the result of the predictor step
       void print() const;
@@ -103,17 +103,17 @@ namespace STR
 
       void check_init_setup() const;
 
-      Teuchos::RCP<STR::IMPLICIT::Generic>& impl_int_ptr();
-      STR::IMPLICIT::Generic& impl_int();
+      Teuchos::RCP<Solid::IMPLICIT::Generic>& impl_int_ptr();
+      Solid::IMPLICIT::Generic& impl_int();
 
-      Teuchos::RCP<STR::Dbc>& dbc_ptr();
-      STR::Dbc& dbc();
+      Teuchos::RCP<Solid::Dbc>& dbc_ptr();
+      Solid::Dbc& dbc();
 
-      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& global_state_ptr();
-      STR::TimeInt::BaseDataGlobalState& global_state();
+      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr();
+      Solid::TimeInt::BaseDataGlobalState& global_state();
 
-      Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_data_ptr();
-      STR::TimeInt::BaseDataIO& io_data();
+      Teuchos::RCP<Solid::TimeInt::BaseDataIO>& io_data_ptr();
+      Solid::TimeInt::BaseDataIO& io_data();
 
       Teuchos::RCP<Teuchos::ParameterList>& nox_params_ptr();
       Teuchos::ParameterList& nox_params();
@@ -127,24 +127,24 @@ namespace STR
 
      private:
       //! predictor type
-      enum Inpar::STR::PredEnum type_;
+      enum Inpar::Solid::PredEnum type_;
 
       //! pointer to the implicit integrator
-      Teuchos::RCP<STR::IMPLICIT::Generic> implint_ptr_;
+      Teuchos::RCP<Solid::IMPLICIT::Generic> implint_ptr_;
 
       //! pointer to the dirichlet boundary condition object
-      Teuchos::RCP<STR::Dbc> dbc_ptr_;
+      Teuchos::RCP<Solid::Dbc> dbc_ptr_;
 
       //! global state pointer
-      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! input/output data pointer
-      Teuchos::RCP<STR::TimeInt::BaseDataIO> iodata_ptr_;
+      Teuchos::RCP<Solid::TimeInt::BaseDataIO> iodata_ptr_;
 
       Teuchos::RCP<Teuchos::ParameterList> noxparams_ptr_;
     };  // class  Generic
   }     // namespace Predict
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

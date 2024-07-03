@@ -30,7 +30,7 @@ CONTACT::MtNoxInterface::MtNoxInterface()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::MtNoxInterface::init(
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
+    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
 
@@ -58,7 +58,7 @@ double CONTACT::MtNoxInterface::get_constraint_rhs_norms(const Epetra_Vector& F,
   if (checkQuantity != NOX::Nln::StatusTest::quantity_meshtying) return -1.0;
 
   Teuchos::RCP<Epetra_Vector> constrRhs =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_meshtying, F);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, F);
 
   // no constraint contributions present
   if (constrRhs.is_null()) return 0.0;
@@ -85,9 +85,9 @@ double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_rms(const Epetra_
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagincr_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_meshtying, xOld);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
   Teuchos::RCP<const Epetra_Vector> lagnew_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_meshtying, xNew);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
@@ -109,9 +109,9 @@ double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_norms(const Epetr
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagincr_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_meshtying, xOld);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
   Teuchos::RCP<const Epetra_Vector> lagnew_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_meshtying, xNew);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
@@ -136,7 +136,7 @@ double CONTACT::MtNoxInterface::get_previous_lagrange_multiplier_norms(const Epe
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagold_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_meshtying, xOld);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_meshtying, xOld);
 
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr =
       Teuchos::rcp(new ::NOX::Epetra::Vector(lagold_ptr, ::NOX::Epetra::Vector::CreateView));

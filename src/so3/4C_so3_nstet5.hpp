@@ -139,8 +139,8 @@ namespace Discret
           std::map<int, std::vector<int>>& adjsubele, std::vector<int>& lm,
           std::vector<std::vector<std::vector<int>>>& lmlm, const Epetra_Vector& disp,
           Core::FE::Discretization& dis, std::vector<double>* nodalstress,
-          std::vector<double>* nodalstrain, const Inpar::STR::StressType iostress,
-          const Inpar::STR::StrainType iostrain);
+          std::vector<double>* nodalstrain, const Inpar::Solid::StressType iostress,
+          const Inpar::Solid::StrainType iostrain);
 
 
       void select_material(const Teuchos::RCP<Core::Mat::Material>& mat,
@@ -153,14 +153,14 @@ namespace Discret
           Core::LinAlg::Matrix<6, 6>& CCdev, Core::LinAlg::Matrix<6, 6>& CC,
           const Core::LinAlg::Matrix<6, 1>& S, const Core::LinAlg::Matrix<3, 3>& C);
 
-      void strain_output(const Inpar::STR::StrainType iostrain, std::vector<double>& nodalstrain,
+      void strain_output(const Inpar::Solid::StrainType iostrain, std::vector<double>& nodalstrain,
           Core::LinAlg::Matrix<3, 3>& F, const double& detF, const double volweight,
           const double devweight);
 
-      void strain_output(const Inpar::STR::StrainType iostrain, std::vector<double>& nodalstrain,
+      void strain_output(const Inpar::Solid::StrainType iostrain, std::vector<double>& nodalstrain,
           Core::LinAlg::Matrix<3, 3>& F, Core::LinAlg::Matrix<6, 1>& glstrain, const double weight);
 
-      void stress_output(const Inpar::STR::StressType iostress, std::vector<double>& nodalstress,
+      void stress_output(const Inpar::Solid::StressType iostress, std::vector<double>& nodalstress,
           Core::LinAlg::Matrix<6, 1>& stress, Core::LinAlg::Matrix<3, 3>& F, const double& detF);
 
 
@@ -427,7 +427,7 @@ namespace Discret
       ///----------------------------------------------- prestressing switch & time
       /// prestressing assume 4 Gausspoints per element,
       /// that is, one per sub-element
-      Inpar::STR::PreStress pstype_;
+      Inpar::Solid::PreStress pstype_;
       double pstime_;
       double time_;
       /// Prestressing object
@@ -509,8 +509,8 @@ namespace Discret
       virtual void nstet5nlnstiffmass(std::vector<int>& lm, std::vector<double>& disp,
           Core::LinAlg::Matrix<15, 15>* stiffmatrix, Core::LinAlg::Matrix<15, 15>* massmatrix,
           Core::LinAlg::Matrix<15, 1>* force, Core::LinAlg::Matrix<1, 6>* elestress,
-          Core::LinAlg::Matrix<1, 6>* elestrain, const Inpar::STR::StressType iostress,
-          const Inpar::STR::StrainType iostrain);
+          Core::LinAlg::Matrix<1, 6>* elestrain, const Inpar::Solid::StressType iostress,
+          const Inpar::Solid::StrainType iostrain);
 
 
       //! lump mass matrix (bborn 07/08)

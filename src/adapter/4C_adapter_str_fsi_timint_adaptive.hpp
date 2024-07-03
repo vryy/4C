@@ -23,11 +23,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations:
-namespace STR
+namespace Solid
 {
   class TimInt;
   class TimAda;
-}  // namespace STR
+}  // namespace Solid
 
 
 /*----------------------------------------------------------------------*/
@@ -60,7 +60,7 @@ namespace Adapter
   {
    public:
     //! Constructor
-    StructureFSITimIntAda(Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti);
+    StructureFSITimIntAda(Teuchos::RCP<Solid::TimAda> sta, Teuchos::RCP<Structure> sti);
 
     //! Do one time step with auxiliary time integration scheme
     virtual void time_step_auxiliar();
@@ -109,7 +109,7 @@ namespace Adapter
         double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
     );
 
-    enum Inpar::STR::VectorNorm errnorm_;  //!< norm for local error vector
+    enum Inpar::Solid::VectorNorm errnorm_;  //!< norm for local error vector
 
     int numdbcdofs_;       ///< number of DOFs with Dirichlet boundary condition
     int numdbcfsidofs_;    ///< number of interface DOFs with Dirichlet boundary condition

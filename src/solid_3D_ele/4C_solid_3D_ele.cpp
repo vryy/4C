@@ -113,7 +113,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidType::Create(const std::
 void Discret::ELEMENTS::SolidType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  STR::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
+  FourC::Solid::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidType::ComputeNullSpace(
@@ -216,7 +216,7 @@ void Discret::ELEMENTS::Solid::set_params_interface_ptr(const Teuchos::Parameter
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
+    interface_ptr_ = Teuchos::rcp_dynamic_cast<FourC::Solid::ELEMENTS::ParamsInterface>(
         p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
@@ -230,12 +230,12 @@ bool Discret::ELEMENTS::Solid::ReadElement(
   celltype_ = Core::FE::StringToCellType(celltype);
 
   // read number of material model
-  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::read_element_material(linedef)));
+  SetMaterial(0, Mat::Factory(FourC::Solid::UTILS::ReadElement::read_element_material(linedef)));
 
   // kinematic type
-  SetKinematicType(STR::UTILS::ReadElement::read_element_kinematic_type(linedef));
+  SetKinematicType(FourC::Solid::UTILS::ReadElement::read_element_kinematic_type(linedef));
 
-  solid_ele_property_ = STR::UTILS::ReadElement::read_solid_element_properties(linedef);
+  solid_ele_property_ = FourC::Solid::UTILS::ReadElement::read_solid_element_properties(linedef);
 
   if (Shape() == Core::FE::CellType::nurbs27)
   {

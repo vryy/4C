@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
+Solid::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
@@ -42,18 +42,19 @@ STR::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
+void Solid::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
-  STR::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
+  Solid::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
-  auto dyntype = Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdynparams, "DYNAMICTYP");
-  const Inpar::STR::PreStress pre_stress_type = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
-      Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
+  auto dyntype = Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
+  const Inpar::Solid::PreStress pre_stress_type =
+      Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
+          Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
 
-  if (pre_stress_type != Inpar::STR::PreStress::none && dyntype != Inpar::STR::dyna_statics)
+  if (pre_stress_type != Inpar::Solid::PreStress::none && dyntype != Inpar::Solid::dyna_statics)
   {
     FOUR_C_THROW(
         "Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
@@ -63,7 +64,7 @@ void STR::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
   if (myrank_ == 0 && bool(printscreen_))
   {
     // check if we are in prestressing mode
-    if (pre_stress_type == Inpar::STR::PreStress::mulf)
+    if (pre_stress_type == Inpar::Solid::PreStress::mulf)
       Core::IO::cout << "with static MULF prestress" << Core::IO::endl;
     else
       Core::IO::cout << "with statics" << Core::IO::endl;
@@ -76,10 +77,10 @@ void STR::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntStatics::setup()
+void Solid::TimIntStatics::setup()
 {
   // call setup() in base class
-  STR::TimIntImpl::setup();
+  Solid::TimIntImpl::setup();
 
   // create force vectors
 
@@ -101,7 +102,7 @@ void STR::TimIntStatics::setup()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void STR::TimIntStatics::predict_const_dis_consist_vel_acc()
+void Solid::TimIntStatics::predict_const_dis_consist_vel_acc()
 {
   // constant predictor : displacement in domain
   disn_->Update(1.0, *(*dis_)(0), 0.0);
@@ -121,7 +122,7 @@ void STR::TimIntStatics::predict_const_dis_consist_vel_acc()
 
 /*----------------------------------------------------------------------*/
 /* linear extrapolation of displacement field */
-void STR::TimIntStatics::predict_const_vel_consist_acc()
+void Solid::TimIntStatics::predict_const_vel_consist_acc()
 {
   // for the first step we don't have any history to do
   // an extrapolation. Hence, we do TangDis
@@ -148,7 +149,7 @@ void STR::TimIntStatics::predict_const_vel_consist_acc()
 
 /*----------------------------------------------------------------------*/
 /* quadratic extrapolation of displacement field */
-void STR::TimIntStatics::PredictConstAcc()
+void Solid::TimIntStatics::PredictConstAcc()
 {
   // for the first step we don't have any history to do
   // an extrapolation. Hence, we do TangDis
@@ -182,7 +183,7 @@ void STR::TimIntStatics::PredictConstAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList& params)
+void Solid::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList& params)
 {
   // get info about prediction step from parameter list
   bool predict = false;
@@ -261,7 +262,7 @@ void STR::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList& p
 /*----------------------------------------------------------------------*/
 /* Evaluate/define the residual force vector #fres_ for
  * relaxation solution with solve_relaxation_linear */
-void STR::TimIntStatics::evaluate_force_stiff_residual_relax(Teuchos::ParameterList& params)
+void Solid::TimIntStatics::evaluate_force_stiff_residual_relax(Teuchos::ParameterList& params)
 {
   // compute residual forces #fres_ and stiffness #stiff_
   evaluate_force_stiff_residual(params);
@@ -272,7 +273,7 @@ void STR::TimIntStatics::evaluate_force_stiff_residual_relax(Teuchos::ParameterL
 
 /*----------------------------------------------------------------------*/
 /* Evaluate residual */
-void STR::TimIntStatics::evaluate_force_residual()
+void Solid::TimIntStatics::evaluate_force_residual()
 {
   // ************************** (1) EXTERNAL FORCES ***************************
 
@@ -318,7 +319,7 @@ void STR::TimIntStatics::evaluate_force_residual()
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for forces
  * originally by lw */
-double STR::TimIntStatics::CalcRefNormForce()
+double Solid::TimIntStatics::CalcRefNormForce()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -328,22 +329,22 @@ double STR::TimIntStatics::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = STR::calculate_vector_norm(iternorm_, fintn_);
+  fintnorm = Solid::calculate_vector_norm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = STR::calculate_vector_norm(iternorm_, fextn_);
+  fextnorm = Solid::calculate_vector_norm(iternorm_, fextn_);
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = STR::calculate_vector_norm(iternorm_, freact_);
+  freactnorm = Solid::calculate_vector_norm(iternorm_, freact_);
 
   // return char norm
   return std::max(fintnorm, std::max(fextnorm, freactnorm));
 }
 
 /*----------------------------------------------------------------------*/
-void STR::TimIntStatics::update_iter_incrementally()
+void Solid::TimIntStatics::update_iter_incrementally()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -352,7 +353,7 @@ void STR::TimIntStatics::update_iter_incrementally()
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void STR::TimIntStatics::update_iter_iteratively()
+void Solid::TimIntStatics::update_iter_iteratively()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -364,14 +365,14 @@ void STR::TimIntStatics::update_iter_iteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void STR::TimIntStatics::UpdateStepState()
+void Solid::TimIntStatics::UpdateStepState()
 {
   // calculate pseudo velocity and acceleration for predictor and/or binning
   // of the contact interface before updates
-  if (pred_ == Inpar::STR::pred_constvel || pred_ == Inpar::STR::pred_constacc ||
+  if (pred_ == Inpar::Solid::pred_constvel || pred_ == Inpar::Solid::pred_constacc ||
       have_contact_meshtying())
     veln_->Update(1. / (*(*dt_)(0)), *disn_, -1. / (*(*dt_)(0)), *(*dis_)(0), 0.);
-  if (pred_ == Inpar::STR::pred_constacc)
+  if (pred_ == Inpar::Solid::pred_constacc)
     accn_->Update(1. / (*(*dt_)(0)), *veln_, -1. / (*(*dt_)(0)), *(*vel_)(0), 0.);
 
   // update state
@@ -419,7 +420,7 @@ void STR::TimIntStatics::UpdateStepState()
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
-void STR::TimIntStatics::UpdateStepElement()
+void Solid::TimIntStatics::UpdateStepElement()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -442,11 +443,11 @@ void STR::TimIntStatics::UpdateStepElement()
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
-void STR::TimIntStatics::ReadRestartForce() { return; }
+void Solid::TimIntStatics::ReadRestartForce() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Solid::TimIntStatics::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   output->write_vector("fexternal", fext_);
   output->write_vector("fint", fint_);
@@ -458,11 +459,11 @@ void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<Core::IO::Discretization
 
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
-void STR::TimIntStatics::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vector> dis,
+void Solid::TimIntStatics::apply_dirichlet_bc(const double time, Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap)
 {
   // call base apply_dirichlet_bc
-  STR::TimInt::apply_dirichlet_bc(time, dis, vel, acc, recreatemap);
+  Solid::TimInt::apply_dirichlet_bc(time, dis, vel, acc, recreatemap);
 
   // statics: set velocities and accelerations to zero
   if (vel != Teuchos::null) vel->PutScalar(0.0);

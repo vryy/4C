@@ -28,14 +28,14 @@ FOUR_C_NAMESPACE_OPEN
 /*======================================================================*/
 /* constructor */
 Adapter::StructureFSITimIntAda::StructureFSITimIntAda(
-    Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti)
+    Teuchos::RCP<Solid::TimAda> sta, Teuchos::RCP<Structure> sti)
     : FSIStructureWrapper(sti), StructureTimIntAda(sta, sti), str_time_integrator_(sti)
 {
   const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   const Teuchos::ParameterList& sada = sdyn.sublist("TIMEADAPTIVITY");
 
   // type of error norm
-  errnorm_ = Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(sada, "LOCERRNORM");
+  errnorm_ = Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(sada, "LOCERRNORM");
 
   //----------------------------------------------------------------------------
   // Handling of Dirichlet BCs in error estimation
@@ -86,14 +86,14 @@ void Adapter::StructureFSITimIntAda::indicate_errors(double& err, double& errcon
       Teuchos::rcp(new Epetra_Vector(*interface_->extract_fsi_cond_vector(error)));
 
   // calculate L2-norms of different subsets of local discretization error vector
-  err = STR::calculate_vector_norm(errnorm_, error, numdbcdofs_);
-  errcond = STR::calculate_vector_norm(errnorm_, errorcond, numdbcfsidofs_);
-  errother = STR::calculate_vector_norm(errnorm_, errorother, numdbcinnerdofs_);
+  err = Solid::calculate_vector_norm(errnorm_, error, numdbcdofs_);
+  errcond = Solid::calculate_vector_norm(errnorm_, errorcond, numdbcfsidofs_);
+  errother = Solid::calculate_vector_norm(errnorm_, errorother, numdbcinnerdofs_);
 
   // calculate L-inf-norms of different subsets of local discretization error vector
-  errinf = STR::calculate_vector_norm(Inpar::STR::norm_inf, error);
-  errinfcond = STR::calculate_vector_norm(Inpar::STR::norm_inf, errorcond);
-  errinfother = STR::calculate_vector_norm(Inpar::STR::norm_inf, errorother);
+  errinf = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, error);
+  errinfcond = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, errorcond);
+  errinfother = Solid::calculate_vector_norm(Inpar::Solid::norm_inf, errorother);
 
   return;
 }

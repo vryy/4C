@@ -75,7 +75,7 @@ namespace Discret::ELEMENTS
   }
 
   template <typename T>
-  inline Inpar::STR::StressType get_io_stress_type(
+  inline Inpar::Solid::StressType get_io_stress_type(
       const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
@@ -84,12 +84,12 @@ namespace Discret::ELEMENTS
     }
     else
     {
-      return Core::UTILS::GetAsEnum<Inpar::STR::StressType>(params, "iostress");
+      return Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(params, "iostress");
     }
   }
 
   template <typename T>
-  inline Inpar::STR::StrainType get_io_strain_type(
+  inline Inpar::Solid::StrainType get_io_strain_type(
       const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
@@ -98,7 +98,7 @@ namespace Discret::ELEMENTS
     }
     else
     {
-      return Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(params, "iostrain");
+      return Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(params, "iostrain");
     }
   }
 
@@ -117,37 +117,37 @@ namespace Discret::ELEMENTS
   void assemble_strain_type_to_matrix_row(
       const Core::LinAlg::Matrix<Details::num_str<celltype>, 1>& gl_strain,
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
-      const Inpar::STR::StrainType strain_type, Core::LinAlg::SerialDenseMatrix& data,
+      const Inpar::Solid::StrainType strain_type, Core::LinAlg::SerialDenseMatrix& data,
       const int row)
   {
     switch (strain_type)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         Core::LinAlg::Matrix<Details::num_str<celltype>, 1> gl_strain_stress_like;
         Core::LinAlg::Voigt::Strains::to_stress_like(gl_strain, gl_strain_stress_like);
         Details::assemble_vector_to_matrix_row(gl_strain_stress_like, data, row);
         return;
       }
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea =
-            STR::UTILS::green_lagrange_to_euler_almansi(gl_strain, defgrd);
+            Solid::UTILS::green_lagrange_to_euler_almansi(gl_strain, defgrd);
         Core::LinAlg::Matrix<Details::num_str<celltype>, 1> ea_stress_like;
         Core::LinAlg::Voigt::Strains::to_stress_like(ea, ea_stress_like);
         Details::assemble_vector_to_matrix_row(ea_stress_like, data, row);
         return;
       }
-      case Inpar::STR::strain_log:
+      case Inpar::Solid::strain_log:
       {
         const Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain =
-            STR::UTILS::green_lagrange_to_log_strain(gl_strain);
+            Solid::UTILS::green_lagrange_to_log_strain(gl_strain);
         Core::LinAlg::Matrix<Details::num_str<celltype>, 1> log_strain_stress_like;
         Core::LinAlg::Voigt::Strains::to_stress_like(log_strain, log_strain_stress_like);
         Details::assemble_vector_to_matrix_row(log_strain_stress_like, data, row);
         return;
       }
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         return;
       default:
         FOUR_C_THROW("strain type not supported");
@@ -169,24 +169,24 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype>
   void assemble_stress_type_to_matrix_row(
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>& defgrd,
-      const Stress<celltype>& stress, const Inpar::STR::StressType stress_type,
+      const Stress<celltype>& stress, const Inpar::Solid::StressType stress_type,
       Core::LinAlg::SerialDenseMatrix& data, const int row)
   {
     switch (stress_type)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         Details::assemble_vector_to_matrix_row(stress.pk2_, data, row);
         return;
       }
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         Core::LinAlg::Matrix<DETAIL::num_str<celltype>, 1> cauchy;
-        STR::UTILS::pk2_to_cauchy(stress.pk2_, defgrd, cauchy);
+        Solid::UTILS::pk2_to_cauchy(stress.pk2_, defgrd, cauchy);
         Details::assemble_vector_to_matrix_row(cauchy, data, row);
         return;
       }
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
 
         return;
       default:
@@ -220,7 +220,7 @@ namespace Discret::ELEMENTS
    */
   inline void ask_and_add_quantities_to_gauss_point_data_output(const int num_gp,
       const Mat::So3Material& solid_material,
-      STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
+      Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
   {
     // Save number of Gauss Points of the element for gauss point data output
     gp_data_output_manager.add_element_number_of_gauss_points(num_gp);
@@ -250,7 +250,7 @@ namespace Discret::ELEMENTS
   inline void collect_and_assemble_gauss_point_data_output(
       const Core::FE::GaussIntegration& stiffness_matrix_integration,
       const Mat::So3Material& solid_material, const Core::Elements::Element& ele,
-      STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
+      Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
   {
     // Collection and assembly of gauss point data
     for (const auto& quantity : gp_data_output_manager.get_quantities())
@@ -269,7 +269,7 @@ namespace Discret::ELEMENTS
       {
         switch (gp_data_output_manager.get_output_type())
         {
-          case Inpar::STR::GaussPointDataOutputType::element_center:
+          case Inpar::Solid::GaussPointDataOutputType::element_center:
           {
             // compute average of the quantities
             Teuchos::RCP<Epetra_MultiVector> global_data =
@@ -277,7 +277,7 @@ namespace Discret::ELEMENTS
             Core::FE::AssembleAveragedElementValues(*global_data, gp_data, ele);
             break;
           }
-          case Inpar::STR::GaussPointDataOutputType::nodes:
+          case Inpar::Solid::GaussPointDataOutputType::nodes:
           {
             Teuchos::RCP<Epetra_MultiVector> global_data =
                 gp_data_output_manager.get_nodal_data().at(quantity_name);
@@ -290,14 +290,14 @@ namespace Discret::ELEMENTS
             Discret::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, ele);
             break;
           }
-          case Inpar::STR::GaussPointDataOutputType::gauss_points:
+          case Inpar::Solid::GaussPointDataOutputType::gauss_points:
           {
             std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                 gp_data_output_manager.get_gauss_point_data().at(quantity_name);
             Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, ele);
             break;
           }
-          case Inpar::STR::GaussPointDataOutputType::none:
+          case Inpar::Solid::GaussPointDataOutputType::none:
             FOUR_C_THROW(
                 "You specified a Gauss point data output type of none, so you should not end up "
                 "here.");

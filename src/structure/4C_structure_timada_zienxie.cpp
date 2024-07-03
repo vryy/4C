@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::TimAdaZienXie::TimAdaZienXie(
+Solid::TimAdaZienXie::TimAdaZienXie(
     const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
     const Teuchos::ParameterList& adaparams,   //!< adaptive input flags
     Teuchos::RCP<TimInt> tis                   //!< marching time integrator
@@ -45,7 +45,7 @@ STR::TimAdaZienXie::TimAdaZienXie(
 
 /*----------------------------------------------------------------------*/
 /* Provide local discretisation error */
-void STR::TimAdaZienXie::integrate_step_auxiliar()
+void Solid::TimAdaZienXie::integrate_step_auxiliar()
 {
   // get state vectors of marching integrator
   const Teuchos::RCP<Epetra_Vector> dis = sti_->Dis();      // D_{n}^{A2}

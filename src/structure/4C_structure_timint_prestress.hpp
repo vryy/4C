@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /* belongs to structural dynamics namespace */
 
-namespace STR
+namespace Solid
 {
   /*====================================================================*/
   /*!
@@ -58,7 +58,7 @@ namespace STR
     //@}
 
   };  // class TimIntPrestress
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

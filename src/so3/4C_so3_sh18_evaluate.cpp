@@ -77,9 +77,9 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     Core::LinAlg::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
     Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-    Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,  ///< stress output option
-    const Inpar::STR::StrainType iostrain   ///< strain output option
+    Teuchos::ParameterList& params,           ///< algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,  ///< stress output option
+    const Inpar::Solid::StrainType iostrain   ///< strain output option
 )
 {
   // get parameter interface
@@ -201,7 +201,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     // but only if the material needs a deformation gradient (e.g. plasticity)
     Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd;
     if (Teuchos::rcp_static_cast<Mat::So3Material>(Material())->needs_defgrd() ||
-        iostrain == Inpar::STR::strain_ea || iostress == Inpar::STR::stress_cauchy)
+        iostrain == Inpar::Solid::strain_ea || iostress == Inpar::Solid::stress_cauchy)
     {
       // compute the deformation gradient - shell-style
       // deformation gradient with derivatives w.r.t. local basis
@@ -242,7 +242,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
       // return gp strains if necessary
       switch (iostrain)
       {
-        case Inpar::STR::strain_gl:
+        case Inpar::Solid::strain_gl:
         {
           if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
           for (int i = 0; i < 3; ++i)
@@ -255,7 +255,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
           }
         }
         break;
-        case Inpar::STR::strain_ea:
+        case Inpar::Solid::strain_ea:
         {
           Core::LinAlg::Matrix<3, 3> bi;
           bi.multiply_nt(defgrd, defgrd);
@@ -266,7 +266,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
           (*elestrain)(gp, 5) = -bi(0, 2);
           break;
         }
-        case Inpar::STR::strain_none:
+        case Inpar::Solid::strain_none:
           break;
         default:
           FOUR_C_THROW("requested strain option not available");
@@ -281,7 +281,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
       // return gp strains if necessary
       switch (iostress)
       {
-        case Inpar::STR::stress_2pk:
+        case Inpar::Solid::stress_2pk:
         {
           if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           for (int i = 0; i < Mat::NUM_STRESS_3D; ++i)
@@ -290,7 +290,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
           }
         }
         break;
-        case Inpar::STR::stress_cauchy:
+        case Inpar::Solid::stress_cauchy:
         {
           if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           Core::LinAlg::Matrix<3, 3> pkstress;
@@ -317,7 +317,7 @@ void Discret::ELEMENTS::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
           (*elestress)(gp, 5) = cauchystress(0, 2);
         }
         break;
-        case Inpar::STR::stress_none:
+        case Inpar::Solid::stress_none:
           break;
         default:
           FOUR_C_THROW("requested stress option not available");

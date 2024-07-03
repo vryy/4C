@@ -346,7 +346,7 @@ namespace Discret
       };
 
       //! kinematic type
-      Inpar::STR::KinemType kintype_;
+      Inpar::Solid::KinemType kintype_;
 
       //! vector of inverses of the jacobian in material frame
       std::vector<Core::LinAlg::Matrix<NUMDIM_SOP5, NUMDIM_SOP5>> invJ_;
@@ -355,7 +355,7 @@ namespace Discret
 
 
       /// prestressing switch & time
-      Inpar::STR::PreStress pstype_;
+      Inpar::Solid::PreStress pstype_;
       double pstime_;
       double time_;
       /// Prestressing object
@@ -388,11 +388,11 @@ namespace Discret
           Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>*
-              eleplstrain,                           ///< plastic strains at GP
-          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,     ///< stress output option
-          const Inpar::STR::StrainType iostrain,     ///< strain output option
-          const Inpar::STR::StrainType ioplstrain);  ///< plastic strain output option
+              eleplstrain,                             ///< plastic strains at GP
+          Teuchos::ParameterList& params,              ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,     ///< stress output option
+          const Inpar::Solid::StrainType iostrain,     ///< strain output option
+          const Inpar::Solid::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void sop5_nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -410,11 +410,11 @@ namespace Discret
           Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>*
-              eleplstrain,                           ///< plastic strains at GP
-          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,     ///< stress output option
-          const Inpar::STR::StrainType iostrain,     ///< strain output option
-          const Inpar::STR::StrainType ioplstrain);  ///< plastic strain output option
+              eleplstrain,                             ///< plastic strains at GP
+          Teuchos::ParameterList& params,              ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,     ///< stress output option
+          const Inpar::Solid::StrainType iostrain,     ///< strain output option
+          const Inpar::Solid::StrainType ioplstrain);  ///< plastic strain output option
 
       //! Lump mass matrix (bborn 07/08)
       void sop5_lumpmass(Core::LinAlg::Matrix<NUMDOF_SOP5, NUMDOF_SOP5>* emass);

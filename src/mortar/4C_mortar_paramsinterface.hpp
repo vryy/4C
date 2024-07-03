@@ -29,9 +29,9 @@ namespace Mortar
     eval_force,       /*!< Evaluation of the contact/meshtying right-hand-side only. Necessary and
                          meaningful for line search strategies for example. */
     eval_run_pre_evaluate,   /*!< Run at the very beginning of a call to
-                                STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff */
+                                Solid::ModelEvaluator::EvaluteForce/Stiff/ForceStiff */
     eval_run_post_evaluate,  /*!< Run in the end of a call to
-                                STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff */
+                                Solid::ModelEvaluator::EvaluteForce/Stiff/ForceStiff */
     eval_run_post_compute_x, /*!< recover internal quantities, e.g. Lagrange multipliers */
     eval_reset, /*!< reset internal quantities, e.g. displacement state and/or Lagrange multipliers
                  */

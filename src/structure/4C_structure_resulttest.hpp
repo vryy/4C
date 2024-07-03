@@ -24,7 +24,7 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace STR
+namespace Solid
 {
   class TimInt;
 }
@@ -37,7 +37,7 @@ class StruResultTest : public Core::UTILS::ResultTest
  public:
   //! Constructor for time integrators of general kind
   //! \author bborn \date 06/08
-  StruResultTest(STR::TimInt& tintegrator);
+  StruResultTest(Solid::TimInt& tintegrator);
 
   /*!
   \brief Test nodal values in solid/structure field and time integration
@@ -62,7 +62,7 @@ class StruResultTest : public Core::UTILS::ResultTest
   double get_special_result_for_testing(const std::string& quantity);
 
   //! Structure time integrator
-  Teuchos::RCP<STR::TimInt> timeintegrator_;
+  Teuchos::RCP<Solid::TimInt> timeintegrator_;
 
   //! Structure discretisation
   Teuchos::RCP<Core::FE::Discretization> strudisc_;

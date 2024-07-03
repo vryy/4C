@@ -130,8 +130,8 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       myvel.clear();
       const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
 
-      if (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
-          Inpar::STR::dyna_statics)
+      if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
+          Inpar::Solid::dyna_statics)
       {
         vel = discretization.GetState("velocity");
         if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
@@ -213,7 +213,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
       }
       else if (IsParamsInterface())  // new structural time integration
       {
-        params_interface().add_contribution_to_energy_type(eint_, STR::internal_energy);
+        params_interface().add_contribution_to_energy_type(eint_, Solid::internal_energy);
       }
 
       break;
@@ -262,8 +262,8 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
   // get element velocities only if it's not a static problem, otherwise a dynamics problem
   // (UNCOMMENT IF NEEDED)
   const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
-  if (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
-      Inpar::STR::dyna_statics)
+  if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
+      Inpar::Solid::dyna_statics)
   {
     Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
     if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");

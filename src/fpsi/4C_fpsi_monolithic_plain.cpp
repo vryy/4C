@@ -714,7 +714,7 @@ void FPSI::MonolithicPlain::setup_rhs_first_iter(Epetra_Vector& f)
   rhs = poro_field()->structure_field()->Interface()->insert_fsi_cond_vector(rhs);
   rhs = poro_field()->Extractor()->insert_vector(rhs, 0);  // s->p
 
-  if (poro_field()->structure_field()->get_stc_algo() == Inpar::STR::stc_currsym)  //??ChrAg
+  if (poro_field()->structure_field()->get_stc_algo() == Inpar::Solid::stc_currsym)  //??ChrAg
   {
     Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat =
         poro_field()->structure_field()->get_stc_mat();

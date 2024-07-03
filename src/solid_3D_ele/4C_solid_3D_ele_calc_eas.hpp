@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::ELEMENTS
+namespace Solid::ELEMENTS
 {
   enum class EasType
   {
@@ -35,43 +35,43 @@ namespace STR::ELEMENTS
     eastype_undefined
   };
 
-  template <STR::ELEMENTS::EasType eastype>
+  template <Solid::ELEMENTS::EasType eastype>
   struct EasTypeToNumEas
   {
   };
   template <>
-  struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_h8_9>
+  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_h8_9>
   {
     static constexpr int num_eas = 9;
   };
   template <>
-  struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_h8_21>
+  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_h8_21>
   {
     static constexpr int num_eas = 21;
   };
   template <>
-  struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_sh8_7>
+  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_sh8_7>
   {
     static constexpr int num_eas = 7;
   };
   template <>
-  struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_sh18_9>
+  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_sh18_9>
   {
     static constexpr int num_eas = 9;
   };
   template <>
-  struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_undefined>
+  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_undefined>
   {
   };
 
-}  // namespace STR::ELEMENTS
+}  // namespace Solid::ELEMENTS
 
 namespace Mat
 {
   class So3Material;
 }
 
-namespace STR::MODELEVALUATOR
+namespace Solid::MODELEVALUATOR
 {
   class GaussPointDataOutputManager;
 }
@@ -81,10 +81,10 @@ namespace Discret
   namespace ELEMENTS
   {
     /// struct for EAS matrices and vectors to be stored between iterations
-    template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype>
+    template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype>
     struct EasIterationData
     {
-      constexpr static int num_eas = STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas;
+      constexpr static int num_eas = Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas;
 
       /// inverse EAS matrix K_{alpha alpha}
       Core::LinAlg::Matrix<num_eas, num_eas> invKaa_{true};
@@ -103,7 +103,8 @@ namespace Discret
       Core::LinAlg::Matrix<num_eas, 1> alpha_{true};
     };
 
-    template <Core::FE::CellType celltype, STR::ELEMENTS::EasType eastype, Inpar::STR::KinemType>
+    template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
+        Inpar::Solid::KinemType>
     class SolidEleCalcEas
     {
      public:
@@ -143,11 +144,11 @@ namespace Discret
 
       void initialize_gauss_point_data_output(const Core::Elements::Element& ele,
           const Mat::So3Material& solid_material,
-          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+          Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
       void evaluate_gauss_point_data_output(const Core::Elements::Element& ele,
           const Mat::So3Material& solid_material,
-          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+          Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
       void reset_to_last_converged(
           const Core::Elements::Element& ele, Mat::So3Material& solid_material);

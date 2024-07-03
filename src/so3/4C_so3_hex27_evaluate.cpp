@@ -111,8 +111,8 @@ int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       soh27_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr,
-          &elevec1, nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none, Inpar::STR::strain_none);
+          &elevec1, nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -134,17 +134,18 @@ int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         soh27_linstiffmass(lm, mydisp, myres, matptr, nullptr, &elevec1, nullptr, nullptr, nullptr,
-            params, Inpar::STR::stress_none, Inpar::STR::strain_none, Inpar::STR::strain_none);
+            params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+            Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
-      else if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+      else if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
       {
         soh27_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr,
-            &elevec1, nullptr, &elevec3, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-            Inpar::STR::strain_none, Inpar::STR::strain_none);
+            &elevec1, nullptr, &elevec3, nullptr, nullptr, nullptr, params,
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
       else
         FOUR_C_THROW("unknown kinematic type");
@@ -169,17 +170,18 @@ int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         soh27_linstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
-            params, Inpar::STR::stress_none, Inpar::STR::strain_none, Inpar::STR::strain_none);
+            params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+            Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
-      else if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+      else if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
       {
         soh27_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr,
-            &elevec1, nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-            Inpar::STR::strain_none, Inpar::STR::strain_none);
+            &elevec1, nullptr, nullptr, nullptr, nullptr, nullptr, params,
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
       else
         FOUR_C_THROW("unknown kinematic type");
@@ -230,23 +232,23 @@ int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
       {
         soh27_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, nullptr,
             &mass_matrix_evaluate, &elevec1, &elevec2, nullptr, nullptr, nullptr, nullptr, params,
-            Inpar::STR::stress_none, Inpar::STR::strain_none, Inpar::STR::strain_none);
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
       else
       {
         // special case: geometrically linear
-        if (kintype_ == Inpar::STR::KinemType::linear)
+        if (kintype_ == Inpar::Solid::KinemType::linear)
         {
           soh27_linstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
-              nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none,
-              Inpar::STR::strain_none);
+              nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+              Inpar::Solid::strain_none);
         }
         // standard is: geometrically non-linear with Total Lagrangean approach
-        else if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+        else if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           soh27_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2,
               &elevec1, &elevec2, &elevec3, nullptr, nullptr, nullptr, params,
-              Inpar::STR::stress_none, Inpar::STR::strain_none, Inpar::STR::strain_none);
+              Inpar::Solid::stress_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none);
         }
         else
           FOUR_C_THROW("unknown kinematic type");
@@ -254,12 +256,12 @@ int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
 
       if (act == calc_struct_nlnstifflmass) soh27_lumpmass(&elemat2);
 
-      Inpar::STR::MassLin mass_lin = Inpar::STR::MassLin::ml_none;
+      Inpar::Solid::MassLin mass_lin = Inpar::Solid::MassLin::ml_none;
       auto modelevaluator_data =
-          Teuchos::rcp_dynamic_cast<STR::MODELEVALUATOR::Data>(ParamsInterfacePtr());
+          Teuchos::rcp_dynamic_cast<Solid::MODELEVALUATOR::Data>(ParamsInterfacePtr());
       if (modelevaluator_data != Teuchos::null)
         mass_lin = modelevaluator_data->sdyn().GetMassLinType();
-      if (mass_lin == Inpar::STR::MassLin::ml_rotations)
+      if (mass_lin == Inpar::Solid::MassLin::ml_rotations)
       {
         // In case of Lie group time integration, we need to explicitly add the inertia terms to the
         // force vector, as the global mass matrix is never multiplied with the global acceleration
@@ -296,23 +298,23 @@ int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D> strain;
       Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D> plstrain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
-      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "ioplstrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
+      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "ioplstrain", Inpar::Solid::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         soh27_linstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain,
             &plstrain, params, iostress, iostrain, ioplstrain);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
-      else if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+      else if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
       {
         soh27_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr,
             nullptr, nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain,
@@ -480,7 +482,7 @@ int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
       else  // old structural time integration
       {
@@ -679,10 +681,10 @@ void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
     Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* elestress,    // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* elestrain,    // strains at GP
     Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
-    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,    // stress output option
-    const Inpar::STR::StrainType iostrain,    // strain output option
-    const Inpar::STR::StrainType ioplstrain)  // plastic strain output option
+    Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,    // stress output option
+    const Inpar::Solid::StrainType iostrain,    // strain output option
+    const Inpar::Solid::StrainType ioplstrain)  // plastic strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
@@ -799,14 +801,14 @@ void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
@@ -838,7 +840,7 @@ void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
         (*elestrain)(gp, 5) = euler_almansi(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -865,7 +867,7 @@ void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
     // return gp plastic strains (only in case of plastic strain output)
     switch (ioplstrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain =
@@ -874,7 +876,7 @@ void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain(i);
         break;
       }
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain =
@@ -908,7 +910,7 @@ void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
         (*eleplstrain)(gp, 5) = euler_almansi(0, 2);
         break;
       }
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested plastic strain type not available");
@@ -918,13 +920,13 @@ void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF = defgrd.determinant();
@@ -953,7 +955,7 @@ void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
         (*elestress)(gp, 5) = cauchystress(0, 2);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");
@@ -1020,10 +1022,10 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
     Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* elestress,    // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* elestrain,    // strains at GP
     Core::LinAlg::Matrix<NUMGPT_SOH27, Mat::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
-    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,    // stress output option
-    const Inpar::STR::StrainType iostrain,    // strain output option
-    const Inpar::STR::StrainType ioplstrain)  // plastic strain output option
+    Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,    // stress output option
+    const Inpar::Solid::StrainType iostrain,    // strain output option
+    const Inpar::Solid::StrainType ioplstrain)  // plastic strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
@@ -1124,14 +1126,14 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
@@ -1163,7 +1165,7 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
         (*elestrain)(gp, 5) = euler_almansi(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -1236,7 +1238,7 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
     // return gp plastic strains (only in case of plastic strain output)
     switch (ioplstrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain =
@@ -1245,7 +1247,7 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain(i);
         break;
       }
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain =
@@ -1279,7 +1281,7 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
         (*eleplstrain)(gp, 5) = euler_almansi(0, 2);
         break;
       }
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested plastic strain type not available");
@@ -1289,13 +1291,13 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF = defgrd.determinant();
@@ -1324,7 +1326,7 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
         (*elestress)(gp, 5) = cauchystress(0, 2);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");

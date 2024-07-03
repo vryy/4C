@@ -29,7 +29,7 @@ namespace Core::UTILS
 }
 
 
-namespace STR
+namespace Solid
 {
   /// add valid structure-specific function lines
   void AddValidStructureFunctions(Core::UTILS::FunctionManager& function_manager);
@@ -67,7 +67,7 @@ namespace STR
     double strucdensity_;
   };
 
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -270,8 +270,8 @@ namespace Discret
           std::vector<double>& temp,                              //!< current temperature
           Core::LinAlg::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
-          Teuchos::ParameterList& params,        //!< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress  //!< stress output option
+          Teuchos::ParameterList& params,          //!< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress  //!< stress output option
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
@@ -292,8 +292,8 @@ namespace Discret
               stiffmatrix,                                        // element stiffness matrix
           Core::LinAlg::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
-          Teuchos::ParameterList& params,        //!< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress  //!< stress output option
+          Teuchos::ParameterList& params,          //!< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress  //!< stress output option
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
@@ -369,8 +369,8 @@ namespace Discret
               stiffmatrix,                                        // element stiffness matrix
           Core::LinAlg::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
-          Teuchos::ParameterList& params,        //!< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress  //!< stress output option
+          Teuchos::ParameterList& params,          //!< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress  //!< stress output option
       );
 
       //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT

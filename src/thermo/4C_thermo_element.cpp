@@ -181,7 +181,7 @@ Discret::ELEMENTS::Thermo::Thermo(int id, int owner)
     : Core::Elements::Element(id, owner), distype_(Core::FE::CellType::dis_none)
 {
   // default: geometrically linear, also including purely thermal probelm
-  kintype_ = Inpar::STR::KinemType::linear;
+  kintype_ = Inpar::Solid::KinemType::linear;
   return;
 }  // ctor
 
@@ -249,7 +249,7 @@ void Discret::ELEMENTS::Thermo::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Element::unpack(basedata);
   // kintype_
-  kintype_ = static_cast<Inpar::STR::KinemType>(extract_int(position, data));
+  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
   // distype
   distype_ = static_cast<Core::FE::CellType>(extract_int(position, data));
   if (distype_ == Core::FE::CellType::nurbs27) SetNurbsElement() = true;

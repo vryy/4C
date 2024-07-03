@@ -368,8 +368,8 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix* elestrain,        ///< element strains
           Teuchos::RCP<const Core::Mat::Material> material,  ///< element material
           Teuchos::ParameterList& params,                    ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,             ///< stress output option
-          const Inpar::STR::StrainType iostrain              ///< strain output option
+          const Inpar::Solid::StressType iostress,           ///< stress output option
+          const Inpar::Solid::StrainType iostrain            ///< strain output option
       );
 
       /// evaluate the geometrically linear element forces and stiffness and mass
@@ -386,8 +386,8 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix* elestrain,        ///< element strains
           Teuchos::RCP<const Core::Mat::Material> material,  ///< element material
           Teuchos::ParameterList& params,                    ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,             ///< stress output option
-          const Inpar::STR::StrainType iostrain              ///< strain output option
+          const Inpar::Solid::StressType iostress,           ///< stress output option
+          const Inpar::Solid::StrainType iostrain            ///< strain output option
       );
 
       /// Jacobian matrix for mapping from parameter space in physical material space

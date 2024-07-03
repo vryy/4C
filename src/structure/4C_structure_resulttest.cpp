@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-StruResultTest::StruResultTest(STR::TimInt& tintegrator)
+StruResultTest::StruResultTest(Solid::TimInt& tintegrator)
     : Core::UTILS::ResultTest("STRUCTURE"), timeintegrator_(Teuchos::rcpFromRef(tintegrator))
 {
   dis_ = tintegrator.Dis();

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */
-namespace STR
+namespace Solid
 {
   class TimIntImpl;
 }
@@ -31,7 +31,7 @@ namespace STR
 namespace NOX
 {
   /*--------------------------------------------------------------------------*/
-  namespace STR
+  namespace Solid
   {
     /*==================================================================*/
     /*!
@@ -45,7 +45,7 @@ namespace NOX
     {
      public:
       //! Constructor
-      Group(FourC::STR::TimIntImpl& sti,        //!< time integrator
+      Group(FourC::Solid::TimIntImpl& sti,      //!< time integrator
           Teuchos::ParameterList& printParams,  //!< printing parameters
           const Teuchos::RCP<::NOX::Epetra::Interface::Required>&
               i,                           //!< basically the NOXified time integrator
@@ -63,10 +63,10 @@ namespace NOX
      private:
       //! structural time integrator
       //! HINT: Currently this variable is unused within the group
-      //::STR::TimIntImpl& sti_;
+      //::Solid::TimIntImpl& sti_;
     };
 
-  }  // namespace STR
+  }  // namespace Solid
 
 }  // namespace NOX
 

@@ -34,7 +34,7 @@ namespace Core::IO
 }
 
 /*----------------------------------------------------------------------*/
-namespace STR
+namespace Solid
 {
   // forward declarations
   class TimInt;
@@ -45,7 +45,7 @@ namespace STR
   //! Create marching time integrator convenience routine
   //!
   //! \author bborn \date 07/08
-  Teuchos::RCP<STR::TimInt> TimIntCreate(
+  Teuchos::RCP<Solid::TimInt> TimIntCreate(
       const Teuchos::ParameterList& timeparams,             //!< time parameters
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
@@ -60,7 +60,7 @@ namespace STR
   //! Create \b implicit marching time integrator convenience routine
   //!
   //! \author bborn \date 07/08
-  Teuchos::RCP<STR::TimIntImpl> TimIntImplCreate(
+  Teuchos::RCP<Solid::TimIntImpl> TimIntImplCreate(
       const Teuchos::ParameterList& timeparams,             //!< time parameters
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
@@ -75,7 +75,7 @@ namespace STR
   //! Create \b explicit marching time integrator convenience routine
   //!
   //! \author bborn \date 07/08
-  Teuchos::RCP<STR::TimIntExpl> TimIntExplCreate(
+  Teuchos::RCP<Solid::TimIntExpl> TimIntExplCreate(
       const Teuchos::ParameterList& timeparams,             //!< time parameters
       const Teuchos::ParameterList& ioflags,                //!< input-output-flags
       const Teuchos::ParameterList& sdyn,                   //!< structural dynamic flags
@@ -86,7 +86,7 @@ namespace STR
       Teuchos::RCP<Core::IO::DiscretizationWriter>& output  //!< output writer
   );
 
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

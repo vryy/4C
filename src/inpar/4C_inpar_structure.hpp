@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 namespace Inpar
 {
-  namespace STR
+  namespace Solid
   {
     /// Active element technologies
     enum class EleTech
@@ -171,7 +171,7 @@ namespace Inpar
       else if (name == "Constraints")
         type = model_constraints;
       else
-        FOUR_C_THROW("Unkonwn Inpar::STR::ModelType with name '%s'.", name.c_str());
+        FOUR_C_THROW("Unkonwn Inpar::Solid::ModelType with name '%s'.", name.c_str());
 
       return type;
     };
@@ -687,19 +687,19 @@ namespace Inpar
     {
       switch (norm)
       {
-        case Inpar::STR::norm_vague:
+        case Inpar::Solid::norm_vague:
           return "Vague";
           break;
-        case Inpar::STR::norm_l1:
+        case Inpar::Solid::norm_l1:
           return "L1";
           break;
-        case Inpar::STR::norm_l2:
+        case Inpar::Solid::norm_l2:
           return "L2";
           break;
-        case Inpar::STR::norm_rms:
+        case Inpar::Solid::norm_rms:
           return "Rms";
           break;
-        case Inpar::STR::norm_inf:
+        case Inpar::Solid::norm_inf:
           return "Inf";
           break;
         default:
@@ -720,11 +720,11 @@ namespace Inpar
     {
       switch (kinem_type)
       {
-        case Inpar::STR::KinemType::vague:
+        case Inpar::Solid::KinemType::vague:
           return "vague";
-        case Inpar::STR::KinemType::linear:
+        case Inpar::Solid::KinemType::linear:
           return "linear";
-        case Inpar::STR::KinemType::nonlinearTotLag:
+        case Inpar::Solid::KinemType::nonlinearTotLag:
           return "nonlinear_total_lagrange";
       }
 
@@ -739,7 +739,7 @@ namespace Inpar
     void SetValidConditions(
         std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
 
-  }  // namespace STR
+  }  // namespace Solid
 
 }  // namespace Inpar
 

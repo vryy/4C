@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SingleStep::setup()
+void Solid::Nln::SOLVER::SingleStep::setup()
 {
   check_init();
 
@@ -40,7 +40,7 @@ void STR::Nln::SOLVER::SingleStep::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SingleStep::set_single_step_params()
+void Solid::Nln::SOLVER::SingleStep::set_single_step_params()
 {
   check_init();
 
@@ -67,7 +67,7 @@ void STR::Nln::SOLVER::SingleStep::set_single_step_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterList& p)
+void Solid::Nln::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterList& p)
 {
   // ---------------------------------------------------------------------------
   // Set-up the single step method
@@ -99,7 +99,7 @@ void STR::Nln::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterList
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::SingleStep::reset_params()
+void Solid::Nln::SOLVER::SingleStep::reset_params()
 {
   set_single_step_params(nlnglobaldata_->GetNlnParameterList());
 }
@@ -107,7 +107,7 @@ void STR::Nln::SOLVER::SingleStep::reset_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::ConvergenceStatus STR::Nln::SOLVER::SingleStep::Solve()
+enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::SingleStep::Solve()
 {
   check_init_setup();
 

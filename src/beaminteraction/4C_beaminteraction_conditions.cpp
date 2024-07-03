@@ -246,7 +246,7 @@ void BEAMINTERACTION::BeamInteractionConditions::BuildIdSets(
  */
 void BEAMINTERACTION::BeamInteractionConditions::set_state(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+    const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
 {
   for (auto const& map_pair : condition_map_)

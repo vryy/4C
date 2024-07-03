@@ -259,7 +259,7 @@ void Discret::ELEMENTS::Truss3Scatra::CalcGPStresses(
     case Core::Materials::m_linelast1D_growth:
     {
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
-      Inpar::STR::StressType iostress;
+      Inpar::Solid::StressType iostress;
       if (IsParamsInterface())
       {
         stressdata = params_interface().stress_data_ptr();
@@ -268,8 +268,8 @@ void Discret::ELEMENTS::Truss3Scatra::CalcGPStresses(
       else
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-            params, "iostress", Inpar::STR::stress_none);
+        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+            params, "iostress", Inpar::Solid::stress_none);
       }
 
       const Core::FE::IntegrationPoints1D intpoints(gaussrule_);
@@ -298,17 +298,17 @@ void Discret::ELEMENTS::Truss3Scatra::CalcGPStresses(
 
         switch (iostress)
         {
-          case Inpar::STR::stress_2pk:
+          case Inpar::Solid::stress_2pk:
           {
             stress(gp, 0) = PK2;
             break;
           }
-          case Inpar::STR::stress_cauchy:
+          case Inpar::Solid::stress_cauchy:
           {
             stress(gp, 0) = PK2 * def_grad;
             break;
           }
-          case Inpar::STR::stress_none:
+          case Inpar::Solid::stress_none:
             break;
           default:
             FOUR_C_THROW("Requested stress type not available");

@@ -41,13 +41,13 @@ bool Discret::ELEMENTS::SoSh18::ReadElement(
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_HEX18 element failed KINEM unknown");
 
   // check if material kinematics is compatible to element kinematics
-  SolidMaterial()->ValidKinematics(Inpar::STR::KinemType::nonlinearTotLag);
+  SolidMaterial()->ValidKinematics(Inpar::Solid::KinemType::nonlinearTotLag);
 
   // transverse shear locking
   linedef->extract_string("TSL", buffer);

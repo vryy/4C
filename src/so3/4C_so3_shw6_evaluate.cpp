@@ -96,7 +96,7 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       for (double& myre : myres) myre = 0.0;
       soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr, nullptr, nullptr,
-          params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+          params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -113,7 +113,7 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
       soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr,
-          nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+          nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -132,7 +132,7 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> myemat(true);
       soshw6_nlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
-          params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+          params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -155,7 +155,7 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       Core::FE::ExtractMyValues(*res, myres, lm);
       soshw6_nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr,
-          nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+          nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       if (act == calc_struct_nlnstifflmass) sow6_lumpmass(&elemat2);
     }
     break;
@@ -178,10 +178,10 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D> strain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
       soshw6_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
           params, iostress, iostrain);
       {
@@ -263,9 +263,9 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     Core::LinAlg::Matrix<NUMDOF_WEG6, 1>* force_str,              // structure force
     Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
-    Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,  // stress output option
-    const Inpar::STR::StrainType iostrain)  // strain output option
+    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,  // stress output option
+    const Inpar::Solid::StrainType iostrain)  // strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
@@ -588,7 +588,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     // return gp GL strains (only possible option) if necessary
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestress == nullptr) FOUR_C_THROW("no strain data available");
         for (int i = 0; i < 3; ++i)
@@ -601,10 +601,10 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
         }
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
         FOUR_C_THROW("no Euler-Almansi strains available for soshw6");
         break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -633,7 +633,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i)
@@ -642,13 +642,13 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
         }
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         soshw6_cauchy(elestress, gp, defgrd, glstrain, stress);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");

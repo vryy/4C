@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::setup()
+void Solid::MODELEVALUATOR::Constraints::setup()
 {
   check_init();
 
@@ -45,7 +45,7 @@ void STR::MODELEVALUATOR::Constraints::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::set_sub_model_types()
+void Solid::MODELEVALUATOR::Constraints::set_sub_model_types()
 {
   check_init();
 
@@ -72,10 +72,10 @@ void STR::MODELEVALUATOR::Constraints::set_sub_model_types()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::create_sub_model_evaluators()
+void Solid::MODELEVALUATOR::Constraints::create_sub_model_evaluators()
 {
   // Create vector with the Sub-model-evaluators
-  sub_model_vec_ptr_ = STR::MODELEVALUATOR::Constraints::SubmodelevaluatorVector(0);
+  sub_model_vec_ptr_ = Solid::MODELEVALUATOR::Constraints::SubmodelevaluatorVector(0);
 
   for (const auto& mt : submodeltypes_)
   {
@@ -103,7 +103,7 @@ void STR::MODELEVALUATOR::Constraints::create_sub_model_evaluators()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::reset(const Epetra_Vector& x)
+void Solid::MODELEVALUATOR::Constraints::reset(const Epetra_Vector& x)
 {
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
@@ -114,7 +114,7 @@ void STR::MODELEVALUATOR::Constraints::reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::evaluate_force()
+bool Solid::MODELEVALUATOR::Constraints::evaluate_force()
 {
   pre_evaluate();
   for (auto& sme_iter : sub_model_vec_ptr_)
@@ -127,7 +127,7 @@ bool STR::MODELEVALUATOR::Constraints::evaluate_force()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::evaluate_stiff()
+bool Solid::MODELEVALUATOR::Constraints::evaluate_stiff()
 {
   pre_evaluate();
 
@@ -142,7 +142,7 @@ bool STR::MODELEVALUATOR::Constraints::evaluate_stiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::evaluate_force_stiff()
+bool Solid::MODELEVALUATOR::Constraints::evaluate_force_stiff()
 {
   pre_evaluate();
 
@@ -157,7 +157,7 @@ bool STR::MODELEVALUATOR::Constraints::evaluate_force_stiff()
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::pre_evaluate()
+void Solid::MODELEVALUATOR::Constraints::pre_evaluate()
 {
   for (auto& sme : sub_model_vec_ptr_)
   {
@@ -166,7 +166,7 @@ void STR::MODELEVALUATOR::Constraints::pre_evaluate()
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::assemble_force(
+bool Solid::MODELEVALUATOR::Constraints::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *constraint_force_ptr_);
@@ -176,7 +176,7 @@ bool STR::MODELEVALUATOR::Constraints::assemble_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Constraints::assemble_jacobian(
+bool Solid::MODELEVALUATOR::Constraints::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
@@ -189,25 +189,25 @@ bool STR::MODELEVALUATOR::Constraints::assemble_jacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::write_restart(
+void Solid::MODELEVALUATOR::Constraints::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // There is nothing to write for now
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::MODELEVALUATOR::Constraints::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   // There is nothing to read for now
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::Predict(const Inpar::STR::PredEnum& pred_type) {}
+void Solid::MODELEVALUATOR::Constraints::Predict(const Inpar::Solid::PredEnum& pred_type) {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::update_step_state(const double& timefac_n)
+void Solid::MODELEVALUATOR::Constraints::update_step_state(const double& timefac_n)
 {
   if (not constraint_force_ptr_.is_null())
   {
@@ -218,54 +218,55 @@ void STR::MODELEVALUATOR::Constraints::update_step_state(const double& timefac_n
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::update_step_element() {}
+void Solid::MODELEVALUATOR::Constraints::update_step_element() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::determine_stress_strain() {}
+void Solid::MODELEVALUATOR::Constraints::determine_stress_strain() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::determine_energy()
+void Solid::MODELEVALUATOR::Constraints::determine_energy()
 {
   FOUR_C_THROW("This function is not implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::determine_optional_quantity() {}
+void Solid::MODELEVALUATOR::Constraints::determine_optional_quantity() {}
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::reset_step_state()
+void Solid::MODELEVALUATOR::Constraints::reset_step_state()
 {
   FOUR_C_THROW("This function is not implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::output_step_state(
+void Solid::MODELEVALUATOR::Constraints::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::runtime_pre_output_step_state() {}
+void Solid::MODELEVALUATOR::Constraints::runtime_pre_output_step_state() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::runtime_output_step_state() const {}
+void Solid::MODELEVALUATOR::Constraints::runtime_output_step_state() const {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Constraints::get_block_dof_row_map_ptr() const
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::Constraints::get_block_dof_row_map_ptr() const
 {
   return global_state().dof_row_map();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Constraints::get_current_solution_ptr() const
+Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::Constraints::get_current_solution_ptr()
+    const
 {
   FOUR_C_THROW("This function is not yet implemented");
 }
@@ -273,25 +274,26 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Constraints::get_current_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::Constraints::get_last_time_step_solution_ptr() const
+Solid::MODELEVALUATOR::Constraints::get_last_time_step_solution_ptr() const
 {
   FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::post_output() {}
+void Solid::MODELEVALUATOR::Constraints::post_output() {}
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::evaluate_jacobian_contributions_from_element_level_for_ptc()
+void Solid::MODELEVALUATOR::Constraints::
+    evaluate_jacobian_contributions_from_element_level_for_ptc()
 {
   FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::assemble_jacobian_contributions_from_element_level_for_ptc(
+void Solid::MODELEVALUATOR::Constraints::assemble_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n)
 {
   FOUR_C_THROW("This function is not yet implemented");
@@ -299,14 +301,14 @@ void STR::MODELEVALUATOR::Constraints::assemble_jacobian_contributions_from_elem
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::create_backup_state(const Epetra_Vector& dir)
+void Solid::MODELEVALUATOR::Constraints::create_backup_state(const Epetra_Vector& dir)
 {
   FOUR_C_THROW("This function is not yet implemented");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Constraints::recover_from_backup_state()
+void Solid::MODELEVALUATOR::Constraints::recover_from_backup_state()
 {
   FOUR_C_THROW("This function is not yet implemented");
 }

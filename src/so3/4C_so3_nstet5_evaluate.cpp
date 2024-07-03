@@ -198,7 +198,7 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
       nstet5nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       if (act == calc_struct_nlnstifflmass) nstet5lumpmass(&elemat2);
     }
     break;
@@ -215,7 +215,7 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<15, 15>* elemat1ptr = nullptr;
       if (elemat1.is_initialized()) elemat1ptr = &elemat1;
       nstet5nlnstiffmass(lm, mydisp, elemat1ptr, nullptr, &elevec1, nullptr, nullptr,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -230,9 +230,9 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
       // Core::LinAlg::Matrix<15,15> myemat(true);
       // nstet5nlnstiffmass(lm,mydisp,&myemat,nullptr,&elevec1,
-      //                  nullptr,nullptr,Inpar::STR::stress_none,Inpar::STR::strain_none);
+      //                  nullptr,nullptr,Inpar::Solid::stress_none,Inpar::Solid::strain_none);
       nstet5nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -247,10 +247,10 @@ int Discret::ELEMENTS::NStet5::evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
       if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
@@ -381,8 +381,8 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
     Core::LinAlg::Matrix<15, 1>* force,         // stress output options
     Core::LinAlg::Matrix<1, 6>* elestress,      // stress output
     Core::LinAlg::Matrix<1, 6>* elestrain,      // strain output
-    const Inpar::STR::StressType iostress,      // type of stress
-    const Inpar::STR::StrainType iostrain)      // type of strain
+    const Inpar::Solid::StressType iostress,    // type of stress
+    const Inpar::Solid::StrainType iostrain)    // type of strain
 {
   if (elestrain) (*elestrain) = 0.0;
   if (elestress) (*elestress) = 0.0;
@@ -486,7 +486,7 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
     //---------------------------------------------- output of stress and strain
     {
       Core::LinAlg::Matrix<6, 1> glstrainbar(false);
-      if (iostrain != Inpar::STR::strain_none)
+      if (iostrain != Inpar::Solid::strain_none)
       {
         // do deviatoric F, C, E
         const double J = F.determinant();
@@ -502,7 +502,7 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
       //-----------------------------------------------------------------strain
       switch (iostrain)
       {
-        case Inpar::STR::strain_gl:
+        case Inpar::Solid::strain_gl:
         {
           if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           for (int i = 0; i < 3; ++i)
@@ -511,7 +511,7 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
             (*elestrain)(0, i) += (sub_v(sub) / vol() * ALPHA_NSTET5 * 0.5 * glstrainbar(i));
         }
         break;
-        case Inpar::STR::strain_ea:
+        case Inpar::Solid::strain_ea:
         {
           if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
           Core::LinAlg::Matrix<3, 3> gl;
@@ -547,7 +547,7 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
           (*elestrain)(0, 5) += (sub_v(sub) / vol() * ALPHA_NSTET5 * euler_almansi(0, 2));
         }
         break;
-        case Inpar::STR::strain_none:
+        case Inpar::Solid::strain_none:
           break;
         default:
           FOUR_C_THROW("requested strain option not available");
@@ -555,7 +555,7 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
       //-----------------------------------------------------------------stress
       switch (iostress)
       {
-        case Inpar::STR::stress_2pk:
+        case Inpar::Solid::stress_2pk:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
 
@@ -564,7 +564,7 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
                 (sub_v(sub) / vol() * stress(i));  // ALPHA_NSTET already in stress
         }
         break;
-        case Inpar::STR::stress_cauchy:
+        case Inpar::Solid::stress_cauchy:
         {
           if (elestress == nullptr) FOUR_C_THROW("no stress data available");
 
@@ -598,7 +598,7 @@ void Discret::ELEMENTS::NStet5::nstet5nlnstiffmass(std::vector<int>& lm,  // loc
           (*elestress)(0, 5) += (sub_v(sub) / vol() * cauchystress(0, 2));
         }
         break;
-        case Inpar::STR::stress_none:
+        case Inpar::Solid::stress_none:
           break;
         default:
           FOUR_C_THROW("requested stress type not available");

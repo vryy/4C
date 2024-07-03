@@ -168,13 +168,13 @@ namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Data::Data()
+Solid::MODELEVALUATOR::Data::Data()
     : isinit_(false),
       issetup_(false),
       isntmaps_filled_(false),
       ele_action_(Core::Elements::none),
-      predict_type_(Inpar::STR::pred_vague),
-      ele_eval_error_flag_(STR::ELEMENTS::ele_error_none),
+      predict_type_(Inpar::Solid::pred_vague),
+      ele_eval_error_flag_(Solid::ELEMENTS::ele_error_none),
       is_tolerate_errors_(false),
       total_time_(-1.0),
       delta_time_(-1.0),
@@ -207,7 +207,7 @@ STR::MODELEVALUATOR::Data::Data()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::init(const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
+void Solid::MODELEVALUATOR::Data::init(const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr)
 {
   sdyn_ptr_ = timint_ptr->get_data_sdyn_ptr();
   io_ptr_ = timint_ptr->get_data_io_ptr();
@@ -219,25 +219,25 @@ void STR::MODELEVALUATOR::Data::init(const Teuchos::RCP<const STR::TimeInt::Base
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::setup()
+void Solid::MODELEVALUATOR::Data::setup()
 {
   check_init();
 
-  const std::set<enum Inpar::STR::ModelType>& mt = sdyn_ptr_->GetModelTypes();
-  std::set<enum Inpar::STR::ModelType>::const_iterator it;
+  const std::set<enum Inpar::Solid::ModelType>& mt = sdyn_ptr_->GetModelTypes();
+  std::set<enum Inpar::Solid::ModelType>::const_iterator it;
   // setup model type specific data containers
   for (it = mt.begin(); it != mt.end(); ++it)
   {
     switch (*it)
     {
-      case Inpar::STR::model_contact:
+      case Inpar::Solid::model_contact:
       {
         contact_data_ptr_ = Teuchos::rcp(new ContactData());
         contact_data_ptr_->init(Teuchos::rcp(this, false));
         contact_data_ptr_->setup();
         break;
       }
-      case Inpar::STR::model_browniandyn:
+      case Inpar::Solid::model_browniandyn:
       {
         browniandyn_data_ptr_ = Teuchos::rcp(new BrownianDynData());
         browniandyn_data_ptr_->init(Teuchos::rcp(this, false));
@@ -254,7 +254,7 @@ void STR::MODELEVALUATOR::Data::setup()
 
   /* so far, we need the special parameter data container for beams only if
    * the applied beam elements have non-additive rotation vector DOFs */
-  if (sdyn_ptr_->HaveEleTech(Inpar::STR::EleTech::rotvec))
+  if (sdyn_ptr_->HaveEleTech(Inpar::Solid::EleTech::rotvec))
   {
     beam_data_ptr_ = Teuchos::rcp(new BeamData());
     beam_data_ptr_->init();
@@ -266,22 +266,22 @@ void STR::MODELEVALUATOR::Data::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::fill_norm_type_maps()
+void Solid::MODELEVALUATOR::Data::fill_norm_type_maps()
 {
   // we have to do all this only once...
   if (isntmaps_filled_) return;
 
   std::set<enum NOX::Nln::StatusTest::QuantityType> qtypes;
-  STR::Nln::SOLVER::create_quantity_types(qtypes, *sdyn_ptr_);
+  Solid::Nln::SOLVER::create_quantity_types(qtypes, *sdyn_ptr_);
 
   // --- check if the nox nln solver is active ---------------------------------
   bool isnox = false;
-  Teuchos::RCP<const STR::Nln::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
-  Teuchos::RCP<const STR::TimeInt::Implicit> timint_impl_ptr =
-      Teuchos::rcp_dynamic_cast<const STR::TimeInt::Implicit>(timint_ptr_);
+  Teuchos::RCP<const Solid::Nln::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
+  Teuchos::RCP<const Solid::TimeInt::Implicit> timint_impl_ptr =
+      Teuchos::rcp_dynamic_cast<const Solid::TimeInt::Implicit>(timint_ptr_);
   if (not timint_impl_ptr.is_null())
   {
-    nox_nln_ptr = Teuchos::rcp_dynamic_cast<const STR::Nln::SOLVER::Nox>(
+    nox_nln_ptr = Teuchos::rcp_dynamic_cast<const Solid::Nln::SOLVER::Nox>(
         timint_impl_ptr->get_nln_solver_ptr());
     if (not nox_nln_ptr.is_null()) isnox = true;
   }
@@ -337,7 +337,7 @@ void STR::MODELEVALUATOR::Data::fill_norm_type_maps()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::collect_norm_types_over_all_procs(
+void Solid::MODELEVALUATOR::Data::collect_norm_types_over_all_procs(
     const quantity_norm_type_map& normtypes) const
 {
   check_init();
@@ -349,7 +349,7 @@ void STR::MODELEVALUATOR::Data::collect_norm_types_over_all_procs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Data::get_update_norm_type(
+bool Solid::MODELEVALUATOR::Data::get_update_norm_type(
     const enum NOX::Nln::StatusTest::QuantityType& qtype,
     enum ::NOX::Abstract::Vector::NormType& normtype)
 {
@@ -369,7 +369,7 @@ bool STR::MODELEVALUATOR::Data::get_update_norm_type(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Data::get_wrms_tolerances(
+bool Solid::MODELEVALUATOR::Data::get_wrms_tolerances(
     const enum NOX::Nln::StatusTest::QuantityType& qtype, double& atol, double& rtol)
 {
   fill_norm_type_maps();
@@ -388,7 +388,7 @@ bool STR::MODELEVALUATOR::Data::get_wrms_tolerances(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::sum_into_my_update_norm(
+void Solid::MODELEVALUATOR::Data::sum_into_my_update_norm(
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const int& numentries,
     const double* my_update_values, const double* my_new_sol_values, const double& step_length,
     const int& owner)
@@ -411,7 +411,7 @@ void STR::MODELEVALUATOR::Data::sum_into_my_update_norm(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::sum_into_my_previous_sol_norm(
+void Solid::MODELEVALUATOR::Data::sum_into_my_previous_sol_norm(
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const int& numentries,
     const double* my_old_sol_values, const int& owner)
 {
@@ -427,7 +427,7 @@ void STR::MODELEVALUATOR::Data::sum_into_my_previous_sol_norm(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::sum_into_my_relative_mean_square(const double& atol,
+void Solid::MODELEVALUATOR::Data::sum_into_my_relative_mean_square(const double& atol,
     const double& rtol, const double& step_length, const int& numentries,
     const double* my_update_values, const double* my_new_sol_values, double& my_rms) const
 {
@@ -445,7 +445,7 @@ void STR::MODELEVALUATOR::Data::sum_into_my_relative_mean_square(const double& a
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::sum_into_my_norm(const int& numentries, const double* my_values,
+void Solid::MODELEVALUATOR::Data::sum_into_my_norm(const int& numentries, const double* my_values,
     const enum ::NOX::Abstract::Vector::NormType& normtype, const double& step_length,
     double& my_norm) const
 {
@@ -473,7 +473,7 @@ void STR::MODELEVALUATOR::Data::sum_into_my_norm(const int& numentries, const do
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::reset_my_norms(const bool& isdefaultstep)
+void Solid::MODELEVALUATOR::Data::reset_my_norms(const bool& isdefaultstep)
 {
   check_init_setup();
   std::map<enum NOX::Nln::StatusTest::QuantityType, double>::iterator it;
@@ -493,20 +493,20 @@ void STR::MODELEVALUATOR::Data::reset_my_norms(const bool& isdefaultstep)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Data::is_ele_eval_error() const
+bool Solid::MODELEVALUATOR::Data::is_ele_eval_error() const
 {
   check_init_setup();
-  return (ele_eval_error_flag_ != STR::ELEMENTS::ele_error_none);
+  return (ele_eval_error_flag_ != Solid::ELEMENTS::ele_error_none);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Data::IsPredictorState() const
+bool Solid::MODELEVALUATOR::Data::IsPredictorState() const
 {
   check_init_setup();
 
-  const STR::IMPLICIT::Generic* impl_ptr =
-      dynamic_cast<const STR::IMPLICIT::Generic*>(&tim_int().integrator());
+  const Solid::IMPLICIT::Generic* impl_ptr =
+      dynamic_cast<const Solid::IMPLICIT::Generic*>(&tim_int().integrator());
 
   if (not impl_ptr) return false;
   return impl_ptr->is_predictor_state();
@@ -514,7 +514,7 @@ bool STR::MODELEVALUATOR::Data::IsPredictorState() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::DampKind STR::MODELEVALUATOR::Data::get_damping_type() const
+enum Inpar::Solid::DampKind Solid::MODELEVALUATOR::Data::get_damping_type() const
 {
   check_init_setup();
   return sdyn_ptr_->get_damping_type();
@@ -522,7 +522,7 @@ enum Inpar::STR::DampKind STR::MODELEVALUATOR::Data::get_damping_type() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::stress_data_ptr()
+Teuchos::RCP<std::vector<char>>& Solid::MODELEVALUATOR::Data::stress_data_ptr()
 {
   check_init_setup();
   return stressdata_ptr_;
@@ -530,7 +530,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::stress_data_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Data::current_element_volume_data() const
+const Epetra_Vector& Solid::MODELEVALUATOR::Data::current_element_volume_data() const
 {
   FOUR_C_ASSERT(!elevolumes_ptr_.is_null(), "Undefined reference to element volume data!");
   return *elevolumes_ptr_;
@@ -538,7 +538,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Data::current_element_volume_data() co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<char>& STR::MODELEVALUATOR::Data::stress_data() const
+const std::vector<char>& Solid::MODELEVALUATOR::Data::stress_data() const
 {
   FOUR_C_ASSERT(!stressdata_ptr_.is_null(), "Undefined reference to the stress data!");
   return *stressdata_ptr_;
@@ -546,7 +546,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::stress_data() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::strain_data_ptr()
+Teuchos::RCP<std::vector<char>>& Solid::MODELEVALUATOR::Data::strain_data_ptr()
 {
   check_init_setup();
   return straindata_ptr_;
@@ -554,7 +554,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::strain_data_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<char>& STR::MODELEVALUATOR::Data::strain_data() const
+const std::vector<char>& Solid::MODELEVALUATOR::Data::strain_data() const
 {
   FOUR_C_ASSERT(!straindata_ptr_.is_null(), "Undefined reference to the strain data!");
   return *straindata_ptr_;
@@ -562,7 +562,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::strain_data() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::plastic_strain_data_ptr()
+Teuchos::RCP<std::vector<char>>& Solid::MODELEVALUATOR::Data::plastic_strain_data_ptr()
 {
   check_init_setup();
   return plastic_straindata_ptr_;
@@ -570,7 +570,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::plastic_strain_data_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<char>& STR::MODELEVALUATOR::Data::plastic_strain_data() const
+const std::vector<char>& Solid::MODELEVALUATOR::Data::plastic_strain_data() const
 {
   FOUR_C_ASSERT(
       !plastic_straindata_ptr_.is_null(), "Undefined reference to the plastic strain data!");
@@ -579,7 +579,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::plastic_strain_data() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::coupling_stress_data_ptr()
+Teuchos::RCP<std::vector<char>>& Solid::MODELEVALUATOR::Data::coupling_stress_data_ptr()
 {
   check_init_setup();
   return couplstressdata_ptr_;
@@ -587,7 +587,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::coupling_stress_data
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<char>& STR::MODELEVALUATOR::Data::coupling_stress_data() const
+const std::vector<char>& Solid::MODELEVALUATOR::Data::coupling_stress_data() const
 {
   FOUR_C_ASSERT(!couplstressdata_ptr_.is_null(), "Undefined reference to the stress data!");
   return *couplstressdata_ptr_;
@@ -595,7 +595,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::coupling_stress_data() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::opt_quantity_data_ptr()
+Teuchos::RCP<std::vector<char>>& Solid::MODELEVALUATOR::Data::opt_quantity_data_ptr()
 {
   check_init_setup();
   return optquantitydata_ptr_;
@@ -603,7 +603,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::opt_quantity_data_pt
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const std::vector<char>& STR::MODELEVALUATOR::Data::opt_quantity_data() const
+const std::vector<char>& Solid::MODELEVALUATOR::Data::opt_quantity_data() const
 {
   FOUR_C_ASSERT(
       !optquantitydata_ptr_.is_null(), "Undefined reference to the optional quantity data!");
@@ -612,7 +612,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::opt_quantity_data() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::StressType STR::MODELEVALUATOR::Data::get_stress_output_type() const
+enum Inpar::Solid::StressType Solid::MODELEVALUATOR::Data::get_stress_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_stress_output_type();
@@ -620,7 +620,7 @@ enum Inpar::STR::StressType STR::MODELEVALUATOR::Data::get_stress_output_type() 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::StrainType STR::MODELEVALUATOR::Data::get_strain_output_type() const
+enum Inpar::Solid::StrainType Solid::MODELEVALUATOR::Data::get_strain_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_strain_output_type();
@@ -628,7 +628,7 @@ enum Inpar::STR::StrainType STR::MODELEVALUATOR::Data::get_strain_output_type() 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::StrainType STR::MODELEVALUATOR::Data::get_plastic_strain_output_type() const
+enum Inpar::Solid::StrainType Solid::MODELEVALUATOR::Data::get_plastic_strain_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_plastic_strain_output_type();
@@ -636,7 +636,7 @@ enum Inpar::STR::StrainType STR::MODELEVALUATOR::Data::get_plastic_strain_output
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::StressType STR::MODELEVALUATOR::Data::get_coupling_stress_output_type() const
+enum Inpar::Solid::StressType Solid::MODELEVALUATOR::Data::get_coupling_stress_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_coupling_stress_output_type();
@@ -644,14 +644,14 @@ enum Inpar::STR::StressType STR::MODELEVALUATOR::Data::get_coupling_stress_outpu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum Inpar::STR::OptQuantityType STR::MODELEVALUATOR::Data::get_opt_quantity_output_type() const
+enum Inpar::Solid::OptQuantityType Solid::MODELEVALUATOR::Data::get_opt_quantity_output_type() const
 {
   check_init_setup();
   return io_ptr_->get_opt_quantity_output_type();
 }
 
-Teuchos::RCP<STR::MODELEVALUATOR::GaussPointDataOutputManager>&
-STR::MODELEVALUATOR::Data::gauss_point_data_output_manager_ptr()
+Teuchos::RCP<Solid::MODELEVALUATOR::GaussPointDataOutputManager>&
+Solid::MODELEVALUATOR::Data::gauss_point_data_output_manager_ptr()
 {
   check_init_setup();
   return gauss_point_data_manager_ptr_;
@@ -659,26 +659,26 @@ STR::MODELEVALUATOR::Data::gauss_point_data_output_manager_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::map<enum STR::EnergyType, double> const& STR::MODELEVALUATOR::Data::get_energy_data() const
+std::map<enum Solid::EnergyType, double> const& Solid::MODELEVALUATOR::Data::get_energy_data() const
 {
   return energy_data_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::MODELEVALUATOR::Data::get_energy_data(enum STR::EnergyType type) const
+double Solid::MODELEVALUATOR::Data::get_energy_data(enum Solid::EnergyType type) const
 {
   auto check = get_energy_data().find(type);
   if (check == get_energy_data().cend())
     FOUR_C_THROW(
-        "Couldn't find the energy contribution: \"%s\".", STR::EnergyType2String(type).c_str());
+        "Couldn't find the energy contribution: \"%s\".", Solid::EnergyType2String(type).c_str());
 
   return check->second;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::MODELEVALUATOR::Data::get_energy_data(const std::string type) const
+double Solid::MODELEVALUATOR::Data::get_energy_data(const std::string type) const
 {
   if (type == "total_energy")
   {
@@ -687,26 +687,27 @@ double STR::MODELEVALUATOR::Data::get_energy_data(const std::string type) const
     return total_energy;
   }
   else
-    return get_energy_data(STR::String2EnergyType(type));
+    return get_energy_data(Solid::String2EnergyType(type));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::insert_energy_type_to_be_considered(enum STR::EnergyType type)
+void Solid::MODELEVALUATOR::Data::insert_energy_type_to_be_considered(enum Solid::EnergyType type)
 {
   energy_data_[type] = 0.0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::set_value_for_energy_type(double value, enum STR::EnergyType type)
+void Solid::MODELEVALUATOR::Data::set_value_for_energy_type(
+    double value, enum Solid::EnergyType type)
 {
   energy_data_[type] = value;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::clear_values_for_all_energy_types()
+void Solid::MODELEVALUATOR::Data::clear_values_for_all_energy_types()
 {
   for (auto& energy_data_iter : energy_data_)
   {
@@ -716,34 +717,34 @@ void STR::MODELEVALUATOR::Data::clear_values_for_all_energy_types()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Data::add_contribution_to_energy_type(
-    const double value, const enum STR::EnergyType type)
+void Solid::MODELEVALUATOR::Data::add_contribution_to_energy_type(
+    const double value, const enum Solid::EnergyType type)
 {
   energy_data_[type] += value;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Data::is_predictor() const { return global_state().is_predict(); }
+bool Solid::MODELEVALUATOR::Data::is_predictor() const { return global_state().is_predict(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int STR::MODELEVALUATOR::Data::get_nln_iter() const
+int Solid::MODELEVALUATOR::Data::get_nln_iter() const
 {
   if (is_predictor()) return 0;
 
   bool isnox = false;
-  Teuchos::RCP<const STR::Nln::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
-  const STR::TimeInt::Implicit* timint_impl_ptr =
-      dynamic_cast<const STR::TimeInt::Implicit*>(&tim_int());
+  Teuchos::RCP<const Solid::Nln::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
+  const Solid::TimeInt::Implicit* timint_impl_ptr =
+      dynamic_cast<const Solid::TimeInt::Implicit*>(&tim_int());
   if (timint_impl_ptr != nullptr)
   {
-    Teuchos::RCP<const STR::Nln::SOLVER::Generic> nlnsolver_ptr =
+    Teuchos::RCP<const Solid::Nln::SOLVER::Generic> nlnsolver_ptr =
         timint_impl_ptr->get_nln_solver_ptr();
     /* If we are still in the setup process we return -1. This will happen
      * for the equilibrate_initial_state() call in dynamic simulations. */
     if (nlnsolver_ptr.is_null()) return -1;
-    nox_nln_ptr = Teuchos::rcp_dynamic_cast<const STR::Nln::SOLVER::Nox>(nlnsolver_ptr);
+    nox_nln_ptr = Teuchos::rcp_dynamic_cast<const Solid::Nln::SOLVER::Nox>(nlnsolver_ptr);
     if (not nox_nln_ptr.is_null()) isnox = true;
   }
   if (not isnox)
@@ -756,11 +757,11 @@ int STR::MODELEVALUATOR::Data::get_nln_iter() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int STR::MODELEVALUATOR::Data::get_step_np() const { return global_state().get_step_np(); }
+int Solid::MODELEVALUATOR::Data::get_step_np() const { return global_state().get_step_np(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::string STR::MODELEVALUATOR::ContactData::get_output_file_path() const
+std::string Solid::MODELEVALUATOR::ContactData::get_output_file_path() const
 {
   check_init();
   return in_output().get_output_ptr()->output()->file_name();
@@ -768,7 +769,7 @@ std::string STR::MODELEVALUATOR::ContactData::get_output_file_path() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::MODELEVALUATOR::Data::get_restart_step() const
+int Solid::MODELEVALUATOR::Data::get_restart_step() const
 {
   return global_state().get_restart_step();
 }

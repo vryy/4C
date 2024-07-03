@@ -101,7 +101,7 @@ void Discret::ELEMENTS::SoWeg6Type::setup_element_definition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoWeg6::SoWeg6(int id, int owner)
-    : SoBase(id, owner), pstype_(Inpar::STR::PreStress::none), pstime_(0.0), time_(0.0)
+    : SoBase(id, owner), pstype_(Inpar::Solid::PreStress::none), pstime_(0.0), time_(0.0)
 {
   invJ_.resize(NUMGPT_WEG6);
   detJ_.resize(NUMGPT_WEG6);
@@ -208,7 +208,7 @@ void Discret::ELEMENTS::SoWeg6::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   SoBase::unpack(basedata);
   // prestress_
-  pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
+  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))

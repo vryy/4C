@@ -113,8 +113,8 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       so_tet10_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr,
-          &elevec1, nullptr, &elevec3, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none);
+          &elevec1, nullptr, &elevec3, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none);
     }
     break;
 
@@ -136,8 +136,8 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       so_tet10_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr,
-          &elevec1, nullptr, &elevec3, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none);
+          &elevec1, nullptr, &elevec3, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none);
     }
     break;
 
@@ -158,8 +158,8 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> myemat(true);
 
       so_tet10_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr,
-          &elevec1, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none);
+          &elevec1, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none);
     }
     break;
 
@@ -194,8 +194,8 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       so_tet10_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2,
-          &elevec1, &elevec2, &elevec3, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none);
+          &elevec1, &elevec2, &elevec3, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none);
 
       if (act == calc_struct_nlnstifflmass) so_tet10_lumpmass(&elemat2);
     }
@@ -219,10 +219,10 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D> strain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -285,7 +285,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
 
       switch (pstype_)
       {
-        case Inpar::STR::PreStress::mulf:
+        case Inpar::Solid::PreStress::mulf:
         {
           // build incremental def gradient for every gauss point
           Core::LinAlg::SerialDenseMatrix gpdefgrd(NUMGPT_SOTET10, 9);
@@ -430,7 +430,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
       else  // old structural time integration
       {
@@ -476,15 +476,15 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
         Core::FE::ExtractMyValues(*res, myres, lm);
         Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D> strain;
-        auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-            params, "iostress", Inpar::STR::stress_none);
-        auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-            params, "iostrain", Inpar::STR::strain_none);
+        auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+            params, "iostress", Inpar::Solid::stress_none);
+        auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+            params, "iostrain", Inpar::Solid::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
 
         // if a linear analysis is desired
-        if (kintype_ == Inpar::STR::KinemType::linear)
+        if (kintype_ == Inpar::Solid::KinemType::linear)
         {
           FOUR_C_THROW("Linear case not implemented");
         }
@@ -588,7 +588,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
         {
           switch (str_params_interface().gauss_point_data_output_manager_ptr()->get_output_type())
           {
-            case Inpar::STR::GaussPointDataOutputType::element_center:
+            case Inpar::Solid::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
@@ -599,7 +599,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
               Core::FE::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
-            case Inpar::STR::GaussPointDataOutputType::nodes:
+            case Inpar::Solid::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
                   str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
@@ -618,7 +618,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
               Discret::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
               break;
             }
-            case Inpar::STR::GaussPointDataOutputType::gauss_points:
+            case Inpar::Solid::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                   str_params_interface()
@@ -628,7 +628,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
               Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }
-            case Inpar::STR::GaussPointDataOutputType::none:
+            case Inpar::Solid::GaussPointDataOutputType::none:
               FOUR_C_THROW(
                   "You specified a Gauss point data output type of none, so you should not end up "
                   "here.");
@@ -823,9 +823,9 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
     Core::LinAlg::Matrix<NUMDOF_SOTET10, 1>* force_str,   // element structural force vector
     Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOTET10, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
-    Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,  // stress output option
-    const Inpar::STR::StrainType iostrain)  // strain output option
+    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,  // stress output option
+    const Inpar::Solid::StrainType iostrain)  // strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
@@ -911,14 +911,14 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
@@ -950,7 +950,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
         (*elestrain)(gp, 5) = euler_almansi(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -1024,13 +1024,13 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF = defgrd.determinant();
@@ -1059,7 +1059,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
         (*elestress)(gp, 5) = cauchystress(0, 2);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");

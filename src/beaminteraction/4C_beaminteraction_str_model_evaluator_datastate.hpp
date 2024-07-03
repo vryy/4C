@@ -44,7 +44,7 @@ namespace Discret
   }
 }  // namespace Discret
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -367,7 +367,7 @@ namespace STR
       ///@}
     };
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

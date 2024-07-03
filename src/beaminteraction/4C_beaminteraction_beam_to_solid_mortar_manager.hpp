@@ -26,7 +26,7 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -36,7 +36,7 @@ namespace STR
   {
     class BeamInteractionDataState;
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 namespace BEAMINTERACTION
 {
   class BeamToSolidParamsBase;
@@ -157,7 +157,7 @@ namespace BEAMINTERACTION
      * @param force (out) Global force vector. Mortar terms are added to it.
      */
     void evaluate_force_stiff_penalty_regularization(
-        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+        const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>& data_state,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force);
 
     /**
@@ -230,7 +230,7 @@ namespace BEAMINTERACTION
      * @param force (out) Global force vector. Mortar terms are added to it.
      */
     virtual void add_global_force_stiffness_penalty_contributions(
-        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>& data_state,
+        const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>& data_state,
         Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
 
     /**

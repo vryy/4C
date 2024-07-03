@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::GenAlpha::GenAlpha()
+Solid::IMPLICIT::GenAlpha::GenAlpha()
     : beta_(coeffs_.beta_),
       gamma_(coeffs_.gamma_),
       alphaf_(coeffs_.alphaf_),
@@ -50,14 +50,14 @@ STR::IMPLICIT::GenAlpha::GenAlpha()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::setup()
+void Solid::IMPLICIT::GenAlpha::setup()
 {
   check_init();
   // Call the setup() of the abstract base class first.
   Generic::setup();
 
-  const STR::TimeInt::GenAlphaDataSDyn& genalpha_sdyn =
-      dynamic_cast<const STR::TimeInt::GenAlphaDataSDyn&>(tim_int().get_data_sdyn());
+  const Solid::TimeInt::GenAlphaDataSDyn& genalpha_sdyn =
+      dynamic_cast<const Solid::TimeInt::GenAlphaDataSDyn&>(tim_int().get_data_sdyn());
 
   // ---------------------------------------------------------------------------
   // setup time integration parameters
@@ -99,11 +99,11 @@ void STR::IMPLICIT::GenAlpha::setup()
      * at the end-point t_{n+1} of each time interval, but never explicitly at
      * some generalized midpoint, such as t_{n+1-\alpha_f}. Thus, any cumbersome
      * extrapolation of history variables, etc. becomes obsolete. */
-    const enum Inpar::STR::MidAverageEnum& midavg = genalpha_sdyn.GetMidAverageType();
-    if (midavg != Inpar::STR::midavg_trlike)
+    const enum Inpar::Solid::MidAverageEnum& midavg = genalpha_sdyn.GetMidAverageType();
+    if (midavg != Inpar::Solid::midavg_trlike)
       FOUR_C_THROW("mid-averaging of internal forces only implemented TR-like");
     else
-      std::cout << "   midavg = " << Inpar::STR::MidAverageString(midavg) << std::endl;
+      std::cout << "   midavg = " << Inpar::Solid::MidAverageString(midavg) << std::endl;
   }
 
   // ---------------------------------------------------------------------------
@@ -133,7 +133,7 @@ void STR::IMPLICIT::GenAlpha::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::post_setup()
+void Solid::IMPLICIT::GenAlpha::post_setup()
 {
   check_init_setup();
 
@@ -141,7 +141,7 @@ void STR::IMPLICIT::GenAlpha::post_setup()
   // check for applicability of classical GenAlpha scheme
   // ---------------------------------------------------------------------------
   // set the constant parameters for the element evaluation
-  if (tim_int().get_data_sdyn().GetMassLinType() == Inpar::STR::ml_rotations)
+  if (tim_int().get_data_sdyn().GetMassLinType() == Inpar::Solid::ml_rotations)
   {
     FOUR_C_THROW(
         "MASSLIN=ml_rotations is not supported by classical GenAlpha! "
@@ -156,7 +156,7 @@ void STR::IMPLICIT::GenAlpha::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& coeffs) const
+void Solid::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& coeffs) const
 {
   if (is_init() and is_setup())
   {
@@ -164,8 +164,8 @@ void STR::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& co
     return;
   }
 
-  const STR::TimeInt::GenAlphaDataSDyn& genalpha_sdyn =
-      dynamic_cast<const STR::TimeInt::GenAlphaDataSDyn&>(tim_int().get_data_sdyn());
+  const Solid::TimeInt::GenAlphaDataSDyn& genalpha_sdyn =
+      dynamic_cast<const Solid::TimeInt::GenAlphaDataSDyn&>(tim_int().get_data_sdyn());
 
   // get a copy of the input parameters
   coeffs.beta_ = genalpha_sdyn.GetBeta();
@@ -174,14 +174,14 @@ void STR::IMPLICIT::GenAlpha::set_time_integration_coefficients(Coefficients& co
   coeffs.alpham_ = genalpha_sdyn.GetAlphaM();
   coeffs.rhoinf_ = genalpha_sdyn.GetRhoInf();
 
-  STR::ComputeGeneralizedAlphaParameters(coeffs);
+  Solid::ComputeGeneralizedAlphaParameters(coeffs);
 }
 
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::GenAlpha::get_model_value(const Epetra_Vector& x)
+double Solid::IMPLICIT::GenAlpha::get_model_value(const Epetra_Vector& x)
 {
   // --- kinetic energy increment
   Teuchos::RCP<const Epetra_Vector> accnp_ptr = global_state().get_acc_np();
@@ -207,15 +207,15 @@ double STR::IMPLICIT::GenAlpha::get_model_value(const Epetra_Vector& x)
 
   // --- internal energy
   eval_data().clear_values_for_all_energy_types();
-  STR::MODELEVALUATOR::Structure& str_model =
-      dynamic_cast<STR::MODELEVALUATOR::Structure&>(evaluator(Inpar::STR::model_structure));
+  Solid::MODELEVALUATOR::Structure& str_model =
+      dynamic_cast<Solid::MODELEVALUATOR::Structure&>(evaluator(Inpar::Solid::model_structure));
 
   Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().extract_displ_entries(x);
   const Epetra_Vector& disnp = *disnp_ptr;
 
   const double af_np = 1.0 - alphaf_;
   str_model.determine_strain_energy(disnp, true);
-  const double int_energy_np = af_np * eval_data().get_energy_data(STR::internal_energy);
+  const double int_energy_np = af_np * eval_data().get_energy_data(Solid::internal_energy);
 
   // --- external energy
   double ext_energy_np = 0.0;
@@ -247,7 +247,7 @@ double STR::IMPLICIT::GenAlpha::get_model_value(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::set_state(const Epetra_Vector& x)
+void Solid::IMPLICIT::GenAlpha::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -277,7 +277,7 @@ void STR::IMPLICIT::GenAlpha::set_state(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::update_constant_state_contributions()
+void Solid::IMPLICIT::GenAlpha::update_constant_state_contributions()
 {
   const double& dt = (*global_state().get_delta_time())[0];
 
@@ -301,7 +301,7 @@ void STR::IMPLICIT::GenAlpha::update_constant_state_contributions()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
+bool Solid::IMPLICIT::GenAlpha::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
 {
   check_init_setup();
 
@@ -315,7 +315,8 @@ bool STR::IMPLICIT::GenAlpha::apply_force(const Epetra_Vector& x, Epetra_Vector&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
+bool Solid::IMPLICIT::GenAlpha::apply_stiff(
+    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
 
@@ -335,7 +336,7 @@ bool STR::IMPLICIT::GenAlpha::apply_stiff(const Epetra_Vector& x, Core::LinAlg::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::apply_force_stiff(
+bool Solid::IMPLICIT::GenAlpha::apply_force_stiff(
     const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
@@ -355,8 +356,8 @@ bool STR::IMPLICIT::GenAlpha::apply_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::assemble_force(
-    Epetra_Vector& f, const std::vector<Inpar::STR::ModelType>* without_these_models) const
+bool Solid::IMPLICIT::GenAlpha::assemble_force(
+    Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   check_init_setup();
 
@@ -366,8 +367,8 @@ bool STR::IMPLICIT::GenAlpha::assemble_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::assemble_jac(Core::LinAlg::SparseOperator& jac,
-    const std::vector<Inpar::STR::ModelType>* without_these_models) const
+bool Solid::IMPLICIT::GenAlpha::assemble_jac(Core::LinAlg::SparseOperator& jac,
+    const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   check_init_setup();
 
@@ -378,7 +379,7 @@ bool STR::IMPLICIT::GenAlpha::assemble_jac(Core::LinAlg::SparseOperator& jac,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::add_visco_mass_contributions(Epetra_Vector& f) const
+void Solid::IMPLICIT::GenAlpha::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1-alpha_f}
   Core::LinAlg::AssembleMyVector(1.0, f, alphaf_, *fviscon_ptr_);
@@ -390,7 +391,8 @@ void STR::IMPLICIT::GenAlpha::add_visco_mass_contributions(Epetra_Vector& f) con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const
+void Solid::IMPLICIT::GenAlpha::add_visco_mass_contributions(
+    Core::LinAlg::SparseOperator& jac) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   const double& dt = (*global_state().get_delta_time())[0];
@@ -398,14 +400,14 @@ void STR::IMPLICIT::GenAlpha::add_visco_mass_contributions(Core::LinAlg::SparseO
   stiff_ptr->Add(
       *global_state().get_mass_matrix(), false, (1.0 - alpham_) / (beta_ * dt * dt), 1.0);
   // add Rayleigh damping contributions
-  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::STR::damp_rayleigh)
+  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
     stiff_ptr->Add(
         *global_state().get_damp_matrix(), false, (1.0 - alphaf_) * gamma_ / (beta_ * dt), 1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::write_restart(
+void Solid::IMPLICIT::GenAlpha::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -418,7 +420,7 @@ void STR::IMPLICIT::GenAlpha::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::IMPLICIT::GenAlpha::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.read_vector(finertian_ptr_, "finert");
@@ -430,7 +432,7 @@ void STR::IMPLICIT::GenAlpha::read_restart(Core::IO::DiscretizationReader& iorea
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::GenAlpha::calc_ref_norm_force(
+double Solid::IMPLICIT::GenAlpha::calc_ref_norm_force(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   check_init_setup();
@@ -440,7 +442,7 @@ double STR::IMPLICIT::GenAlpha::calc_ref_norm_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::GenAlpha::get_int_param() const
+double Solid::IMPLICIT::GenAlpha::get_int_param() const
 {
   // access the alphaf value even if the time integrator has not yet been setup
   Coefficients coeffs;
@@ -451,7 +453,7 @@ double STR::IMPLICIT::GenAlpha::get_int_param() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::GenAlpha::get_acc_int_param() const
+double Solid::IMPLICIT::GenAlpha::get_acc_int_param() const
 {
   check_init_setup();
   return alpham_;
@@ -459,7 +461,7 @@ double STR::IMPLICIT::GenAlpha::get_acc_int_param() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::update_step_state()
+void Solid::IMPLICIT::GenAlpha::update_step_state()
 {
   check_init_setup();
   // ---------------------------------------------------------------------------
@@ -480,7 +482,7 @@ void STR::IMPLICIT::GenAlpha::update_step_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::update_step_element()
+void Solid::IMPLICIT::GenAlpha::update_step_element()
 {
   check_init_setup();
   model_eval().update_step_element();
@@ -488,11 +490,11 @@ void STR::IMPLICIT::GenAlpha::update_step_element()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::post_update() { update_constant_state_contributions(); }
+void Solid::IMPLICIT::GenAlpha::post_update() { update_constant_state_contributions(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::predict_const_dis_consist_vel_acc(
+void Solid::IMPLICIT::GenAlpha::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -520,7 +522,7 @@ void STR::IMPLICIT::GenAlpha::predict_const_dis_consist_vel_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::predict_const_vel_consist_acc(
+bool Solid::IMPLICIT::GenAlpha::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -553,7 +555,7 @@ bool STR::IMPLICIT::GenAlpha::predict_const_vel_consist_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlpha::predict_const_acc(
+bool Solid::IMPLICIT::GenAlpha::predict_const_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -584,10 +586,10 @@ bool STR::IMPLICIT::GenAlpha::predict_const_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlpha::reset_eval_params()
+void Solid::IMPLICIT::GenAlpha::reset_eval_params()
 {
   // call base class
-  STR::IMPLICIT::Generic::reset_eval_params();
+  Solid::IMPLICIT::Generic::reset_eval_params();
 
   // set the time step dependent parameters for the element evaluation
   const double& dt = (*global_state().get_delta_time())[0];

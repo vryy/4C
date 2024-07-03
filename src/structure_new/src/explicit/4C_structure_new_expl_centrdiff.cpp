@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::EXPLICIT::CentrDiff::CentrDiff()
+Solid::EXPLICIT::CentrDiff::CentrDiff()
     : fvisconp_ptr_(Teuchos::null),
       fviscon_ptr_(Teuchos::null),
       finertianp_ptr_(Teuchos::null),
@@ -33,7 +33,7 @@ STR::EXPLICIT::CentrDiff::CentrDiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::setup()
+void Solid::EXPLICIT::CentrDiff::setup()
 {
   check_init();
 
@@ -61,7 +61,7 @@ void STR::EXPLICIT::CentrDiff::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::post_setup()
+void Solid::EXPLICIT::CentrDiff::post_setup()
 {
   check_init_setup();
   equilibrate_initial_state();
@@ -69,7 +69,7 @@ void STR::EXPLICIT::CentrDiff::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::set_state(const Epetra_Vector& x)
+void Solid::EXPLICIT::CentrDiff::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -105,7 +105,7 @@ void STR::EXPLICIT::CentrDiff::set_state(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(Epetra_Vector& f) const
+void Solid::EXPLICIT::CentrDiff::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -113,7 +113,8 @@ void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(Epetra_Vector& f) co
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(Core::LinAlg::SparseOperator& jac) const
+void Solid::EXPLICIT::CentrDiff::add_visco_mass_contributions(
+    Core::LinAlg::SparseOperator& jac) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   // set mass matrix
@@ -122,7 +123,7 @@ void STR::EXPLICIT::CentrDiff::add_visco_mass_contributions(Core::LinAlg::Sparse
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::write_restart(
+void Solid::EXPLICIT::CentrDiff::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -135,7 +136,7 @@ void STR::EXPLICIT::CentrDiff::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::EXPLICIT::CentrDiff::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.read_vector(finertian_ptr_, "finert");
@@ -147,7 +148,7 @@ void STR::EXPLICIT::CentrDiff::read_restart(Core::IO::DiscretizationReader& iore
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::CentrDiff::update_step_state()
+void Solid::EXPLICIT::CentrDiff::update_step_state()
 {
   check_init_setup();
 

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoBase::SoBase(int id, int owner)
     : Core::Elements::Element(id, owner),
-      kintype_(Inpar::STR::KinemType::vague),
+      kintype_(Inpar::Solid::KinemType::vague),
       interface_ptr_(Teuchos::null),
       material_post_setup_(false)
 {
@@ -79,7 +79,7 @@ void Discret::ELEMENTS::SoBase::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, basedata);
   Element::unpack(basedata);
   // kintype_
-  kintype_ = static_cast<Inpar::STR::KinemType>(extract_int(position, data));
+  kintype_ = static_cast<Inpar::Solid::KinemType>(extract_int(position, data));
 
   // material post setup routine
   material_post_setup_ = (extract_int(position, data) != 0);
@@ -114,16 +114,16 @@ Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::SoBase::ParamsI
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::ELEMENTS::ParamsInterface& Discret::ELEMENTS::SoBase::str_params_interface()
+Solid::ELEMENTS::ParamsInterface& Discret::ELEMENTS::SoBase::str_params_interface()
 {
   if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
-  return *(Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(interface_ptr_, true));
+  return *(Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(interface_ptr_, true));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoBase::error_handling(const double& det_curr,
-    Teuchos::ParameterList& params, const int line_id, const STR::ELEMENTS::EvalErrorFlag flag)
+    Teuchos::ParameterList& params, const int line_id, const Solid::ELEMENTS::EvalErrorFlag flag)
 {
   // check, if errors are tolerated or should throw a FOUR_C_THROW
   if (IsParamsInterface() and str_params_interface().is_tolerate_errors())

@@ -265,9 +265,9 @@ void Adapter::FSIStructureWrapperImmersed::output(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-STR::Dbc& Adapter::FSIStructureWrapperImmersed::GetDBC()
+Solid::Dbc& Adapter::FSIStructureWrapperImmersed::GetDBC()
 {
-  return Teuchos::rcp_dynamic_cast<STR::TimeInt::Base>(structure_, true)->get_dbc();
+  return Teuchos::rcp_dynamic_cast<Solid::TimeInt::Base>(structure_, true)->get_dbc();
 }
 
 /*----------------------------------------------------------------------*/
@@ -290,7 +290,7 @@ void Adapter::FSIStructureWrapperImmersed::RemoveDirichDofs(
 /*----------------------------------------------------------------------*/
 void Adapter::FSIStructureWrapperImmersed::set_state(const Teuchos::RCP<Epetra_Vector>& x)
 {
-  return Teuchos::rcp_dynamic_cast<STR::TimeInt::Implicit>(structure_, true)->set_state(x);
+  return Teuchos::rcp_dynamic_cast<Solid::TimeInt::Implicit>(structure_, true)->set_state(x);
 }
 
 FOUR_C_NAMESPACE_CLOSE

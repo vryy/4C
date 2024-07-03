@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace Predict
   {
@@ -35,10 +35,10 @@ namespace STR
       void Compute(::NOX::Abstract::Group& grp) override;
 
      private:
-      Teuchos::RCP<STR::Predict::Generic> tangdis_ptr_;
+      Teuchos::RCP<Solid::Predict::Generic> tangdis_ptr_;
     };  // class ConstDisVelAccPress
   }     // namespace Predict
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

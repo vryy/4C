@@ -70,8 +70,8 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::BuildLin
     // pure structural case
     case NOX::Nln::LinSystem::linear_system_structure:
     {
-      linSys = Teuchos::rcp(new NOX::Nln::STR::LinearSystem(printParams, lsParams, linSolvers, iReq,
-          iJac, jac, iPrec, precMat, *cloneVector, scalingObject));
+      linSys = Teuchos::rcp(new NOX::Nln::Solid::LinearSystem(printParams, lsParams, linSolvers,
+          iReq, iJac, jac, iPrec, precMat, *cloneVector, scalingObject));
       break;
     }
     // structural/contact case

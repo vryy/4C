@@ -95,9 +95,9 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
         Global::Problem::Instance()->CutGeneralParams());
   }
 
-  if (Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(
+  if (Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
           Global::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") ==
-      Inpar::STR::int_old)
+      Inpar::Solid::int_old)
     FOUR_C_THROW("old structural time integration no longer supported in tsi");
   else
   {
@@ -460,15 +460,15 @@ void TSI::Algorithm::prepare_contact_strategy()
 
   if (stype == Inpar::CONTACT::solution_nitsche)
   {
-    if (Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(
+    if (Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
             Global::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") !=
-        Inpar::STR::int_standard)
+        Inpar::Solid::int_standard)
       FOUR_C_THROW("thermo-mechanical contact only with new structural time integration");
 
     if (coupST_ == Teuchos::null) FOUR_C_THROW("coupST_ not yet here");
 
-    STR::MODELEVALUATOR::Contact& a = static_cast<STR::MODELEVALUATOR::Contact&>(
-        structure_field()->ModelEvaluator(Inpar::STR::model_contact));
+    Solid::MODELEVALUATOR::Contact& a = static_cast<Solid::MODELEVALUATOR::Contact&>(
+        structure_field()->ModelEvaluator(Inpar::Solid::model_contact));
     contact_strategy_nitsche_ =
         Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategyTsi>(a.strategy_ptr(), false);
     contact_strategy_nitsche_->enable_redistribution();
@@ -480,7 +480,7 @@ void TSI::Algorithm::prepare_contact_strategy()
 
   else if (stype == Inpar::CONTACT::solution_lagmult)
   {
-    if (structure_field()->HaveModel(Inpar::STR::model_contact))
+    if (structure_field()->HaveModel(Inpar::Solid::model_contact))
       FOUR_C_THROW(
           "structure should not have a Lagrange strategy ... as long as condensed"
           "contact formulations are not moved to the new structural time integration");
@@ -539,7 +539,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     contact_strategy_lagrange_->evaluate_reference_state();
     contact_strategy_lagrange_->Inttime_init();
     contact_strategy_lagrange_->set_time_integration_info(structure_field()->TimIntParam(),
-        Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(
+        Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(
             Global::Problem::Instance()->structural_dynamic_params(), "DYNAMICTYP"));
     contact_strategy_lagrange_->redistribute_contact(
         structure_field()->Dispn(), structure_field()->Veln());

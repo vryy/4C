@@ -217,7 +217,7 @@ namespace BEAMINTERACTION
      * \brief Set the displacement state (derived).
      */
     void set_state(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+        const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>&
             beaminteraction_data_state) override;
 
    protected:

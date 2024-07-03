@@ -51,7 +51,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   for (auto i = jep.begin(); i != jep.end(); ++i) adyn.setEntry(jep.name(i), jep.entry(i));
 
   // construct the auxiliary time integrator
-  sta_ = STR::TimeInt::build_strategy(adyn);
+  sta_ = Solid::TimeInt::build_strategy(adyn);
 
   ///// setup dataio
   Global::Problem* problem = Global::Problem::Instance();
@@ -66,28 +66,28 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   //
   Teuchos::RCP<Core::IO::DiscretizationWriter> output = stm_->discretization()->Writer();
   //
-  Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new STR::TimeInt::BaseDataIO());
+  Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new Solid::TimeInt::BaseDataIO());
   dataio->init(*ioflags, adyn, *xparams, output);
   dataio->setup();
 
   ///// setup datasdyn
-  Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes =
-      Teuchos::rcp(new std::set<enum Inpar::STR::ModelType>());
-  modeltypes->insert(Inpar::STR::model_structure);
+  Teuchos::RCP<std::set<enum Inpar::Solid::ModelType>> modeltypes =
+      Teuchos::rcp(new std::set<enum Inpar::Solid::ModelType>());
+  modeltypes->insert(Inpar::Solid::model_structure);
   //
-  Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs =
-      Teuchos::rcp(new std::set<enum Inpar::STR::EleTech>());
+  Teuchos::RCP<std::set<enum Inpar::Solid::EleTech>> eletechs =
+      Teuchos::rcp(new std::set<enum Inpar::Solid::EleTech>());
   //
-  Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
-      linsolvers = STR::SOLVER::build_lin_solvers(*modeltypes, adyn, *stm_->discretization());
+  Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+      linsolvers = Solid::SOLVER::build_lin_solvers(*modeltypes, adyn, *stm_->discretization());
   //
-  Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::build_data_sdyn(adyn);
+  Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> datasdyn = Solid::TimeInt::build_data_sdyn(adyn);
   datasdyn->init(stm_->discretization(), adyn, *xparams, modeltypes, eletechs, linsolvers);
   datasdyn->setup();
 
   // setup global state
-  Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate =
-      STR::TimeInt::build_data_global_state();
+  Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> dataglobalstate =
+      Solid::TimeInt::build_data_global_state();
   dataglobalstate->init(stm_->discretization(), adyn, datasdyn);
   dataglobalstate->setup();
 
@@ -101,7 +101,7 @@ void Adapter::StructureTimeAdaJoint::setup_auxiliar()
   const int restart = Global::Problem::Instance()->restart();
   if (restart)
   {
-    const STR::TimeInt::Base& sti = *stm_;
+    const Solid::TimeInt::Base& sti = *stm_;
     const auto& gstate = sti.data_global_state();
     dataglobalstate->get_dis_n()->Update(1.0, *(gstate.get_dis_n()), 0.0);
     dataglobalstate->get_vel_n()->Update(1.0, *(gstate.get_vel_n()), 0.0);
@@ -185,7 +185,7 @@ void Adapter::StructureTimeAdaJoint::integrate_step_auxiliar()
 
   // integrate the auxiliary time integrator one step in time
   // buih: another solution is to use the wrapper, but it will do more than necessary
-  const STR::TimeInt::Base& sta = *sta_;
+  const Solid::TimeInt::Base& sta = *sta_;
   const auto& gstate = sta.data_global_state();
 
   sta_->IntegrateStep();
@@ -204,13 +204,13 @@ void Adapter::StructureTimeAdaJoint::update_auxiliar()
   // copy the data from main integrator to the auxiliary one
   // for reference: the vector map of the global state vectors may need to be checked to ensure they
   // are the same
-  const STR::TimeInt::Base& stm = *stm_;
-  const STR::TimeInt::BaseDataGlobalState& gstate_i = stm.data_global_state();
+  const Solid::TimeInt::Base& stm = *stm_;
+  const Solid::TimeInt::BaseDataGlobalState& gstate_i = stm.data_global_state();
 
-  const STR::TimeInt::Base& sta = *sta_;
-  const STR::TimeInt::BaseDataGlobalState& gstate_a_const = sta.data_global_state();
-  STR::TimeInt::BaseDataGlobalState& gstate_a =
-      const_cast<STR::TimeInt::BaseDataGlobalState&>(gstate_a_const);
+  const Solid::TimeInt::Base& sta = *sta_;
+  const Solid::TimeInt::BaseDataGlobalState& gstate_a_const = sta.data_global_state();
+  Solid::TimeInt::BaseDataGlobalState& gstate_a =
+      const_cast<Solid::TimeInt::BaseDataGlobalState&>(gstate_a_const);
 
   gstate_a.get_dis_np()->Update(1.0, (*gstate_i.get_dis_n()), 0.0);
   gstate_a.get_vel_np()->Update(1.0, (*gstate_i.get_vel_n()), 0.0);

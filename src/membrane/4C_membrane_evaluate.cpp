@@ -102,7 +102,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       if (elemat1.is_initialized()) matptr = &elemat1;
 
       mem_nlnstiffmass(lm, mydisp, matptr, nullptr, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -120,7 +120,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       if (elemat1.is_initialized()) matptr = &elemat1;
 
       mem_nlnstiffmass(lm, mydisp, matptr, &elemat2, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -136,7 +136,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       mem_nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -178,8 +178,8 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
 
-      Inpar::STR::StressType iostress = Inpar::STR::stress_none;
-      Inpar::STR::StrainType iostrain = Inpar::STR::strain_none;
+      Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
+      Inpar::Solid::StrainType iostrain = Inpar::Solid::strain_none;
 
       if (IsParamsInterface())  // new structural time integration
       {
@@ -194,10 +194,10 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
 
-        iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-            params, "iostress", Inpar::STR::stress_none);
-        iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-            params, "iostrain", Inpar::STR::strain_none);
+        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+            params, "iostress", Inpar::Solid::stress_none);
+        iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+            params, "iostrain", Inpar::Solid::strain_none);
       }
 
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
@@ -373,7 +373,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
       {
         // only add contributions from row elements to avoid counting them on more than one proc
         if (discretization.Comm().MyPID() == Owner())
-          str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+          str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
       else  // old structural time integration
       {
@@ -625,8 +625,8 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     Core::LinAlg::Matrix<numgpt_post_, 6>* elestress,     // stresses at GP
     Core::LinAlg::Matrix<numgpt_post_, 6>* elestrain,     // strains at GP
     Teuchos::ParameterList& params,                       // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,                // stress output option
-    const Inpar::STR::StrainType iostrain)                // strain output option
+    const Inpar::Solid::StressType iostress,              // stress output option
+    const Inpar::Solid::StrainType iostrain)              // strain output option
 {
   // get reference configuration and determine current configuration
   Core::LinAlg::Matrix<numnod_, noddof_> xrefe(true);
@@ -922,7 +922,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     switch (iostrain)
     {
       // Green-Lagrange strains
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
@@ -951,7 +951,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       }
       break;
       // Euler-Almansi strains
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
@@ -984,7 +984,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       }
       break;
       // Logarithmic strains
-      case Inpar::STR::strain_log:
+      case Inpar::Solid::strain_log:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
@@ -1082,7 +1082,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       }
       break;
       // no strain output
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -1095,7 +1095,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
     switch (iostress)
     {
       // 2nd Piola-Kirchhoff stresses
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
@@ -1120,7 +1120,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       }
       break;
       // Cauchy stresses
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
@@ -1148,7 +1148,7 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
       }
       break;
       // no stress output
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");

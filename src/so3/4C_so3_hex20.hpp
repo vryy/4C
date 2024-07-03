@@ -348,7 +348,7 @@ namespace Discret
       std::vector<double> detJ_;
 
       /// prestressing switch & time
-      Inpar::STR::PreStress pstype_;
+      Inpar::Solid::PreStress pstype_;
       double pstime_;
 
       double time_;
@@ -381,9 +381,9 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_SOH20, 1>* force,  ///< element internal force vector
           Core::LinAlg::Matrix<NUMGPT_SOH20, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH20, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-          Teuchos::ParameterList& params,          ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,   ///< stress output option
-          const Inpar::STR::StrainType iostrain);  ///< strain output option
+          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,   ///< stress output option
+          const Inpar::Solid::StrainType iostrain);  ///< strain output option
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void soh20_nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -400,9 +400,9 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_SOH20, 1>* force_str,   ///< element structural force vector
           Core::LinAlg::Matrix<NUMGPT_SOH20, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH20, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-          Teuchos::ParameterList& params,          ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,   ///< stress output option
-          const Inpar::STR::StrainType iostrain);  ///< strain output option
+          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,   ///< stress output option
+          const Inpar::Solid::StrainType iostrain);  ///< strain output option
 
       //! Lump mass matrix (bborn 07/08)
       void soh20_lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH20, NUMDOF_SOH20>* emass);

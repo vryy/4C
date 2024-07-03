@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsRuntimeOutput::init(
+void Solid::TimeInt::ParamsRuntimeOutput::init(
     const Teuchos::ParameterList& IO_vtk_structure_paramslist)
 {
   // We have to call setup() after init()
@@ -66,7 +66,7 @@ void STR::TimeInt::ParamsRuntimeOutput::init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsRuntimeOutput::setup()
+void Solid::TimeInt::ParamsRuntimeOutput::setup()
 {
   FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
@@ -77,7 +77,7 @@ void STR::TimeInt::ParamsRuntimeOutput::setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void STR::TimeInt::ParamsRuntimeOutput::check_init_setup() const
+void Solid::TimeInt::ParamsRuntimeOutput::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }

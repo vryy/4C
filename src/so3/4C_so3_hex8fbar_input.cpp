@@ -36,7 +36,7 @@ bool Discret::ELEMENTS::SoHex8fbar::ReadElement(
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_HEX8FBAR element failed KINEM unknown");

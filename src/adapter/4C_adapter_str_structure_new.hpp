@@ -28,7 +28,7 @@ namespace Teuchos
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -41,7 +41,7 @@ namespace STR
   {
     class Generic;
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 namespace Core::LinAlg
 {
@@ -194,10 +194,10 @@ namespace Adapter
     int Integrate() override = 0;
 
     /// fixme: this can go when the old structure time integration is gone and PerformErrorAction is
-    /// only called in STR::TimeInt::Implicit::Solve() and not on the structure in the adapter time
-    /// loop
-    Inpar::STR::ConvergenceStatus PerformErrorAction(
-        Inpar::STR::ConvergenceStatus nonlinsoldiv) override
+    /// only called in Solid::TimeInt::Implicit::Solve() and not on the structure in the adapter
+    /// time loop
+    Inpar::Solid::ConvergenceStatus PerformErrorAction(
+        Inpar::Solid::ConvergenceStatus nonlinsoldiv) override
     {
       FOUR_C_THROW("You should not be here");
       return nonlinsoldiv;
@@ -331,7 +331,7 @@ namespace Adapter
     for the time step. All boundary conditions have
     been set.
     */
-    Inpar::STR::ConvergenceStatus Solve() override = 0;
+    Inpar::Solid::ConvergenceStatus Solve() override = 0;
 
     /*!
     \brief linear structure solve with just a interface load
@@ -347,7 +347,7 @@ namespace Adapter
           "In the new structural timeintegration this method is"
           "no longer needed inside the structure. Since this is"
           "FSI specific, the functionality is shifted to the"
-          "STR::MODELEVALUATOR::PartitionedFSI.");
+          "Solid::MODELEVALUATOR::PartitionedFSI.");
       return Teuchos::null;
     };
 
@@ -429,11 +429,11 @@ namespace Adapter
     Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override = 0;
 
     /// access the desired model evaluator (read-only)
-    [[nodiscard]] virtual const STR::MODELEVALUATOR::Generic& ModelEvaluator(
-        Inpar::STR::ModelType mtype) const = 0;
+    [[nodiscard]] virtual const Solid::MODELEVALUATOR::Generic& ModelEvaluator(
+        Inpar::Solid::ModelType mtype) const = 0;
 
     /// access the desired model evaluator (read and write)
-    STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) override = 0;
+    Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) override = 0;
 
     /// direct access to discretization
     Teuchos::RCP<Core::FE::Discretization> discretization() override = 0;
@@ -445,7 +445,7 @@ namespace Adapter
     Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override = 0;
 
     /// Get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale get_stc_algo() override = 0;
+    Inpar::Solid::StcScale get_stc_algo() override = 0;
 
     /// Access to scaling matrix for STC
     Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override = 0;
@@ -495,7 +495,7 @@ namespace Adapter
      * global state in the 'new' structural time integration.
      *
      * 1) The current state is held in the global state data container:
-     *    \ref STR::TimeInt::BaseDataGlobalState
+     *    \ref Solid::TimeInt::BaseDataGlobalState
      *
      * 2) Also the NOX group (that means the nonlinear solver) has its
      *    own state vector (called 'X').
@@ -558,7 +558,7 @@ namespace Adapter
      *
      *  \date 11/16 */
     void register_model_evaluator(
-        const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me);
+        const std::string name, Teuchos::RCP<Solid::MODELEVALUATOR::Generic> me);
 
     /// structural field solver
     Teuchos::RCP<Structure> structure_field() { return str_wrapper_; }
@@ -569,7 +569,7 @@ namespace Adapter
     [[nodiscard]] inline const bool& is_setup() const { return issetup_; };
 
    protected:
-    /// setup structure algorithm of STR::TimInt::Implicit or STR::TimInt::Explicit type
+    /// setup structure algorithm of Solid::TimInt::Implicit or Solid::TimInt::Explicit type
     void setup_tim_int();
 
     /** \brief Set all model types. This is necessary for the model evaluation.
@@ -577,8 +577,8 @@ namespace Adapter
      *  The inherent structural models are identified by the corresponding conditions and/or
      *  other unique criteria. If your intention is to solve a partitioned coupled problem and
      *  you need to modify the structural right-hand-side in any way, then you have to implement
-     *  your own concrete implementation of a STR::MODELEVALUATOR::Generic class and register it
-     *  as a Teuchos::RCP<STR::MODELEVALUATOR::Generic> pointer in your problem dynamic parameter-
+     *  your own concrete implementation of a Solid::MODELEVALUATOR::Generic class and register it
+     *  as a Teuchos::RCP<Solid::MODELEVALUATOR::Generic> pointer in your problem dynamic parameter-
      *  list. For partitioned problems you have to use the parameter-name
      *  \"Partitioned Coupling Model\".
      *
@@ -588,11 +588,11 @@ namespace Adapter
      *  <ol>
      *
      *  <li> Create a model evaluator that derives from
-     *  STR::MODELEVALUATOR::Generic. For example, the model evaluator
+     *  Solid::MODELEVALUATOR::Generic. For example, the model evaluator
      *  \c FSI_Partitioned might be defined as shown below.
      *
      *  \code
-     *  class FSI_Partitioned : public STR::MODELEVALUATOR::Generic
+     *  class FSI_Partitioned : public Solid::MODELEVALUATOR::Generic
      *  {
      *  // Insert class definition here
      *  }
@@ -605,14 +605,14 @@ namespace Adapter
      *  Teuchos::RCP<FSI_Partitioned> fsi_model_ptr = Teuchos::rcp(new FSI_Partitioned());
      *  // optional: call of your own 2-nd init() method
      *  fsi_model_ptr->init(stuff_you_need_inside_the_model_evaluator);
-     *  prbdyn.set<Teuchos::RCP<STR::MODELEVALUATOR::Generic> >("Partitioned Coupling Model",
+     *  prbdyn.set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic> >("Partitioned Coupling Model",
      *      fsi_model_ptr);
      *  \endcode
      *
      *  </ol>
      *
      *  \remark Please keep in mind, that the prescribed Generic::init() and Generic::setup()
-     *  methods will be called automatically in the STR::ModelEvaluator::setup() routine. If
+     *  methods will be called automatically in the Solid::ModelEvaluator::setup() routine. If
      *  you need a different init() method, just define a second init() function with different
      *  input variables in your concrete class implementation and call it somewhere in your code
      *  (see upper example code).
@@ -621,33 +621,35 @@ namespace Adapter
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void set_model_types(std::set<enum Inpar::STR::ModelType>& modeltypes) const;
+    void set_model_types(std::set<enum Inpar::Solid::ModelType>& modeltypes) const;
 
     /// Set all found model types.
-    void detect_element_technologies(std::set<enum Inpar::STR::EleTech>& eletechs) const;
+    void detect_element_technologies(std::set<enum Inpar::Solid::EleTech>& eletechs) const;
 
     /// Set different time integrator specific parameters in the different parameter lists
     virtual void set_params(Teuchos::ParameterList& ioflags, Teuchos::ParameterList& xparams,
         Teuchos::ParameterList& time_adaptivity_params);
 
     /// Create, initialize and setup the global state data container
-    virtual void set_global_state(Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate,
-        const Teuchos::RCP<const STR::TimeInt::BaseDataSDyn>& datasdyn_ptr);
+    virtual void set_global_state(
+        Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& dataglobalstate,
+        const Teuchos::RCP<const Solid::TimeInt::BaseDataSDyn>& datasdyn_ptr);
 
     /// Create, initialize and setup the time integration strategy object
-    virtual void set_time_integration_strategy(Teuchos::RCP<STR::TimeInt::Base>& ti_strategy,
-        const Teuchos::RCP<STR::TimeInt::BaseDataIO>& dataio,
-        const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& datasdyn,
-        const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate, const int& restart);
+    virtual void set_time_integration_strategy(Teuchos::RCP<Solid::TimeInt::Base>& ti_strategy,
+        const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& dataio,
+        const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& datasdyn,
+        const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& dataglobalstate,
+        const int& restart);
 
     /// set the final structure time integrator object
     virtual void set_structure_wrapper(const Teuchos::ParameterList& ioflags,
         const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
         const Teuchos::ParameterList& time_adaptivity_params,
-        Teuchos::RCP<STR::TimeInt::Base> ti_strategy);
+        Teuchos::RCP<Solid::TimeInt::Base> ti_strategy);
 
     /// create the time integrator wrapper
-    void create_wrapper(Teuchos::RCP<STR::TimeInt::Base> ti_strategy);
+    void create_wrapper(Teuchos::RCP<Solid::TimeInt::Base> ti_strategy);
 
    protected:
     /// structural field solver

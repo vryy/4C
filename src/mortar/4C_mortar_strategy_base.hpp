@@ -27,10 +27,10 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace Inpar
 {
-  namespace STR
+  namespace Solid
   {
     enum DynamicType : int;
-  }  // namespace STR
+  }  // namespace Solid
 }  // namespace Inpar
 namespace Core::FE
 {
@@ -94,7 +94,7 @@ namespace Mortar
     const double& AlphaF() const { return alphaf_; };
 
     /// get the (dynamic) time integration type
-    inline Inpar::STR::DynamicType GetDynType() const { return dyntype_; };
+    inline Inpar::Solid::DynamicType GetDynType() const { return dyntype_; };
 
     /// return dynamic time integration parameter
     inline double GetDynParameterN() const { return dynparam_n_; }
@@ -103,7 +103,7 @@ namespace Mortar
     inline void SetDynParameterN(const double dynparamN) { dynparam_n_ = dynparamN; }
 
     /// set the (dynamic) time integration type
-    inline void SetDynType(Inpar::STR::DynamicType dyntype) { dyntype_ = dyntype; }
+    inline void SetDynType(Inpar::Solid::DynamicType dyntype) { dyntype_ = dyntype; }
 
     //! Return flag indicating parallel redistribution status
     bool& IsParRedist() { return parredist_; };
@@ -146,7 +146,7 @@ namespace Mortar
     Inpar::CONTACT::SystemType systype_;
 
     //! time integration type
-    Inpar::STR::DynamicType dyntype_;
+    Inpar::Solid::DynamicType dyntype_;
 
     //! time integration parameter for the contributions of the old/previous time step
     double dynparam_n_;
@@ -235,7 +235,7 @@ namespace Mortar
     //@}
 
     /// Set the time integration information
-    void set_time_integration_info(const double time_fac, const Inpar::STR::DynamicType dyntype);
+    void set_time_integration_info(const double time_fac, const Inpar::Solid::DynamicType dyntype);
 
     //! @name Purely virtual functions
 

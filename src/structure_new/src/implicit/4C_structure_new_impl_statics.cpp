@@ -29,14 +29,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::Statics::Statics()
+Solid::IMPLICIT::Statics::Statics()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::setup()
+void Solid::IMPLICIT::Statics::setup()
 {
   check_init();
 
@@ -44,7 +44,7 @@ void STR::IMPLICIT::Statics::setup()
   Generic::setup();
 
   // check for valid parameter combinations:
-  if (eval_data().get_damping_type() != Inpar::STR::damp_none)
+  if (eval_data().get_damping_type() != Inpar::Solid::damp_none)
     FOUR_C_THROW("ERROR: Damping not provided for statics time integration!");
 
   issetup_ = true;
@@ -52,7 +52,7 @@ void STR::IMPLICIT::Statics::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::post_setup()
+void Solid::IMPLICIT::Statics::post_setup()
 {
   check_init_setup();
   // DO NOTHING
@@ -60,7 +60,7 @@ void STR::IMPLICIT::Statics::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::set_state(const Epetra_Vector& x)
+void Solid::IMPLICIT::Statics::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
   if (is_predictor_state()) return;
@@ -71,7 +71,7 @@ void STR::IMPLICIT::Statics::set_state(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
+bool Solid::IMPLICIT::Statics::apply_force(const Epetra_Vector& x, Epetra_Vector& f)
 {
   check_init_setup();
   reset_eval_params();
@@ -80,7 +80,8 @@ bool STR::IMPLICIT::Statics::apply_force(const Epetra_Vector& x, Epetra_Vector& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::apply_stiff(const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
+bool Solid::IMPLICIT::Statics::apply_stiff(
+    const Epetra_Vector& x, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
   reset_eval_params();
@@ -91,7 +92,7 @@ bool STR::IMPLICIT::Statics::apply_stiff(const Epetra_Vector& x, Core::LinAlg::S
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::apply_force_stiff(
+bool Solid::IMPLICIT::Statics::apply_force_stiff(
     const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac)
 {
   check_init_setup();
@@ -103,8 +104,8 @@ bool STR::IMPLICIT::Statics::apply_force_stiff(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::assemble_force(
-    Epetra_Vector& f, const std::vector<Inpar::STR::ModelType>* without_these_models) const
+bool Solid::IMPLICIT::Statics::assemble_force(
+    Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models) const
 {
   check_init_setup();
   return model_eval().assemble_force(1.0, f, without_these_models);
@@ -112,7 +113,7 @@ bool STR::IMPLICIT::Statics::assemble_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::write_restart(
+void Solid::IMPLICIT::Statics::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -130,7 +131,7 @@ void STR::IMPLICIT::Statics::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::IMPLICIT::Statics::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   model_eval().read_restart(ioreader);
@@ -138,7 +139,7 @@ void STR::IMPLICIT::Statics::read_restart(Core::IO::DiscretizationReader& ioread
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Statics::calc_ref_norm_force(
+double Solid::IMPLICIT::Statics::calc_ref_norm_force(
     const enum ::NOX::Abstract::Vector::NormType& type) const
 {
   check_init_setup();
@@ -173,27 +174,28 @@ double STR::IMPLICIT::Statics::calc_ref_norm_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Statics::get_int_param() const { return 0.0; }
+double Solid::IMPLICIT::Statics::get_int_param() const { return 0.0; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::pre_update()
+void Solid::IMPLICIT::Statics::pre_update()
 {
   check_init_setup();
-  const STR::TimeInt::Implicit* impl_ptr = dynamic_cast<const STR::TimeInt::Implicit*>(&tim_int());
+  const Solid::TimeInt::Implicit* impl_ptr =
+      dynamic_cast<const Solid::TimeInt::Implicit*>(&tim_int());
   if (impl_ptr == nullptr) return;
 
   // get the time step size
   const double dt = (*global_state().get_delta_time())[0];
 
-  const Inpar::STR::PredEnum& pred_type = impl_ptr->Predictor().get_type();
+  const Inpar::Solid::PredEnum& pred_type = impl_ptr->Predictor().get_type();
   Teuchos::RCP<Epetra_Vector>& accnp_ptr = global_state().get_acc_np();
   Teuchos::RCP<Epetra_Vector>& velnp_ptr = global_state().get_vel_np();
 
   switch (pred_type)
   {
     // case: constant acceleration
-    case Inpar::STR::pred_constacc:
+    case Inpar::Solid::pred_constacc:
     {
       // read-only access
       Teuchos::RCP<const Epetra_Vector> veln_ptr = global_state().get_vel_n();
@@ -203,7 +205,7 @@ void STR::IMPLICIT::Statics::pre_update()
       [[fallthrough]];
     }
     // case: constant acceleration OR constant velocity
-    case Inpar::STR::pred_constvel:
+    case Inpar::Solid::pred_constvel:
     {
       // read-only access
       Teuchos::RCP<const Epetra_Vector> disn_ptr = global_state().get_dis_n();
@@ -221,7 +223,7 @@ void STR::IMPLICIT::Statics::pre_update()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::update_step_state()
+void Solid::IMPLICIT::Statics::update_step_state()
 {
   check_init_setup();
   // update model specific variables
@@ -230,7 +232,7 @@ void STR::IMPLICIT::Statics::update_step_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::update_step_element()
+void Solid::IMPLICIT::Statics::update_step_element()
 {
   check_init_setup();
   model_eval().update_step_element();
@@ -238,7 +240,7 @@ void STR::IMPLICIT::Statics::update_step_element()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::predict_const_dis_consist_vel_acc(
+void Solid::IMPLICIT::Statics::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -252,7 +254,7 @@ void STR::IMPLICIT::Statics::predict_const_dis_consist_vel_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::predict_const_vel_consist_acc(
+bool Solid::IMPLICIT::Statics::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -276,7 +278,7 @@ bool STR::IMPLICIT::Statics::predict_const_vel_consist_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::Statics::predict_const_acc(
+bool Solid::IMPLICIT::Statics::predict_const_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -303,15 +305,15 @@ bool STR::IMPLICIT::Statics::predict_const_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::Statics::reset_eval_params()
+void Solid::IMPLICIT::Statics::reset_eval_params()
 {
   // call base class
-  STR::IMPLICIT::Generic::reset_eval_params();
+  Solid::IMPLICIT::Generic::reset_eval_params();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Statics::get_model_value(const Epetra_Vector& x)
+double Solid::IMPLICIT::Statics::get_model_value(const Epetra_Vector& x)
 {
   Teuchos::RCP<const Epetra_Vector> disnp_ptr = global_state().extract_displ_entries(x);
   const Epetra_Vector& disnp = *disnp_ptr;
@@ -319,11 +321,11 @@ double STR::IMPLICIT::Statics::get_model_value(const Epetra_Vector& x)
   set_state(disnp);
 
   eval_data().clear_values_for_all_energy_types();
-  STR::MODELEVALUATOR::Structure& str_model =
-      dynamic_cast<STR::MODELEVALUATOR::Structure&>(evaluator(Inpar::STR::model_structure));
+  Solid::MODELEVALUATOR::Structure& str_model =
+      dynamic_cast<Solid::MODELEVALUATOR::Structure&>(evaluator(Inpar::Solid::model_structure));
 
   str_model.determine_strain_energy(disnp, true);
-  const double int_energy_np = eval_data().get_energy_data(STR::internal_energy);
+  const double int_energy_np = eval_data().get_energy_data(Solid::internal_energy);
   double ext_energy_np = 0.0;
   global_state().get_fext_np()->Dot(disnp, &ext_energy_np);
   const double total = int_energy_np - ext_energy_np;

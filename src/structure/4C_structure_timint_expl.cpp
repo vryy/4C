@@ -29,12 +29,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* constructor */
-STR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time parameters
-    const Teuchos::ParameterList& ioparams,                            //!< ioflags
-    const Teuchos::ParameterList& sdynparams,                          //!< input parameters
-    const Teuchos::ParameterList& xparams,                             //!< extra flags
-    Teuchos::RCP<Core::FE::Discretization> actdis,                     //!< current discretisation
-    Teuchos::RCP<Core::LinAlg::Solver> solver,                         //!< the solver
+Solid::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time parameters
+    const Teuchos::ParameterList& ioparams,                              //!< ioflags
+    const Teuchos::ParameterList& sdynparams,                            //!< input parameters
+    const Teuchos::ParameterList& xparams,                               //!< extra flags
+    Teuchos::RCP<Core::FE::Discretization> actdis,                       //!< current discretisation
+    Teuchos::RCP<Core::LinAlg::Solver> solver,                           //!< the solver
     Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
     Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
     )
@@ -51,12 +51,12 @@ STR::TimIntExpl::TimIntExpl(const Teuchos::ParameterList& timeparams,  //! time 
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntExpl::init(const Teuchos::ParameterList& timeparams,
+void Solid::TimIntExpl::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
-  STR::TimInt::init(timeparams, sdynparams, xparams, actdis, solver);
+  Solid::TimInt::init(timeparams, sdynparams, xparams, actdis, solver);
 
   // get away
   return;
@@ -65,10 +65,10 @@ void STR::TimIntExpl::init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntExpl::setup()
+void Solid::TimIntExpl::setup()
 {
   // call setup() in base class
-  STR::TimInt::setup();
+  Solid::TimInt::setup();
 
   // explicit time integrators cannot handle constraints
   if (conman_->HaveConstraint())
@@ -101,10 +101,10 @@ void STR::TimIntExpl::setup()
 
 /*----------------------------------------------------------------------*/
 /* evaluate external forces at t_{n+1} */
-void STR::TimIntExpl::apply_force_external(const double time,  //!< evaluation time
-    const Teuchos::RCP<Epetra_Vector> dis,                     //!< displacement state
-    const Teuchos::RCP<Epetra_Vector> vel,                     //!< velocity state
-    Teuchos::RCP<Epetra_Vector>& fext                          //!< external force
+void Solid::TimIntExpl::apply_force_external(const double time,  //!< evaluation time
+    const Teuchos::RCP<Epetra_Vector> dis,                       //!< displacement state
+    const Teuchos::RCP<Epetra_Vector> vel,                       //!< velocity state
+    Teuchos::RCP<Epetra_Vector>& fext                            //!< external force
 )
 {
   Teuchos::ParameterList p;
@@ -116,7 +116,7 @@ void STR::TimIntExpl::apply_force_external(const double time,  //!< evaluation t
   discret_->set_state(0, "displacement", dis);
   discret_->set_state(0, "displacement new", dis);
 
-  if (damping_ == Inpar::STR::damp_material) discret_->set_state(0, "velocity", vel);
+  if (damping_ == Inpar::Solid::damp_material) discret_->set_state(0, "velocity", vel);
   // get load vector
   discret_->evaluate_neumann(p, *fext);
 
@@ -126,7 +126,7 @@ void STR::TimIntExpl::apply_force_external(const double time,  //!< evaluation t
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::TimIntExpl::print_step()
+void Solid::TimIntExpl::print_step()
 {
   // print out
   if ((myrank_ == 0) and printscreen_ and (StepOld() % printscreen_ == 0))
@@ -137,7 +137,7 @@ void STR::TimIntExpl::print_step()
 
 /*----------------------------------------------------------------------*/
 /* print step summary */
-void STR::TimIntExpl::print_step_text(FILE* ofile)
+void Solid::TimIntExpl::print_step_text(FILE* ofile)
 {
   fprintf(ofile,
       "Finalised: step %6d"

@@ -406,7 +406,7 @@ namespace UTILS
     int linsolveerror_;                  ///< indicates error / problem in linear solver
     Teuchos::ParameterList strparams_;   ///< structure input parameters
     Teuchos::ParameterList cv0dparams_;  ///< 0D cardiovascular input parameters
-    Inpar::STR::IntegrationStrategy
+    Inpar::Solid::IntegrationStrategy
         intstrat_;  ///< structural time-integration strategy (old vs. standard)
     Teuchos::RCP<ModelOrderRed::ProperOrthogonalDecomposition> mor_;  ///< model order reduction
     bool have_mor_;  ///< model order reduction is used

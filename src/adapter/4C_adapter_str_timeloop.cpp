@@ -23,12 +23,12 @@ FOUR_C_NAMESPACE_OPEN
 int Adapter::StructureTimeLoop::Integrate()
 {
   // error checking variables
-  Inpar::STR::ConvergenceStatus convergencestatus = Inpar::STR::conv_success;
+  Inpar::Solid::ConvergenceStatus convergencestatus = Inpar::Solid::conv_success;
 
   // target time #timen_ and step #stepn_ already set
   // time loop
-  while (not_finished() and (convergencestatus == Inpar::STR::conv_success or
-                                convergencestatus == Inpar::STR::conv_fail_repeat))
+  while (not_finished() and (convergencestatus == Inpar::Solid::conv_success or
+                                convergencestatus == Inpar::Solid::conv_fail_repeat))
   {
     // call the predictor
     PrePredict();
@@ -40,7 +40,7 @@ int Adapter::StructureTimeLoop::Integrate()
     convergencestatus = Solve();
 
     // if everything is fine
-    if (convergencestatus == Inpar::STR::conv_success)
+    if (convergencestatus == Inpar::Solid::conv_success)
     {
       // calculate stresses, strains and energies
       // note: this has to be done before the update since otherwise a potential
@@ -64,9 +64,9 @@ int Adapter::StructureTimeLoop::Integrate()
       print_step();
     }
     // todo: remove this as soon as old structure time integration is gone
-    else if (Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(
+    else if (Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
                  Global::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") ==
-             Inpar::STR::int_old)
+             Inpar::Solid::int_old)
     {
       convergencestatus =
           PerformErrorAction(convergencestatus);  // something went wrong update error code

@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::SOLVER::Factory::Factory()
+Solid::SOLVER::Factory::Factory()
 {
   // empty
 }
@@ -41,47 +41,47 @@ STR::SOLVER::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::build_lin_solvers(
-    const std::set<enum Inpar::STR::ModelType>& modeltypes, const Teuchos::ParameterList& sdyn,
+Teuchos::RCP<Solid::SOLVER::Factory::LinSolMap> Solid::SOLVER::Factory::build_lin_solvers(
+    const std::set<enum Inpar::Solid::ModelType>& modeltypes, const Teuchos::ParameterList& sdyn,
     Core::FE::Discretization& actdis) const
 {
   // create a new standard map
   Teuchos::RCP<LinSolMap> linsolvers = Teuchos::rcp(new LinSolMap());
 
-  std::set<enum Inpar::STR::ModelType>::const_iterator mt_iter;
+  std::set<enum Inpar::Solid::ModelType>::const_iterator mt_iter;
   // loop over all model types
   for (mt_iter = modeltypes.begin(); mt_iter != modeltypes.end(); ++mt_iter)
   {
     switch (*mt_iter)
     {
-      case Inpar::STR::model_structure:
-      case Inpar::STR::model_springdashpot:
-      case Inpar::STR::model_browniandyn:
-      case Inpar::STR::model_beaminteraction:
-      case Inpar::STR::model_basic_coupling:
-      case Inpar::STR::model_monolithic_coupling:
-      case Inpar::STR::model_partitioned_coupling:
-      case Inpar::STR::model_beam_interaction_old:
-      case Inpar::STR::model_constraints:
+      case Inpar::Solid::model_structure:
+      case Inpar::Solid::model_springdashpot:
+      case Inpar::Solid::model_browniandyn:
+      case Inpar::Solid::model_beaminteraction:
+      case Inpar::Solid::model_basic_coupling:
+      case Inpar::Solid::model_monolithic_coupling:
+      case Inpar::Solid::model_partitioned_coupling:
+      case Inpar::Solid::model_beam_interaction_old:
+      case Inpar::Solid::model_constraints:
       {
         /* Check if the structural linear solver was already added and skip
          * if true. */
-        LinSolMap::iterator iter = linsolvers->find(Inpar::STR::model_structure);
+        LinSolMap::iterator iter = linsolvers->find(Inpar::Solid::model_structure);
         if (iter == linsolvers->end())
-          (*linsolvers)[Inpar::STR::model_structure] = build_structure_lin_solver(sdyn, actdis);
+          (*linsolvers)[Inpar::Solid::model_structure] = build_structure_lin_solver(sdyn, actdis);
         break;
       }
       /* ToDo Check if this makes sense for simulations where both, meshtying and
        *      contact, are present. If we need two linsolvers, please adjust the
        *      implementation (maps for pre-conditioning, etc.). */
-      case Inpar::STR::model_contact:
-      case Inpar::STR::model_meshtying:
+      case Inpar::Solid::model_contact:
+      case Inpar::Solid::model_meshtying:
         (*linsolvers)[*mt_iter] = build_meshtying_contact_lin_solver(actdis);
         break;
-      case Inpar::STR::model_lag_pen_constraint:
+      case Inpar::Solid::model_lag_pen_constraint:
         (*linsolvers)[*mt_iter] = build_lag_pen_constraint_lin_solver(sdyn, actdis);
         break;
-      case Inpar::STR::model_cardiovascular0d:
+      case Inpar::Solid::model_cardiovascular0d:
         (*linsolvers)[*mt_iter] = build_cardiovascular0_d_lin_solver(sdyn, actdis);
         break;
       default:
@@ -97,7 +97,7 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::build_lin_so
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_structure_lin_solver(
+Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_solver(
     const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
 {
   // get the linear solver number used for structural problems
@@ -190,7 +190,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_structure_lin_sol
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
+Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_contact_lin_solver(
     Core::FE::Discretization& actdis) const
 {
   const Teuchos::ParameterList& mcparams = Global::Problem::Instance()->contact_dynamic_params();
@@ -209,7 +209,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact_lin_solver(
+Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_contact_lin_solver(
     Core::FE::Discretization& actdis, enum Inpar::CONTACT::SolvingStrategy sol_type,
     enum Inpar::CONTACT::SystemType sys_type, const int lin_solver_id)
 {
@@ -341,7 +341,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_meshtying_contact
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_lag_pen_constraint_lin_solver(
+Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constraint_lin_solver(
     const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
 {
   Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
@@ -351,12 +351,12 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_lag_pen_constrain
       Global::Problem::Instance()->structural_dynamic_params();
 
   // solution algorithm - direct, simple or Uzawa
-  Inpar::STR::ConSolveAlgo algochoice =
-      Core::UTILS::IntegralValue<Inpar::STR::ConSolveAlgo>(strparams, "UZAWAALGO");
+  Inpar::Solid::ConSolveAlgo algochoice =
+      Core::UTILS::IntegralValue<Inpar::Solid::ConSolveAlgo>(strparams, "UZAWAALGO");
 
   switch (algochoice)
   {
-    case Inpar::STR::consolve_direct:
+    case Inpar::Solid::consolve_direct:
     {
       const int linsolvernumber = strparams.get<int>("LINEAR_SOLVER");
 
@@ -374,7 +374,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_lag_pen_constrain
               Global::Problem::Instance()->IOParams(), "VERBOSITY"));
     }
     break;
-    case Inpar::STR::consolve_simple:
+    case Inpar::Solid::consolve_simple:
     {
       const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
 
@@ -423,7 +423,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_lag_pen_constrain
       }
     }
     break;
-    case Inpar::STR::consolve_uzawa:
+    case Inpar::Solid::consolve_uzawa:
     {
       FOUR_C_THROW(
           "Uzawa-type solution techniques for constraints aren't supported anymore within the new "
@@ -440,7 +440,7 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_lag_pen_constrain
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_cardiovascular0_d_lin_solver(
+Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0_d_lin_solver(
     const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
 {
   Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
@@ -513,8 +513,8 @@ Teuchos::RCP<Core::LinAlg::Solver> STR::SOLVER::Factory::build_cardiovascular0_d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
-STR::SOLVER::build_lin_solvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
+Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+Solid::SOLVER::build_lin_solvers(const std::set<enum Inpar::Solid::ModelType>& modeltypes,
     const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis)
 {
   Factory factory;

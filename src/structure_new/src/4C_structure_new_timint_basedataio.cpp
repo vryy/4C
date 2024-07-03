@@ -36,7 +36,7 @@ namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataIO::BaseDataIO()
+Solid::TimeInt::BaseDataIO::BaseDataIO()
     : isinit_(false),
       issetup_(false),
       output_(Teuchos::null),
@@ -59,12 +59,12 @@ STR::TimeInt::BaseDataIO::BaseDataIO()
       writerestartevery_(-1),
       writeresultsevery_(-1),
       writeenergyevery_(-1),
-      writestress_(Inpar::STR::stress_none),
-      writecouplstress_(Inpar::STR::stress_none),
-      writestrain_(Inpar::STR::strain_none),
-      writeplstrain_(Inpar::STR::strain_none),
-      writeoptquantity_(Inpar::STR::optquantity_none),
-      conditionnumbertype_(Inpar::STR::ConditionNumber::none)
+      writestress_(Inpar::Solid::stress_none),
+      writecouplstress_(Inpar::Solid::stress_none),
+      writestrain_(Inpar::Solid::strain_none),
+      writeplstrain_(Inpar::Solid::strain_none),
+      writeoptquantity_(Inpar::Solid::optquantity_none),
+      conditionnumbertype_(Inpar::Solid::ConditionNumber::none)
 {
   // empty constructor
 }
@@ -72,7 +72,7 @@ STR::TimeInt::BaseDataIO::BaseDataIO()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
+void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
@@ -97,21 +97,21 @@ void STR::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     writestate_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_DISP");
     writevelacc_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_VEL_ACC");
     writejac2matlab_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_JACOBIAN_MATLAB");
-    conditionnumbertype_ =
-        Teuchos::getIntegralValue<Inpar::STR::ConditionNumber>(ioparams, "STRUCT_CONDITION_NUMBER");
+    conditionnumbertype_ = Teuchos::getIntegralValue<Inpar::Solid::ConditionNumber>(
+        ioparams, "STRUCT_CONDITION_NUMBER");
     firstoutputofrun_ = true;
     writeresultsevery_ = sdynparams.get<int>("RESULTSEVRY");
     writecurrentelevolume_ =
         (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_CURRENT_VOLUME");
-    writestress_ = Core::UTILS::IntegralValue<Inpar::STR::StressType>(ioparams, "STRUCT_STRESS");
+    writestress_ = Core::UTILS::IntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_STRESS");
     writecouplstress_ =
-        Core::UTILS::IntegralValue<Inpar::STR::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
-    writestrain_ = Core::UTILS::IntegralValue<Inpar::STR::StrainType>(ioparams, "STRUCT_STRAIN");
+        Core::UTILS::IntegralValue<Inpar::Solid::StressType>(ioparams, "STRUCT_COUPLING_STRESS");
+    writestrain_ = Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_STRAIN");
     writeplstrain_ =
-        Core::UTILS::IntegralValue<Inpar::STR::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
+        Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(ioparams, "STRUCT_PLASTIC_STRAIN");
     writeenergyevery_ = sdynparams.get<int>("RESEVRYERGY");
     writesurfactant_ = (bool)Core::UTILS::IntegralValue<int>(ioparams, "STRUCT_SURFACTANT");
-    writeoptquantity_ = Core::UTILS::IntegralValue<Inpar::STR::OptQuantityType>(
+    writeoptquantity_ = Core::UTILS::IntegralValue<Inpar::Solid::OptQuantityType>(
         ioparams, "STRUCT_OPTIONAL_QUANTITY");
 
     // build params container for monitoring reaction forces
@@ -144,7 +144,7 @@ void STR::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataIO::setup()
+void Solid::TimeInt::BaseDataIO::setup()
 {
   // safety check
   FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
@@ -156,14 +156,14 @@ void STR::TimeInt::BaseDataIO::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataIO::check_init_setup() const
+void Solid::TimeInt::BaseDataIO::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataIO::init_setup_every_iteration_writer(
+void Solid::TimeInt::BaseDataIO::init_setup_every_iteration_writer(
     Core::IO::EveryIterationWriterInterface* interface, Teuchos::ParameterList& p_nox)
 {
   if (not outputeveryiter_) return;
@@ -193,7 +193,7 @@ void STR::TimeInt::BaseDataIO::init_setup_every_iteration_writer(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataIO::setup_energy_output_file()
+void Solid::TimeInt::BaseDataIO::setup_energy_output_file()
 {
   if (energyfile_.is_null())
   {
@@ -206,21 +206,21 @@ void STR::TimeInt::BaseDataIO::setup_energy_output_file()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TimeInt::BaseDataIO::write_results_for_this_step(const int step) const
+bool Solid::TimeInt::BaseDataIO::write_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return is_write_results_enabled() and
          DetermineWriteOutput(step, get_write_timestep_offset(), get_write_results_every_n_step());
 }
 
-bool STR::TimeInt::BaseDataIO::is_write_results_enabled() const
+bool Solid::TimeInt::BaseDataIO::is_write_results_enabled() const
 {
   return get_write_results_every_n_step() > 0;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TimeInt::BaseDataIO::write_runtime_vtk_results_for_this_step(const int step) const
+bool Solid::TimeInt::BaseDataIO::write_runtime_vtk_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (is_runtime_output_enabled() &&
@@ -228,14 +228,14 @@ bool STR::TimeInt::BaseDataIO::write_runtime_vtk_results_for_this_step(const int
               get_runtime_output_params()->output_interval_in_steps()));
 }
 
-bool STR::TimeInt::BaseDataIO::is_runtime_output_enabled() const
+bool Solid::TimeInt::BaseDataIO::is_runtime_output_enabled() const
 {
   return get_runtime_output_params() != Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TimeInt::BaseDataIO::write_runtime_vtp_results_for_this_step(const int step) const
+bool Solid::TimeInt::BaseDataIO::write_runtime_vtp_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
   return (get_runtime_vtp_output_params() != Teuchos::null &&
@@ -244,7 +244,7 @@ bool STR::TimeInt::BaseDataIO::write_runtime_vtp_results_for_this_step(const int
 }
 
 
-bool STR::TimeInt::BaseDataIO::should_write_restart_for_step(const int step) const
+bool Solid::TimeInt::BaseDataIO::should_write_restart_for_step(const int step) const
 {
   return get_write_restart_every_n_step() &&
          DetermineWriteOutput(
@@ -253,7 +253,7 @@ bool STR::TimeInt::BaseDataIO::should_write_restart_for_step(const int step) con
 }
 
 
-bool STR::TimeInt::BaseDataIO::should_write_reaction_forces_for_this_step(const int step) const
+bool Solid::TimeInt::BaseDataIO::should_write_reaction_forces_for_this_step(const int step) const
 {
   return get_monitor_dbc_params()->output_interval_in_steps() > 0 &&
          DetermineWriteOutput(step, get_write_timestep_offset(),
@@ -261,24 +261,24 @@ bool STR::TimeInt::BaseDataIO::should_write_reaction_forces_for_this_step(const 
 }
 
 
-bool STR::TimeInt::BaseDataIO::should_write_stress_strain_for_this_step(const int step) const
+bool Solid::TimeInt::BaseDataIO::should_write_stress_strain_for_this_step(const int step) const
 {
   return write_results_for_this_step(step) &&
-         ((get_stress_output_type() != Inpar::STR::stress_none) ||
-             (get_coupling_stress_output_type() != Inpar::STR::stress_none) ||
-             (get_strain_output_type() != Inpar::STR::strain_none) ||
-             (get_plastic_strain_output_type() != Inpar::STR::strain_none));
+         ((get_stress_output_type() != Inpar::Solid::stress_none) ||
+             (get_coupling_stress_output_type() != Inpar::Solid::stress_none) ||
+             (get_strain_output_type() != Inpar::Solid::strain_none) ||
+             (get_plastic_strain_output_type() != Inpar::Solid::strain_none));
 }
 
-bool STR::TimeInt::BaseDataIO::should_write_energy_for_this_step(const int step) const
+bool Solid::TimeInt::BaseDataIO::should_write_energy_for_this_step(const int step) const
 {
   return get_write_energy_every_n_step() > 0 &&
          DetermineWriteOutput(step, get_write_timestep_offset(), get_write_energy_every_n_step());
 }
 
-int STR::TimeInt::BaseDataIO::get_last_written_results() const { return lastwrittenresultsstep_; }
+int Solid::TimeInt::BaseDataIO::get_last_written_results() const { return lastwrittenresultsstep_; }
 
-void STR::TimeInt::BaseDataIO::set_last_written_results(const int step)
+void Solid::TimeInt::BaseDataIO::set_last_written_results(const int step)
 {
   lastwrittenresultsstep_ = step;
 }

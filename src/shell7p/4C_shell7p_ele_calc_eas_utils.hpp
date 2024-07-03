@@ -168,7 +168,7 @@ namespace Discret::ELEMENTS::Shell::EAS
    */
   template <Core::FE::CellType distype>
   Core::LinAlg::SerialDenseMatrix evaluate_eas_shape_functions_parameter_space(
-      const std::array<double, 2>& xi_gp, const STR::ELEMENTS::ShellLockingTypes& locking_types)
+      const std::array<double, 2>& xi_gp, const Solid::ELEMENTS::ShellLockingTypes& locking_types)
   {
     // evaluation of the shape function matrix to interpolate the enhanced strains alpha
     Core::LinAlg::SerialDenseMatrix M(
@@ -681,7 +681,7 @@ namespace Discret::ELEMENTS::Shell::EAS
   // Evaluates M_gp by setting up M and mapping M to M_gp via T0^{-T}
   template <Core::FE::CellType distype>
   Core::LinAlg::SerialDenseMatrix EvaluateEasShapeFunctions(const std::array<double, 2>& xi_gp,
-      const STR::ELEMENTS::ShellLockingTypes& locking_types,
+      const Solid::ELEMENTS::ShellLockingTypes& locking_types,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& a_reference,
       const Discret::ELEMENTS::Shell::BasisVectorsAndMetrics<distype>& metrics_centroid_reference)
   {

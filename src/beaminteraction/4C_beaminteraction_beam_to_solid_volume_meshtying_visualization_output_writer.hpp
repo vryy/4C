@@ -32,7 +32,7 @@ namespace BEAMINTERACTION
     class BeamContact;
   }
 }  // namespace BEAMINTERACTION
-namespace STR::TimeInt
+namespace Solid::TimeInt
 {
   class ParamsRuntimeOutput;
 }
@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
      * output options.
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      */
-    void setup(Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
+    void setup(Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
         Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
             output_params_ptr);
 

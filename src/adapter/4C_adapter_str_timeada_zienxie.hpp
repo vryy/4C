@@ -19,10 +19,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace STR::TimeInt
+namespace Solid::TimeInt
 {
   class Base;
-}  // namespace STR::TimeInt
+}  // namespace Solid::TimeInt
 
 namespace Adapter
 {
@@ -45,9 +45,9 @@ namespace Adapter
     }
 
     //! Provide the name
-    enum Inpar::STR::TimAdaKind MethodName() const override
+    enum Inpar::Solid::TimAdaKind MethodName() const override
     {
-      return Inpar::STR::timada_kind_zienxie;
+      return Inpar::Solid::timada_kind_zienxie;
     }
 
     std::string MethodTitle() const override { return "ZienkiewiczXie"; }

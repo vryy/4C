@@ -193,7 +193,7 @@ void SSI::ScatraStructureOffDiagCoupling::evaluate_off_diag_block_structure_scat
   eleparams.set("action", "calc_struct_stiffscalar");
 
   // linearization of structural residuals w.r.t. elch
-  eleparams.set<int>("differentiationtype", static_cast<int>(STR::DifferentiationType::elch));
+  eleparams.set<int>("differentiationtype", static_cast<int>(Solid::DifferentiationType::elch));
 
   // set time
   eleparams.set<double>("total time", structure_->Time());

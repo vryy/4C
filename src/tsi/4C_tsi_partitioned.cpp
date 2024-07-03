@@ -74,8 +74,8 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   // if structure field is quasi-static --> calc_velocity
   const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   // major switch to different time integrators
-  quasistatic_ = (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP") ==
-                  Inpar::STR::dyna_statics);
+  quasistatic_ = (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") ==
+                  Inpar::Solid::dyna_statics);
 
   // initialise internal variables with values
   tempincnp_ = Teuchos::rcp(new Epetra_Vector(*(ThermoField()->Tempnp())));
@@ -1318,7 +1318,7 @@ void TSI::Partitioned::prepare_contact_strategy()
 
   if (contact_strategy_nitsche_ != Teuchos::null)
   {
-    const auto& model_eval = structure_field()->ModelEvaluator(Inpar::STR::model_structure);
+    const auto& model_eval = structure_field()->ModelEvaluator(Inpar::Solid::model_structure);
     const auto cparams = model_eval.eval_data().ContactPtr();
     auto cparams_new = cparams;
     cparams_new->set_coupling_scheme(Inpar::CONTACT::CouplingScheme::partitioning);

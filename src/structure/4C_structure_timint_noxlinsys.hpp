@@ -44,9 +44,9 @@ namespace Core::LinAlg
 
 namespace NOX
 {
-  namespace STR
+  namespace Solid
   {
-    /// This class enables the structural time integration #STR::TimIntImpl to use
+    /// This class enables the structural time integration #Solid::TimIntImpl to use
     /// #NOX as non-linear solution technique while preserving the user-defined
     /// linear algebraic solver #Core::LinAlg::Solver.
     ///
@@ -71,7 +71,7 @@ namespace NOX
       LinearSystem(Teuchos::ParameterList& printParams,  ///< printing parameters
           Teuchos::ParameterList& linearSolverParams,    ///< parameters for linear solution
           const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>&
-              iJac,  ///< NOX interface to Jacobian, i.e. #STR::TimIntImpl
+              iJac,  ///< NOX interface to Jacobian, i.e. #Solid::TimIntImpl
           const Teuchos::RCP<Epetra_Operator>& J,  ///< the Jacobian or stiffness matrix
           const ::NOX::Epetra::Vector& cloneVector,
           Teuchos::RCP<Core::LinAlg::Solver>
@@ -183,7 +183,7 @@ namespace NOX
       mutable double timeApplyJacbianInverse_;
     };
 
-  }  // namespace STR
+  }  // namespace Solid
 }  // namespace NOX
 
 

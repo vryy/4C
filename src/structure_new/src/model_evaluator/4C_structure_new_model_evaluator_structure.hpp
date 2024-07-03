@@ -34,7 +34,7 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -47,11 +47,11 @@ namespace STR
 
       void setup() override;
 
-      //! @name Derived public STR::MODELEVALUATOR::Generic methods
+      //! @name Derived public Solid::MODELEVALUATOR::Generic methods
       //! @{
 
       //! derived
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_structure; }
+      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_structure; }
 
       //! derived
       void reset(const Epetra_Vector& x) override;
@@ -109,7 +109,7 @@ namespace STR
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override;
 
       //! derived
-      void Predict(const Inpar::STR::PredEnum& pred_type) override;
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override;
 
       //! derived
       void update_step_state(const double& timefac_n) override;
@@ -349,7 +349,7 @@ namespace STR
       /*! \biref Assemble the Rayleigh damping matrix
        *
        *  Please note, that this has to been done only once during the
-       *  STR::Integrator::equilibrate_initial_state routine!
+       *  Solid::Integrator::equilibrate_initial_state routine!
        *
        *  \date 09/16
        *  \author hiermeier */
@@ -432,7 +432,7 @@ namespace STR
       void write_output_runtime_beams(const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
           int timestep_number, double time) const;
 
-      /*! \brief Write the parameters from the STR::MODELEVALUATOR::Data
+      /*! \brief Write the parameters from the Solid::MODELEVALUATOR::Data
        *         to the Teuchos::ParameterList
        *
        *  todo: This function is temporary! It converts back to the old
@@ -444,7 +444,7 @@ namespace STR
        *  \date 12/16
        *  \author seitz */
       void params_interface2_parameter_list(
-          Teuchos::RCP<STR::MODELEVALUATOR::Data> interface_ptr, Teuchos::ParameterList& params);
+          Teuchos::RCP<Solid::MODELEVALUATOR::Data> interface_ptr, Teuchos::ParameterList& params);
 
      private:
       //! @name Accessors to the data container content
@@ -511,7 +511,7 @@ namespace STR
       double* dt_ele_ptr_;
 
       //! mass linearization type
-      enum Inpar::STR::MassLin masslin_type_;
+      enum Inpar::Solid::MassLin masslin_type_;
 
       //! @name class only variables
       //! @{
@@ -539,7 +539,7 @@ namespace STR
     };
 
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

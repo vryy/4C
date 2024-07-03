@@ -385,10 +385,10 @@ CONTACT::Aug::ComboStrategy::PreAsymptoticSwitching::get_structural_force_withou
   Teuchos::RCP<Epetra_Vector> force_no_dbc_ptr =
       Teuchos::rcp(new Epetra_Vector(*combo_.no_dbc_.slMaMap_));
 
-  const STR::MODELEVALUATOR::Contact& cmodel =
-      dynamic_cast<const STR::MODELEVALUATOR::Contact&>(cparams.get_model_evaluator());
+  const Solid::MODELEVALUATOR::Contact& cmodel =
+      dynamic_cast<const Solid::MODELEVALUATOR::Contact&>(cparams.get_model_evaluator());
 
-  const std::vector<Inpar::STR::ModelType> without_contact_model(1, cmodel.Type());
+  const std::vector<Inpar::Solid::ModelType> without_contact_model(1, cmodel.Type());
   Teuchos::RCP<Epetra_Vector> force_ptr = cmodel.assemble_force_of_models(&without_contact_model);
 
   Core::LinAlg::Export(*force_ptr, *force_no_dbc_ptr);

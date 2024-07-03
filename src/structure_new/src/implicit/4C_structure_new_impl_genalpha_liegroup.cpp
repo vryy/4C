@@ -29,14 +29,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::GenAlphaLieGroup::GenAlphaLieGroup() : accn_mod_(Teuchos::null)
+Solid::IMPLICIT::GenAlphaLieGroup::GenAlphaLieGroup() : accn_mod_(Teuchos::null)
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::setup()
+void Solid::IMPLICIT::GenAlphaLieGroup::setup()
 {
   check_init();
 
@@ -51,11 +51,11 @@ void STR::IMPLICIT::GenAlphaLieGroup::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::post_setup()
+void Solid::IMPLICIT::GenAlphaLieGroup::post_setup()
 {
   check_init_setup();
 
-  if (sdyn().get_mass_lin_type() != Inpar::STR::ml_rotations and !sdyn().NeglectInertia())
+  if (sdyn().get_mass_lin_type() != Inpar::Solid::ml_rotations and !sdyn().NeglectInertia())
   {
     /* we can use this method for all elements with additive DoFs,
      * but it won't work like this for non-additive rotation vector DoFs */
@@ -93,7 +93,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::set_state(const Epetra_Vector& x)
+void Solid::IMPLICIT::GenAlphaLieGroup::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -128,7 +128,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::set_state(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::write_restart(
+void Solid::IMPLICIT::GenAlphaLieGroup::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -140,7 +140,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::IMPLICIT::GenAlphaLieGroup::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.read_vector(accn_mod_, "accn_mod");
@@ -150,7 +150,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::read_restart(Core::IO::DiscretizationReade
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::update_step_state()
+void Solid::IMPLICIT::GenAlphaLieGroup::update_step_state()
 {
   check_init_setup();
 
@@ -168,7 +168,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::update_step_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::update_constant_state_contributions()
+void Solid::IMPLICIT::GenAlphaLieGroup::update_constant_state_contributions()
 {
   const double& dt = (*global_state().get_delta_time())[0];
 
@@ -199,7 +199,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::update_constant_state_contributions()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::GenAlphaLieGroup::get_int_param() const
+double Solid::IMPLICIT::GenAlphaLieGroup::get_int_param() const
 {
   check_init_setup();
   return 0.0;
@@ -207,7 +207,7 @@ double STR::IMPLICIT::GenAlphaLieGroup::get_int_param() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(Epetra_Vector& f) const
+void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -217,7 +217,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(Epetra_Vector
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
+void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
@@ -226,13 +226,13 @@ void STR::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
   stiff_ptr->Add(*global_state().get_mass_matrix(), false,
       (1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), 1.0);
   // add Rayleigh damping contributions
-  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::STR::damp_rayleigh)
+  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
     stiff_ptr->Add(*global_state().get_damp_matrix(), false, gamma_ / (beta_ * dt), 1.0);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
+void Solid::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -260,7 +260,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlphaLieGroup::predict_const_vel_consist_acc(
+bool Solid::IMPLICIT::GenAlphaLieGroup::predict_const_vel_consist_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -274,7 +274,7 @@ bool STR::IMPLICIT::GenAlphaLieGroup::predict_const_vel_consist_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::IMPLICIT::GenAlphaLieGroup::predict_const_acc(
+bool Solid::IMPLICIT::GenAlphaLieGroup::predict_const_acc(
     Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const
 {
   check_init_setup();
@@ -288,14 +288,14 @@ bool STR::IMPLICIT::GenAlphaLieGroup::predict_const_acc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::IMPLICIT::GenAlphaLieGroup::reset_eval_params()
+void Solid::IMPLICIT::GenAlphaLieGroup::reset_eval_params()
 {
   // set the time step dependent parameters for the element evaluation
   GenAlpha::reset_eval_params();
 
   /* in case we have non-additive rotation (pseudo-)vector DOFs, we need to pass
    * the GenAlpha parameters to the beam elements via beam parameter interface */
-  if (tim_int().get_data_sdyn().GetMassLinType() == Inpar::STR::ml_rotations)
+  if (tim_int().get_data_sdyn().GetMassLinType() == Inpar::Solid::ml_rotations)
   {
     eval_data().GetBeamData().set_beta(beta_);
     eval_data().GetBeamData().set_gamma(gamma_);

@@ -26,13 +26,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace ELEMENTS
   {
     enum EvalErrorFlag : int;
   }  // namespace ELEMENTS
-}  // namespace STR
+}  // namespace Solid
 
 // Several parameters which are fixed for Solid Hex8
 const int NUMNOD_SOH8 = 8;   ///< number of nodes
@@ -504,7 +504,7 @@ namespace Discret
       bool analyticalmaterialtangent_;
 
       /// prestressing switch & time
-      Inpar::STR::PreStress pstype_;
+      Inpar::Solid::PreStress pstype_;
       double pstime_;
       double time_;
       // line search parameter (old step length)
@@ -544,7 +544,7 @@ namespace Discret
           const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const;
 
       void soh8_error_handling(const double& det_curr, Teuchos::ParameterList& params, int line_id,
-          STR::ELEMENTS::EvalErrorFlag flag);
+          FourC::Solid::ELEMENTS::EvalErrorFlag flag);
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       virtual void init_jacobian_mapping();
@@ -569,11 +569,11 @@ namespace Discret
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
-              eleplstrain,                     ///< plastic strains at GP
-          Teuchos::ParameterList& params,      ///< algorithmic parameters e.g. time
-          Inpar::STR::StressType iostress,     ///< stress output option
-          Inpar::STR::StrainType iostrain,     ///< strain output option
-          Inpar::STR::StrainType ioplstrain);  ///< plastic strain output option
+              eleplstrain,                       ///< plastic strains at GP
+          Teuchos::ParameterList& params,        ///< algorithmic parameters e.g. time
+          Inpar::Solid::StressType iostress,     ///< stress output option
+          Inpar::Solid::StrainType iostrain,     ///< strain output option
+          Inpar::Solid::StrainType ioplstrain);  ///< plastic strain output option
 
 
       //! Lump mass matrix (bborn 07/08)

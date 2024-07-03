@@ -28,13 +28,13 @@ namespace Discret::ELEMENTS
     Shell7pFactory() = default;
 
     static std::unique_ptr<Shell7pEleCalcInterface> provide_shell7p_calculation_interface(
-        const Core::Elements::Element& ele, const std::set<Inpar::STR::EleTech>& eletech);
+        const Core::Elements::Element& ele, const std::set<Inpar::Solid::EleTech>& eletech);
 
    private:
     //! define shell calculation instances dependent on element technology
     template <Core::FE::CellType distype>
     static std::unique_ptr<Shell7pEleCalcInterface> define_calculation_interface_type(
-        const std::set<Inpar::STR::EleTech>& eletech);
+        const std::set<Inpar::Solid::EleTech>& eletech);
   };  // class Shell7pFactory
 }  // namespace Discret::ELEMENTS
 

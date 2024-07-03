@@ -22,11 +22,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations:
-namespace STR
+namespace Solid
 {
   class TimInt;
   class TimAda;
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 /* adapting adapter */
@@ -42,7 +42,7 @@ namespace Adapter
   {
    public:
     /// Constructor
-    StructureTimIntAda(Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti);
+    StructureTimIntAda(Teuchos::RCP<Solid::TimAda> sta, Teuchos::RCP<Structure> sti);
 
     /// @name Time step helpers
     //@{
@@ -62,13 +62,13 @@ namespace Adapter
     //! Access routines
     //{@
 
-    Teuchos::RCP<STR::TimAda> str_ada() const { return sta_; }
+    Teuchos::RCP<Solid::TimAda> str_ada() const { return sta_; }
 
     //@}
 
    private:
     /// the actual structure algorithm
-    Teuchos::RCP<STR::TimAda> sta_;  // STR::TimAda is the old time integration
+    Teuchos::RCP<Solid::TimAda> sta_;  // Solid::TimAda is the old time integration
 
   };  // class StructureTimIntAda
 

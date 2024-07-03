@@ -23,10 +23,10 @@ namespace Mat
 {
   class So3Material;
 }  // namespace Mat
-namespace STR::ELEMENTS
+namespace Solid::ELEMENTS
 {
   class ParamsInterface;
-}  // namespace STR::ELEMENTS
+}  // namespace Solid::ELEMENTS
 
 
 
@@ -64,11 +64,11 @@ namespace Discret::ELEMENTS
 
     void initialize_gauss_point_data_output(const Core::Elements::Element& ele,
         const Mat::So3Material& solid_material,
-        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+        FourC::Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
     void evaluate_gauss_point_data_output(const Core::Elements::Element& ele,
         const Mat::So3Material& solid_material,
-        STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
+        FourC::Solid::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
     void reset_to_last_converged(
         const Core::Elements::Element& ele, Mat::So3Material& solid_material);

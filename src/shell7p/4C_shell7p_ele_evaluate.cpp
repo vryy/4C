@@ -47,7 +47,7 @@ namespace
     }
   }
 
-  inline Inpar::STR::StressType get_io_stress_type(
+  inline Inpar::Solid::StressType get_io_stress_type(
       const Discret::ELEMENTS::Shell7p& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
@@ -56,11 +56,11 @@ namespace
     }
     else
     {
-      return Core::UTILS::GetAsEnum<Inpar::STR::StressType>(params, "iostress");
+      return Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(params, "iostress");
     }
   }
 
-  inline Inpar::STR::StrainType get_io_strain_type(
+  inline Inpar::Solid::StrainType get_io_strain_type(
       const Discret::ELEMENTS::Shell7p& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
@@ -69,7 +69,7 @@ namespace
     }
     else
     {
-      return Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(params, "iostrain");
+      return Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(params, "iostrain");
     }
   }
 }  // namespace
@@ -124,7 +124,7 @@ int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
       shell_interface_->evaluate_nonlinear_force_stiffness_mass(*this, *SolidMaterial(),
           discretization, nodal_directors_, dof_index_array, params, &elevec1, &elemat1, &elemat2);
       if (action == Core::Elements::struct_calc_nlnstifflmass)
-        STR::UTILS::Shell::LumpMassMatrix(elemat2);
+        Solid::UTILS::Shell::LumpMassMatrix(elemat2);
     }
     break;
     case Core::Elements::struct_calc_recover:
@@ -149,7 +149,7 @@ int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
       if (IsParamsInterface())
       {
         // new structural time integration
-        str_params_interface().add_contribution_to_energy_type(int_energy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(int_energy, Solid::internal_energy);
       }
       else
       {

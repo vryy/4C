@@ -27,7 +27,7 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -41,7 +41,7 @@ namespace STR
       void setup() override;
 
       //! derived
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_cardiovascular0d; }
+      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_cardiovascular0d; }
 
       //! derived
       void reset(const Epetra_Vector& x) override;
@@ -76,7 +76,7 @@ namespace STR
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::STR::PredEnum& pred_type) override { return; };
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -139,7 +139,7 @@ namespace STR
     };
 
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

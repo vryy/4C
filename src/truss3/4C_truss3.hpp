@@ -21,13 +21,13 @@
 FOUR_C_NAMESPACE_OPEN
 using FAD = Sacado::Fad::DFad<double>;
 
-namespace STR
+namespace Solid
 {
   namespace ELEMENTS
   {
     class ParamsInterface;
   }
-}  // namespace STR
+}  // namespace Solid
 
 namespace Discret
 {
@@ -216,7 +216,7 @@ namespace Discret
       };
 
       //! get access to the parameter interface
-      inline STR::ELEMENTS::ParamsInterface& params_interface()
+      inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface()
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -305,7 +305,7 @@ namespace Discret
       Core::LinAlg::Matrix<1, 3> diff_disp_ref_;
 
       //!  data exchange between the element and the time integrator.
-      Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> interface_ptr_;
 
       //! variable saving whether element has already been initialized (then isinit_ == true)
       bool isinit_;

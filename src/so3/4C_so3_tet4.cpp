@@ -113,7 +113,7 @@ Discret::ELEMENTS::SoTet4::SoTet4(int id, int owner)
     : SoBase(id, owner),
       // material_(0),
       V_(-1.0),
-      pstype_(Inpar::STR::PreStress::none),
+      pstype_(Inpar::Solid::PreStress::none),
       pstime_(0.0),
       time_(0.0)
 {
@@ -217,7 +217,7 @@ void Discret::ELEMENTS::SoTet4::unpack(const std::vector<char>& data)
   extract_from_pack(position, data, V_);
 
   // Extract prestress
-  pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
+  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))

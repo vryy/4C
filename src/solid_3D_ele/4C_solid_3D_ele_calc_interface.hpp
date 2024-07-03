@@ -20,13 +20,13 @@ namespace Discret::ELEMENTS
 {
   struct StressIO
   {
-    Inpar::STR::StressType type;
+    Inpar::Solid::StressType type;
     std::vector<char>& mutable_data;
   };
 
   struct StrainIO
   {
-    Inpar::STR::StrainType type;
+    Inpar::Solid::StrainType type;
     std::vector<char>& mutable_data;
   };
 

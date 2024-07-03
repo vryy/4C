@@ -29,17 +29,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Factory::Factory()
+Solid::Factory::Factory()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator> STR::Factory::build_integrator(
-    const STR::TimeInt::BaseDataSDyn& datasdyn) const
+Teuchos::RCP<Solid::Integrator> Solid::Factory::build_integrator(
+    const Solid::TimeInt::BaseDataSDyn& datasdyn) const
 {
-  Teuchos::RCP<STR::Integrator> int_ptr = Teuchos::null;
+  Teuchos::RCP<Solid::Integrator> int_ptr = Teuchos::null;
   int_ptr = build_implicit_integrator(datasdyn);
   if (int_ptr.is_null()) int_ptr = build_explicit_integrator(datasdyn);
   FOUR_C_ASSERT(
@@ -50,49 +50,49 @@ Teuchos::RCP<STR::Integrator> STR::Factory::build_integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator> STR::Factory::build_implicit_integrator(
-    const STR::TimeInt::BaseDataSDyn& datasdyn) const
+Teuchos::RCP<Solid::Integrator> Solid::Factory::build_implicit_integrator(
+    const Solid::TimeInt::BaseDataSDyn& datasdyn) const
 {
-  Teuchos::RCP<STR::IMPLICIT::Generic> impl_int_ptr = Teuchos::null;
+  Teuchos::RCP<Solid::IMPLICIT::Generic> impl_int_ptr = Teuchos::null;
 
-  const enum Inpar::STR::DynamicType& dyntype = datasdyn.get_dynamic_type();
-  const enum Inpar::STR::PreStress& prestresstype = datasdyn.get_pre_stress_type();
+  const enum Inpar::Solid::DynamicType& dyntype = datasdyn.get_dynamic_type();
+  const enum Inpar::Solid::PreStress& prestresstype = datasdyn.get_pre_stress_type();
 
   // check if we have a problem that needs to be prestressed
-  const bool is_prestress = prestresstype != Inpar::STR::PreStress::none;
+  const bool is_prestress = prestresstype != Inpar::Solid::PreStress::none;
   if (is_prestress)
   {
-    impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::PreStress());
+    impl_int_ptr = Teuchos::rcp(new Solid::IMPLICIT::PreStress());
     return impl_int_ptr;
   }
 
   switch (dyntype)
   {
     // Static analysis
-    case Inpar::STR::dyna_statics:
+    case Inpar::Solid::dyna_statics:
     {
-      impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::Statics());
+      impl_int_ptr = Teuchos::rcp(new Solid::IMPLICIT::Statics());
       break;
     }
 
     // Generalised-alpha time integration
-    case Inpar::STR::dyna_genalpha:
+    case Inpar::Solid::dyna_genalpha:
     {
-      impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::GenAlpha());
+      impl_int_ptr = Teuchos::rcp(new Solid::IMPLICIT::GenAlpha());
       break;
     }
 
     // Generalised-alpha time integration for Lie groups (e.g. SO3 group of rotation matrices)
-    case Inpar::STR::dyna_genalpha_liegroup:
+    case Inpar::Solid::dyna_genalpha_liegroup:
     {
-      impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::GenAlphaLieGroup());
+      impl_int_ptr = Teuchos::rcp(new Solid::IMPLICIT::GenAlphaLieGroup());
       break;
     }
 
     // One-step-theta (OST) time integration
-    case Inpar::STR::dyna_onesteptheta:
+    case Inpar::Solid::dyna_onesteptheta:
     {
-      impl_int_ptr = Teuchos::rcp(new STR::IMPLICIT::OneStepTheta());
+      impl_int_ptr = Teuchos::rcp(new Solid::IMPLICIT::OneStepTheta());
       break;
     }
 
@@ -109,38 +109,38 @@ Teuchos::RCP<STR::Integrator> STR::Factory::build_implicit_integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator> STR::Factory::build_explicit_integrator(
-    const STR::TimeInt::BaseDataSDyn& datasdyn) const
+Teuchos::RCP<Solid::Integrator> Solid::Factory::build_explicit_integrator(
+    const Solid::TimeInt::BaseDataSDyn& datasdyn) const
 {
-  Teuchos::RCP<STR::EXPLICIT::Generic> expl_int_ptr = Teuchos::null;
+  Teuchos::RCP<Solid::EXPLICIT::Generic> expl_int_ptr = Teuchos::null;
 
   switch (datasdyn.get_dynamic_type())
   {
     // Forward Euler Scheme
-    case Inpar::STR::dyna_expleuler:
+    case Inpar::Solid::dyna_expleuler:
     {
-      expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::ForwardEuler());
+      expl_int_ptr = Teuchos::rcp(new Solid::EXPLICIT::ForwardEuler());
       break;
     }
 
     // Central Difference Scheme
-    case Inpar::STR::dyna_centrdiff:
+    case Inpar::Solid::dyna_centrdiff:
     {
-      expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::CentrDiff());
+      expl_int_ptr = Teuchos::rcp(new Solid::EXPLICIT::CentrDiff());
       break;
     }
 
     // Adams-Bashforth-2 Scheme
-    case Inpar::STR::dyna_ab2:
+    case Inpar::Solid::dyna_ab2:
     {
-      expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::AdamsBashforth2());
+      expl_int_ptr = Teuchos::rcp(new Solid::EXPLICIT::AdamsBashforth2());
       break;
     }
 
     // Adams-Bashforth-4 Scheme
-    case Inpar::STR::dyna_ab4:
+    case Inpar::Solid::dyna_ab4:
     {
-      expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::AdamsBashforthX<4>());
+      expl_int_ptr = Teuchos::rcp(new Solid::EXPLICIT::AdamsBashforthX<4>());
       break;
     }
 
@@ -157,30 +157,32 @@ Teuchos::RCP<STR::Integrator> STR::Factory::build_explicit_integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Integrator> STR::build_integrator(const STR::TimeInt::BaseDataSDyn& datasdyn)
+Teuchos::RCP<Solid::Integrator> Solid::build_integrator(
+    const Solid::TimeInt::BaseDataSDyn& datasdyn)
 {
-  STR::Factory factory;
+  Solid::Factory factory;
 
   return factory.build_integrator(datasdyn);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Dbc> STR::Factory::build_dbc(const STR::TimeInt::BaseDataSDyn& datasdyn) const
+Teuchos::RCP<Solid::Dbc> Solid::Factory::build_dbc(
+    const Solid::TimeInt::BaseDataSDyn& datasdyn) const
 {
   // if you want your model specific dbc object, check here if your model type is
   // active ( datasdyn.get_model_types() )and build your own dbc object
-  Teuchos::RCP<STR::Dbc> dbc = Teuchos::null;
-  dbc = Teuchos::rcp(new STR::Dbc());
+  Teuchos::RCP<Solid::Dbc> dbc = Teuchos::null;
+  dbc = Teuchos::rcp(new Solid::Dbc());
 
   return dbc;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Dbc> STR::build_dbc(const STR::TimeInt::BaseDataSDyn& datasdyn)
+Teuchos::RCP<Solid::Dbc> Solid::build_dbc(const Solid::TimeInt::BaseDataSDyn& datasdyn)
 {
-  STR::Factory factory;
+  Solid::Factory factory;
 
   return factory.build_dbc(datasdyn);
 }

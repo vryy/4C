@@ -39,13 +39,13 @@ bool Discret::ELEMENTS::SoSh8p8::ReadElement(
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_SH8P8 element failed unknown KINEM Type");
 
   // we expect kintype to be total lagrangian
-  kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+  kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);

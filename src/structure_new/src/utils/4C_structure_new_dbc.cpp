@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Dbc::Dbc()
+Solid::Dbc::Dbc()
     : isinit_(false),
       issetup_(false),
       islocsys_(false),
@@ -45,9 +45,9 @@ STR::Dbc::Dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::init(const Teuchos::RCP<Core::FE::Discretization>& discret_ptr,
+void Solid::Dbc::init(const Teuchos::RCP<Core::FE::Discretization>& discret_ptr,
     const Teuchos::RCP<Epetra_Vector>& freact_ptr,
-    const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
+    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr)
 {
   // reset the setup indicator
   issetup_ = false;
@@ -61,7 +61,7 @@ void STR::Dbc::init(const Teuchos::RCP<Core::FE::Discretization>& discret_ptr,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::setup()
+void Solid::Dbc::setup()
 {
   check_init();
   // ---------------------------------------------------------------------------
@@ -126,18 +126,18 @@ void STR::Dbc::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
+void Solid::Dbc::check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::check_init_setup() const
+void Solid::Dbc::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> STR::Dbc::discret_ptr()
+Teuchos::RCP<Core::FE::Discretization> Solid::Dbc::discret_ptr()
 {
   check_init();
   return discret_ptr_;
@@ -145,7 +145,7 @@ Teuchos::RCP<Core::FE::Discretization> STR::Dbc::discret_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::FE::Discretization> STR::Dbc::discret_ptr() const
+Teuchos::RCP<const Core::FE::Discretization> Solid::Dbc::discret_ptr() const
 {
   check_init();
   return Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(discret_ptr_, true);
@@ -153,7 +153,7 @@ Teuchos::RCP<const Core::FE::Discretization> STR::Dbc::discret_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::UpdateLocSysManager()
+void Solid::Dbc::UpdateLocSysManager()
 {
   if (!is_loc_sys()) return;
 
@@ -165,7 +165,7 @@ void STR::Dbc::UpdateLocSysManager()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::Dbc::get_dirichlet_increment()
+Teuchos::RCP<Epetra_Vector> Solid::Dbc::get_dirichlet_increment()
 {
   Teuchos::RCP<const Epetra_Vector> disn = timint_ptr_->get_data_global_state().get_dis_n();
   Teuchos::RCP<Epetra_Vector> dbcincr = Teuchos::rcp(new Epetra_Vector(*disn));
@@ -184,7 +184,7 @@ Teuchos::RCP<Epetra_Vector> STR::Dbc::get_dirichlet_increment()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vector> dis,
+void Solid::Dbc::apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap) const
 {
   check_init_setup();
@@ -222,7 +222,7 @@ void STR::Dbc::apply_dirichlet_bc(const double& time, Teuchos::RCP<Epetra_Vector
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::apply_dirichlet_to_local_system(
+void Solid::Dbc::apply_dirichlet_to_local_system(
     Teuchos::RCP<Core::LinAlg::SparseOperator> A, Teuchos::RCP<Epetra_Vector>& b) const
 {
   check_init_setup();
@@ -234,7 +234,7 @@ void STR::Dbc::apply_dirichlet_to_local_system(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const
+void Solid::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const
 {
   check_init_setup();
   // rotate the coordinate system if desired
@@ -247,7 +247,7 @@ void STR::Dbc::apply_dirichlet_to_vector(Teuchos::RCP<Epetra_Vector>& vec) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) const
+void Solid::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) const
 {
   check_init_setup();
 
@@ -263,7 +263,7 @@ void STR::Dbc::apply_dirichlet_to_local_rhs(Teuchos::RCP<Epetra_Vector>& b) cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const
+void Solid::Dbc::ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const
 {
   check_init_setup();
 
@@ -277,7 +277,8 @@ void STR::Dbc::ApplyDirichletToRhs(Teuchos::RCP<Epetra_Vector>& b) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::apply_dirichlet_to_local_jacobian(Teuchos::RCP<Core::LinAlg::SparseOperator> A) const
+void Solid::Dbc::apply_dirichlet_to_local_jacobian(
+    Teuchos::RCP<Core::LinAlg::SparseOperator> A) const
 {
   check_init_setup();
   // don't do it twice...
@@ -310,7 +311,7 @@ void STR::Dbc::apply_dirichlet_to_local_jacobian(Teuchos::RCP<Core::LinAlg::Spar
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v) const
+bool Solid::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v) const
 {
   check_init_setup();
   return RotateGlobalToLocal(v, false);
@@ -318,7 +319,7 @@ bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
+bool Solid::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
@@ -340,7 +341,7 @@ bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Epetra_Vector>& v, bool of
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Core::LinAlg::SparseOperator>& A) const
+bool Solid::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Core::LinAlg::SparseOperator>& A) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
@@ -358,7 +359,7 @@ bool STR::Dbc::RotateGlobalToLocal(const Teuchos::RCP<Core::LinAlg::SparseOperat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v) const
+bool Solid::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v) const
 {
   check_init_setup();
   return RotateLocalToGlobal(v, false);
@@ -366,7 +367,7 @@ bool STR::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
+bool Solid::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool offset) const
 {
   check_init_setup();
   if (not is_loc_sys()) return false;
@@ -389,7 +390,7 @@ bool STR::Dbc::RotateLocalToGlobal(const Teuchos::RCP<Epetra_Vector>& v, bool of
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix> STR::Dbc::get_loc_sys_trafo() const
+Teuchos::RCP<const Core::LinAlg::SparseMatrix> Solid::Dbc::get_loc_sys_trafo() const
 {
   check_init_setup();
   if (not is_loc_sys()) return Teuchos::null;
@@ -399,7 +400,7 @@ Teuchos::RCP<const Core::LinAlg::SparseMatrix> STR::Dbc::get_loc_sys_trafo() con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::extract_freact(Teuchos::RCP<Epetra_Vector>& b) const
+void Solid::Dbc::extract_freact(Teuchos::RCP<Epetra_Vector>& b) const
 {
   check_init_setup();
 
@@ -415,7 +416,7 @@ void STR::Dbc::extract_freact(Teuchos::RCP<Epetra_Vector>& b) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::insert_vector_in_non_dbc_dofs(
+void Solid::Dbc::insert_vector_in_non_dbc_dofs(
     Teuchos::RCP<const Epetra_Vector> source_ptr, Teuchos::RCP<Epetra_Vector> target_ptr) const
 {
   check_init_setup();
@@ -424,7 +425,7 @@ void STR::Dbc::insert_vector_in_non_dbc_dofs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MapExtractor> STR::Dbc::get_dbc_map_extractor() const
+Teuchos::RCP<const Core::LinAlg::MapExtractor> Solid::Dbc::get_dbc_map_extractor() const
 {
   check_init_setup();
   return dbcmap_ptr_;
@@ -432,7 +433,7 @@ Teuchos::RCP<const Core::LinAlg::MapExtractor> STR::Dbc::get_dbc_map_extractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Conditions::LocsysManager> STR::Dbc::LocSysManagerPtr()
+Teuchos::RCP<Core::Conditions::LocsysManager> Solid::Dbc::LocSysManagerPtr()
 {
   check_init_setup();
   return locsysman_ptr_;
@@ -440,7 +441,7 @@ Teuchos::RCP<Core::Conditions::LocsysManager> STR::Dbc::LocSysManagerPtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::Dbc::GetZeros() const
+const Epetra_Vector& Solid::Dbc::GetZeros() const
 {
   check_init_setup();
   return *zeros_ptr_;
@@ -448,7 +449,7 @@ const Epetra_Vector& STR::Dbc::GetZeros() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::Dbc::GetZerosPtr() const
+Teuchos::RCP<const Epetra_Vector> Solid::Dbc::GetZerosPtr() const
 {
   check_init_setup();
   return zeros_ptr_;
@@ -456,7 +457,7 @@ Teuchos::RCP<const Epetra_Vector> STR::Dbc::GetZerosPtr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::Dbc::freact() const
+Epetra_Vector& Solid::Dbc::freact() const
 {
   FOUR_C_ASSERT(freact_ptr_, "nullptr");
 
@@ -465,14 +466,14 @@ Epetra_Vector& STR::Dbc::freact() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TimeInt::BaseDataGlobalState& STR::Dbc::g_state() const
+const Solid::TimeInt::BaseDataGlobalState& Solid::Dbc::g_state() const
 {
   return timint_ptr_->get_data_global_state();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
+void Solid::Dbc::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
@@ -484,7 +485,7 @@ void STR::Dbc::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove)
+void Solid::Dbc::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
   std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
@@ -496,7 +497,7 @@ void STR::Dbc::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::LinSystem::PrePostOp::Dbc::Dbc(const Teuchos::RCP<const STR::Dbc>& dbc_ptr)
+NOX::Nln::LinSystem::PrePostOp::Dbc::Dbc(const Teuchos::RCP<const Solid::Dbc>& dbc_ptr)
     : dbc_ptr_(dbc_ptr)
 {
   // empty

@@ -47,9 +47,9 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
       porosity_splitter_(porosity_splitter),
       matchinggrid_(Core::UTILS::IntegralValue<bool>(
           Global::Problem::Instance()->poroelast_dynamic_params(), "MATCHINGGRID")),
-      oldstructimint_(Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(
+      oldstructimint_(Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
                           Global::Problem::Instance()->structural_dynamic_params(),
-                          "INT_STRATEGY") == Inpar::STR::int_old)
+                          "INT_STRATEGY") == Inpar::Solid::int_old)
 {
   if (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::poroelast)
     is_part_of_multifield_problem_ = true;
@@ -158,15 +158,15 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
           "no Poro Coupling Condition defined for porous media problem. Fix your input file!");
 
     // check time integration algo -> currently only one-step-theta scheme supported
-    auto structtimealgo = Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP");
+    auto structtimealgo = Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
     auto fluidtimealgo =
         Core::UTILS::IntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fdyn, "TIMEINTEGR");
 
-    if (not((structtimealgo == Inpar::STR::dyna_onesteptheta and
+    if (not((structtimealgo == Inpar::Solid::dyna_onesteptheta and
                 fluidtimealgo == Inpar::FLUID::timeint_one_step_theta) or
-            (structtimealgo == Inpar::STR::dyna_statics and
+            (structtimealgo == Inpar::Solid::dyna_statics and
                 fluidtimealgo == Inpar::FLUID::timeint_stationary) or
-            (structtimealgo == Inpar::STR::dyna_genalpha and
+            (structtimealgo == Inpar::Solid::dyna_genalpha and
                 (fluidtimealgo == Inpar::FLUID::timeint_afgenalpha or
                     fluidtimealgo == Inpar::FLUID::timeint_npgenalpha))))
     {
@@ -182,7 +182,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
           "theory or use afgenalpha instead!");
     }
 
-    if (structtimealgo == Inpar::STR::dyna_onesteptheta and
+    if (structtimealgo == Inpar::Solid::dyna_onesteptheta and
         fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
     {
       double theta_struct = sdyn.sublist("ONESTEPTHETA").get<double>("THETA");
@@ -197,7 +197,7 @@ PoroElast::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterL
     }
 
     std::string damping = sdyn.get<std::string>("DAMPING");
-    if (damping != "Material" && structtimealgo != Inpar::STR::dyna_statics)
+    if (damping != "Material" && structtimealgo != Inpar::Solid::dyna_statics)
     {
       FOUR_C_THROW(
           "Material damping has to be used for dynamic porous media simulations! Set DAMPING to "

@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-namespace STR::ELEMENTS
+namespace Solid::ELEMENTS
 {
   class ParamsInterface;
-}  // namespace STR::ELEMENTS
+}  // namespace Solid::ELEMENTS
 
 namespace Discret
 {
@@ -57,8 +57,8 @@ namespace Discret
       Shell7pEleCalcEas();
 
       void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
-          Input::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
-          const STR::ELEMENTS::ShellData& shell_data) override;
+          Input::LineDefinition* linedef, const Solid::ELEMENTS::ShellLockingTypes& locking_types,
+          const Solid::ELEMENTS::ShellData& shell_data) override;
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
@@ -77,7 +77,7 @@ namespace Discret
 
       void Recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
-          STR::ELEMENTS::ParamsInterface& interface_ptr) override;
+          Solid::ELEMENTS::ParamsInterface& interface_ptr) override;
 
       void calculate_stresses_strains(Core::Elements::Element& ele,
           Mat::So3Material& solid_material, const ShellStressIO& stressIO,
@@ -113,10 +113,10 @@ namespace Discret
       Core::FE::IntegrationPoints2D intpoints_midsurface_;
 
       //! shell data (thickness, SDC, number of ANS parameter)
-      STR::ELEMENTS::ShellData shell_data_ = {};
+      Solid::ELEMENTS::ShellData shell_data_ = {};
 
       //! different Locking types that we want to alleviate
-      STR::ELEMENTS::ShellLockingTypes locking_types_ = {};
+      Solid::ELEMENTS::ShellLockingTypes locking_types_ = {};
 
       //! old step length
       double old_step_length_;

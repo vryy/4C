@@ -26,7 +26,7 @@ Adapter::PASIStructureWrapper::PASIStructureWrapper(Teuchos::RCP<Structure> stru
     : StructureWrapper(structure)
 {
   // set-up PASI interface
-  interface_ = Teuchos::rcp(new STR::MapExtractor);
+  interface_ = Teuchos::rcp(new Solid::MapExtractor);
 
   interface_->setup(*discretization(), *discretization()->dof_row_map());
 }

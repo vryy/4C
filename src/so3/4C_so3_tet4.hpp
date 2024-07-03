@@ -388,7 +388,7 @@ namespace Discret
       Core::LinAlg::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> nxyz_;
 
       /// prestressing switch & time
-      Inpar::STR::PreStress pstype_;
+      Inpar::Solid::PreStress pstype_;
       double pstime_;
       double time_;
       /// Prestressing object
@@ -432,11 +432,11 @@ namespace Discret
           Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
           Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D>*
-              eleplstrain,                   // plastic strains at GP
-          Teuchos::ParameterList& params,    // algorithmic parameters e.g. time
-          Inpar::STR::StressType iostress,   // stress output option
-          Inpar::STR::StrainType iostrain,   // strain output option
-          Inpar::STR::StrainType ioplstrain  // plastic strain output option
+              eleplstrain,                     // plastic strains at GP
+          Teuchos::ParameterList& params,      // algorithmic parameters e.g. time
+          Inpar::Solid::StressType iostress,   // stress output option
+          Inpar::Solid::StrainType iostrain,   // strain output option
+          Inpar::Solid::StrainType ioplstrain  // plastic strain output option
       );
 
       //! lump mass matrix (bborn 07/08)

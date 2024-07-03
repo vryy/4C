@@ -28,10 +28,10 @@ namespace NOX
 }  // namespace NOX
 namespace Inpar
 {
-  namespace STR
+  namespace Solid
   {
     enum PredEnum : int;
-  }  // namespace STR
+  }  // namespace Solid
   namespace CONTACT
   {
     enum VariationalApproach : int;
@@ -39,13 +39,13 @@ namespace Inpar
   }  // namespace CONTACT
 }  // namespace Inpar
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
     class Generic;
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 namespace CONTACT
 {
@@ -60,8 +60,8 @@ namespace CONTACT
 
     //! \brief get the currently active predictor type
     /** \note If the execution of the predictor is finished, this
-     *  function will return Inpar::STR::pred_vague. \author hiermeier */
-    virtual enum Inpar::STR::PredEnum get_predictor_type() const = 0;
+     *  function will return Inpar::Solid::pred_vague. \author hiermeier */
+    virtual enum Inpar::Solid::PredEnum get_predictor_type() const = 0;
 
     //! get the current step length
     virtual double get_step_length() const = 0;
@@ -79,7 +79,7 @@ namespace CONTACT
     virtual double get_delta_time() const = 0;
 
     //! get a pointer to the contact model evaluator
-    virtual const STR::MODELEVALUATOR::Generic& get_model_evaluator() const = 0;
+    virtual const Solid::MODELEVALUATOR::Generic& get_model_evaluator() const = 0;
 
     //! get the output file path
     virtual std::string get_output_file_path() const = 0;

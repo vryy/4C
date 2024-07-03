@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -40,7 +40,7 @@ NOX::Nln::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -56,7 +56,7 @@ NOX::Nln::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -71,7 +71,7 @@ NOX::Nln::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Nln::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq,
@@ -84,7 +84,7 @@ NOX::Nln::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SolverParams NOX::Nln::STR::LinearSystem::set_solver_options(
+Core::LinAlg::SolverParams NOX::Nln::Solid::LinearSystem::set_solver_options(
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::Solver>& solverPtr,
     const NOX::Nln::SolutionType& solverType)
 {
@@ -107,7 +107,7 @@ Core::LinAlg::SolverParams NOX::Nln::STR::LinearSystem::set_solver_options(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::SolutionType NOX::Nln::STR::LinearSystem::get_active_lin_solver(
+NOX::Nln::SolutionType NOX::Nln::Solid::LinearSystem::get_active_lin_solver(
     const std::map<NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& solvers,
     Teuchos::RCP<Core::LinAlg::Solver>& currSolver)
 {

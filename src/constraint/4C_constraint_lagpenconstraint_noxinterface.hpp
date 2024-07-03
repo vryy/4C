@@ -34,7 +34,7 @@ namespace LAGPENCONSTRAINT
     NoxInterface();
 
     /// initialize important member variables
-    void init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
+    void init(const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -92,7 +92,7 @@ namespace LAGPENCONSTRAINT
 
    private:
     //! global state data container
-    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
   };
 
 
@@ -103,7 +103,7 @@ namespace LAGPENCONSTRAINT
     NoxInterfacePrec();
 
     /// initialize important member variables
-    void init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
+    void init(const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr);
 
     /** \brief Setup important new member variables
      *
@@ -149,7 +149,7 @@ namespace LAGPENCONSTRAINT
 
    private:
     //! global state data container
-    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
   };
 
 }  // namespace LAGPENCONSTRAINT
