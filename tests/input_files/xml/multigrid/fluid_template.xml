@@ -1,18 +1,28 @@
 <ParameterList name="MueLu">
+  <!--
+  For fluid problems, these are the recommended settings for MueLu.
+  -->
+  <!-- ===========  GENERAL ================ -->
+  <Parameter name="verbosity" type="string" value="None"/>
   <Parameter name="multigrid algorithm" type="string" value="pg"/>
   <Parameter name="problem: symmetric" type="bool" value="false"/>
-  <Parameter name="number of equations" type="int" value="1"/>
-  <Parameter name="verbosity" type="string" value="None"/>
-  <Parameter name="coarse: max size" type="int" value="200"/>
+  <!--
+  When using this template for personal use:
+  Change the coarse: max size to a more reasonable value between 5000 - 7000
+  -->
+  <Parameter name="coarse: max size" type="int" value="500"/>
   <Parameter name="coarse: type" type="string" value="Klu"/>
+  <!-- ===========  AGGREGATION  =========== -->
   <Parameter name="aggregation: type" type="string" value="uncoupled"/>
   <Parameter name="aggregation: drop scheme" type="string" value="classical"/>
+  <!-- ===========  SMOOTHING  =========== -->
   <Parameter name="smoother: type" type="string" value="RELAXATION"/>
   <Parameter name="smoother: overlap" type="int" value="0"/>
   <ParameterList name="smoother: params">
     <Parameter name="relaxation: type" type="string" value="Symmetric Gauss-Seidel"/>
     <Parameter name="relaxation: sweeps" type="int" value="3"/>
   </ParameterList>
+  <!-- ===========  REPARTITIONING  =========== -->
   <Parameter name="repartition: enable" type="bool" value="true"/>
   <Parameter name="repartition: start level" type="int" value="1"/>
 </ParameterList>

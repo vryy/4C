@@ -98,7 +98,7 @@ NAME              Fluid_Solver
 SOLVER            Belos
 AZSOLVE           GMRES
 AZPREC            MueLu
-MUELU_XML_FILE    xml/multigrid/fluid3D_template.xml
+MUELU_XML_FILE    xml/multigrid/fluid_template.xml
 AZTOL             1.0E-8
 AZCONV            AZ_r0
 -------------------------------------------------------------------MATERIALS

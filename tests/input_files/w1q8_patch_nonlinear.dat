@@ -42,7 +42,7 @@ NAME                            Structure_Solver
 SOLVER                          Belos
 AZSOLVE                         CG
 AZPREC                          MueLu
-MUELU_XML_FILE                  xml/multigrid/elasticity2D_template.xml
+MUELU_XML_FILE                  xml/multigrid/elasticity_template.xml
 AZREUSE                         0
 AZITER                          1000
 AZOUTPUT                        1000

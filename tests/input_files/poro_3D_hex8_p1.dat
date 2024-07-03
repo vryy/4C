@@ -85,13 +85,13 @@ NAME                           solidsolver
 SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
-MUELU_XML_FILE                 xml/multigrid/elasticity3D_template.xml
+MUELU_XML_FILE                 xml/multigrid/elasticity_template.xml
 -----------------------------------------------------------SOLVER 3
 NAME                           fluidsolver
 SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
-MUELU_XML_FILE                 xml/multigrid/fluid3D_template.xml
+MUELU_XML_FILE                 xml/multigrid/fluid_template.xml
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop

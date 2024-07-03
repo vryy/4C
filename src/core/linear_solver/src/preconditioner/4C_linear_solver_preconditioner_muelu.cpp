@@ -68,22 +68,26 @@ void Core::LinearSolver::MueLuPreconditioner::setup(
       FOUR_C_THROW("MUELU_XML_FILE parameter not set!");
     std::string xmlFileName = muelulist_.get<std::string>("MUELU_XML_FILE");
 
-    Teuchos::RCP<Teuchos::ParameterList> mueluParams = Teuchos::rcp(new Teuchos::ParameterList());
+    Teuchos::RCP<Teuchos::ParameterList> muelu_params = Teuchos::rcp(new Teuchos::ParameterList());
     auto comm = pmatrix_->getRowMap()->getComm();
-    Teuchos::updateParametersFromXmlFileAndBroadcast(xmlFileName, mueluParams.ptr(), *comm);
+    Teuchos::updateParametersFromXmlFileAndBroadcast(xmlFileName, muelu_params.ptr(), *comm);
 
-    Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> rowMap = mueluA->getRowMap();
+    const int number_of_equations = muelulist_.get<int>("PDE equations");
+    pmatrix_->SetFixedBlockSize(number_of_equations);
+
+    Teuchos::RCP<const Xpetra::Map<LO, GO, NO>> row_map = mueluA->getRowMap();
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> nullspace =
-        Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(rowMap, muelulist_);
+        Core::LinearSolver::Parameters::extract_nullspace_from_parameterlist(row_map, muelulist_);
 
     Teuchos::RCP<Xpetra::MultiVector<SC, LO, GO, NO>> coordinates = Teuchos::rcp(
         new EpetraMultiVector(muelulist_.get<Teuchos::RCP<Epetra_MultiVector>>("Coordinates")));
 
-    Teuchos::ParameterList& userParamList = mueluParams->sublist("user data");
-    userParamList.set("Nullspace", nullspace);
-    userParamList.set("Coordinates", coordinates);
+    muelu_params->set("number of equations", number_of_equations);
+    Teuchos::ParameterList& user_param_list = muelu_params->sublist("user data");
+    user_param_list.set("Nullspace", nullspace);
+    user_param_list.set("Coordinates", coordinates);
 
-    H_ = MueLu::CreateXpetraPreconditioner(pmatrix_, *mueluParams);
+    H_ = MueLu::CreateXpetraPreconditioner(pmatrix_, *muelu_params);
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H_));
   }
 }
