@@ -662,9 +662,6 @@ namespace Discret
       //! flag indicating if element has been initialized
       bool init_;
 
-      //! flag for scatra coupling
-      bool scatra_coupling_;
-
       //! flag for nurbs
       bool isNurbs_;
 

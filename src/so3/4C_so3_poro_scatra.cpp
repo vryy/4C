@@ -215,18 +215,6 @@ Core::Elements::ElementType& Discret::ELEMENTS::So3PoroScatra<so3_ele, distype>:
   return SoHex8PoroScatraType::Instance();
 };
 
-/*----------------------------------------------------------------------*
- |                                                         schmidt 09/17|
- *----------------------------------------------------------------------*/
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet4,
-    Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet10,
-    Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex8,
-    Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex27,
-    Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
-    Core::FE::CellType::nurbs27>;
-
 FOUR_C_NAMESPACE_CLOSE
+
+#include "4C_so3_poro_scatra_fwd.hpp"

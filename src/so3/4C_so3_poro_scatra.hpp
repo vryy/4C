@@ -38,7 +38,8 @@ namespace Discret
     template <class so3_ele, Core::FE::CellType distype>
     class So3PoroScatra : public So3Poro<so3_ele, distype>
     {
-      typedef So3Poro<so3_ele, distype> my;
+      using my = So3Poro<so3_ele, distype>;
+      using my::numnod_;
 
      public:
       //@}
@@ -109,6 +110,41 @@ namespace Discret
 
       //@}
 
+      //! @name Evaluation
+
+      /*!
+      \brief Evaluate an element
+
+      Evaluate element stiffness, mass, internal forces, etc.
+
+      If nullptr on input, the controlling method does not expect the element
+      to fill these matrices or vectors.
+
+      \return 0 if successful, negative otherwise
+      */
+      int evaluate(
+          Teuchos::ParameterList&
+              params,  //!< ParameterList for communication between control routine and elements
+          Core::FE::Discretization& discretization,  //!< pointer to discretization for de-assembly
+          Core::Elements::Element::LocationArray& la,  //!< location array for de-assembly
+          Core::LinAlg::SerialDenseMatrix&
+              elemat1,  //!< (stiffness-)matrix to be filled by element.
+          Core::LinAlg::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
+          Core::LinAlg::SerialDenseVector&
+              elevec1,  //!< (internal force-)vector to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec2,  //!< vector to be filled by element
+          Core::LinAlg::SerialDenseVector& elevec3   //!< vector to be filled by element
+          ) override;
+
+      void pre_evaluate(
+          Teuchos::ParameterList&
+              params,  //!< ParameterList for communication between control routine and elements
+          Core::FE::Discretization& discretization,   //!< pointer to discretization for de-assembly
+          Core::Elements::Element::LocationArray& la  //!< location array for de-assembly
+          ) override;
+
+      //!@}
+
       //! @name Input and Creation
       /*!
       \brief Read input for this element
@@ -130,10 +166,9 @@ namespace Discret
       So3PoroScatra& operator=(const So3PoroScatra& old);
 
     };  // class So3_Poro_Scatra
-
-
-  }  // namespace ELEMENTS
+  }     // namespace ELEMENTS
 }  // namespace Discret
+
 FOUR_C_NAMESPACE_CLOSE
 
 #endif
