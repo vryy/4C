@@ -127,7 +127,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr, nullptr,
-            nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       else
       {
@@ -140,8 +140,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-            Inpar::STR::strain_none, Inpar::STR::strain_none);
+            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+            Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
     }
     break;
@@ -162,7 +162,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr,
-            nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       else
       {
@@ -175,8 +175,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-            nullptr, &elevec3, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-            Inpar::STR::strain_none, Inpar::STR::strain_none);
+            nullptr, &elevec3, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+            Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
     }
     break;
@@ -199,7 +199,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
-            params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       else
       {
@@ -212,8 +212,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-            Inpar::STR::strain_none, Inpar::STR::strain_none);
+            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+            Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
     }
     break;
@@ -241,7 +241,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr,
-            nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       }
       else
       {
@@ -254,8 +254,8 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
         }
 
         nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, &elemat2, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-            Inpar::STR::strain_none, Inpar::STR::strain_none);
+            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+            Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
       // lump mass
       if (act == Core::Elements::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
@@ -289,12 +289,12 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> strain;
       Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D> plstrain;
 
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
-      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "ioplstrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
+      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "ioplstrain", Inpar::Solid::strain_none);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
       if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
@@ -444,8 +444,9 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
 
     case Core::Elements::shell_calc_stc_matrix:
     {
-      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == Inpar::STR::stc_none)
+      const auto stc_scaling =
+          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "
             "Conditiong) matrix, but not suitable scaling has been provided.");
@@ -458,8 +459,9 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
     break;
     case Core::Elements::shell_calc_stc_matrix_inverse:
     {
-      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == Inpar::STR::stc_none)
+      const auto stc_scaling =
+          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW(
             "Action demands to calculate the STC (Scaled Thickness "
             "Conditiong) matrix, but not suitable scaling has been provided.");
@@ -495,7 +497,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       if (IsParamsInterface())  // new structural time integration
       {
         str_params_interface().add_contribution_to_energy_type(
-            sosh8_calc_energy(mydisp, params), STR::internal_energy);
+            sosh8_calc_energy(mydisp, params), Solid::internal_energy);
       }
       else  // old structural time integration
       {
@@ -538,7 +540,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
 {
   if (Prestress::IsMulf(pstype_)) FOUR_C_THROW("mulf is unsupported for the So_sh8 element!");
 
-  if (kintype_ != Inpar::STR::KinemType::nonlinearTotLag)
+  if (kintype_ != Inpar::Solid::KinemType::nonlinearTotLag)
     FOUR_C_THROW("Unsupported kinematic type for the So_sh8 element!");
 
   // initialization of internal energy
@@ -570,7 +572,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
   if (min_detJ_curr <= 0.0)
   {
     soh8_error_handling(
-        min_detJ_curr, params, __LINE__, STR::ELEMENTS::ele_error_determinant_at_corner);
+        min_detJ_curr, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_at_corner);
     return 0.0;
   }
 
@@ -665,7 +667,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
     {
       soh8_error_handling(
-          detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          detJ_cur, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
       return 0.0;
     }
 
@@ -704,7 +706,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
     if (I3 <= 0.0)
     {
       soh8_error_handling(
-          I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          I3, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
       return 0.0;
     }
 
@@ -737,9 +739,9 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force_str,  // element structural force vector
     Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
-    Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,  // stress output option
-    const Inpar::STR::StrainType iostrain)  // strain output option
+    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,  // stress output option
+    const Inpar::Solid::StrainType iostrain)  // strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -769,7 +771,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
   if (min_detJ_curr <= 0.0)
   {
     soh8_error_handling(
-        min_detJ_curr, params, __LINE__, STR::ELEMENTS::ele_error_determinant_at_corner);
+        min_detJ_curr, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_at_corner);
     return;
   }
 
@@ -927,7 +929,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
     {
       soh8_error_handling(
-          detJ_cur, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          detJ_cur, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
       if (stiffmatrix) stiffmatrix->clear();
       if (force) force->clear();
@@ -970,7 +972,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     if (I3 <= 0.0)
     {
       soh8_error_handling(
-          I3, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          I3, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
 
       if (stiffmatrix) stiffmatrix->clear();
       if (force) force->clear();
@@ -982,7 +984,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     // return gp strains if necessary
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
@@ -992,12 +994,12 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
 
         break;
       }
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         FOUR_C_THROW("no Euler-Almansi strains available for sosh8");
         break;
       }
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
       {
         break;
       }
@@ -1014,7 +1016,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     if (det_defgrd <= 0.0)
     {
       soh8_error_handling(
-          det_defgrd, params, __LINE__, STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          det_defgrd, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
       return;
     }
 
@@ -1027,7 +1029,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     // return gp stresses if necessary
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i)
@@ -1037,14 +1039,14 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
 
         break;
       }
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         sosh8_cauchy(elestress, gp, defgrd, glstrain, stress);
 
         break;
       }
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress option not available");
@@ -1788,13 +1790,13 @@ void Discret::ELEMENTS::SoSh8::sosh8_cauchy(
 }
 
 void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
-    Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1, const Inpar::STR::StcScale stc_scaling,
-    const int stc_layer, std::vector<int>& lm, Core::FE::Discretization& discretization,
-    bool calcinverse)
+    Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
+    const Inpar::Solid::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
+    Core::FE::Discretization& discretization, bool calcinverse)
 {
   /// Compute C based on element aspect ratio
   double stc_fact = 1.0;
-  if (stc_scaling == Inpar::STR::stc_currsym)
+  if (stc_scaling == Inpar::Solid::stc_currsym)
   {
     // stc_fact = sqrt(sosh8_calcaspectratio());
     stc_fact = sosh8_calcaspectratio();
@@ -1825,7 +1827,7 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
     factor4 = 1 - stc_fact;
   }
 
-  if (stc_scaling == Inpar::STR::stc_curr or stc_scaling == Inpar::STR::stc_currsym)
+  if (stc_scaling == Inpar::Solid::stc_curr or stc_scaling == Inpar::Solid::stc_currsym)
   {
     Core::LinAlg::Matrix<NUMDOF_SOH8, 1> adjele(true);
     Core::Nodes::Node** nodes = Nodes();

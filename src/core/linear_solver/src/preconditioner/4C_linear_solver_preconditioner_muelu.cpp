@@ -464,8 +464,8 @@ void Core::LinearSolver::MueLuContactSpPreconditioner::setup(
 
   // Extract additional maps from parameter list
   //
-  // These maps are provided by the STR::TimInt::prepare_contact_meshtying routine, that has access
-  // to the contact manager class
+  // These maps are provided by the Solid::TimInt::prepare_contact_meshtying routine, that has
+  // access to the contact manager class
   //
   // Note: 4C provides Epetra_Map objects. We will transform them to Xpetra::Map later.
   //

@@ -488,8 +488,8 @@ void SSI::SsiMono::init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       Inpar::ScaTra::velocity_Navier_Stokes)
     FOUR_C_THROW("Invalid type of velocity field for scalar-structure interaction!");
 
-  if (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(structparams, "DYNAMICTYP") ==
-      Inpar::STR::DynamicType::dyna_statics)
+  if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(structparams, "DYNAMICTYP") ==
+      Inpar::Solid::DynamicType::dyna_statics)
     FOUR_C_THROW(
         "Mass conservation is not fulfilled if 'Statics' time integration is chosen since the "
         "deformation velocities are incorrectly calculated.\n"

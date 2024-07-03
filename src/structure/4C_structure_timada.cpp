@@ -32,9 +32,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
-    const Teuchos::ParameterList& tap,                         //!< adaptive input flags
-    Teuchos::RCP<TimInt> tis                                   //!< marching time integrator
+Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
+    const Teuchos::ParameterList& tap,                           //!< adaptive input flags
+    Teuchos::RCP<TimInt> tis                                     //!< marching time integrator
     )
     : sti_(tis),
       discret_(tis->discretization()),
@@ -55,7 +55,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
       sizeratiomin_(tap.get<double>("SIZERATIOMIN")),
       sizeratioscale_(tap.get<double>("SIZERATIOSCALE")),
       errctrl_(ctrl_dis),  // PROVIDE INPUT PARAMETER
-      errnorm_(Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(tap, "LOCERRNORM")),
+      errnorm_(Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(tap, "LOCERRNORM")),
       errtol_(tap.get<double>("LOCERRTOL")),
       errorder_(1),  // CHANGE THIS CONSTANT
       adaptstepmax_(tap.get<int>("ADAPTSTEPMAX")),
@@ -120,7 +120,7 @@ STR::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input pa
 
 /*----------------------------------------------------------------------*/
 /* Integrate adaptively in time */
-int STR::TimAda::Integrate()
+int Solid::TimAda::Integrate()
 {
   // finalize initialization
   // (only relevant if an auxiliary time integrator is used)
@@ -240,7 +240,7 @@ int STR::TimAda::Integrate()
 
 /*----------------------------------------------------------------------*/
 /* Evaluate local error vector */
-void STR::TimAda::evaluate_local_error_dis()
+void Solid::TimAda::evaluate_local_error_dis()
 {
   if (MethodAdaptDis() == ada_orderequal)
   {
@@ -263,11 +263,11 @@ void STR::TimAda::evaluate_local_error_dis()
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-void STR::TimAda::Indicate(bool& accepted, double& stpsiznew)
+void Solid::TimAda::Indicate(bool& accepted, double& stpsiznew)
 {
   // norm of local discretisation error vector
   const int numneglect = sti_->get_dbc_map_extractor()->cond_map()->NumGlobalElements();
-  const double norm = STR::calculate_vector_norm(errnorm_, locerrdisn_, numneglect);
+  const double norm = Solid::calculate_vector_norm(errnorm_, locerrdisn_, numneglect);
 
   // check if acceptable
   accepted = (norm < errtol_);
@@ -286,7 +286,7 @@ void STR::TimAda::Indicate(bool& accepted, double& stpsiznew)
 
 /*----------------------------------------------------------------------*/
 /* Indicate error and determine new step size */
-double STR::TimAda::calculate_dt(const double norm)
+double Solid::TimAda::calculate_dt(const double norm)
 {
   // get error order
   if (MethodAdaptDis() == ada_upward)
@@ -341,7 +341,7 @@ double STR::TimAda::calculate_dt(const double norm)
 
 /*----------------------------------------------------------------------*/
 /* Prepare repetition of current time step */
-void STR::TimAda::reset_step()
+void Solid::TimAda::reset_step()
 {
   outrest_ = outsys_ = outstr_ = outene_ = false;
   sti_->reset_step();
@@ -351,7 +351,7 @@ void STR::TimAda::reset_step()
 
 /*----------------------------------------------------------------------*/
 /*  Modify step size to hit precisely output period */
-void STR::TimAda::size_for_output()
+void Solid::TimAda::size_for_output()
 {
   // check output of restart data first
   if ((fabs(time_ + stepsize_) >= fabs(outresttime_)) and (outrestperiod_ != 0.0))
@@ -393,11 +393,11 @@ void STR::TimAda::size_for_output()
 
 /*----------------------------------------------------------------------*/
 /* Prepare output to file(s)                                            */
-void STR::TimAda::PrepareOutputPeriod(bool force_prepare) { sti_->prepare_output(force_prepare); }
+void Solid::TimAda::PrepareOutputPeriod(bool force_prepare) { sti_->prepare_output(force_prepare); }
 
 /*----------------------------------------------------------------------*/
 /* Output to file(s) */
-void STR::TimAda::OutputPeriod()
+void Solid::TimAda::OutputPeriod()
 {
   // this flag is passed along subroutines and prevents
   // repeated initialising of output writer, printing of
@@ -434,7 +434,7 @@ void STR::TimAda::OutputPeriod()
 
 /*----------------------------------------------------------------------*/
 /* Update output periods */
-void STR::TimAda::update_period()
+void Solid::TimAda::update_period()
 {
   if (outrest_) outresttime_ += outrestperiod_;
   if (outsys_) outsystime_ += outsysperiod_;
@@ -446,7 +446,7 @@ void STR::TimAda::update_period()
 
 /*----------------------------------------------------------------------*/
 /* Write step size */
-void STR::TimAda::OutputStepSize()
+void Solid::TimAda::OutputStepSize()
 {
   if ((outsizeevery_ != 0) and (timestep_ % outsizeevery_ == 0) and (myrank_ == 0))
   {
@@ -458,7 +458,7 @@ void STR::TimAda::OutputStepSize()
 
 /*----------------------------------------------------------------------*/
 /* Print constants */
-void STR::TimAda::PrintConstants(std::ostream& str) const
+void Solid::TimAda::PrintConstants(std::ostream& str) const
 {
   str << "TimAda:  Constants" << std::endl
       << "   Initial time = " << timeinitial_ << std::endl
@@ -471,7 +471,7 @@ void STR::TimAda::PrintConstants(std::ostream& str) const
       << "   Max size ratio = " << sizeratiomax_ << std::endl
       << "   Min size ratio = " << sizeratiomin_ << std::endl
       << "   Size ratio scale = " << sizeratioscale_ << std::endl
-      << "   Error norm = " << Inpar::STR::VectorNormString(errnorm_) << std::endl
+      << "   Error norm = " << Inpar::Solid::VectorNormString(errnorm_) << std::endl
       << "   Error order = " << errorder_ << std::endl
       << "   Error tolerance = " << errtol_ << std::endl
       << "   Max adaptations = " << adaptstepmax_ << std::endl;
@@ -480,7 +480,7 @@ void STR::TimAda::PrintConstants(std::ostream& str) const
 
 /*----------------------------------------------------------------------*/
 /* Print variables */
-void STR::TimAda::PrintVariables(std::ostream& str) const
+void Solid::TimAda::PrintVariables(std::ostream& str) const
 {
   str << "TimAda:  Variables" << std::endl
       << "   Current time = " << time_ << std::endl
@@ -493,7 +493,7 @@ void STR::TimAda::PrintVariables(std::ostream& str) const
 
 /*----------------------------------------------------------------------*/
 /* Print */
-void STR::TimAda::print(std::ostream& str) const
+void Solid::TimAda::print(std::ostream& str) const
 {
   str << "TimAda" << std::endl;
   PrintConstants(str);
@@ -504,7 +504,7 @@ void STR::TimAda::print(std::ostream& str) const
 
 /*----------------------------------------------------------------------*/
 /* Attach file handle for step size file #outsizefile_                  */
-void STR::TimAda::AttachFileStepSize()
+void Solid::TimAda::AttachFileStepSize()
 {
   if (outsizefile_.is_null())
   {
@@ -519,7 +519,7 @@ void STR::TimAda::AttachFileStepSize()
 
 /*----------------------------------------------------------------------*/
 /* Update step size and set new time step size                          */
-void STR::TimAda::UpdateStepSize(const double dtnew)
+void Solid::TimAda::UpdateStepSize(const double dtnew)
 {
   UpdateStepSize();
   set_dt(dtnew);
@@ -530,7 +530,7 @@ void STR::TimAda::UpdateStepSize(const double dtnew)
 
 /*----------------------------------------------------------------------*/
 /* Update step size                                                     */
-void STR::TimAda::UpdateStepSize()
+void Solid::TimAda::UpdateStepSize()
 {
   stepsizepre_ = stepsize_;
 
@@ -539,7 +539,7 @@ void STR::TimAda::UpdateStepSize()
 
 /*----------------------------------------------------------------------*/
 /* Set new time step size                                               */
-void STR::TimAda::set_dt(const double dtnew)
+void Solid::TimAda::set_dt(const double dtnew)
 {
   stepsize_ = dtnew;    // in the adaptive time integrator
   sti_->set_dt(dtnew);  // in the marching time integrator
@@ -547,7 +547,7 @@ void STR::TimAda::set_dt(const double dtnew)
 
 /*======================================================================*/
 /* Out stream */
-std::ostream& operator<<(std::ostream& str, const STR::TimAda& ta)
+std::ostream& operator<<(std::ostream& str, const Solid::TimAda& ta)
 {
   ta.print(str);
 

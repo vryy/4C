@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::ELEMENTS
+namespace Solid::ELEMENTS
 {
   enum class EasType;
 }
@@ -119,17 +119,19 @@ namespace Discret::ELEMENTS
    * @return auto
    */
   template <typename Function>
-  auto switch_kinematic_type(Inpar::STR::KinemType kinem_type, Function fct)
+  auto switch_kinematic_type(Inpar::Solid::KinemType kinem_type, Function fct)
   {
     switch (kinem_type)
     {
-      case Inpar::STR::KinemType::linear:
-        return fct(std::integral_constant<Inpar::STR::KinemType, Inpar::STR::KinemType::linear>{});
-      case Inpar::STR::KinemType::nonlinearTotLag:
-        return fct(std::integral_constant<Inpar::STR::KinemType,
-            Inpar::STR::KinemType::nonlinearTotLag>{});
-      case Inpar::STR::KinemType::vague:
-        return fct(std::integral_constant<Inpar::STR::KinemType, Inpar::STR::KinemType::vague>{});
+      case Inpar::Solid::KinemType::linear:
+        return fct(
+            std::integral_constant<Inpar::Solid::KinemType, Inpar::Solid::KinemType::linear>{});
+      case Inpar::Solid::KinemType::nonlinearTotLag:
+        return fct(std::integral_constant<Inpar::Solid::KinemType,
+            Inpar::Solid::KinemType::nonlinearTotLag>{});
+      case Inpar::Solid::KinemType::vague:
+        return fct(
+            std::integral_constant<Inpar::Solid::KinemType, Inpar::Solid::KinemType::vague>{});
     }
 
     FOUR_C_THROW("Your kinematic type is unknown: %d", kinem_type);

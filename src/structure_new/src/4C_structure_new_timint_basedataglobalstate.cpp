@@ -38,7 +38,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataGlobalState::BaseDataGlobalState()
+Solid::TimeInt::BaseDataGlobalState::BaseDataGlobalState()
     : isinit_(false),
       issetup_(false),
       datasdyn_(Teuchos::null),
@@ -83,8 +83,8 @@ STR::TimeInt::BaseDataGlobalState::BaseDataGlobalState()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataGlobalState& STR::TimeInt::BaseDataGlobalState::operator=(
-    const STR::TimeInt::BaseDataGlobalState& source)
+Solid::TimeInt::BaseDataGlobalState& Solid::TimeInt::BaseDataGlobalState::operator=(
+    const Solid::TimeInt::BaseDataGlobalState& source)
 {
   this->datasdyn_ = source.datasdyn_;
 
@@ -108,7 +108,7 @@ STR::TimeInt::BaseDataGlobalState& STR::TimeInt::BaseDataGlobalState::operator=(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Discretization> discret,
+void Solid::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::RCP<const BaseDataSDyn> datasdyn)
 {
   // We have to call setup() after init()
@@ -153,7 +153,7 @@ void STR::TimeInt::BaseDataGlobalState::init(const Teuchos::RCP<Core::FE::Discre
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::setup()
+void Solid::TimeInt::BaseDataGlobalState::setup()
 {
   // safety check
   check_init();
@@ -201,9 +201,9 @@ void STR::TimeInt::BaseDataGlobalState::setup()
   // sparse operators
   // --------------------------------------
   mass_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
-  if (datasdyn_->get_damping_type() != Inpar::STR::damp_none)
+  if (datasdyn_->get_damping_type() != Inpar::Solid::damp_none)
   {
-    if (datasdyn_->GetMassLinType() == Inpar::STR::ml_none)
+    if (datasdyn_->GetMassLinType() == Inpar::Solid::ml_none)
     {
       damp_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
     }
@@ -216,8 +216,8 @@ void STR::TimeInt::BaseDataGlobalState::setup()
     }
   }
 
-  if (datasdyn_->get_dynamic_type() == Inpar::STR::dyna_statics and
-      datasdyn_->GetMassLinType() != Inpar::STR::ml_none)
+  if (datasdyn_->get_dynamic_type() == Inpar::Solid::dyna_statics and
+      datasdyn_->GetMassLinType() != Inpar::Solid::ml_none)
     FOUR_C_THROW(
         "Do not set parameter MASSLIN in static simulations as this leads to undesired"
         " evaluation of mass matrix on element level!");
@@ -229,7 +229,7 @@ void STR::TimeInt::BaseDataGlobalState::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::set_initial_fields()
+void Solid::TimeInt::BaseDataGlobalState::set_initial_fields()
 {
   // set initial velocity field if existing
   const std::string field = "Velocity";
@@ -252,15 +252,16 @@ void STR::TimeInt::BaseDataGlobalState::set_initial_fields()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Vector> STR::TimeInt::BaseDataGlobalState::create_global_vector() const
+Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_global_vector()
+    const
 {
   return create_global_vector(VecInitType::zero, Teuchos::null);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::BaseDataGlobalState::setup_block_information(
-    const STR::MODELEVALUATOR::Generic& me, const Inpar::STR::ModelType& mt)
+int Solid::TimeInt::BaseDataGlobalState::setup_block_information(
+    const Solid::MODELEVALUATOR::Generic& me, const Inpar::Solid::ModelType& mt)
 {
   check_init();
   Global::Problem* problem = Global::Problem::Instance();
@@ -270,7 +271,7 @@ int STR::TimeInt::BaseDataGlobalState::setup_block_information(
 
   switch (mt)
   {
-    case Inpar::STR::model_structure:
+    case Inpar::Solid::model_structure:
     {
       // always called first, so we can use it to reset things
       gproblem_map_ptr_ = Teuchos::null;
@@ -278,7 +279,7 @@ int STR::TimeInt::BaseDataGlobalState::setup_block_information(
       max_block_num_ = 1;
       break;
     }
-    case Inpar::STR::model_contact:
+    case Inpar::Solid::model_contact:
     {
       enum Inpar::CONTACT::SystemType systype =
           Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
@@ -309,10 +310,10 @@ int STR::TimeInt::BaseDataGlobalState::setup_block_information(
       }
       break;
     }
-    case Inpar::STR::model_meshtying:
+    case Inpar::Solid::model_meshtying:
     {
-      const STR::MODELEVALUATOR::Meshtying& mt_me =
-          dynamic_cast<const STR::MODELEVALUATOR::Meshtying&>(me);
+      const Solid::MODELEVALUATOR::Meshtying& mt_me =
+          dynamic_cast<const Solid::MODELEVALUATOR::Meshtying&>(me);
 
       enum Inpar::CONTACT::SystemType systype = mt_me.Strategy().SystemType();
 
@@ -343,14 +344,14 @@ int STR::TimeInt::BaseDataGlobalState::setup_block_information(
         FOUR_C_THROW("I don't know what to do");
       break;
     }
-    case Inpar::STR::model_cardiovascular0d:
+    case Inpar::Solid::model_cardiovascular0d:
     {
       // --- 2x2 block system
       model_block_id_[mt] = max_block_num_;
       ++max_block_num_;
       break;
     }
-    case Inpar::STR::model_lag_pen_constraint:
+    case Inpar::Solid::model_lag_pen_constraint:
     {
       // ----------------------------------------------------------------------
       // check type of constraint conditions (Lagrange multiplier vs. penalty)
@@ -386,23 +387,23 @@ int STR::TimeInt::BaseDataGlobalState::setup_block_information(
       }
       break;
     }
-    case Inpar::STR::model_springdashpot:
-    case Inpar::STR::model_beam_interaction_old:
-    case Inpar::STR::model_browniandyn:
-    case Inpar::STR::model_beaminteraction:
+    case Inpar::Solid::model_springdashpot:
+    case Inpar::Solid::model_beam_interaction_old:
+    case Inpar::Solid::model_browniandyn:
+    case Inpar::Solid::model_beaminteraction:
     {
       // structural block
       model_block_id_[mt] = 0;
       break;
     }
-    case Inpar::STR::model_basic_coupling:
-    case Inpar::STR::model_monolithic_coupling:
-    case Inpar::STR::model_partitioned_coupling:
+    case Inpar::Solid::model_basic_coupling:
+    case Inpar::Solid::model_monolithic_coupling:
+    case Inpar::Solid::model_partitioned_coupling:
     {
       // do nothing
       break;
     }
-    case Inpar::STR::model_constraints:
+    case Inpar::Solid::model_constraints:
     {
       // do nothing
       break;
@@ -423,17 +424,17 @@ int STR::TimeInt::BaseDataGlobalState::setup_block_information(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::setup_multi_map_extractor()
+void Solid::TimeInt::BaseDataGlobalState::setup_multi_map_extractor()
 {
   check_init();
   /* copy the std::map into a std::vector and keep the numbering of the model-id
    * map */
   std::vector<Teuchos::RCP<const Epetra_Map>> maps_vec(max_block_number(), Teuchos::null);
   // Make sure, that the block ids and the vector entry ids coincide!
-  std::map<Inpar::STR::ModelType, int>::const_iterator ci;
+  std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
   for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
   {
-    enum Inpar::STR::ModelType mt = ci->first;
+    enum Inpar::Solid::ModelType mt = ci->first;
     int bid = ci->second;
     maps_vec[bid] = model_maps_.at(mt);
   }
@@ -442,25 +443,25 @@ void STR::TimeInt::BaseDataGlobalState::setup_multi_map_extractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::setup_element_technology_map_extractors()
+void Solid::TimeInt::BaseDataGlobalState::setup_element_technology_map_extractors()
 {
   check_init();
 
   // loop all active element technologies
-  const std::set<enum Inpar::STR::EleTech>& ele_techs = datasdyn_->get_element_technologies();
-  for (const enum Inpar::STR::EleTech et : ele_techs)
+  const std::set<enum Inpar::Solid::EleTech>& ele_techs = datasdyn_->get_element_technologies();
+  for (const enum Inpar::Solid::EleTech et : ele_techs)
   {
     // mapextractor for element technology
     Core::LinAlg::MultiMapExtractor mapext;
 
     switch (et)
     {
-      case (Inpar::STR::EleTech::rotvec):
+      case (Inpar::Solid::EleTech::rotvec):
       {
         setup_rot_vec_map_extractor(mapext);
         break;
       }
-      case (Inpar::STR::EleTech::pressure):
+      case (Inpar::Solid::EleTech::pressure):
       {
         setup_press_extractor(mapext);
         break;
@@ -475,7 +476,7 @@ void STR::TimeInt::BaseDataGlobalState::setup_element_technology_map_extractors(
 
     // insert into map
     const auto check = mapextractors_.insert(
-        std::pair<Inpar::STR::EleTech, Core::LinAlg::MultiMapExtractor>(et, mapext));
+        std::pair<Inpar::Solid::EleTech, Core::LinAlg::MultiMapExtractor>(et, mapext));
 
     if (not check.second) FOUR_C_THROW("Insert failed!");
   }
@@ -484,12 +485,12 @@ void STR::TimeInt::BaseDataGlobalState::setup_element_technology_map_extractors(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const Core::LinAlg::MultiMapExtractor&
-STR::TimeInt::BaseDataGlobalState::get_element_technology_map_extractor(
-    const enum Inpar::STR::EleTech etech) const
+Solid::TimeInt::BaseDataGlobalState::get_element_technology_map_extractor(
+    const enum Inpar::Solid::EleTech etech) const
 {
   if (mapextractors_.find(etech) == mapextractors_.end())
     FOUR_C_THROW("Could not find element technology \"%s\" in map extractors.",
-        Inpar::STR::EleTechString(etech).c_str());
+        Inpar::Solid::EleTechString(etech).c_str());
 
   return mapextractors_.at(etech);
 }
@@ -497,7 +498,7 @@ STR::TimeInt::BaseDataGlobalState::get_element_technology_map_extractor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
+void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
     Core::LinAlg::MultiMapExtractor& multimapext)
 {
   check_init();
@@ -572,7 +573,7 @@ void STR::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::setup_press_extractor(
+void Solid::TimeInt::BaseDataGlobalState::setup_press_extractor(
     Core::LinAlg::MultiMapExtractor& multimapext)
 {
   check_init();
@@ -583,7 +584,7 @@ void STR::TimeInt::BaseDataGlobalState::setup_press_extractor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Core::LinAlg::MultiMapExtractor& STR::TimeInt::BaseDataGlobalState::block_extractor() const
+const Core::LinAlg::MultiMapExtractor& Solid::TimeInt::BaseDataGlobalState::block_extractor() const
 {
   // sanity check
   blockextractor_.check_for_valid_map_extractor();
@@ -592,9 +593,9 @@ const Core::LinAlg::MultiMapExtractor& STR::TimeInt::BaseDataGlobalState::block_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Vector> STR::TimeInt::BaseDataGlobalState::create_global_vector(
+Teuchos::RCP<::NOX::Epetra::Vector> Solid::TimeInt::BaseDataGlobalState::create_global_vector(
     const enum VecInitType& vecinittype,
-    const Teuchos::RCP<const STR::ModelEvaluator>& modeleval) const
+    const Teuchos::RCP<const Solid::ModelEvaluator>& modeleval) const
 {
   check_init();
   Teuchos::RCP<Epetra_Vector> xvec_ptr =
@@ -606,9 +607,9 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TimeInt::BaseDataGlobalState::create_gl
     /* use the last converged state to construct a new solution vector */
     case VecInitType::last_time_step:
     {
-      FOUR_C_ASSERT(!modeleval.is_null(), "We need access to the STR::ModelEvaluator object!");
+      FOUR_C_ASSERT(!modeleval.is_null(), "We need access to the Solid::ModelEvaluator object!");
 
-      std::map<Inpar::STR::ModelType, int>::const_iterator ci;
+      std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the last time step
@@ -624,9 +625,9 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TimeInt::BaseDataGlobalState::create_gl
     /* use the current global state to construct a new solution vector */
     case VecInitType::init_current_state:
     {
-      FOUR_C_ASSERT(!modeleval.is_null(), "We need access to the STR::ModelEvaluator object!");
+      FOUR_C_ASSERT(!modeleval.is_null(), "We need access to the Solid::ModelEvaluator object!");
 
-      std::map<Inpar::STR::ModelType, int>::const_iterator ci;
+      std::map<Inpar::Solid::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
       {
         // get the partial solution vector of the current state
@@ -654,7 +655,7 @@ Teuchos::RCP<::NOX::Epetra::Vector> STR::TimeInt::BaseDataGlobalState::create_gl
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Core::LinAlg::SparseOperator*
-STR::TimeInt::BaseDataGlobalState::create_structural_stiffness_matrix_block()
+Solid::TimeInt::BaseDataGlobalState::create_structural_stiffness_matrix_block()
 {
   stiff_ = Teuchos::rcp(new Core::LinAlg::SparseMatrix(*dof_row_map_view(), 81, true, true));
 
@@ -663,7 +664,7 @@ STR::TimeInt::BaseDataGlobalState::create_structural_stiffness_matrix_block()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator>& STR::TimeInt::BaseDataGlobalState::create_jacobian()
+Teuchos::RCP<Core::LinAlg::SparseOperator>& Solid::TimeInt::BaseDataGlobalState::create_jacobian()
 {
   check_init();
   jac_ = Teuchos::null;
@@ -685,8 +686,8 @@ Teuchos::RCP<Core::LinAlg::SparseOperator>& STR::TimeInt::BaseDataGlobalState::c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator> STR::TimeInt::BaseDataGlobalState::create_aux_jacobian()
-    const
+Teuchos::RCP<Core::LinAlg::SparseOperator>
+Solid::TimeInt::BaseDataGlobalState::create_aux_jacobian() const
 {
   check_init();
   Teuchos::RCP<Core::LinAlg::SparseOperator> jac = Teuchos::null;
@@ -708,7 +709,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> STR::TimeInt::BaseDataGlobalState::cr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::TimeInt::BaseDataGlobalState::dof_row_map() const
+Teuchos::RCP<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map() const
 {
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map();
@@ -719,7 +720,7 @@ Teuchos::RCP<const Epetra_Map> STR::TimeInt::BaseDataGlobalState::dof_row_map() 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::TimeInt::BaseDataGlobalState::dof_row_map(unsigned nds) const
+Teuchos::RCP<const Epetra_Map> Solid::TimeInt::BaseDataGlobalState::dof_row_map(unsigned nds) const
 {
   check_init();
   const Epetra_Map* dofrowmap_ptr = discret_->dof_row_map(nds);
@@ -730,7 +731,7 @@ Teuchos::RCP<const Epetra_Map> STR::TimeInt::BaseDataGlobalState::dof_row_map(un
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map* STR::TimeInt::BaseDataGlobalState::dof_row_map_view() const
+const Epetra_Map* Solid::TimeInt::BaseDataGlobalState::dof_row_map_view() const
 {
   check_init();
   return discret_->dof_row_map();
@@ -738,32 +739,32 @@ const Epetra_Map* STR::TimeInt::BaseDataGlobalState::dof_row_map_view() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map* STR::TimeInt::BaseDataGlobalState::additive_dof_row_map_view() const
+const Epetra_Map* Solid::TimeInt::BaseDataGlobalState::additive_dof_row_map_view() const
 {
   check_init();
-  return get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).Map(0).get();
+  return get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).Map(0).get();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Map* STR::TimeInt::BaseDataGlobalState::rot_vec_dof_row_map_view() const
+const Epetra_Map* Solid::TimeInt::BaseDataGlobalState::rot_vec_dof_row_map_view() const
 {
   check_init();
-  return get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).Map(1).get();
+  return get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).Map(1).get();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_displ_entries(
+Teuchos::RCP<Epetra_Vector> Solid::TimeInt::BaseDataGlobalState::extract_displ_entries(
     const Epetra_Vector& source) const
 {
-  return extract_model_entries(Inpar::STR::model_structure, source);
+  return extract_model_entries(Inpar::Solid::model_structure, source);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_model_entries(
-    const Inpar::STR::ModelType& mt, const Epetra_Vector& source) const
+Teuchos::RCP<Epetra_Vector> Solid::TimeInt::BaseDataGlobalState::extract_model_entries(
+    const Inpar::Solid::ModelType& mt, const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> model_ptr = Teuchos::null;
   // extract from the full state vector
@@ -789,17 +790,17 @@ Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_model_ent
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::remove_element_technologies(
+void Solid::TimeInt::BaseDataGlobalState::remove_element_technologies(
     Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
 {
   // loop all active element technologies
-  const std::set<enum Inpar::STR::EleTech> ele_techs = datasdyn_->get_element_technologies();
+  const std::set<enum Inpar::Solid::EleTech> ele_techs = datasdyn_->get_element_technologies();
 
-  for (const Inpar::STR::EleTech et : ele_techs)
+  for (const Inpar::Solid::EleTech et : ele_techs)
   {
     switch (et)
     {
-      case (Inpar::STR::EleTech::pressure):
+      case (Inpar::Solid::EleTech::pressure):
       {
         rhs_ptr = get_element_technology_map_extractor(et).extract_vector(rhs_ptr, 0);
         break;
@@ -813,15 +814,15 @@ void STR::TimeInt::BaseDataGlobalState::remove_element_technologies(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::extract_element_technologies(
+void Solid::TimeInt::BaseDataGlobalState::extract_element_technologies(
     const NOX::Nln::StatusTest::QuantityType checkquantity,
     Teuchos::RCP<Epetra_Vector>& rhs_ptr) const
 {
   // convert the given quantity type to an element technology
-  enum Inpar::STR::EleTech eletech = STR::Nln::ConvertQuantityType2EleTech(checkquantity);
+  enum Inpar::Solid::EleTech eletech = Solid::Nln::ConvertQuantityType2EleTech(checkquantity);
   switch (eletech)
   {
-    case Inpar::STR::EleTech::pressure:
+    case Inpar::Solid::EleTech::pressure:
     {
       rhs_ptr = get_element_technology_map_extractor(eletech).extract_vector(rhs_ptr, 1);
       break;
@@ -836,17 +837,17 @@ void STR::TimeInt::BaseDataGlobalState::extract_element_technologies(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::apply_element_technology_to_acceleration_system(
+void Solid::TimeInt::BaseDataGlobalState::apply_element_technology_to_acceleration_system(
     Core::LinAlg::SparseOperator& mass, Epetra_Vector& rhs) const
 {
   // loop all active element technologies
-  const std::set<enum Inpar::STR::EleTech>& ele_techs = datasdyn_->get_element_technologies();
+  const std::set<enum Inpar::Solid::EleTech>& ele_techs = datasdyn_->get_element_technologies();
 
-  for (const enum Inpar::STR::EleTech et : ele_techs)
+  for (const enum Inpar::Solid::EleTech et : ele_techs)
   {
     switch (et)
     {
-      case Inpar::STR::EleTech::pressure:
+      case Inpar::Solid::EleTech::pressure:
       {
         // get map extractor
         const Core::LinAlg::MultiMapExtractor& mapext = get_element_technology_map_extractor(et);
@@ -869,30 +870,30 @@ void STR::TimeInt::BaseDataGlobalState::apply_element_technology_to_acceleration
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_additive_entries(
+Teuchos::RCP<Epetra_Vector> Solid::TimeInt::BaseDataGlobalState::extract_additive_entries(
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).extract_vector(source, 0);
+      get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).extract_vector(source, 0);
 
   return addit_ptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TimeInt::BaseDataGlobalState::extract_rot_vec_entries(
+Teuchos::RCP<Epetra_Vector> Solid::TimeInt::BaseDataGlobalState::extract_rot_vec_entries(
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      get_element_technology_map_extractor(Inpar::STR::EleTech::rotvec).extract_vector(source, 1);
+      get_element_technology_map_extractor(Inpar::Solid::EleTech::rotvec).extract_vector(source, 1);
 
   return addit_ptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::SparseOperator& jac,
-    const Core::LinAlg::SparseMatrix& matrix, const Inpar::STR::ModelType& mt,
+void Solid::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::SparseOperator& jac,
+    const Core::LinAlg::SparseMatrix& matrix, const Inpar::Solid::ModelType& mt,
     const MatBlockType& bt, const Core::LinAlg::DataAccess& access) const
 {
   Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>* blockmat_ptr =
@@ -957,8 +958,8 @@ void STR::TimeInt::BaseDataGlobalState::assign_model_block(Core::LinAlg::SparseO
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::BaseDataGlobalState::extract_model_block(
-    Core::LinAlg::SparseOperator& jac, const Inpar::STR::ModelType& mt,
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::extract_model_block(
+    Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt,
     const MatBlockType& bt) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> block = Teuchos::null;
@@ -1025,17 +1026,17 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::BaseDataGlobalState::extr
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>>
-STR::TimeInt::BaseDataGlobalState::extract_displ_row_of_blocks(
+Solid::TimeInt::BaseDataGlobalState::extract_displ_row_of_blocks(
     Core::LinAlg::SparseOperator& jac) const
 {
-  return extract_row_of_blocks(jac, Inpar::STR::model_structure);
+  return extract_row_of_blocks(jac, Inpar::Solid::model_structure);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>>
-STR::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
-    Core::LinAlg::SparseOperator& jac, const Inpar::STR::ModelType& mt) const
+Solid::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
+    Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt) const
 {
   Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> rowofblocks = Teuchos::null;
 
@@ -1080,16 +1081,16 @@ STR::TimeInt::BaseDataGlobalState::extract_row_of_blocks(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::BaseDataGlobalState::extract_displ_block(
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::extract_displ_block(
     Core::LinAlg::SparseOperator& jac) const
 {
-  return extract_model_block(jac, Inpar::STR::model_structure, MatBlockType::displ_displ);
+  return extract_model_block(jac, Inpar::Solid::model_structure, MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Core::LinAlg::SparseMatrix>
-STR::TimeInt::BaseDataGlobalState::get_jacobian_displ_block() const
+Solid::TimeInt::BaseDataGlobalState::get_jacobian_displ_block() const
 {
   FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
   return extract_displ_block(*jac_);
@@ -1097,7 +1098,7 @@ STR::TimeInt::BaseDataGlobalState::get_jacobian_displ_block() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::BaseDataGlobalState::jacobian_displ_block()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::BaseDataGlobalState::jacobian_displ_block()
 {
   FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
   return extract_displ_block(*jac_);
@@ -1106,8 +1107,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::BaseDataGlobalState::jaco
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Core::LinAlg::SparseMatrix>
-STR::TimeInt::BaseDataGlobalState::get_jacobian_block(
-    const Inpar::STR::ModelType mt, const MatBlockType bt) const
+Solid::TimeInt::BaseDataGlobalState::get_jacobian_block(
+    const Inpar::Solid::ModelType mt, const MatBlockType bt) const
 {
   FOUR_C_ASSERT(!jac_.is_null(), "The jacobian is not initialized!");
 
@@ -1116,7 +1117,7 @@ STR::TimeInt::BaseDataGlobalState::get_jacobian_block(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const unsigned step) const
+int Solid::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const unsigned step) const
 {
   check_init_setup();
   if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
@@ -1129,14 +1130,14 @@ int STR::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const unsig
     switch (linsolver.first)
     {
       // has only one field solver per default
-      case Inpar::STR::model_structure:
-      case Inpar::STR::model_springdashpot:
-      case Inpar::STR::model_browniandyn:
-      case Inpar::STR::model_beaminteraction:
-      case Inpar::STR::model_basic_coupling:
-      case Inpar::STR::model_monolithic_coupling:
-      case Inpar::STR::model_partitioned_coupling:
-      case Inpar::STR::model_beam_interaction_old:
+      case Inpar::Solid::model_structure:
+      case Inpar::Solid::model_springdashpot:
+      case Inpar::Solid::model_browniandyn:
+      case Inpar::Solid::model_beaminteraction:
+      case Inpar::Solid::model_basic_coupling:
+      case Inpar::Solid::model_monolithic_coupling:
+      case Inpar::Solid::model_partitioned_coupling:
+      case Inpar::Solid::model_beam_interaction_old:
       {
         iter = linsolvers[linsolver.first]->getNumIters();
         break;
@@ -1144,7 +1145,7 @@ int STR::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const unsig
       default:
         FOUR_C_THROW(
             "The given model type '%s' is not supported for linear iteration output right now.",
-            Inpar::STR::model_structure);
+            Inpar::Solid::model_structure);
     }
   }
 
@@ -1153,7 +1154,7 @@ int STR::TimeInt::BaseDataGlobalState::get_last_lin_iteration_number(const unsig
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::TimeInt::BaseDataGlobalState::get_nln_iteration_number(const unsigned step) const
+int Solid::TimeInt::BaseDataGlobalState::get_nln_iteration_number(const unsigned step) const
 {
   check_init_setup();
   if (step < 1) FOUR_C_THROW("The given step number must be larger than 1. (step=%d)", step);
@@ -1171,7 +1172,7 @@ int STR::TimeInt::BaseDataGlobalState::get_nln_iteration_number(const unsigned s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::BaseDataGlobalState::set_nln_iteration_number(const int nln_iter)
+void Solid::TimeInt::BaseDataGlobalState::set_nln_iteration_number(const int nln_iter)
 {
   check_init_setup();
 
@@ -1197,7 +1198,7 @@ void STR::TimeInt::BaseDataGlobalState::set_nln_iteration_number(const int nln_i
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::RotVecUpdater(
-    const Teuchos::RCP<const STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
+    const Teuchos::RCP<const Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
     : gstate_ptr_(gstate_ptr)
 {
   // empty

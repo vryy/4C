@@ -45,9 +45,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Structure::Structure()
+Solid::MODELEVALUATOR::Structure::Structure()
     : dt_ele_ptr_(nullptr),
-      masslin_type_(Inpar::STR::ml_none),
+      masslin_type_(Inpar::Solid::ml_none),
       stiff_ptr_(nullptr),
       stiff_ptc_ptr_(Teuchos::null),
       dis_incr_ptr_(Teuchos::null),
@@ -59,7 +59,7 @@ STR::MODELEVALUATOR::Structure::Structure()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::setup()
+void Solid::MODELEVALUATOR::Structure::setup()
 {
   FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
@@ -128,7 +128,7 @@ void STR::MODELEVALUATOR::Structure::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::reset(const Epetra_Vector& x)
+void Solid::MODELEVALUATOR::Structure::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -155,7 +155,7 @@ void STR::MODELEVALUATOR::Structure::reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::evaluate_force()
+bool Solid::MODELEVALUATOR::Structure::evaluate_force()
 {
   check_init_setup();
   bool ok = true;
@@ -175,7 +175,7 @@ bool STR::MODELEVALUATOR::Structure::evaluate_force()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::evaluate_stiff()
+bool Solid::MODELEVALUATOR::Structure::evaluate_stiff()
 {
   check_init_setup();
   bool ok = true;
@@ -208,7 +208,7 @@ bool STR::MODELEVALUATOR::Structure::evaluate_stiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::evaluate_force_stiff()
+bool Solid::MODELEVALUATOR::Structure::evaluate_force_stiff()
 {
   check_init_setup();
   bool ok = true;
@@ -237,7 +237,7 @@ bool STR::MODELEVALUATOR::Structure::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::assemble_force(
+bool Solid::MODELEVALUATOR::Structure::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Core::LinAlg::AssembleMyVector(1.0, f, -timefac_np, fext_np());
@@ -256,11 +256,11 @@ bool STR::MODELEVALUATOR::Structure::assemble_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::assemble_jacobian(
+bool Solid::MODELEVALUATOR::Structure::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   int err = stiff().Scale(timefac_np);
-  global_state().assign_model_block(jac, stiff(), Type(), STR::MatBlockType::displ_displ);
+  global_state().assign_model_block(jac, stiff(), Type(), Solid::MatBlockType::displ_displ);
 
   // add the visco and mass contributions
   integrator().add_visco_mass_contributions(jac);
@@ -270,7 +270,7 @@ bool STR::MODELEVALUATOR::Structure::assemble_jacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::initialize_inertia_and_damping()
+bool Solid::MODELEVALUATOR::Structure::initialize_inertia_and_damping()
 {
   check_init_setup();
 
@@ -308,7 +308,7 @@ bool STR::MODELEVALUATOR::Structure::initialize_inertia_and_damping()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::apply_force_internal()
+bool Solid::MODELEVALUATOR::Structure::apply_force_internal()
 {
   check_init_setup();
 
@@ -340,7 +340,7 @@ bool STR::MODELEVALUATOR::Structure::apply_force_internal()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::apply_force_external()
+bool Solid::MODELEVALUATOR::Structure::apply_force_external()
 {
   check_init_setup();
 
@@ -350,7 +350,7 @@ bool STR::MODELEVALUATOR::Structure::apply_force_external()
   // set vector values needed by elements
   discret().ClearState();
   discret().set_state(0, "displacement", global_state().get_dis_n());
-  if (eval_data().get_damping_type() == Inpar::STR::damp_material)
+  if (eval_data().get_damping_type() == Inpar::Solid::damp_material)
     discret().set_state(0, "velocity", global_state().get_vel_n());
   discret().set_state(0, "displacement new", global_state().get_dis_np());
   evaluate_neumann(global_state().get_fext_np(), Teuchos::null);
@@ -360,7 +360,7 @@ bool STR::MODELEVALUATOR::Structure::apply_force_external()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::apply_force_stiff_external()
+bool Solid::MODELEVALUATOR::Structure::apply_force_stiff_external()
 {
   check_init_setup();
 
@@ -370,7 +370,7 @@ bool STR::MODELEVALUATOR::Structure::apply_force_stiff_external()
   discret().ClearState();
   discret().set_state(0, "displacement", global_state().get_dis_n());
 
-  if (eval_data().get_damping_type() == Inpar::STR::damp_material)
+  if (eval_data().get_damping_type() == Inpar::Solid::damp_material)
     discret().set_state(0, "velocity", global_state().get_vel_n());
 
   // get load vector
@@ -389,12 +389,12 @@ bool STR::MODELEVALUATOR::Structure::apply_force_stiff_external()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::pre_apply_force_stiff_external(
+bool Solid::MODELEVALUATOR::Structure::pre_apply_force_stiff_external(
     Epetra_Vector& fextnp, Core::LinAlg::SparseMatrix& stiff) const
 {
   check_init_setup();
 
-  const auto* impl_ptr = dynamic_cast<const STR::TimeInt::Implicit*>(&tim_int());
+  const auto* impl_ptr = dynamic_cast<const Solid::TimeInt::Implicit*>(&tim_int());
   if (impl_ptr) return impl_ptr->Predictor().pre_apply_force_external(fextnp);
 
   return false;
@@ -402,7 +402,7 @@ bool STR::MODELEVALUATOR::Structure::pre_apply_force_stiff_external(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::apply_force_stiff_internal()
+bool Solid::MODELEVALUATOR::Structure::apply_force_stiff_internal()
 {
   check_init_setup();
   // currently a fixed number of matrix and vector pointers are supported
@@ -420,7 +420,7 @@ bool STR::MODELEVALUATOR::Structure::apply_force_stiff_internal()
   // set action types and evaluate matrices/vectors
   static_contributions(eval_mat.data(), eval_vec.data());
   material_damping_contributions(eval_mat.data());
-  if (masslin_type_ != Inpar::STR::ml_none)
+  if (masslin_type_ != Inpar::Solid::ml_none)
     inertial_contributions(eval_mat.data(), eval_vec.data());
 
   // evaluate
@@ -437,7 +437,7 @@ bool STR::MODELEVALUATOR::Structure::apply_force_stiff_internal()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::static_contributions(
+void Solid::MODELEVALUATOR::Structure::static_contributions(
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   // action for elements
@@ -450,7 +450,7 @@ void STR::MODELEVALUATOR::Structure::static_contributions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::static_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec)
+void Solid::MODELEVALUATOR::Structure::static_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   // action for elements
   eval_data().set_action_type(Core::Elements::struct_calc_internalforce);
@@ -460,10 +460,10 @@ void STR::MODELEVALUATOR::Structure::static_contributions(Teuchos::RCP<Epetra_Ve
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::material_damping_contributions(
+void Solid::MODELEVALUATOR::Structure::material_damping_contributions(
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat)
 {
-  if (eval_data().get_damping_type() != Inpar::STR::damp_material) return;
+  if (eval_data().get_damping_type() != Inpar::Solid::damp_material) return;
 
   // action for elements
   // (reset the action type to be independent of the calling order)
@@ -480,7 +480,7 @@ void STR::MODELEVALUATOR::Structure::material_damping_contributions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::inertial_contributions(
+void Solid::MODELEVALUATOR::Structure::inertial_contributions(
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   check_init_setup();
@@ -506,11 +506,11 @@ void STR::MODELEVALUATOR::Structure::inertial_contributions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::inertial_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec)
+void Solid::MODELEVALUATOR::Structure::inertial_contributions(Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   check_init_setup();
 
-  if (masslin_type_ == Inpar::STR::ml_none or tim_int().get_data_sdyn_ptr()->NeglectInertia())
+  if (masslin_type_ == Inpar::Solid::ml_none or tim_int().get_data_sdyn_ptr()->NeglectInertia())
     return;
 
   // overwrite element action
@@ -525,18 +525,18 @@ void STR::MODELEVALUATOR::Structure::inertial_contributions(Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::inertial_and_viscous_forces()
+void Solid::MODELEVALUATOR::Structure::inertial_and_viscous_forces()
 {
   check_init_setup();
 
-  if (masslin_type_ == Inpar::STR::ml_none and !tim_int().get_data_sdyn_ptr()->NeglectInertia())
+  if (masslin_type_ == Inpar::Solid::ml_none and !tim_int().get_data_sdyn_ptr()->NeglectInertia())
   {
     // calculate the inertial force at t_{n+1}
     mass().Multiply(false, *global_state().get_acc_np(), finertial_np());
   }
 
   // calculate the viscous/damping force at t_{n+1}
-  if (eval_data().get_damping_type() != Inpar::STR::damp_none)
+  if (eval_data().get_damping_type() != Inpar::Solid::damp_none)
   {
     if (not damp().Filled()) damp().Complete();
     damp().Multiply(false, *global_state().get_vel_np(), fvisco_np());
@@ -545,7 +545,7 @@ void STR::MODELEVALUATOR::Structure::inertial_and_viscous_forces()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::fill_complete()
+void Solid::MODELEVALUATOR::Structure::fill_complete()
 {
   if (not stiff_ptr_->Filled()) stiff_ptr_->Complete();
 
@@ -554,9 +554,9 @@ void STR::MODELEVALUATOR::Structure::fill_complete()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::rayleigh_damping_matrix()
+void Solid::MODELEVALUATOR::Structure::rayleigh_damping_matrix()
 {
-  if (eval_data().get_damping_type() != Inpar::STR::damp_rayleigh) return;
+  if (eval_data().get_damping_type() != Inpar::Solid::damp_rayleigh) return;
 
   const double& dampk = tim_int().get_data_sdyn().get_damping_stiffness_factor();
   const double& dampm = tim_int().get_data_sdyn().get_damping_mass_factor();
@@ -568,19 +568,19 @@ void STR::MODELEVALUATOR::Structure::rayleigh_damping_matrix()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::get_inertial_force()
+Teuchos::RCP<Epetra_Vector> Solid::MODELEVALUATOR::Structure::get_inertial_force()
 {
   switch (masslin_type_)
   {
-    case Inpar::STR::ml_rotations:
-    case Inpar::STR::ml_standard:
+    case Inpar::Solid::ml_rotations:
+    case Inpar::Solid::ml_standard:
     {
       finertial_np().PutScalar(0.0);
       // set inertial force
       return global_state().get_finertial_np();
       break;
     }
-    case Inpar::STR::ml_none:
+    case Inpar::Solid::ml_none:
       // do nothing
       break;
     default:
@@ -593,11 +593,11 @@ Teuchos::RCP<Epetra_Vector> STR::MODELEVALUATOR::Structure::get_inertial_force()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::init_output_runtime_structure()
+void Solid::MODELEVALUATOR::Structure::init_output_runtime_structure()
 {
   check_init();
   const auto discretization = Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(
-      const_cast<STR::MODELEVALUATOR::Structure*>(this)->discret_ptr(), true);
+      const_cast<Solid::MODELEVALUATOR::Structure*>(this)->discret_ptr(), true);
   vtu_writer_ptr_ = Teuchos::rcp(
       new Core::IO::DiscretizationVisualizationWriterMesh(discretization, visualization_params_,
           [](const Core::Elements::Element* element)
@@ -610,13 +610,13 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_structure()
   if (global_in_output()
           .get_runtime_output_params()
           ->get_structure_params()
-          ->gauss_point_data_output() != Inpar::STR::GaussPointDataOutputType::none)
+          ->gauss_point_data_output() != Inpar::Solid::GaussPointDataOutputType::none)
   {
     init_output_runtime_structure_gauss_point_data();
   }
 }
 
-void STR::MODELEVALUATOR::Structure::init_output_runtime_structure_gauss_point_data()
+void Solid::MODELEVALUATOR::Structure::init_output_runtime_structure_gauss_point_data()
 {
   // Set all parameters in the evaluation data container.
   eval_data().set_action_type(Core::Elements::struct_init_gauss_point_data_output);
@@ -644,7 +644,7 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_structure_gauss_point_d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_structure() const
+void Solid::MODELEVALUATOR::Structure::write_time_step_output_runtime_structure() const
 {
   check_init_setup();
 
@@ -664,7 +664,7 @@ void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_structure() 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_structure() const
+void Solid::MODELEVALUATOR::Structure::write_iteration_output_runtime_structure() const
 {
   check_init_setup();
 
@@ -685,7 +685,7 @@ void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_structure() 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
+void Solid::MODELEVALUATOR::Structure::write_output_runtime_structure(
     const Teuchos::RCP<Epetra_Vector>& displacement_state_vector,
     const Teuchos::RCP<Epetra_Vector>& velocity_state_vector, int timestep_number,
     double time) const
@@ -727,17 +727,17 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
 
   // append stress if desired
   if (structure_output_params.output_stress_strain() and
-      global_in_output().get_stress_output_type() != Inpar::STR::stress_none)
+      global_in_output().get_stress_output_type() != Inpar::Solid::stress_none)
   {
     std::string name_nodal = "";
     std::string name_element = "";
 
-    if (global_in_output().get_stress_output_type() == Inpar::STR::stress_2pk)
+    if (global_in_output().get_stress_output_type() == Inpar::Solid::stress_2pk)
     {
       name_nodal = "nodal_2PK_stresses_xyz";
       name_element = "element_2PK_stresses_xyz";
     }
-    else if (global_in_output().get_stress_output_type() == Inpar::STR::stress_cauchy)
+    else if (global_in_output().get_stress_output_type() == Inpar::Solid::stress_cauchy)
     {
       name_nodal = "nodal_cauchy_stresses_xyz";
       name_element = "element_cauchy_stresses_xyz";
@@ -754,22 +754,22 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
 
   // append strain if desired.
   if (structure_output_params.output_stress_strain() and
-      global_in_output().get_strain_output_type() != Inpar::STR::strain_none)
+      global_in_output().get_strain_output_type() != Inpar::Solid::strain_none)
   {
     std::string name_nodal = "";
     std::string name_element = "";
 
-    if (global_in_output().get_strain_output_type() == Inpar::STR::strain_gl)
+    if (global_in_output().get_strain_output_type() == Inpar::Solid::strain_gl)
     {
       name_nodal = "nodal_GL_strains_xyz";
       name_element = "element_GL_strains_xyz";
     }
-    else if (global_in_output().get_strain_output_type() == Inpar::STR::strain_ea)
+    else if (global_in_output().get_strain_output_type() == Inpar::Solid::strain_ea)
     {
       name_nodal = "nodal_EA_strains_xyz";
       name_element = "element_EA_strains_xyz";
     }
-    else if (global_in_output().get_strain_output_type() == Inpar::STR::strain_log)
+    else if (global_in_output().get_strain_output_type() == Inpar::Solid::strain_log)
     {
       name_nodal = "nodal_LOG_strains_xyz";
       name_element = "element_LOG_strains_xyz";
@@ -786,7 +786,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
 
   // Add gauss point data if desired
   if (structure_output_params.gauss_point_data_output() !=
-      Inpar::STR::GaussPointDataOutputType::none)
+      Inpar::Solid::GaussPointDataOutputType::none)
   {
     const GaussPointDataOutputManager& elementDataManager =
         *eval_data().get_gauss_point_data_output_manager_ptr();
@@ -797,14 +797,14 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
 
       switch (elementDataManager.get_output_type())
       {
-        case Inpar::STR::GaussPointDataOutputType::element_center:
+        case Inpar::Solid::GaussPointDataOutputType::element_center:
         {
           Teuchos::RCP<Epetra_MultiVector> data =
               elementDataManager.get_element_center_data().at(name);
           vtu_writer_ptr_->append_element_based_result_data_vector(data, size, name);
           break;
         }
-        case Inpar::STR::GaussPointDataOutputType::gauss_points:
+        case Inpar::Solid::GaussPointDataOutputType::gauss_points:
         {
           const std::vector<Teuchos::RCP<Epetra_MultiVector>>& data_list =
               elementDataManager.get_gauss_point_data().at(name);
@@ -816,13 +816,13 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
           }
           break;
         }
-        case Inpar::STR::GaussPointDataOutputType::nodes:
+        case Inpar::Solid::GaussPointDataOutputType::nodes:
         {
           Teuchos::RCP<Epetra_MultiVector> data = elementDataManager.get_nodal_data().at(name);
           vtu_writer_ptr_->append_node_based_result_data_vector(data, size, name);
           break;
         }
-        case Inpar::STR::GaussPointDataOutputType::none:
+        case Inpar::Solid::GaussPointDataOutputType::none:
           FOUR_C_THROW("Gauss point data output type is none");
         default:
           FOUR_C_THROW("Gauss point data output type is not implemented yet");
@@ -836,12 +836,12 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_structure(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress_strain()
+void Solid::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress_strain()
 {
   check_init_setup();
 
-  if (not(global_in_output().get_stress_output_type() == Inpar::STR::stress_none and
-          global_in_output().get_strain_output_type() == Inpar::STR::strain_none))
+  if (not(global_in_output().get_stress_output_type() == Inpar::Solid::stress_none and
+          global_in_output().get_strain_output_type() == Inpar::Solid::strain_none))
   {
     // Set all parameters in the evaluation data container.
     eval_data().set_action_type(Core::Elements::struct_calc_stress);
@@ -919,7 +919,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
     };
 
     // Postprocess the result vectors.
-    if (global_in_output().get_stress_output_type() != Inpar::STR::stress_none)
+    if (global_in_output().get_stress_output_type() != Inpar::Solid::stress_none)
     {
       std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> gp_stress_data =
           EvaluateGaussPointData(*eval_data().get_stress_data());
@@ -941,7 +941,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
       PostprocessGaussPointDataToElementCenter(
           gp_stress_data, *eval_data().get_stress_data_element_postprocessed());
     }
-    if (global_in_output().get_strain_output_type() != Inpar::STR::strain_none)
+    if (global_in_output().get_strain_output_type() != Inpar::Solid::strain_none)
     {
       std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> gp_strain_data =
           EvaluateGaussPointData(*eval_data().get_strain_data());
@@ -965,12 +965,12 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_postprocess_stress
   }
 }
 
-void STR::MODELEVALUATOR::Structure::output_runtime_structure_gauss_point_data()
+void Solid::MODELEVALUATOR::Structure::output_runtime_structure_gauss_point_data()
 {
   const Discret::ELEMENTS::StructureRuntimeOutputParams& structure_output_params =
       *global_in_output().get_runtime_output_params()->get_structure_params();
   if (structure_output_params.gauss_point_data_output() !=
-      Inpar::STR::GaussPointDataOutputType::none)
+      Inpar::Solid::GaussPointDataOutputType::none)
   {
     check_init_setup();
 
@@ -998,7 +998,7 @@ void STR::MODELEVALUATOR::Structure::output_runtime_structure_gauss_point_data()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::init_output_runtime_beams()
+void Solid::MODELEVALUATOR::Structure::init_output_runtime_beams()
 {
   beam_vtu_writer_ptr_ = Teuchos::rcp(
       new BeamDiscretizationRuntimeOutputWriter(visualization_params_, dis_np().Comm()));
@@ -1017,14 +1017,15 @@ void STR::MODELEVALUATOR::Structure::init_output_runtime_beams()
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box();
 
   // initialize the writer object with current displacement state
-  beam_vtu_writer_ptr_->initialize(const_cast<STR::MODELEVALUATOR::Structure*>(this)->discret_ptr(),
+  beam_vtu_writer_ptr_->initialize(
+      const_cast<Solid::MODELEVALUATOR::Structure*>(this)->discret_ptr(),
       beam_output_params.use_absolute_positions(),
       beam_output_params.get_number_visualization_subsegments(), bounding_box_ptr);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_beams() const
+void Solid::MODELEVALUATOR::Structure::write_time_step_output_runtime_beams() const
 {
   check_init_setup();
 
@@ -1041,7 +1042,7 @@ void STR::MODELEVALUATOR::Structure::write_time_step_output_runtime_beams() cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_beams() const
+void Solid::MODELEVALUATOR::Structure::write_iteration_output_runtime_beams() const
 {
   check_init_setup();
 
@@ -1059,7 +1060,7 @@ void STR::MODELEVALUATOR::Structure::write_iteration_output_runtime_beams() cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::write_output_runtime_beams(
+void Solid::MODELEVALUATOR::Structure::write_output_runtime_beams(
     const Teuchos::RCP<Epetra_Vector>& displacement_state_vector, int timestep_number,
     double time) const
 {
@@ -1138,7 +1139,7 @@ void STR::MODELEVALUATOR::Structure::write_output_runtime_beams(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::evaluate_internal(
+void Solid::MODELEVALUATOR::Structure::evaluate_internal(
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   pre_evaluate_internal();
@@ -1151,13 +1152,13 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::evaluate_internal(Teuchos::ParameterList& p,
+void Solid::MODELEVALUATOR::Structure::evaluate_internal(Teuchos::ParameterList& p,
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec)
 {
   if (p.numParams() > 1)
   {
     FOUR_C_THROW(
-        "Please use the STR::ELEMENTS::Interface and its derived "
+        "Please use the Solid::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
@@ -1172,7 +1173,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal(Teuchos::ParameterList& p
   discret().ClearState();
 }
 
-void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(
+void Solid::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(
     Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec,
     const Epetra_Map* ele_map_to_be_evaluated)
 {
@@ -1186,14 +1187,14 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(Teuchos::ParameterList& p,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat, Teuchos::RCP<Epetra_Vector>* eval_vec,
-    const Epetra_Map* ele_map_to_be_evaluated)
+void Solid::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(
+    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
+    Teuchos::RCP<Epetra_Vector>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated)
 {
   if (p.numParams() > 1)
   {
     FOUR_C_THROW(
-        "Please use the STR::ELEMENTS::Interface and its derived "
+        "Please use the Solid::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
@@ -1211,7 +1212,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_internal_specified_elements(Teucho
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::evaluate_neumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
+void Solid::MODELEVALUATOR::Structure::evaluate_neumann(const Teuchos::RCP<Epetra_Vector>& eval_vec,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat)
 {
   Teuchos::ParameterList p;
@@ -1221,14 +1222,14 @@ void STR::MODELEVALUATOR::Structure::evaluate_neumann(const Teuchos::RCP<Epetra_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::evaluate_neumann(Teuchos::ParameterList& p,
+void Solid::MODELEVALUATOR::Structure::evaluate_neumann(Teuchos::ParameterList& p,
     const Teuchos::RCP<Epetra_Vector>& eval_vec,
     const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat)
 {
   if (p.numParams() > 1)
   {
     FOUR_C_THROW(
-        "Please use the STR::ELEMENTS::Interface and its derived "
+        "Please use the Solid::ELEMENTS::Interface and its derived "
         "classes to set and get parameters.");
   }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
@@ -1240,7 +1241,7 @@ void STR::MODELEVALUATOR::Structure::evaluate_neumann(Teuchos::ParameterList& p,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::write_restart(
+void Solid::MODELEVALUATOR::Structure::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // write forces
@@ -1254,7 +1255,7 @@ void STR::MODELEVALUATOR::Structure::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::MODELEVALUATOR::Structure::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   // read structural force vector
@@ -1268,7 +1269,7 @@ void STR::MODELEVALUATOR::Structure::read_restart(Core::IO::DiscretizationReader
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::Predict(const Inpar::STR::PredEnum& pred_type)
+void Solid::MODELEVALUATOR::Structure::Predict(const Inpar::Solid::PredEnum& pred_type)
 {
   // set the element action
   eval_data().set_action_type(Core::Elements::struct_calc_predict);
@@ -1285,7 +1286,7 @@ void STR::MODELEVALUATOR::Structure::Predict(const Inpar::STR::PredEnum& pred_ty
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::run_pre_compute_x(
+void Solid::MODELEVALUATOR::Structure::run_pre_compute_x(
     const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::Nln::Group& curr_grp)
 {
   check_init_setup();
@@ -1293,7 +1294,7 @@ void STR::MODELEVALUATOR::Structure::run_pre_compute_x(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::run_recover()
+void Solid::MODELEVALUATOR::Structure::run_recover()
 {
   // set vector values needed by elements
   discret().ClearState();
@@ -1312,7 +1313,7 @@ void STR::MODELEVALUATOR::Structure::run_recover()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::run_post_compute_x(
+void Solid::MODELEVALUATOR::Structure::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   check_init_setup();
@@ -1325,7 +1326,7 @@ void STR::MODELEVALUATOR::Structure::run_post_compute_x(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::run_post_iterate(const ::NOX::Solver::Generic& solver)
+void Solid::MODELEVALUATOR::Structure::run_post_iterate(const ::NOX::Solver::Generic& solver)
 {
   check_init_setup();
 
@@ -1345,7 +1346,7 @@ void STR::MODELEVALUATOR::Structure::run_post_iterate(const ::NOX::Solver::Gener
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::update_step_state(const double& timefac_n)
+void Solid::MODELEVALUATOR::Structure::update_step_state(const double& timefac_n)
 {
   check_init_setup();
   // update state
@@ -1383,7 +1384,7 @@ void STR::MODELEVALUATOR::Structure::update_step_state(const double& timefac_n)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::evaluate_jacobian_contributions_from_element_level_for_ptc()
+void Solid::MODELEVALUATOR::Structure::evaluate_jacobian_contributions_from_element_level_for_ptc()
 {
   check_init_setup();
   // currently a fixed number of matrix and vector pointers are supported
@@ -1406,27 +1407,27 @@ void STR::MODELEVALUATOR::Structure::evaluate_jacobian_contributions_from_elemen
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::assemble_jacobian_contributions_from_element_level_for_ptc(
+void Solid::MODELEVALUATOR::Structure::assemble_jacobian_contributions_from_element_level_for_ptc(
     Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n)
 {
-  global_state().assign_model_block(*modjac, stiff_ptc(), Type(), STR::MatBlockType::displ_displ);
+  global_state().assign_model_block(*modjac, stiff_ptc(), Type(), Solid::MatBlockType::displ_displ);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::update_step_element()
+void Solid::MODELEVALUATOR::Structure::update_step_element()
 {
   check_init_setup();
   // other parameters that might be needed by the elements
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
 
-  const Inpar::STR::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
+  const Inpar::Solid::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
   const double prestress_time = tim_int().get_data_sdyn().get_pre_stress_time();
-  bool isDuringPrestressing = prestress_type != Inpar::STR::PreStress::none &&
+  bool isDuringPrestressing = prestress_type != Inpar::Solid::PreStress::none &&
                               global_state().get_time_n() <= prestress_time + 1.0e-15;
 
-  if (isDuringPrestressing && prestress_type == Inpar::STR::PreStress::mulf)
+  if (isDuringPrestressing && prestress_type == Inpar::Solid::PreStress::mulf)
   {
     if (discret().Comm().MyPID() == 0)
       Core::IO::cout << "====== Entering PRESTRESSING update" << Core::IO::endl;
@@ -1455,7 +1456,7 @@ void STR::MODELEVALUATOR::Structure::update_step_element()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::update_residual()
+void Solid::MODELEVALUATOR::Structure::update_residual()
 {
   check_init_setup();
   dis_incr_ptr_->Update(-1.0, *global_state().get_dis_n(), 1.0, *global_state().get_dis_np(), 0.0);
@@ -1463,14 +1464,14 @@ void STR::MODELEVALUATOR::Structure::update_residual()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::determine_stress_strain()
+void Solid::MODELEVALUATOR::Structure::determine_stress_strain()
 {
   check_init_setup();
 
-  if (global_in_output().get_stress_output_type() == Inpar::STR::stress_none and
-      global_in_output().get_coupling_stress_output_type() == Inpar::STR::stress_none and
-      global_in_output().get_strain_output_type() == Inpar::STR::strain_none and
-      global_in_output().get_plastic_strain_output_type() == Inpar::STR::strain_none)
+  if (global_in_output().get_stress_output_type() == Inpar::Solid::stress_none and
+      global_in_output().get_coupling_stress_output_type() == Inpar::Solid::stress_none and
+      global_in_output().get_strain_output_type() == Inpar::Solid::strain_none and
+      global_in_output().get_plastic_strain_output_type() == Inpar::Solid::strain_none)
     return;
 
   // set all parameters in the evaluation data container
@@ -1498,7 +1499,7 @@ void STR::MODELEVALUATOR::Structure::determine_stress_strain()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::determine_strain_energy(
+void Solid::MODELEVALUATOR::Structure::determine_strain_energy(
     const Epetra_Vector& disnp, const bool global)
 {
   check_init_setup();
@@ -1530,30 +1531,30 @@ void STR::MODELEVALUATOR::Structure::determine_strain_energy(
 
   if (global)
   {
-    double my_int_energy = eval_data().get_energy_data(STR::internal_energy);
+    double my_int_energy = eval_data().get_energy_data(Solid::internal_energy);
     double gsum = 0.0;
     discret().Comm().SumAll(&my_int_energy, &gsum, 1);
 
-    eval_data().set_value_for_energy_type(gsum, STR::internal_energy);
+    eval_data().set_value_for_energy_type(gsum, Solid::internal_energy);
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::determine_energy()
+void Solid::MODELEVALUATOR::Structure::determine_energy()
 {
   DetermineEnergy(*global_state().get_dis_np(), global_state().get_vel_np().get(), false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::DetermineEnergy(
+void Solid::MODELEVALUATOR::Structure::DetermineEnergy(
     const Epetra_Vector& disnp, const Epetra_Vector* velnp, const bool global)
 {
   determine_strain_energy(disnp, global);
 
   // global calculation of kinetic energy
-  if (masslin_type_ == Inpar::STR::ml_none and velnp != nullptr)
+  if (masslin_type_ == Inpar::Solid::ml_none and velnp != nullptr)
   {
     double kinetic_energy_times2 = 0.0;
 
@@ -1567,25 +1568,26 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy(
     // only add the result on one processor because we sum over all procs later
     if (global or global_state().get_my_rank() == 0)
     {
-      eval_data().add_contribution_to_energy_type(0.5 * kinetic_energy_times2, STR::kinetic_energy);
+      eval_data().add_contribution_to_energy_type(
+          0.5 * kinetic_energy_times2, Solid::kinetic_energy);
     }
   }
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::determine_optional_quantity()
+void Solid::MODELEVALUATOR::Structure::determine_optional_quantity()
 {
   check_init_setup();
 
   switch (global_in_output().get_opt_quantity_output_type())
   {
-    case Inpar::STR::optquantity_none:
+    case Inpar::Solid::optquantity_none:
     {
       // do nothing and return
       return;
     }
-    case Inpar::STR::optquantity_membranethickness:
+    case Inpar::Solid::optquantity_membranethickness:
     {
       // evaluate thickness of membrane finite elements
       eval_data().set_action_type(Core::Elements::struct_calc_thickness);
@@ -1616,7 +1618,7 @@ void STR::MODELEVALUATOR::Structure::determine_optional_quantity()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
+bool Solid::MODELEVALUATOR::Structure::determine_element_volumes(
     const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols)
 {
   // set action in params-interface
@@ -1641,7 +1643,7 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
   Core::LinAlg::SerialDenseMatrix empty_dummy_mat;
   Core::LinAlg::SerialDenseVector empty_dummy_vec;
 
-  STR::ELEMENTS::EvalErrorFlag ele_eval_error = STR::ELEMENTS::ele_error_none;
+  Solid::ELEMENTS::EvalErrorFlag ele_eval_error = Solid::ELEMENTS::ele_error_none;
   for (unsigned elid = 0; elid < my_num_reles; ++elid)
   {
     Core::Elements::Element* rele = discret().lRowElement(elid);
@@ -1663,7 +1665,7 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
     {
       ele_eval_error = eval_data().get_ele_eval_error_flag();
       // reset for the next element
-      eval_data().set_ele_eval_error_flag(STR::ELEMENTS::ele_error_none);
+      eval_data().set_ele_eval_error_flag(Solid::ELEMENTS::ele_error_none);
       ele_vol(2) = -1.0;
     }
 
@@ -1680,7 +1682,7 @@ bool STR::MODELEVALUATOR::Structure::determine_element_volumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::output_step_state(
+void Solid::MODELEVALUATOR::Structure::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
@@ -1714,7 +1716,7 @@ void STR::MODELEVALUATOR::Structure::output_step_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::runtime_pre_output_step_state()
+void Solid::MODELEVALUATOR::Structure::runtime_pre_output_step_state()
 {
   check_init_setup();
 
@@ -1727,7 +1729,7 @@ void STR::MODELEVALUATOR::Structure::runtime_pre_output_step_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::runtime_output_step_state() const
+void Solid::MODELEVALUATOR::Structure::runtime_output_step_state() const
 {
   check_init_setup();
 
@@ -1739,7 +1741,7 @@ void STR::MODELEVALUATOR::Structure::runtime_output_step_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::reset_step_state()
+void Solid::MODELEVALUATOR::Structure::reset_step_state()
 {
   check_init_setup();
 
@@ -1766,7 +1768,7 @@ void STR::MODELEVALUATOR::Structure::reset_step_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Structure::get_block_dof_row_map_ptr() const
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::Structure::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
   return global_state().dof_row_map();
@@ -1774,7 +1776,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Structure::get_block_dof_row
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::get_current_solution_ptr() const
+Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::Structure::get_current_solution_ptr() const
 {
   check_init();
   return global_state().get_dis_np();
@@ -1782,8 +1784,8 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::get_current_so
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::get_last_time_step_solution_ptr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+Solid::MODELEVALUATOR::Structure::get_last_time_step_solution_ptr() const
 {
   check_init();
   return global_state().get_dis_n();
@@ -1791,7 +1793,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Structure::get_last_time_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::post_output()
+void Solid::MODELEVALUATOR::Structure::post_output()
 {
   check_init_setup();
   // empty
@@ -1799,7 +1801,7 @@ void STR::MODELEVALUATOR::Structure::post_output()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::fint_np()
+Epetra_Vector& Solid::MODELEVALUATOR::Structure::fint_np()
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_fint_np().is_null(), "nullptr!");
@@ -1809,7 +1811,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::fint_np()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::fint_np() const
+const Epetra_Vector& Solid::MODELEVALUATOR::Structure::fint_np() const
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_fint_np().is_null(), "nullptr!");
@@ -1819,7 +1821,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::fint_np() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::fint_n() const
+const Epetra_Vector& Solid::MODELEVALUATOR::Structure::fint_n() const
 {
   check_init();
   if (global_state().get_fint_n().is_null()) FOUR_C_THROW("NULL pointer!");
@@ -1829,7 +1831,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::fint_n() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::fext_np()
+Epetra_Vector& Solid::MODELEVALUATOR::Structure::fext_np()
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_fext_np().is_null(), "nullptr!");
@@ -1839,7 +1841,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::fext_np()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::fext_np() const
+const Epetra_Vector& Solid::MODELEVALUATOR::Structure::fext_np() const
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_fext_np().is_null(), "nullptr!");
@@ -1849,7 +1851,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::fext_np() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::fext_n() const
+const Epetra_Vector& Solid::MODELEVALUATOR::Structure::fext_n() const
 {
   check_init();
   if (global_state().get_fext_n().is_null()) FOUR_C_THROW("NULL pointer!");
@@ -1859,7 +1861,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::fext_n() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::finertial_np()
+Epetra_Vector& Solid::MODELEVALUATOR::Structure::finertial_np()
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_finertial_np().is_null(), "nullptr!");
@@ -1869,7 +1871,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::finertial_np()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::finertial_np() const
+const Epetra_Vector& Solid::MODELEVALUATOR::Structure::finertial_np() const
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_finertial_np().is_null(), "nullptr!");
@@ -1879,7 +1881,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::finertial_np() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::fvisco_np()
+Epetra_Vector& Solid::MODELEVALUATOR::Structure::fvisco_np()
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_fvisco_np().is_null(), "nullptr!");
@@ -1889,7 +1891,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::fvisco_np()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::fvisco_np() const
+const Epetra_Vector& Solid::MODELEVALUATOR::Structure::fvisco_np() const
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_fvisco_np().is_null(), "nullptr!");
@@ -1899,7 +1901,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::fvisco_np() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Epetra_Vector& STR::MODELEVALUATOR::Structure::dis_np()
+Epetra_Vector& Solid::MODELEVALUATOR::Structure::dis_np()
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_dis_np().is_null(), "nullptr!");
@@ -1909,7 +1911,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::dis_np()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::MODELEVALUATOR::Structure::dis_np() const
+const Epetra_Vector& Solid::MODELEVALUATOR::Structure::dis_np() const
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_dis_np().is_null(), "nullptr!");
@@ -1919,7 +1921,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::dis_np() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::LinAlg::SparseMatrix& STR::MODELEVALUATOR::Structure::stiff() const
+Core::LinAlg::SparseMatrix& Solid::MODELEVALUATOR::Structure::stiff() const
 {
   check_init();
   FOUR_C_ASSERT(stiff_ptr_, "nullptr!");
@@ -1929,7 +1931,7 @@ Core::LinAlg::SparseMatrix& STR::MODELEVALUATOR::Structure::stiff() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::LinAlg::SparseMatrix& STR::MODELEVALUATOR::Structure::stiff_ptc() const
+Core::LinAlg::SparseMatrix& Solid::MODELEVALUATOR::Structure::stiff_ptc() const
 {
   check_init();
   FOUR_C_ASSERT(stiff_ptc_ptr_ != Teuchos::null, "nullptr!");
@@ -1939,7 +1941,7 @@ Core::LinAlg::SparseMatrix& STR::MODELEVALUATOR::Structure::stiff_ptc() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::LinAlg::SparseOperator& STR::MODELEVALUATOR::Structure::mass()
+Core::LinAlg::SparseOperator& Solid::MODELEVALUATOR::Structure::mass()
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_mass_matrix().is_null(), "nullptr!");
@@ -1949,7 +1951,7 @@ Core::LinAlg::SparseOperator& STR::MODELEVALUATOR::Structure::mass()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Core::LinAlg::SparseOperator& STR::MODELEVALUATOR::Structure::mass() const
+const Core::LinAlg::SparseOperator& Solid::MODELEVALUATOR::Structure::mass() const
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_mass_matrix().is_null(), "nullptr!");
@@ -1959,7 +1961,7 @@ const Core::LinAlg::SparseOperator& STR::MODELEVALUATOR::Structure::mass() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::LinAlg::SparseOperator& STR::MODELEVALUATOR::Structure::damp()
+Core::LinAlg::SparseOperator& Solid::MODELEVALUATOR::Structure::damp()
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_damp_matrix().is_null(), "nullptr!");
@@ -1969,7 +1971,7 @@ Core::LinAlg::SparseOperator& STR::MODELEVALUATOR::Structure::damp()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Core::LinAlg::SparseOperator& STR::MODELEVALUATOR::Structure::damp() const
+const Core::LinAlg::SparseOperator& Solid::MODELEVALUATOR::Structure::damp() const
 {
   check_init();
   FOUR_C_ASSERT(!global_state().get_damp_matrix().is_null(), "nullptr!");
@@ -1979,8 +1981,8 @@ const Core::LinAlg::SparseOperator& STR::MODELEVALUATOR::Structure::damp() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::params_interface2_parameter_list(
-    Teuchos::RCP<STR::MODELEVALUATOR::Data> interface_ptr, Teuchos::ParameterList& params)
+void Solid::MODELEVALUATOR::Structure::params_interface2_parameter_list(
+    Teuchos::RCP<Solid::MODELEVALUATOR::Data> interface_ptr, Teuchos::ParameterList& params)
 {
   FOUR_C_ASSERT(interface_ptr != Teuchos::null, "params_interface pointer not set");
 
@@ -2102,7 +2104,7 @@ void STR::MODELEVALUATOR::Structure::params_interface2_parameter_list(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::create_backup_state(const Epetra_Vector& dir)
+void Solid::MODELEVALUATOR::Structure::create_backup_state(const Epetra_Vector& dir)
 {
   check_init_setup();
 
@@ -2126,7 +2128,7 @@ void STR::MODELEVALUATOR::Structure::create_backup_state(const Epetra_Vector& di
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Structure::recover_from_backup_state()
+void Solid::MODELEVALUATOR::Structure::recover_from_backup_state()
 {
   check_init_setup();
 

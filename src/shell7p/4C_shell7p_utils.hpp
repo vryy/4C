@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::ELEMENTS
+namespace Solid::ELEMENTS
 {
   /*!
    * @brief A struct holding the number of EAS parameters for each locking type
@@ -52,7 +52,7 @@ namespace STR::ELEMENTS
     double thickness;
     int num_ans;
   };
-}  // namespace STR::ELEMENTS
+}  // namespace Solid::ELEMENTS
 
 namespace Discret::ELEMENTS::Shell::DETAIL
 {
@@ -66,7 +66,7 @@ namespace Discret::ELEMENTS::Shell::DETAIL
   inline static constexpr int numdofperelement = num_node<distype>* node_dof;
 }  // namespace Discret::ELEMENTS::Shell::DETAIL
 
-namespace STR::UTILS::Shell
+namespace Solid::UTILS::Shell
 {
   /*!
    * \brief Helper function for the nodal nullspace of Shell elements in 3D
@@ -157,13 +157,13 @@ namespace STR::UTILS::Shell
     int ReadAndSetElementMaterial(Input::LineDefinition* linedef);
 
     void ReadAndSetLockingTypes(const Core::FE::CellType& distype, Input::LineDefinition* linedef,
-        STR::ELEMENTS::ShellLockingTypes& locking_types);
+        Solid::ELEMENTS::ShellLockingTypes& locking_types);
 
     int ReadAndSetNumANS(const Core::FE::CellType& distype);
 
   }  // namespace ReadElement
 
-}  // namespace STR::UTILS::Shell
+}  // namespace Solid::UTILS::Shell
 
 FOUR_C_NAMESPACE_CLOSE
 

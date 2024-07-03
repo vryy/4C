@@ -30,13 +30,13 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
     class BaseDataGlobalState;
   }
-}  // namespace STR
+}  // namespace Solid
 namespace BEAMINTERACTION
 {
   class BeamContactParams;

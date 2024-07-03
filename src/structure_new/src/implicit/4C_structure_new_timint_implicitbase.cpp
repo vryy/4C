@@ -26,14 +26,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::ImplicitBase::ImplicitBase()
+Solid::TimeInt::ImplicitBase::ImplicitBase()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::TimeInt::ImplicitBase::get_f() const
+Teuchos::RCP<const Epetra_Vector> Solid::TimeInt::ImplicitBase::get_f() const
 {
   const ::NOX::Abstract::Group& solgrp = get_solution_group();
   const ::NOX::Epetra::Vector& F = dynamic_cast<const ::NOX::Epetra::Vector&>(solgrp.getF());
@@ -42,7 +42,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TimeInt::ImplicitBase::get_f() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> STR::TimeInt::ImplicitBase::freact()
+Teuchos::RCP<Epetra_Vector> Solid::TimeInt::ImplicitBase::freact()
 {
   check_init_setup();
   return data_global_state().get_freact_np();
@@ -50,7 +50,7 @@ Teuchos::RCP<Epetra_Vector> STR::TimeInt::ImplicitBase::freact()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::ImplicitBase::system_matrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::ImplicitBase::system_matrix()
 {
   check_init_setup();
   return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(data_global_state().get_jacobian());
@@ -59,7 +59,8 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::ImplicitBase::system_matr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> STR::TimeInt::ImplicitBase::block_system_matrix()
+Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
+Solid::TimeInt::ImplicitBase::block_system_matrix()
 {
   check_init_setup();
   return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
@@ -68,7 +69,7 @@ Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> STR::TimeInt::ImplicitBase::bl
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::ImplicitBase::use_block_matrix(
+void Solid::TimeInt::ImplicitBase::use_block_matrix(
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
     Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps)
 {
@@ -77,14 +78,14 @@ void STR::TimeInt::ImplicitBase::use_block_matrix(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Inpar::STR::StcScale STR::TimeInt::ImplicitBase::get_stc_algo()
+Inpar::Solid::StcScale Solid::TimeInt::ImplicitBase::get_stc_algo()
 {
   return data_sdyn().get_stc_algo_type();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::ImplicitBase::get_stc_mat()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Solid::TimeInt::ImplicitBase::get_stc_mat()
 {
   FOUR_C_THROW("Not yet implemented!");
   /* See the scaling object in the NOX::Nln::Epetra::LinearSystem class.
@@ -96,7 +97,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> STR::TimeInt::ImplicitBase::get_stc_mat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::TimeInt::ImplicitBase::initial_guess()
+Teuchos::RCP<const Epetra_Vector> Solid::TimeInt::ImplicitBase::initial_guess()
 {
   check_init_setup();
   FOUR_C_THROW("Not yet implemented!");
@@ -105,7 +106,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TimeInt::ImplicitBase::initial_guess()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::ImplicitBase::Update(double endtime)
+void Solid::TimeInt::ImplicitBase::Update(double endtime)
 {
   check_init_setup();
   PreUpdate();
@@ -118,7 +119,7 @@ void STR::TimeInt::ImplicitBase::Update(double endtime)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::ImplicitBase::print_step()
+void Solid::TimeInt::ImplicitBase::print_step()
 {
   check_init_setup();
 

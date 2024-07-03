@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::PartitionedFSI::PartitionedFSI()
+Solid::MODELEVALUATOR::PartitionedFSI::PartitionedFSI()
     : interface_force_np_ptr_(Teuchos::null), is_relaxationsolve_(false)
 {
   // empty
@@ -36,7 +36,7 @@ STR::MODELEVALUATOR::PartitionedFSI::PartitionedFSI()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedFSI::setup()
+void Solid::MODELEVALUATOR::PartitionedFSI::setup()
 {
   // fsi interface force at t_{n+1}
   interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
@@ -48,13 +48,13 @@ void STR::MODELEVALUATOR::PartitionedFSI::setup()
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedFSI::setup_multi_map_extractor()
+void Solid::MODELEVALUATOR::PartitionedFSI::setup_multi_map_extractor()
 {
   integrator().model_eval().setup_multi_map_extractor();
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedFSI::get_block_dof_row_map_ptr()
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::PartitionedFSI::get_block_dof_row_map_ptr()
     const
 {
   check_init_setup();
@@ -63,7 +63,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedFSI::get_block_do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::get_current_solution_ptr()
+Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::PartitionedFSI::get_current_solution_ptr()
     const
 {
   check_init();
@@ -73,7 +73,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::get_curre
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::PartitionedFSI::get_last_time_step_solution_ptr() const
+Solid::MODELEVALUATOR::PartitionedFSI::get_last_time_step_solution_ptr() const
 {
   check_init();
   return global_state().get_dis_n();
@@ -81,7 +81,7 @@ STR::MODELEVALUATOR::PartitionedFSI::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::PartitionedFSI::assemble_force(
+bool Solid::MODELEVALUATOR::PartitionedFSI::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Core::LinAlg::AssembleMyVector(1.0, f, -timefac_np, *interface_force_np_ptr_);
@@ -90,7 +90,7 @@ bool STR::MODELEVALUATOR::PartitionedFSI::assemble_force(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedFSI::update_step_state(const double& timefac_n)
+void Solid::MODELEVALUATOR::PartitionedFSI::update_step_state(const double& timefac_n)
 {
   if (not is_relaxationsolve_)  // standard case
   {
@@ -107,7 +107,7 @@ void STR::MODELEVALUATOR::PartitionedFSI::update_step_state(const double& timefa
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_relaxation_linear(
+Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::PartitionedFSI::solve_relaxation_linear(
     Teuchos::RCP<Adapter::Structure> structure)
 {
   // print to screen
@@ -115,12 +115,12 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
     std::cout << "\n DO SRUCTURAL RELAXATION SOLVE ..." << std::endl;
 
   // cast adapter structure to implicit time integrator
-  Teuchos::RCP<STR::TimeInt::Implicit> ti_impl =
-      Teuchos::rcp_dynamic_cast<STR::TimeInt::Implicit>(structure, true);
+  Teuchos::RCP<Solid::TimeInt::Implicit> ti_impl =
+      Teuchos::rcp_dynamic_cast<Solid::TimeInt::Implicit>(structure, true);
 
   // get the nonlinear solver pointer
-  STR::Nln::SOLVER::Generic& nlnsolver =
-      const_cast<STR::Nln::SOLVER::Generic&>(*(ti_impl->get_nln_solver_ptr()));
+  Solid::Nln::SOLVER::Generic& nlnsolver =
+      const_cast<Solid::Nln::SOLVER::Generic&>(*(ti_impl->get_nln_solver_ptr()));
 
   // get the solution group
   ::NOX::Abstract::Group& grp = nlnsolver.SolutionGroup();
@@ -183,7 +183,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::solve_rel
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TimeInt::BaseDataIO& STR::MODELEVALUATOR::PartitionedFSI::GetInOutput() const
+const Solid::TimeInt::BaseDataIO& Solid::MODELEVALUATOR::PartitionedFSI::GetInOutput() const
 {
   check_init();
   return global_in_output();

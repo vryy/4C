@@ -253,10 +253,11 @@ int Discret::ELEMENTS::Wall1PoroP1<distype>::my_evaluate(Teuchos::ParameterList&
         Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
         if (elemat1.is_initialized()) matptr = &elemat1;
 
-        enum Inpar::STR::DampKind damping =
-            params.get<enum Inpar::STR::DampKind>("damping", Inpar::STR::damp_none);
+        enum Inpar::Solid::DampKind damping =
+            params.get<enum Inpar::Solid::DampKind>("damping", Inpar::Solid::damp_none);
         Core::LinAlg::Matrix<numdof_, numdof_>* matptr2 = nullptr;
-        if (elemat2.is_initialized() and (damping == Inpar::STR::damp_material)) matptr2 = &elemat2;
+        if (elemat2.is_initialized() and (damping == Inpar::Solid::damp_material))
+          matptr2 = &elemat2;
 
         // need current fluid state,
         // call the fluid discretization: fluid equates 2nd dofset

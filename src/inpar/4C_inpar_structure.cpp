@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Inpar
 {
-  namespace STR
+  namespace Solid
   {
     /*----------------------------------------------------------------------*/
     /*----------------------------------------------------------------------*/
@@ -32,10 +32,10 @@ namespace Inpar
       setStringToIntegralParameter<int>("KIND", "None", "Method for time step size adaptivity",
           tuple<std::string>("None", "ZienkiewiczXie", "JointExplicit",  //
               "AdamsBashforth2", "ExplicitEuler", "CentralDifference"),  // backward compatibility
-          tuple<int>(Inpar::STR::timada_kind_none, Inpar::STR::timada_kind_zienxie,
-              Inpar::STR::timada_kind_joint_explicit,  //
-              Inpar::STR::timada_kind_ab2, Inpar::STR::timada_kind_expleuler,
-              Inpar::STR::timada_kind_centraldiff),  // backward compatibility
+          tuple<int>(Inpar::Solid::timada_kind_none, Inpar::Solid::timada_kind_zienxie,
+              Inpar::Solid::timada_kind_joint_explicit,  //
+              Inpar::Solid::timada_kind_ab2, Inpar::Solid::timada_kind_expleuler,
+              Inpar::Solid::timada_kind_centraldiff),  // backward compatibility
           &list);
 
       Core::UTILS::DoubleParameter("OUTSYSPERIOD", 0.0,
@@ -69,8 +69,8 @@ namespace Inpar
       setStringToIntegralParameter<int>("LOCERRNORM", "Vague",
           "Vector norm to treat error vector with",
           tuple<std::string>("Vague", "L1", "L2", "Rms", "Inf"),
-          tuple<int>(Inpar::STR::norm_vague, Inpar::STR::norm_l1, Inpar::STR::norm_l2,
-              Inpar::STR::norm_rms, Inpar::STR::norm_inf),
+          tuple<int>(Inpar::Solid::norm_vague, Inpar::Solid::norm_l1, Inpar::Solid::norm_l2,
+              Inpar::Solid::norm_rms, Inpar::Solid::norm_inf),
           &list);
 
       Core::UTILS::DoubleParameter("LOCERRTOL", 0.0, "Target local error tolerance (>0)", &list);
@@ -134,14 +134,16 @@ namespace Inpar
               dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4, dyna_euma, dyna_euimsto),
           &sdyn);
 
-      setStringToIntegralParameter<Inpar::STR::PreStress>("PRESTRESS", "none",
+      setStringToIntegralParameter<Inpar::Solid::PreStress>("PRESTRESS", "none",
           "prestressing takes values none mulf material_iterative",
           tuple<std::string>("none", "None", "NONE", "mulf", "Mulf", "MULF", "Material_Iterative",
               "MATERIAL_ITERATIVE", "material_iterative"),
-          tuple<Inpar::STR::PreStress>(Inpar::STR::PreStress::none, Inpar::STR::PreStress::none,
-              Inpar::STR::PreStress::none, Inpar::STR::PreStress::mulf, Inpar::STR::PreStress::mulf,
-              Inpar::STR::PreStress::mulf, Inpar::STR::PreStress::material_iterative,
-              Inpar::STR::PreStress::material_iterative, Inpar::STR::PreStress::material_iterative),
+          tuple<Inpar::Solid::PreStress>(Inpar::Solid::PreStress::none,
+              Inpar::Solid::PreStress::none, Inpar::Solid::PreStress::none,
+              Inpar::Solid::PreStress::mulf, Inpar::Solid::PreStress::mulf,
+              Inpar::Solid::PreStress::mulf, Inpar::Solid::PreStress::material_iterative,
+              Inpar::Solid::PreStress::material_iterative,
+              Inpar::Solid::PreStress::material_iterative),
           &sdyn);
 
       Core::UTILS::DoubleParameter(
@@ -486,7 +488,7 @@ namespace Inpar
       condlist.push_back(surfactant);
     }
 
-  }  // end of namespace STR
+  }  // end of namespace Solid
 }  // end of namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

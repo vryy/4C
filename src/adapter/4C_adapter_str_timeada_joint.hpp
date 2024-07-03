@@ -19,10 +19,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace STR::TimeInt
+namespace Solid::TimeInt
 {
   class Base;
-}  // namespace STR::TimeInt
+}  // namespace Solid::TimeInt
 
 namespace Adapter
 {
@@ -37,9 +37,9 @@ namespace Adapter
     explicit StructureTimeAdaJoint(Teuchos::RCP<Structure> structure);
 
     //! Provide the name
-    enum Inpar::STR::TimAdaKind MethodName() const override
+    enum Inpar::Solid::TimAdaKind MethodName() const override
     {
-      return Inpar::STR::timada_kind_joint_explicit;
+      return Inpar::Solid::timada_kind_joint_explicit;
     }
 
     std::string MethodTitle() const override;
@@ -68,7 +68,7 @@ namespace Adapter
     enum AdaEnum ada_;
 
     //! the auxiliary integrator
-    Teuchos::RCP<STR::TimeInt::Base> sta_;
+    Teuchos::RCP<Solid::TimeInt::Base> sta_;
 
     //! wrapper of the auxiliary integrator
     Teuchos::RCP<Structure> sta_wrapper_;

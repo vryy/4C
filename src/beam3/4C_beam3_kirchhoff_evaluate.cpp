@@ -199,8 +199,8 @@ int Discret::ELEMENTS::Beam3k::evaluate(Teuchos::ParameterList& params,
       }
       else if (IsParamsInterface())  // new structural time integration
       {
-        params_interface().add_contribution_to_energy_type(eint_, STR::internal_energy);
-        params_interface().add_contribution_to_energy_type(ekin_, STR::kinetic_energy);
+        params_interface().add_contribution_to_energy_type(eint_, Solid::internal_energy);
+        params_interface().add_contribution_to_energy_type(ekin_, Solid::kinetic_energy);
       }
       break;
     }

@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::init()
  *
  */
 void BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter::setup(
-    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
+    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
         output_params_ptr)
 {

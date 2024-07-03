@@ -32,11 +32,11 @@ bool Discret::ELEMENTS::SoPyramid5::ReadElement(
 
   if (buffer == "linear")
   {
-    kintype_ = Inpar::STR::KinemType::linear;
+    kintype_ = Inpar::Solid::KinemType::linear;
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_PYRAMID5 element failed KINEM unknown");
@@ -58,7 +58,7 @@ bool Discret::ELEMENTS::SoPyramid5::ReadElement(
     admissibl_mat = true;
 
   // check for SVK material if geometrically linear
-  if ((kintype_ == Inpar::STR::KinemType::linear) and (admissibl_mat == false))
+  if ((kintype_ == Inpar::Solid::KinemType::linear) and (admissibl_mat == false))
     FOUR_C_THROW("ERROR: Only linear elasticity (SVK) for geometrically linear pyramid5 element");
 
   return true;

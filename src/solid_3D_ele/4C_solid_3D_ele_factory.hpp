@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::ELEMENTS
+namespace Solid::ELEMENTS
 {
   enum class EasType;
 }
@@ -47,14 +47,14 @@ namespace Discret::ELEMENTS
     using FbarEvaluators = Core::FE::apply_celltype_sequence<FBarSolidIntegrator,
         Core::FE::CelltypeSequence<Core::FE::CellType::hex8, Core::FE::CellType::pyramid5>>;
     using EASEvaluators = Core::FE::BaseTypeList<
-        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9,
-            Inpar::STR::KinemType::nonlinearTotLag>,
-        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21,
-            Inpar::STR::KinemType::nonlinearTotLag>,
-        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_9,
-            Inpar::STR::KinemType::linear>,
-        SolidEleCalcEas<Core::FE::CellType::hex8, STR::ELEMENTS::EasType::eastype_h8_21,
-            Inpar::STR::KinemType::linear>>;
+        SolidEleCalcEas<Core::FE::CellType::hex8, Solid::ELEMENTS::EasType::eastype_h8_9,
+            Inpar::Solid::KinemType::nonlinearTotLag>,
+        SolidEleCalcEas<Core::FE::CellType::hex8, Solid::ELEMENTS::EasType::eastype_h8_21,
+            Inpar::Solid::KinemType::nonlinearTotLag>,
+        SolidEleCalcEas<Core::FE::CellType::hex8, Solid::ELEMENTS::EasType::eastype_h8_9,
+            Inpar::Solid::KinemType::linear>,
+        SolidEleCalcEas<Core::FE::CellType::hex8, Solid::ELEMENTS::EasType::eastype_h8_21,
+            Inpar::Solid::KinemType::linear>>;
     using MulfEvaluators =
         Core::FE::apply_celltype_sequence<MulfSolidIntegrator, ImplementedSolidCellTypes>;
     using FBarMulfEvaluators = Core::FE::apply_celltype_sequence<MulfFBarSolidIntegrator,

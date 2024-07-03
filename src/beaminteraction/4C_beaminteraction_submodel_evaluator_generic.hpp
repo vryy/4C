@@ -49,7 +49,7 @@ namespace Core::Geo
     class BoundingBox;
   }
 }  // namespace Core::Geo
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -60,7 +60,7 @@ namespace STR
   {
     class BeamInteractionDataState;
   }
-}  // namespace STR
+}  // namespace Solid
 namespace BEAMINTERACTION
 {
   class BeamCrosslinkerHandler;
@@ -92,9 +92,9 @@ namespace BEAMINTERACTION
       //! initialize the class variables
       virtual void init(Teuchos::RCP<Core::FE::Discretization> const& ia_discret,
           Teuchos::RCP<Core::FE::Discretization> const& bindis,
-          Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> const& gstate,
-          Teuchos::RCP<STR::TimeInt::BaseDataIO> const& gio_ptr,
-          Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
+          Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> const& gstate,
+          Teuchos::RCP<Solid::TimeInt::BaseDataIO> const& gio_ptr,
+          Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
           Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
           Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
           Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
@@ -145,7 +145,7 @@ namespace BEAMINTERACTION
       virtual void post_update_step_element() = 0;
 
       //! get contributions to system energy
-      virtual std::map<STR::EnergyType, double> get_energy() const = 0;
+      virtual std::map<Solid::EnergyType, double> get_energy() const = 0;
 
       //! write submodel specific output
       virtual void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const = 0;
@@ -181,7 +181,7 @@ namespace BEAMINTERACTION
 
       //! reset routine for model evlaluator
       virtual void init_submodel_dependencies(
-          Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelvector) = 0;
+          Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelvector) = 0;
 
       //! \brief add subproblem specific contributions to bin col map
       virtual void AddBinsToBinColMap(std::set<int>& colbins) = 0;
@@ -213,19 +213,19 @@ namespace BEAMINTERACTION
       Core::FE::Discretization const& BinDiscret() const;
 
       //! Returns the global state data container
-      STR::TimeInt::BaseDataGlobalState& GState();
-      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& GStatePtr();
-      STR::TimeInt::BaseDataGlobalState const& GState() const;
+      Solid::TimeInt::BaseDataGlobalState& GState();
+      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& GStatePtr();
+      Solid::TimeInt::BaseDataGlobalState const& GState() const;
 
       //! Returns the global input/output data container
-      STR::TimeInt::BaseDataIO& GInOutput();
-      STR::TimeInt::BaseDataIO const& GInOutput() const;
+      Solid::TimeInt::BaseDataIO& GInOutput();
+      Solid::TimeInt::BaseDataIO const& GInOutput() const;
 
       //! Returns the global state data container
-      STR::MODELEVALUATOR::BeamInteractionDataState& beam_interaction_data_state();
-      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>&
+      Solid::MODELEVALUATOR::BeamInteractionDataState& beam_interaction_data_state();
+      Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState>&
       beam_interaction_data_state_ptr();
-      STR::MODELEVALUATOR::BeamInteractionDataState const& beam_interaction_data_state() const;
+      Solid::MODELEVALUATOR::BeamInteractionDataState const& beam_interaction_data_state() const;
 
       BEAMINTERACTION::BeamCrosslinkerHandler& beam_crosslinker_handler();
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>& beam_crosslinker_handler_ptr();
@@ -259,13 +259,13 @@ namespace BEAMINTERACTION
       Teuchos::RCP<Core::FE::Discretization> bindis_ptr_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! pointer to input/ouput data container
-      Teuchos::RCP<STR::TimeInt::BaseDataIO> gio_ptr_;
+      Teuchos::RCP<Solid::TimeInt::BaseDataIO> gio_ptr_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> beaminteractiondatastate_;
+      Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState> beaminteractiondatastate_;
 
       //! beam crosslinker handler
       Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> beam_crosslinker_handler_;

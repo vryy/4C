@@ -19,14 +19,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Nln::SOLVER::PseudoTransient::PseudoTransient()
+Solid::Nln::SOLVER::PseudoTransient::PseudoTransient()
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::PseudoTransient::setup()
+void Solid::Nln::SOLVER::PseudoTransient::setup()
 {
   check_init();
 
@@ -42,7 +42,7 @@ void STR::Nln::SOLVER::PseudoTransient::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::PseudoTransient::set_pseudo_transient_params()
+void Solid::Nln::SOLVER::PseudoTransient::set_pseudo_transient_params()
 {
   check_init();
 

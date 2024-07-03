@@ -235,7 +235,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (so3_ele::KinematicType() == Inpar::STR::KinemType::nonlinearTotLag)
+        if (so3_ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> elemat1(
               elemat1_epetra.values(), true);
@@ -249,37 +249,37 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
           // default structural element
           if (!eleFBAR)
           {
-            nln_stifffint_tsi(la,        // location array
-                discretization,          // discr
-                mydisp,                  // current displacements
-                mytempnp,                // current temperature
-                nullptr,                 // element stiffness matrix
-                &elevec1,                // element internal force vector
-                nullptr,                 // stresses at GP
-                params,                  // algorithmic parameters e.g. time
-                Inpar::STR::stress_none  // stress output option
+            nln_stifffint_tsi(la,          // location array
+                discretization,            // discr
+                mydisp,                    // current displacements
+                mytempnp,                  // current temperature
+                nullptr,                   // element stiffness matrix
+                &elevec1,                  // element internal force vector
+                nullptr,                   // stresses at GP
+                params,                    // algorithmic parameters e.g. time
+                Inpar::Solid::stress_none  // stress output option
             );
           }     // so3_ele
           else  // Hex8Fbar
           {
-            nln_stifffint_tsi_fbar(la,   // location array
-                mydisp,                  // current displacements
-                mytempnp,                // current temperature
-                nullptr,                 // element stiffness matrix
-                &elevec1,                // element internal force vector
-                nullptr,                 // stresses at GP
-                params,                  // algorithmic parameters e.g. time
-                Inpar::STR::stress_none  // stress output option
+            nln_stifffint_tsi_fbar(la,     // location array
+                mydisp,                    // current displacements
+                mytempnp,                  // current temperature
+                nullptr,                   // element stiffness matrix
+                &elevec1,                  // element internal force vector
+                nullptr,                   // stresses at GP
+                params,                    // algorithmic parameters e.g. time
+                Inpar::Solid::stress_none  // stress output option
             );
           }  // Hex8Fbar
-        }    // (so3_ele::KinematicType() == Inpar::STR::KinemType::nonlinearTotLag)
+        }    // (so3_ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
 
-        // geometric Inpar::STR::KinemType::linear
-        else if (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+        // geometric Inpar::Solid::KinemType::linear
+        else if (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
         {
           // calculate the THERMOmechanical term for fint
-          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, Inpar::STR::stress_none);
-        }  // (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, Inpar::Solid::stress_none);
+        }  // (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
       }
       break;
     }  // calc_struct_internalforce
@@ -325,7 +325,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (so3_ele::KinematicType() == Inpar::STR::KinemType::nonlinearTotLag)
+        if (so3_ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           // stiffness
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> elemat1(
@@ -343,37 +343,37 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
           // default structural element
           if (!eleFBAR)
           {
-            nln_stifffint_tsi(la,        // location array
-                discretization,          // discr
-                mydisp,                  // current displacements
-                mytempnp,                // current temperature
-                matptr,                  // element stiffness matrix
-                &elevec1,                // element internal force vector
-                nullptr,                 // stresses at GP
-                params,                  // algorithmic parameters e.g. time
-                Inpar::STR::stress_none  // stress output option
+            nln_stifffint_tsi(la,          // location array
+                discretization,            // discr
+                mydisp,                    // current displacements
+                mytempnp,                  // current temperature
+                matptr,                    // element stiffness matrix
+                &elevec1,                  // element internal force vector
+                nullptr,                   // stresses at GP
+                params,                    // algorithmic parameters e.g. time
+                Inpar::Solid::stress_none  // stress output option
             );
           }     // so3_ele
           else  // Hex8Fbar
           {
-            nln_stifffint_tsi_fbar(la,   // location array
-                mydisp,                  // current displacements
-                mytempnp,                // current temperature
-                matptr,                  // element stiffness matrix
-                &elevec1,                // element internal force vector
-                nullptr,                 // stresses at GP
-                params,                  // algorithmic parameters e.g. time
-                Inpar::STR::stress_none  // stress output option
+            nln_stifffint_tsi_fbar(la,     // location array
+                mydisp,                    // current displacements
+                mytempnp,                  // current temperature
+                matptr,                    // element stiffness matrix
+                &elevec1,                  // element internal force vector
+                nullptr,                   // stresses at GP
+                params,                    // algorithmic parameters e.g. time
+                Inpar::Solid::stress_none  // stress output option
             );
           }  // Hex8Fbar
-        }    // (so3_ele::KinematicType() == Inpar::STR::KinemType::nonlinearTotLag)
+        }    // (so3_ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
 
         // geometric linear
-        else if (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+        else if (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
         {
           // calculate the THERMOmechanical term for fint
-          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, Inpar::STR::stress_none);
-        }  // (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, Inpar::Solid::stress_none);
+        }  // (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
       }
 
       break;
@@ -422,7 +422,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (so3_ele::KinematicType() == Inpar::STR::KinemType::nonlinearTotLag)
+        if (so3_ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           // stiffness
           Core::LinAlg::Matrix<numdofperelement_, numdofperelement_> elemat1(
@@ -437,40 +437,40 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
           // default structural element
           if (!eleFBAR)
           {
-            nln_stifffint_tsi(la,        // location array
-                discretization,          // discr
-                mydisp,                  // current displacements
-                mytempnp,                // current temperature
-                &elemat1,                // element stiffness matrix
-                &elevec1,                // element internal force vector
-                nullptr,                 // stresses at GP
-                params,                  // algorithmic parameters e.g. time
-                Inpar::STR::stress_none  // stress output option
+            nln_stifffint_tsi(la,          // location array
+                discretization,            // discr
+                mydisp,                    // current displacements
+                mytempnp,                  // current temperature
+                &elemat1,                  // element stiffness matrix
+                &elevec1,                  // element internal force vector
+                nullptr,                   // stresses at GP
+                params,                    // algorithmic parameters e.g. time
+                Inpar::Solid::stress_none  // stress output option
             );
           }     // so3_ele
           else  // Hex8Fbar
           {
-            nln_stifffint_tsi_fbar(la,   // location array
-                mydisp,                  // current displacements
-                mytempnp,                // current temperature
-                &elemat1,                // element stiffness matrix
-                &elevec1,                // element internal force vector
-                nullptr,                 // stresses at GP
-                params,                  // algorithmic parameters e.g. time
-                Inpar::STR::stress_none  // stress output option
+            nln_stifffint_tsi_fbar(la,     // location array
+                mydisp,                    // current displacements
+                mytempnp,                  // current temperature
+                &elemat1,                  // element stiffness matrix
+                &elevec1,                  // element internal force vector
+                nullptr,                   // stresses at GP
+                params,                    // algorithmic parameters e.g. time
+                Inpar::Solid::stress_none  // stress output option
             );
           }  // Hex8Fbar
 
-        }  // (so3_ele::KinematicType() == Inpar::STR::KinemType::nonlinearTotLag)
+        }  // (so3_ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
 
         // geometric linear
-        else if (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+        else if (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
         {
           // build the current temperature vector
           Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etemp(&(mytempnp[1]), true);  // view only!
           // calculate the THERMOmechanical term for fint
-          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, Inpar::STR::stress_none);
-        }  // (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, Inpar::Solid::stress_none);
+        }  // (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
       }
 
       break;
@@ -488,7 +488,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
       Core::FE::ExtractMyValues(*disp, mydisp, la[0].lm_);
 
       Teuchos::RCP<std::vector<char>> couplstressdata;
-      Inpar::STR::StressType iocouplstress;
+      Inpar::Solid::StressType iocouplstress;
       if (this->IsParamsInterface())
       {
         couplstressdata = this->str_params_interface().coupling_stress_data_ptr();
@@ -497,8 +497,8 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
       else
       {
         couplstressdata = params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
-        iocouplstress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-            params, "iocouplstress", Inpar::STR::stress_none);
+        iocouplstress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+            params, "iocouplstress", Inpar::Solid::stress_none);
       }
 
       // get the temperature dependent stress
@@ -529,7 +529,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
 
         // default: geometrically non-linear analysis with Total Lagrangean approach
-        if (so3_ele::KinematicType() == Inpar::STR::KinemType::nonlinearTotLag)
+        if (so3_ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
@@ -574,17 +574,17 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
           std::cout << "thermal stress" << couplstress << std::endl;
 #endif
 
-        }  // (so3_ele::KinematicType() == Inpar::STR::KinemType::nonlinearTotLag)
+        }  // (so3_ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
 
         // geometric linear
-        else if (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+        else if (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
         {
           // purely structural method, this is the coupled routine, i.e., a 2nd
           // discretisation exists, i.e., --> we always have a temperature state
 
           // calculate the THERMOmechanical term for fint: temperature stresses
           lin_fint_tsi(la, mydisp, mytempnp, nullptr, &couplstress, params, iocouplstress);
-        }  // (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+        }  // (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
 
 #ifdef TSIASOUTPUT
         std::cout << "thermal stress" << couplstress << std::endl;
@@ -733,7 +733,7 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
         Core::FE::ExtractMyValues(*tempnp, mytempnp, la[1].lm_);
       }
       // default: geometrically non-linear analysis with Total Lagrangean approach
-      if (so3_ele::KinematicType() == Inpar::STR::KinemType::nonlinearTotLag)
+      if (so3_ele::KinematicType() == Inpar::Solid::KinemType::nonlinearTotLag)
       {
         // in case we have a finite strain thermoplastic material use hex8fbar element
         // to cirucumvent volumetric locking
@@ -754,11 +754,11 @@ int Discret::ELEMENTS::So3Thermo<so3_ele, distype>::evaluate_coupl_with_thr(
       }    // (so3_ele::KinematicType() == nonlinear)
 
       // geometric linear
-      else if (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+      else if (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
       {
         // calculate the mechanical-thermal sub matrix k_dT of K_TSI
         lin_kd_t_tsi(la, mydisp, mytempnp, &stiffmatrix_kdT, params);
-      }  // (so3_ele::KinematicType() == Inpar::STR::KinemType::linear)
+      }  // (so3_ele::KinematicType() == Inpar::Solid::KinemType::linear)
 
       break;
     }  // calc_struct_stifftemp
@@ -792,7 +792,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
     Core::LinAlg::Matrix<numdofperelement_, 1>* force,      // element internal force vector
     Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
     Teuchos::ParameterList& params,                         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress                   // stress output option
+    const Inpar::Solid::StressType iostress                 // stress output option
 )
 {
   // update element geometry hex8, 3D: (8x3)
@@ -887,14 +887,14 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
         for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress(i);
         break;
       }
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
@@ -910,7 +910,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::lin_fint_tsi(
         (*elestress)(gp, 5) = cauchycouplstress(0, 2);
         break;
       }
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");
@@ -1084,7 +1084,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     Core::LinAlg::Matrix<numdofperelement_, 1>* force,      // element internal force vector
     Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
     Teuchos::ParameterList& params,                         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress                   // stress output option
+    const Inpar::Solid::StressType iostress                 // stress output option
 )
 {
   // update element geometry hex8, 3D: (8x3)
@@ -1228,13 +1228,13 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress(i);
         break;
       }
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
@@ -1251,7 +1251,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi(
         (*elestress)(gp, 5) = cauchycouplstress(0, 2);
         break;
       }
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");
@@ -1539,7 +1539,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
     Core::LinAlg::Matrix<numdofperelement_, 1>* force,      // element internal force vector
     Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
     Teuchos::ParameterList& params,                         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress                   // stress output option
+    const Inpar::Solid::StressType iostress                 // stress output option
 )
 {
   // in case we have a finite strain thermoplastic material use hex8fbar element
@@ -1725,13 +1725,13 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       // return gp stresses
       switch (iostress)
       {
-        case Inpar::STR::stress_2pk:
+        case Inpar::Solid::stress_2pk:
         {
           if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress_bar(i);
           break;
         }
-        case Inpar::STR::stress_cauchy:
+        case Inpar::Solid::stress_cauchy:
         {
           if (elestress == nullptr) FOUR_C_THROW("stress data not available");
           // push forward of material stress to the spatial configuration
@@ -1747,7 +1747,7 @@ void Discret::ELEMENTS::So3Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
           (*elestress)(gp, 5) = cauchycouplstress_bar(0, 2);
           break;
         }
-        case Inpar::STR::stress_none:
+        case Inpar::Solid::stress_none:
           break;
         default:
           FOUR_C_THROW("requested stress type not available");

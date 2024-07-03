@@ -512,7 +512,7 @@ void BEAMINTERACTION::BeamToSolidConditionSurface::setup(
  */
 void BEAMINTERACTION::BeamToSolidConditionSurface::set_state(
     const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<const STR::MODELEVALUATOR::BeamInteractionDataState>&
+    const Teuchos::RCP<const Solid::MODELEVALUATOR::BeamInteractionDataState>&
         beaminteraction_data_state)
 {
   // For contact we reset the evaluation data in each iteration (we don't call clear() here, since

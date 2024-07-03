@@ -51,7 +51,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::BeamInteraction::BeamInteraction()
+Solid::MODELEVALUATOR::BeamInteraction::BeamInteraction()
     : discret_ptr_(Teuchos::null),
       beaminteraction_params_ptr_(Teuchos::null),
       submodeltypes_(Teuchos::null),
@@ -78,7 +78,7 @@ STR::MODELEVALUATOR::BeamInteraction::BeamInteraction()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::setup()
+void Solid::MODELEVALUATOR::BeamInteraction::setup()
 {
   check_init();
 
@@ -124,7 +124,7 @@ void STR::MODELEVALUATOR::BeamInteraction::setup()
       Global::Problem::Instance()->spatial_approximation_type())));
 
   // init data container
-  ia_state_ptr_ = Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteractionDataState());
+  ia_state_ptr_ = Teuchos::rcp(new Solid::MODELEVALUATOR::BeamInteractionDataState());
   ia_state_ptr_->init();
   ia_state_ptr_->setup(ia_discret_);
 
@@ -230,7 +230,7 @@ void STR::MODELEVALUATOR::BeamInteraction::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::post_setup()
+void Solid::MODELEVALUATOR::BeamInteraction::post_setup()
 {
   check_init();
 
@@ -263,7 +263,7 @@ void STR::MODELEVALUATOR::BeamInteraction::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
+void Solid::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
 {
   check_init();
 
@@ -339,7 +339,7 @@ void STR::MODELEVALUATOR::BeamInteraction::set_sub_model_types()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
+void Solid::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
 {
   check_init();
 
@@ -369,15 +369,15 @@ void STR::MODELEVALUATOR::BeamInteraction::init_and_setup_sub_model_evaluators()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector>
-STR::MODELEVALUATOR::BeamInteraction::transform_to_vector(
-    STR::MODELEVALUATOR::BeamInteraction::Map submodel_map,
+Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Vector>
+Solid::MODELEVALUATOR::BeamInteraction::transform_to_vector(
+    Solid::MODELEVALUATOR::BeamInteraction::Map submodel_map,
     std::vector<Inpar::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const
 {
-  Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector> me_vec_ptr =
-      Teuchos::rcp(new STR::MODELEVALUATOR::BeamInteraction::Vector(0));
+  Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Vector> me_vec_ptr =
+      Teuchos::rcp(new Solid::MODELEVALUATOR::BeamInteraction::Vector(0));
 
-  STR::MODELEVALUATOR::BeamInteraction::Map::iterator miter;
+  Solid::MODELEVALUATOR::BeamInteraction::Map::iterator miter;
 
   // if there is a contractile cell submodel, put in first place
   miter = submodel_map.find(Inpar::BEAMINTERACTION::submodel_spherebeamlink);
@@ -401,7 +401,7 @@ STR::MODELEVALUATOR::BeamInteraction::transform_to_vector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::HaveSubModelType(
+bool Solid::MODELEVALUATOR::BeamInteraction::HaveSubModelType(
     Inpar::BEAMINTERACTION::SubModelType const& submodeltype) const
 {
   check_init();
@@ -410,7 +410,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::HaveSubModelType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::partition_problem()
+void Solid::MODELEVALUATOR::BeamInteraction::partition_problem()
 {
   check_init();
 
@@ -488,7 +488,7 @@ void STR::MODELEVALUATOR::BeamInteraction::partition_problem()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::post_partition_problem()
+bool Solid::MODELEVALUATOR::BeamInteraction::post_partition_problem()
 {
   check_init();
 
@@ -503,9 +503,9 @@ bool STR::MODELEVALUATOR::BeamInteraction::post_partition_problem()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::extend_ghosting()
+void Solid::MODELEVALUATOR::BeamInteraction::extend_ghosting()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::extend_ghosting");
+  TEUCHOS_FUNC_TIME_MONITOR("Solid::MODELEVALUATOR::BeamInteraction::extend_ghosting");
 
   ia_state_ptr_->get_extended_bin_to_row_ele_map().clear();
 
@@ -565,7 +565,7 @@ void STR::MODELEVALUATOR::BeamInteraction::extend_ghosting()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::reset(const Epetra_Vector& x)
+void Solid::MODELEVALUATOR::BeamInteraction::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -618,7 +618,7 @@ void STR::MODELEVALUATOR::BeamInteraction::reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::evaluate_force()
+bool Solid::MODELEVALUATOR::BeamInteraction::evaluate_force()
 {
   check_init_setup();
 
@@ -641,7 +641,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::evaluate_force()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::evaluate_stiff()
+bool Solid::MODELEVALUATOR::BeamInteraction::evaluate_stiff()
 {
   check_init_setup();
 
@@ -662,7 +662,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::evaluate_stiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::evaluate_force_stiff()
+bool Solid::MODELEVALUATOR::BeamInteraction::evaluate_force_stiff()
 {
   check_init_setup();
 
@@ -690,7 +690,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::assemble_force(
+bool Solid::MODELEVALUATOR::BeamInteraction::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   check_init_setup();
@@ -702,7 +702,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::assemble_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
+bool Solid::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   check_init_setup();
@@ -719,7 +719,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::assemble_jacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::write_restart(
+void Solid::MODELEVALUATOR::BeamInteraction::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -751,7 +751,7 @@ void STR::MODELEVALUATOR::BeamInteraction::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::MODELEVALUATOR::BeamInteraction::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
 
@@ -806,7 +806,7 @@ void STR::MODELEVALUATOR::BeamInteraction::read_restart(Core::IO::Discretization
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::run_post_compute_x(
+void Solid::MODELEVALUATOR::BeamInteraction::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   // empty
@@ -814,7 +814,7 @@ void STR::MODELEVALUATOR::BeamInteraction::run_post_compute_x(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::run_post_iterate(const ::NOX::Solver::Generic& solver)
+void Solid::MODELEVALUATOR::BeamInteraction::run_post_iterate(const ::NOX::Solver::Generic& solver)
 {
   check_init_setup();
 
@@ -826,7 +826,7 @@ void STR::MODELEVALUATOR::BeamInteraction::run_post_iterate(const ::NOX::Solver:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::update_step_state(const double& timefac_n)
+void Solid::MODELEVALUATOR::BeamInteraction::update_step_state(const double& timefac_n)
 {
   check_init_setup();
 
@@ -843,7 +843,7 @@ void STR::MODELEVALUATOR::BeamInteraction::update_step_state(const double& timef
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::update_step_element()
+void Solid::MODELEVALUATOR::BeamInteraction::update_step_element()
 {
   check_init_setup();
 
@@ -927,7 +927,7 @@ void STR::MODELEVALUATOR::BeamInteraction::update_step_element()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_needs_to_be_done()
+bool Solid::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_needs_to_be_done()
 {
   if (beaminteraction_params_ptr_->get_repartition_strategy() !=
       Inpar::BEAMINTERACTION::repstr_adaptive)
@@ -984,18 +984,18 @@ bool STR::MODELEVALUATOR::BeamInteraction::check_if_beam_discret_redistribution_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::determine_stress_strain()
+void Solid::MODELEVALUATOR::BeamInteraction::determine_stress_strain()
 {
   // empty
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::determine_energy()
+void Solid::MODELEVALUATOR::BeamInteraction::determine_energy()
 {
   check_init_setup();
 
-  std::map<STR::EnergyType, double> energy_this_submodel;
+  std::map<Solid::EnergyType, double> energy_this_submodel;
 
   for (auto& submodel : (*me_vec_ptr_))
   {
@@ -1008,14 +1008,14 @@ void STR::MODELEVALUATOR::BeamInteraction::determine_energy()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::determine_optional_quantity()
+void Solid::MODELEVALUATOR::BeamInteraction::determine_optional_quantity()
 {
   // empty
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::output_step_state(
+void Solid::MODELEVALUATOR::BeamInteraction::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   check_init_setup();
@@ -1030,7 +1030,7 @@ void STR::MODELEVALUATOR::BeamInteraction::output_step_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::runtime_output_step_state() const
+void Solid::MODELEVALUATOR::BeamInteraction::runtime_output_step_state() const
 {
   check_init_setup();
 
@@ -1044,7 +1044,7 @@ void STR::MODELEVALUATOR::BeamInteraction::runtime_output_step_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteraction::get_block_dof_row_map_ptr()
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::BeamInteraction::get_block_dof_row_map_ptr()
     const
 {
   check_init_setup();
@@ -1053,7 +1053,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteraction::get_block_d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BeamInteraction::get_current_solution_ptr()
+Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::BeamInteraction::get_current_solution_ptr()
     const
 {
   // there are no model specific solution entries
@@ -1063,7 +1063,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::BeamInteraction::get_curr
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::BeamInteraction::get_last_time_step_solution_ptr() const
+Solid::MODELEVALUATOR::BeamInteraction::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -1071,7 +1071,7 @@ STR::MODELEVALUATOR::BeamInteraction::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::post_output()
+void Solid::MODELEVALUATOR::BeamInteraction::post_output()
 {
   //  tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box()->ApplyDirichlet(
   //  global_state().get_time_n()
@@ -1080,7 +1080,7 @@ void STR::MODELEVALUATOR::BeamInteraction::post_output()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::reset_step_state()
+void Solid::MODELEVALUATOR::BeamInteraction::reset_step_state()
 {
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
@@ -1089,12 +1089,12 @@ void STR::MODELEVALUATOR::BeamInteraction::reset_step_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::update_coupling_adapter_and_matrix_transformation()
+void Solid::MODELEVALUATOR::BeamInteraction::update_coupling_adapter_and_matrix_transformation()
 {
   check_init();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "STR::MODELEVALUATOR::BeamInteraction::update_coupling_adapter_and_matrix_transformation");
+      "Solid::MODELEVALUATOR::BeamInteraction::update_coupling_adapter_and_matrix_transformation");
 
   // reset transformation member variables (eg. exporter) by rebuilding
   // and provide new maps for coupling adapter
@@ -1104,7 +1104,7 @@ void STR::MODELEVALUATOR::BeamInteraction::update_coupling_adapter_and_matrix_tr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::build_row_ele_to_bin_map()
+void Solid::MODELEVALUATOR::BeamInteraction::build_row_ele_to_bin_map()
 {
   check_init();
 
@@ -1129,7 +1129,7 @@ void STR::MODELEVALUATOR::BeamInteraction::build_row_ele_to_bin_map()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::update_maps()
+void Solid::MODELEVALUATOR::BeamInteraction::update_maps()
 {
   check_init();
 
@@ -1171,11 +1171,11 @@ void STR::MODELEVALUATOR::BeamInteraction::update_maps()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::transform_force()
+void Solid::MODELEVALUATOR::BeamInteraction::transform_force()
 {
   check_init();
 
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::transform_force");
+  TEUCHOS_FUNC_TIME_MONITOR("Solid::MODELEVALUATOR::BeamInteraction::transform_force");
 
   // transform force vector to problem discret layout/distribution
   force_beaminteraction_ = coupsia_->MasterToSlave(ia_force_beaminteraction_);
@@ -1183,11 +1183,11 @@ void STR::MODELEVALUATOR::BeamInteraction::transform_force()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::transform_stiff()
+void Solid::MODELEVALUATOR::BeamInteraction::transform_stiff()
 {
   check_init();
 
-  TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::transform_stiff");
+  TEUCHOS_FUNC_TIME_MONITOR("Solid::MODELEVALUATOR::BeamInteraction::transform_stiff");
 
   stiff_beaminteraction_->UnComplete();
   // transform stiffness matrix to problem discret layout/distribution
@@ -1197,7 +1197,7 @@ void STR::MODELEVALUATOR::BeamInteraction::transform_stiff()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::transform_force_stiff()
+void Solid::MODELEVALUATOR::BeamInteraction::transform_force_stiff()
 {
   check_init();
 
@@ -1207,7 +1207,7 @@ void STR::MODELEVALUATOR::BeamInteraction::transform_force_stiff()
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() const
+void Solid::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() const
 {
   std::vector<Teuchos::RCP<Core::FE::Discretization>> discret_vec(1, ia_discret_);
   std::vector<Teuchos::RCP<const Epetra_Vector>> disnp_vec(1, Teuchos::null);
@@ -1239,7 +1239,7 @@ void STR::MODELEVALUATOR::BeamInteraction::print_binning_info_to_screen() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteraction::Logo() const
+void Solid::MODELEVALUATOR::BeamInteraction::Logo() const
 {
   check_init();
 

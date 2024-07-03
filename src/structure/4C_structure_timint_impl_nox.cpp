@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void STR::TimIntImpl::NoxSetup()
+void Solid::TimIntImpl::NoxSetup()
 {
   // create
   noxparams_ = Teuchos::rcp(new Teuchos::ParameterList());
@@ -46,7 +46,7 @@ void STR::TimIntImpl::NoxSetup()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
+void Solid::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
 {
   // copy the input list
   noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(noxparams));
@@ -92,32 +92,32 @@ void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
+Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::NoxCreateStatusTest(
     Teuchos::RCP<::NOX::Abstract::Group> grp)
 {
   // type of norm
   ::NOX::Epetra::Vector::NormType norm = ::NOX::Epetra::Vector::TwoNorm;
   ::NOX::StatusTest::NormF::ScaleType scalefres = ::NOX::StatusTest::NormF::Scaled;
   ::NOX::StatusTest::NormUpdate::ScaleType scaledisi = ::NOX::StatusTest::NormUpdate::Scaled;
-  if (iternorm_ == Inpar::STR::norm_l1)
+  if (iternorm_ == Inpar::Solid::norm_l1)
   {
     norm = ::NOX::Epetra::Vector::OneNorm;
     scalefres = ::NOX::StatusTest::NormF::Unscaled;
     scaledisi = ::NOX::StatusTest::NormUpdate::Unscaled;
   }
-  else if (iternorm_ == Inpar::STR::norm_l2)
+  else if (iternorm_ == Inpar::Solid::norm_l2)
   {
     norm = ::NOX::Epetra::Vector::TwoNorm;
     scalefres = ::NOX::StatusTest::NormF::Unscaled;
     scaledisi = ::NOX::StatusTest::NormUpdate::Unscaled;
   }
-  else if (iternorm_ == Inpar::STR::norm_rms)
+  else if (iternorm_ == Inpar::Solid::norm_rms)
   {
     norm = ::NOX::Epetra::Vector::TwoNorm;
     scalefres = ::NOX::StatusTest::NormF::Scaled;
     scaledisi = ::NOX::StatusTest::NormUpdate::Scaled;
   }
-  else if (iternorm_ == Inpar::STR::norm_inf)
+  else if (iternorm_ == Inpar::Solid::norm_inf)
   {
     norm = ::NOX::Epetra::Vector::MaxNorm;
     scalefres = ::NOX::StatusTest::NormF::Unscaled;
@@ -125,16 +125,16 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   }
   else
   {
-    FOUR_C_THROW("Norm %s is not available", Inpar::STR::VectorNormString(iternorm_).c_str());
+    FOUR_C_THROW("Norm %s is not available", Inpar::Solid::VectorNormString(iternorm_).c_str());
   }
 
   // combined residual force and displacement test
   Teuchos::RCP<::NOX::StatusTest::Combo> combo2 = Teuchos::null;
-  if (combdisifres_ == Inpar::STR::bop_and)
+  if (combdisifres_ == Inpar::Solid::bop_and)
   {
     combo2 = Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
   }
-  else if (combdisifres_ == Inpar::STR::bop_or)
+  else if (combdisifres_ == Inpar::Solid::bop_or)
   {
     combo2 = Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
   }
@@ -145,21 +145,21 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
 
 
   // convergence tests for force residual
-  if (normtypefres_ == Inpar::STR::convnorm_abs)
+  if (normtypefres_ == Inpar::Solid::convnorm_abs)
   {
     // absolute test
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFres =
         Teuchos::rcp(new ::NOX::StatusTest::NormF(tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
-  else if (normtypefres_ == Inpar::STR::convnorm_rel)
+  else if (normtypefres_ == Inpar::Solid::convnorm_rel)
   {
     // relative
     Teuchos::RCP<::NOX::StatusTest::NormF> statusTestNormFres =
         Teuchos::rcp(new ::NOX::StatusTest::NormF(*grp, tolfres_, norm, scalefres));
     combo2->addStatusTest(statusTestNormFres);
   }
-  else if (normtypefres_ == Inpar::STR::convnorm_mix)
+  else if (normtypefres_ == Inpar::Solid::convnorm_mix)
   {
     // mixed
     Teuchos::RCP<::NOX::StatusTest::Combo> combo3 =
@@ -180,20 +180,20 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
   }
 
   // convergence tests for residual displacements
-  if (normtypedisi_ == Inpar::STR::convnorm_abs)
+  if (normtypedisi_ == Inpar::Solid::convnorm_abs)
   {
     // absolute test
     Teuchos::RCP<::NOX::StatusTest::NormUpdate> statusTestNormDisi =
         Teuchos::rcp(new ::NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
     combo2->addStatusTest(statusTestNormDisi);
   }
-  else if (normtypedisi_ == Inpar::STR::convnorm_rel)
+  else if (normtypedisi_ == Inpar::Solid::convnorm_rel)
   {
     // relative test
     // NOT AVAILABLE
     FOUR_C_THROW("Not available");
   }
-  else if (normtypedisi_ == Inpar::STR::convnorm_mix)
+  else if (normtypedisi_ == Inpar::Solid::convnorm_mix)
   {
     // mixed
     // Teuchos::RCP<::NOX::StatusTest::Combo> combo3
@@ -230,7 +230,7 @@ Teuchos::RCP<::NOX::StatusTest::Combo> STR::TimIntImpl::NoxCreateStatusTest(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::nox_create_solver_parameters()
+Teuchos::RCP<Teuchos::ParameterList> Solid::TimIntImpl::nox_create_solver_parameters()
 {
   // Create the list of solver parameters
   Teuchos::RCP<Teuchos::ParameterList> solverParametersPtr =
@@ -251,7 +251,7 @@ Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::nox_create_solver_paramete
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::nox_create_print_parameters(
+Teuchos::RCP<Teuchos::ParameterList> Solid::TimIntImpl::nox_create_print_parameters(
     const bool verbose) const
 {
   // Set the printing parameters in the "Printing" sublist
@@ -286,7 +286,7 @@ Teuchos::RCP<Teuchos::ParameterList> STR::TimIntImpl::nox_create_print_parameter
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool STR::TimIntImpl::computeF(const Epetra_Vector& x, Epetra_Vector& RHS,
+bool Solid::TimIntImpl::computeF(const Epetra_Vector& x, Epetra_Vector& RHS,
     const ::NOX::Epetra::Interface::Required::FillType flag)
 {
   /* determine residual displacements:
@@ -313,7 +313,7 @@ bool STR::TimIntImpl::computeF(const Epetra_Vector& x, Epetra_Vector& RHS,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool STR::TimIntImpl::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
+bool Solid::TimIntImpl::computeJacobian(const Epetra_Vector& x, Epetra_Operator& Jac)
 {
   // create parameter list
   Teuchos::ParameterList params;
@@ -329,7 +329,7 @@ bool STR::TimIntImpl::computeJacobian(const Epetra_Vector& x, Epetra_Operator& J
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-bool STR::TimIntImpl::computePreconditioner(
+bool Solid::TimIntImpl::computePreconditioner(
     const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams)
 {
   // deliver
@@ -338,7 +338,7 @@ bool STR::TimIntImpl::computePreconditioner(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::LinearSystem> STR::TimIntImpl::nox_create_linear_system(
+Teuchos::RCP<::NOX::Epetra::LinearSystem> Solid::TimIntImpl::nox_create_linear_system(
     Teuchos::ParameterList& nlParams, ::NOX::Epetra::Vector& noxSoln,
     Teuchos::RCP<::NOX::Utils> utils)
 {
@@ -352,7 +352,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> STR::TimIntImpl::nox_create_linear_sys
   ::NOX::Epetra::Interface::Jacobian* iJac = this;
   const Teuchos::RCP<Epetra_Operator> J = stiff_;
 
-  linSys = Teuchos::rcp(new NOX::STR::LinearSystem(
+  linSys = Teuchos::rcp(new NOX::Solid::LinearSystem(
       printParams, lsParams, Teuchos::rcp(iJac, false), J, noxSoln, solver_));
 
   return linSys;
@@ -360,7 +360,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> STR::TimIntImpl::nox_create_linear_sys
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int STR::TimIntImpl::NoxSolve()
+int Solid::TimIntImpl::NoxSolve()
 {
   // extract parameter lists
   Teuchos::ParameterList& nlParams = *noxparams_;
@@ -374,8 +374,8 @@ int STR::TimIntImpl::NoxSolve()
       nox_create_linear_system(nlParams, noxSoln, noxutils_);
 
   // Create group
-  Teuchos::RCP<NOX::STR::Group> grp = Teuchos::rcp(
-      new NOX::STR::Group(*this, printParams, Teuchos::rcp(this, false), noxSoln, linSys));
+  Teuchos::RCP<NOX::Solid::Group> grp = Teuchos::rcp(
+      new NOX::Solid::Group(*this, printParams, Teuchos::rcp(this, false), noxSoln, linSys));
 
   // Create status test
   noxstatustest_ = NoxCreateStatusTest(grp);
@@ -395,7 +395,7 @@ int STR::TimIntImpl::NoxSolve()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int STR::TimIntImpl::NoxErrorCheck(
+int Solid::TimIntImpl::NoxErrorCheck(
     ::NOX::StatusTest::StatusType status, Teuchos::RCP<::NOX::Solver::Generic> solver)
 {
   noxstatustest_->print(std::cout);
@@ -403,14 +403,14 @@ int STR::TimIntImpl::NoxErrorCheck(
   // check if nonlinear solver converged
   if (status != ::NOX::StatusTest::Converged)
   {
-    if (divcontype_ == Inpar::STR::divcont_halve_step or
-        divcontype_ == Inpar::STR::divcont_repeat_step or
-        divcontype_ == Inpar::STR::divcont_repeat_simulation)
+    if (divcontype_ == Inpar::Solid::divcont_halve_step or
+        divcontype_ == Inpar::Solid::divcont_repeat_step or
+        divcontype_ == Inpar::Solid::divcont_repeat_simulation)
     {
       if (myrank_ == 0) noxutils_->out() << "Nonlinear solver failed to converge!" << std::endl;
       return 1;
     }
-    else if (divcontype_ == Inpar::STR::divcont_continue)
+    else if (divcontype_ == Inpar::Solid::divcont_continue)
     {
       if (myrank_ == 0)
         noxutils_->out() << "Nonlinear solver failed to converge! continuing " << std::endl;

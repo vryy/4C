@@ -260,13 +260,13 @@ void FS3I::PartFPS3I::init()
   Inpar::FLUID::TimeIntegrationScheme fluidtimealgo =
       Core::UTILS::IntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluiddyn, "TIMEINTEGR");
 
-  Inpar::STR::DynamicType structtimealgo =
-      Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(structdyn, "DYNAMICTYP");
+  Inpar::Solid::DynamicType structtimealgo =
+      Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(structdyn, "DYNAMICTYP");
 
   if (fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
   {
     if (scatratimealgo != Inpar::ScaTra::timeint_one_step_theta or
-        structtimealgo != Inpar::STR::dyna_onesteptheta)
+        structtimealgo != Inpar::Solid::dyna_onesteptheta)
       FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a one-step-theta scheme is intended to be used for the "
@@ -282,7 +282,7 @@ void FS3I::PartFPS3I::init()
   else if (fluidtimealgo == Inpar::FLUID::timeint_afgenalpha)
   {
     if (scatratimealgo != Inpar::ScaTra::timeint_gen_alpha or
-        structtimealgo != Inpar::STR::dyna_genalpha)
+        structtimealgo != Inpar::Solid::dyna_genalpha)
       FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a (alpha_f-based) generalized-alpha scheme is intended "

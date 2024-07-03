@@ -47,7 +47,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
         Teuchos::RCP<Epetra_Vector> me_force_ptr);
 
     //! Evaluate the matrices of the saddle-point system
-    virtual void evaluate_coupling_terms(STR::TimeInt::BaseDataGlobalState& gstate);
+    virtual void evaluate_coupling_terms(Solid::TimeInt::BaseDataGlobalState& gstate);
 
     //! Reset the sub model evaluator
     virtual void reset() = 0;

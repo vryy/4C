@@ -101,7 +101,7 @@ void Discret::ELEMENTS::SoHex20Type::setup_element_definition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoHex20::SoHex20(int id, int owner)
-    : SoBase(id, owner), pstype_(Inpar::STR::PreStress::none), pstime_(0.0), time_(0.0)
+    : SoBase(id, owner), pstype_(Inpar::Solid::PreStress::none), pstime_(0.0), time_(0.0)
 {
   invJ_.resize(NUMGPT_SOH20, Core::LinAlg::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
   detJ_.resize(NUMGPT_SOH20, 0.0);
@@ -213,7 +213,7 @@ void Discret::ELEMENTS::SoHex20::unpack(const std::vector<char>& data)
   for (int i = 0; i < size; ++i) extract_from_pack(position, data, invJ_[i]);
 
   // Extract prestress
-  pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
+  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))

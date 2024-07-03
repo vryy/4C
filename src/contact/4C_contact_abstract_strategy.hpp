@@ -1339,13 +1339,13 @@ namespace CONTACT
     virtual void reset(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& dispnp,
         const Epetra_Vector& xnew);
 
-    /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class
+    /*! \brief Global evaluation method called from Solid::MODELEVALUATOR::Contact class
      *
      *  \date 03/2016
      *  \author hiermeier */
     void evaluate(CONTACT::ParamsInterface& cparams) { evaluate(cparams, nullptr); }
 
-    /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class
+    /*! \brief Global evaluation method called from Solid::MODELEVALUATOR::Contact class
      *
      *  \date 03/2016
      *  \author hiermeier */
@@ -1356,7 +1356,7 @@ namespace CONTACT
       evaluate(cparams, eval_vec, nullptr);
     }
 
-    /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class
+    /*! \brief Global evaluation method called from Solid::MODELEVALUATOR::Contact class
      *
      * This is the central place to enter contact evaluation.
      * The actual evaluation operation is governed by the Mortar::ActionType in the
@@ -1693,7 +1693,7 @@ namespace CONTACT
      *  \author hiermeier \date 12/17 */
     virtual void evaluate_static_constraint_rhs(CONTACT::ParamsInterface& cparams);
 
-    /** \brief Run at the very beginning of a call to STR::ModelEvaluator::Evalute*
+    /** \brief Run at the very beginning of a call to Solid::ModelEvaluator::Evalute*
      *
      *  \param cparams (in): parameter interface between the contact objects and
      *                       the structural time integration
@@ -1702,7 +1702,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual void run_pre_evaluate(CONTACT::ParamsInterface& cparams);
 
-    /** \brief Run in the end of a call to STR::ModelEvaluator::EvaluteForce/Stiff/ForceStiff
+    /** \brief Run in the end of a call to Solid::ModelEvaluator::EvaluteForce/Stiff/ForceStiff
      *
      *  \param cparams (in): parameter interface between the contact objects and the structural time
      *                       integration

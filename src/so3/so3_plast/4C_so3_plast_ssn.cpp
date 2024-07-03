@@ -505,7 +505,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::ReadElement(
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
     // everything ok
   }
   else
@@ -611,7 +611,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::ReadElement(
 
   Teuchos::RCP<Mat::So3Material> so3mat = SolidMaterial();
   so3mat->setup(numgpt_, linedef);
-  so3mat->ValidKinematics(Inpar::STR::KinemType::nonlinearTotLag);
+  so3mat->ValidKinematics(Inpar::Solid::KinemType::nonlinearTotLag);
 
 
   // Validate that materials doesn't use extended update call.

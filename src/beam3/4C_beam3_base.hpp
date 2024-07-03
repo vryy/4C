@@ -43,13 +43,13 @@ namespace Core::Geo
     class BoundingBox;
   }
 }  // namespace Core::Geo
-namespace STR
+namespace Solid
 {
   namespace ELEMENTS
   {
     class ParamsInterface;
   }
-}  // namespace STR
+}  // namespace Solid
 
 namespace BROWNIANDYN
 {
@@ -411,7 +411,7 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline STR::ELEMENTS::ParamsInterface& params_interface() const
+      inline Solid::ELEMENTS::ParamsInterface& params_interface() const
       {
         if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -714,7 +714,7 @@ namespace Discret
       /** \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<Solid::ELEMENTS::ParamsInterface> interface_ptr_;
 
       Teuchos::RCP<BROWNIANDYN::ParamsInterface> browndyn_interface_ptr_;
 

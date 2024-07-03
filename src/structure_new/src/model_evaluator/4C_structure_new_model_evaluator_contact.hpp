@@ -31,7 +31,7 @@ namespace Mortar
   class StrategyBase;
 }  // namespace Mortar
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -47,7 +47,7 @@ namespace STR
       //!@{
 
       //! [derived]
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_contact; }
+      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_contact; }
 
       //! reset class variables (without jacobian) [derived]
       void reset(const Epetra_Vector& x) override;
@@ -88,7 +88,7 @@ namespace STR
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::STR::PredEnum& pred_type) override{};
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! recover condensed Lagrange multipliers
       void run_post_compute_x(
@@ -167,7 +167,7 @@ namespace STR
        *
        *  \author hiermeier \date 08/17 */
       Teuchos::RCP<Epetra_Vector> assemble_force_of_models(
-          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr,
+          const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
       virtual Teuchos::RCP<Core::LinAlg::SparseOperator> get_aux_displ_jacobian() const;
@@ -189,8 +189,8 @@ namespace STR
       //!@}
 
      protected:
-      STR::MODELEVALUATOR::ContactData& eval_contact();
-      const STR::MODELEVALUATOR::ContactData& eval_contact() const;
+      Solid::MODELEVALUATOR::ContactData& eval_contact();
+      const Solid::MODELEVALUATOR::ContactData& eval_contact() const;
 
       virtual void check_pseudo2d() const;
 
@@ -205,14 +205,14 @@ namespace STR
       void extend_lagrange_multiplier_domain(Teuchos::RCP<Epetra_Vector>& lm_vec) const;
 
       //! contact evaluation data container
-      Teuchos::RCP<STR::MODELEVALUATOR::ContactData> eval_contact_ptr_;
+      Teuchos::RCP<Solid::MODELEVALUATOR::ContactData> eval_contact_ptr_;
 
       //! contact strategy
       Teuchos::RCP<CONTACT::AbstractStrategy> strategy_ptr_;
 
     };  // class Contact
   }     // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

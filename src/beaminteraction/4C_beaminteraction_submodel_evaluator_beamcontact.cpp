@@ -242,7 +242,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::init_submodel_dependencies(
-    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
+    Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
   // no active influence on other submodels
@@ -376,7 +376,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::pre_update_step_element(bo
    * from previous time step */
   /* Fixme
    * writing this output also must be done BEFORE re-distribution which
-   * currently happens in STR::MODELEVALUATOR::BeamInteraction::update_step_element()
+   * currently happens in Solid::MODELEVALUATOR::BeamInteraction::update_step_element()
    * before calling update_step_element() on all submodels.
    * Hence, the only option currently is to call it from pre_update_step_element() */
   /* Note: another option would be to not use any data from state vectors or elements and only
@@ -421,21 +421,21 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::post_update_step_element()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_energy()
+std::map<Solid::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_energy()
     const
 {
   check_init_setup();
 
-  std::map<STR::EnergyType, double> contact_penalty_potential;
+  std::map<Solid::EnergyType, double> contact_penalty_potential;
 
   for (auto& elepairptr : contact_elepairs_)
   {
-    contact_penalty_potential[STR::beam_contact_penalty_potential] += elepairptr->get_energy();
+    contact_penalty_potential[Solid::beam_contact_penalty_potential] += elepairptr->get_energy();
   }
 
   for (const auto& assembly_manager : assembly_managers_)
   {
-    contact_penalty_potential[STR::beam_contact_penalty_potential] +=
+    contact_penalty_potential[Solid::beam_contact_penalty_potential] +=
         assembly_manager->get_energy(GState().get_dis_np());
   }
 

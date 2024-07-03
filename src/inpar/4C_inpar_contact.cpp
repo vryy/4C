@@ -108,12 +108,12 @@ void Inpar::CONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> lis
   // solver convergence test parameters for contact/meshtying in saddlepoint formulation
   setStringToIntegralParameter<int>("NORMCOMBI_RESFCONTCONSTR", "And",
       "binary operator to combine contact constraints and residual force values",
-      tuple<std::string>("And", "Or"), tuple<int>(Inpar::STR::bop_and, Inpar::STR::bop_or),
+      tuple<std::string>("And", "Or"), tuple<int>(Inpar::Solid::bop_and, Inpar::Solid::bop_or),
       &scontact);
 
   setStringToIntegralParameter<int>("NORMCOMBI_DISPLAGR", "And",
       "binary operator to combine displacement increments and Lagrange multiplier increment values",
-      tuple<std::string>("And", "Or"), tuple<int>(Inpar::STR::bop_and, Inpar::STR::bop_or),
+      tuple<std::string>("And", "Or"), tuple<int>(Inpar::Solid::bop_and, Inpar::Solid::bop_or),
       &scontact);
 
   Core::UTILS::DoubleParameter("TOLCONTCONSTR", 1.0E-6,

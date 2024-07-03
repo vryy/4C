@@ -62,16 +62,16 @@ void Adapter::StructureBaseAlgorithm::create_structure(const Teuchos::ParameterL
     const Teuchos::ParameterList& sdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
 {
   // major switch to different time integrators
-  switch (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
   {
-    case Inpar::STR::dyna_statics:
-    case Inpar::STR::dyna_genalpha:
-    case Inpar::STR::dyna_onesteptheta:
-    case Inpar::STR::dyna_expleuler:
-    case Inpar::STR::dyna_centrdiff:
-    case Inpar::STR::dyna_ab2:
-    case Inpar::STR::dyna_euma:
-    case Inpar::STR::dyna_euimsto:
+    case Inpar::Solid::dyna_statics:
+    case Inpar::Solid::dyna_genalpha:
+    case Inpar::Solid::dyna_onesteptheta:
+    case Inpar::Solid::dyna_expleuler:
+    case Inpar::Solid::dyna_centrdiff:
+    case Inpar::Solid::dyna_ab2:
+    case Inpar::Solid::dyna_euma:
+    case Inpar::Solid::dyna_euimsto:
       create_tim_int(prbdyn, sdyn, actdis);  // <-- here is the show
       break;
     default:
@@ -136,8 +136,8 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat
   // file
-  if (Core::UTILS::IntegralValue<Inpar::STR::DampKind>(sdyn, "DAMPING") ==
-      Inpar::STR::damp_rayleigh)
+  if (Core::UTILS::IntegralValue<Inpar::Solid::DampKind>(sdyn, "DAMPING") ==
+      Inpar::Solid::damp_rayleigh)
   {
     if (sdyn.get<double>("K_DAMP") < 0.0)
     {
@@ -160,8 +160,8 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
 
   if (solver != Teuchos::null && (solver->Params().isSublist("Belos Parameters")) &&
       solver->Params().isSublist("ML Parameters")  // TODO what about MueLu?
-      &&
-      Core::UTILS::IntegralValue<Inpar::STR::StcScale>(sdyn, "STC_SCALING") != Inpar::STR::stc_none)
+      && Core::UTILS::IntegralValue<Inpar::Solid::StcScale>(sdyn, "STC_SCALING") !=
+             Inpar::Solid::stc_none)
   {
     Teuchos::ParameterList& mllist = solver->Params().sublist("ML Parameters");
     Teuchos::RCP<std::vector<double>> ns =
@@ -198,7 +198,7 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     const std::string action = "calc_stc_matrix_inverse";
     p.set("action", action);
     p.set<int>(
-        "stc_scaling", Core::UTILS::IntegralValue<Inpar::STR::StcScale>(sdyn, "STC_SCALING"));
+        "stc_scaling", Core::UTILS::IntegralValue<Inpar::Solid::StcScale>(sdyn, "STC_SCALING"));
     p.set("stc_layer", 1);
 
     actdis->evaluate(p, stcinv, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
@@ -246,11 +246,11 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
     {
       if (par->Type() == Core::Materials::m_struct_multiscale)
       {
-        if (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP") !=
-            Inpar::STR::dyna_genalpha)
+        if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP") !=
+            Inpar::Solid::dyna_genalpha)
           FOUR_C_THROW("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
-        else if (Core::UTILS::IntegralValue<Inpar::STR::MidAverageEnum>(
-                     sdyn.sublist("GENALPHA"), "GENAVG") != Inpar::STR::midavg_trlike)
+        else if (Core::UTILS::IntegralValue<Inpar::Solid::MidAverageEnum>(
+                     sdyn.sublist("GENALPHA"), "GENAVG") != Inpar::Solid::midavg_trlike)
           FOUR_C_THROW(
               "In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
         break;
@@ -266,8 +266,8 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   }
 
   // create marching time integrator
-  Teuchos::RCP<STR::TimInt> tmpstr =
-      STR::TimIntCreate(prbdyn, *ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
+  Teuchos::RCP<Solid::TimInt> tmpstr =
+      Solid::TimIntCreate(prbdyn, *ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
   // initialize the time integrator
   tmpstr->init(prbdyn, sdyn, *xparams, actdis, solver);
 
@@ -332,7 +332,8 @@ void Adapter::StructureBaseAlgorithm::create_tim_int(const Teuchos::ParameterLis
   // ---------------------------------------------------------------------------
 
   // create auxiliary time integrator, can be seen as a wrapper for tmpstr
-  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, prbdyn, sdyn, *xparams, *tap, tmpstr);
+  Teuchos::RCP<Solid::TimAda> sta =
+      Solid::TimAdaCreate(*ioflags, prbdyn, sdyn, *xparams, *tap, tmpstr);
 
   if (sta != Teuchos::null and tmpstr != Teuchos::null)
   {

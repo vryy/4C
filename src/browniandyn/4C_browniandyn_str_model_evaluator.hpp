@@ -35,7 +35,7 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -49,12 +49,12 @@ namespace STR
 
       void setup() override;
 
-      //! @name Derived public STR::MODELEVALUATOR::Generic methods
+      //! @name Derived public Solid::MODELEVALUATOR::Generic methods
       //! @{
       //! derived
 
       //! derived
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_browniandyn; }
+      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_browniandyn; }
 
       //! derived
       bool evaluate_force() override;
@@ -86,7 +86,7 @@ namespace STR
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::STR::PredEnum& pred_type) override { return; };
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -185,7 +185,7 @@ namespace STR
       };
 
       //! brownian dyn evaluation data container
-      Teuchos::RCP<STR::MODELEVALUATOR::BrownianDynData> eval_browniandyn_ptr_;
+      Teuchos::RCP<Solid::MODELEVALUATOR::BrownianDynData> eval_browniandyn_ptr_;
 
       //! global internal force at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> f_brown_np_ptr_;
@@ -207,7 +207,7 @@ namespace STR
 
     };  // class BrownianDyn
   }     // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -128,14 +128,14 @@ int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<NUMPRES_, NUMDISP_> dargmatrix;
         force_stiff_mass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, &gradmatrix,
             nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, nullptr, params,
-            Inpar::STR::stress_none, Inpar::STR::strain_none);
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none);
         build_element_matrix(&elemat1, &stiffmatrix, &gradmatrix, &dargmatrix, &stabmatrix);
       }
       else
       {
         force_stiff_mass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, nullptr,
             nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, nullptr, params,
-            Inpar::STR::stress_none, Inpar::STR::strain_none);
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none);
         build_element_matrix(&elemat1, &stiffmatrix, nullptr, nullptr, &stabmatrix);
       }
       build_element_vector(&elevec1, &force, &incomp);
@@ -174,14 +174,14 @@ int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<NUMPRES_, NUMDISP_> dargmatrix;
         force_stiff_mass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, &gradmatrix,
             &dargmatrix, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume, params,
-            Inpar::STR::stress_none, Inpar::STR::strain_none);
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none);
         build_element_matrix(&elemat1, &stiffmatrix, &gradmatrix, &dargmatrix, &stabmatrix);
       }
       else
       {
         force_stiff_mass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, &gradmatrix,
             nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume, params,
-            Inpar::STR::stress_none, Inpar::STR::strain_none);
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none);
         build_element_matrix(&elemat1, &stiffmatrix, &gradmatrix, nullptr, &stabmatrix);
       }
       build_element_vector(&elevec1, &force, &incomp);
@@ -220,7 +220,7 @@ int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
       double volume = 0.0;
       force_stiff_mass(lm, mydisp, mypres, mydispi, mypresi, nullptr, &stiffmatrix, &gradmatrix,
           nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       build_element_vector(&elevec1, &force, &incomp);
       //      assemble_volume(params,volume);
     }
@@ -265,14 +265,14 @@ int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
         Core::LinAlg::Matrix<NUMPRES_, NUMDISP_> dargmatrix;
         force_stiff_mass(lm, mydisp, mypres, mydispi, mypresi, &massmatrix, &stiffmatrix,
             &gradmatrix, &dargmatrix, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume,
-            params, Inpar::STR::stress_none, Inpar::STR::strain_none);
+            params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
         build_element_matrix(&elemat1, &stiffmatrix, &gradmatrix, &dargmatrix, &stabmatrix);
       }
       else
       {
         force_stiff_mass(lm, mydisp, mypres, mydispi, mypresi, &massmatrix, &stiffmatrix,
             &gradmatrix, nullptr, &stabmatrix, &force, &incomp, nullptr, nullptr, &volume, params,
-            Inpar::STR::stress_none, Inpar::STR::strain_none);
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none);
         build_element_matrix(&elemat1, &stiffmatrix, &gradmatrix, nullptr, &stabmatrix);
       }
       // lump mass
@@ -313,10 +313,10 @@ int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
       // types
       Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D> strain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
       force_stiff_mass(lm, mydisp, mypres, mydispi, mypresi, nullptr, nullptr, nullptr, nullptr,
           nullptr, nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain);
       {
@@ -464,8 +464,9 @@ int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
 
     case calc_stc_matrix:
     {
-      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == Inpar::STR::stc_none)
+      const auto stc_scaling =
+          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the querry!");
       else
       {
@@ -476,8 +477,9 @@ int Discret::ELEMENTS::SoSh8p8::evaluate(Teuchos::ParameterList& params,
     break;
     case calc_stc_matrix_inverse:
     {
-      const auto stc_scaling = Core::UTILS::GetAsEnum<Inpar::STR::StcScale>(params, "stc_scaling");
-      if (stc_scaling == Inpar::STR::stc_none)
+      const auto stc_scaling =
+          Core::UTILS::GetAsEnum<Inpar::Solid::StcScale>(params, "stc_scaling");
+      if (stc_scaling == Inpar::Solid::stc_none)
         FOUR_C_THROW("To scale or not to scale, that's the query!");
       else
       {
@@ -551,9 +553,9 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
     double* volume,                                                // element volume
-    Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,  // stress output option
-    const Inpar::STR::StrainType iostrain   // strain output option
+    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,  // stress output option
+    const Inpar::Solid::StrainType iostrain   // strain output option
 )
 {
   /* ============================================================================*
@@ -1089,7 +1091,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     voldev += (1.0 - detdefgrad) * stabA[gp](0, 0) * detJ_w;
 
     // return gp strains if necessary
-    if (iostrain != Inpar::STR::strain_none)
+    if (iostrain != Inpar::Solid::strain_none)
       strain(elestrain, iostrain, gp, detdefgrad, defgrad, invdefgrad, glstrain);
 
     // call material law
@@ -1112,7 +1114,7 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
     const double pressure = (shapefcts[gp]).dot(pres);
 
     // return Gauss point stresses if necessary
-    if (iostress != Inpar::STR::stress_none)
+    if (iostress != Inpar::Solid::stress_none)
       stress(elestress, iostress, gp, detdefgrad, defgrad, glstrain, stress_tensor, pressure);
 
     // effective shape function of scalar pressure field at current Gauss point
@@ -1983,14 +1985,14 @@ void Discret::ELEMENTS::SoSh8p8::force_stiff_mass(const std::vector<int>& lm,  /
 /*----------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoSh8p8::stress(
     Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D>* elestress,
-    const Inpar::STR::StressType iostress, const int gp, const double& detdefgrd,
+    const Inpar::Solid::StressType iostress, const int gp, const double& detdefgrd,
     const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& defgrd,
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress, const double& pressure)
 {
   switch (iostress)
   {
-    case Inpar::STR::stress_2pk:  // 2nd Piola-Kirchhoff stress
+    case Inpar::Solid::stress_2pk:  // 2nd Piola-Kirchhoff stress
     {
       if (elestress == nullptr) FOUR_C_THROW("stress data not available");
       // determine stress
@@ -2015,7 +2017,7 @@ void Discret::ELEMENTS::SoSh8p8::stress(
       }
     }
     break;
-    case Inpar::STR::stress_cauchy:  // true/Cauchy stress
+    case Inpar::Solid::stress_cauchy:  // true/Cauchy stress
     {
       if (elestress == nullptr) FOUR_C_THROW("stress data not available");
       // push forward
@@ -2039,7 +2041,7 @@ void Discret::ELEMENTS::SoSh8p8::stress(
       for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = cauchyv(i);
     }
     break;
-    case Inpar::STR::stress_none:
+    case Inpar::Solid::stress_none:
       break;
     default:
     {
@@ -2055,7 +2057,7 @@ void Discret::ELEMENTS::SoSh8p8::stress(
 /*----------------------------------------------------------------------*/
 void Discret::ELEMENTS::SoSh8p8::strain(
     Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D>* elestrain,  ///< store the strain herein
-    const Inpar::STR::StrainType iostrain,
+    const Inpar::Solid::StrainType iostrain,
     const int gp,             ///< Gauss point index
     const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
     const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& defgrd,  ///< (assumed) deformation gradient
@@ -2066,7 +2068,7 @@ void Discret::ELEMENTS::SoSh8p8::strain(
 {
   switch (iostrain)
   {
-    case Inpar::STR::strain_gl:  // Green-Lagrange strain
+    case Inpar::Solid::strain_gl:  // Green-Lagrange strain
     {
       if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
       // store
@@ -2074,7 +2076,7 @@ void Discret::ELEMENTS::SoSh8p8::strain(
       for (int i = NUMDIM_; i < Mat::NUM_STRESS_3D; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
     }
     break;
-    case Inpar::STR::strain_ea:  // Euler-Almansi strain
+    case Inpar::Solid::strain_ea:  // Euler-Almansi strain
     {
       if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
       // create push forward 6x6 matrix
@@ -2089,7 +2091,7 @@ void Discret::ELEMENTS::SoSh8p8::strain(
       for (int i = NUMDIM_; i < Mat::NUM_STRESS_3D; ++i) (*elestrain)(gp, i) = 0.5 * eastrain(i);
     }
     break;
-    case Inpar::STR::strain_none:
+    case Inpar::Solid::strain_none:
       break;
     default:
     {
@@ -2288,11 +2290,11 @@ double Discret::ELEMENTS::SoSh8p8::shear_mod() const
 }
 
 void Discret::ELEMENTS::SoSh8p8::do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_, NUMDOF_>& elemat1,
-    const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
+    const Inpar::Solid::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
     Core::FE::Discretization& discretization, bool calcinverse)
 {
   double stc_fact = 0.0;
-  if (stc_scaling == Inpar::STR::stc_currsym)
+  if (stc_scaling == Inpar::Solid::stc_currsym)
   {
     // stc_fact = sqrt(sosh8_calcaspectratio());
     stc_fact = sosh8_calcaspectratio();
@@ -2309,7 +2311,7 @@ void Discret::ELEMENTS::SoSh8p8::do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_
   const double factor3 = (1.0 / stc_fact);
   const double factor4 = (1.0 - 1.0 / stc_fact);
 
-  if (stc_scaling == Inpar::STR::stc_curr or stc_scaling == Inpar::STR::stc_currsym)
+  if (stc_scaling == Inpar::Solid::stc_curr or stc_scaling == Inpar::Solid::stc_currsym)
   {
     Core::LinAlg::Matrix<NUMDOF_, 1> adjele(true);
     Core::Nodes::Node** nodes = Nodes();

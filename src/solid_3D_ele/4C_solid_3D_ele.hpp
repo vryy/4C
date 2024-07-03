@@ -99,7 +99,10 @@ namespace Discret::ELEMENTS
 
     [[nodiscard]] Core::FE::CellType Shape() const override { return celltype_; };
 
-    void SetKinematicType(Inpar::STR::KinemType kintype) { solid_ele_property_.kintype = kintype; }
+    void SetKinematicType(Inpar::Solid::KinemType kintype)
+    {
+      solid_ele_property_.kintype = kintype;
+    }
 
     [[nodiscard]] virtual Teuchos::RCP<Mat::So3Material> SolidMaterial(int nummat = 0) const;
 
@@ -141,7 +144,7 @@ namespace Discret::ELEMENTS
       return (not interface_ptr_.is_null());
     }
 
-    [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& params_interface() const
+    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface() const
     {
       if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
@@ -189,7 +192,7 @@ namespace Discret::ELEMENTS
     SolidElementProperties solid_ele_property_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
-    Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+    Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> interface_ptr_;
 
     //! element calculation holding one of the implemented variants
     SolidCalcVariant solid_calc_variant_;

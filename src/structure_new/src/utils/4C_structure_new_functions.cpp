@@ -54,7 +54,7 @@ namespace
       // get materials
       auto fparams = GetSVKMatPars(mat_id_struc);
 
-      return Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureFunction(fparams));
+      return Teuchos::rcp(new Solid::WeaklyCompressibleEtienneFSIStructureFunction(fparams));
     }
     else if (function_lin_def.has_named("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
     {
@@ -73,7 +73,7 @@ namespace
       // get materials
       auto fparams = GetSVKMatPars(mat_id_struc);
 
-      return Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureForceFunction(fparams));
+      return Teuchos::rcp(new Solid::WeaklyCompressibleEtienneFSIStructureForceFunction(fparams));
     }
     else
     {
@@ -85,7 +85,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::AddValidStructureFunctions(Core::UTILS::FunctionManager& function_manager)
+void Solid::AddValidStructureFunctions(Core::UTILS::FunctionManager& function_manager)
 {
   std::vector<Input::LineDefinition> lines;
   lines.emplace_back(Input::LineDefinition::Builder()
@@ -103,14 +103,14 @@ void STR::AddValidStructureFunctions(Core::UTILS::FunctionManager& function_mana
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSIStructureFunction(
+Solid::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSIStructureFunction(
     const Mat::PAR::StVenantKirchhoff& fparams)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double STR::WeaklyCompressibleEtienneFSIStructureFunction::evaluate(
+double Solid::WeaklyCompressibleEtienneFSIStructureFunction::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // ease notation
@@ -139,7 +139,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureFunction::evaluate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::evaluate_time_derivative(
+std::vector<double> Solid::WeaklyCompressibleEtienneFSIStructureFunction::evaluate_time_derivative(
     const double* xp, const double t, const unsigned deg, const std::size_t component) const
 {
   // resulting vector holding
@@ -196,7 +196,7 @@ std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::evaluate
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
+Solid::WeaklyCompressibleEtienneFSIStructureForceFunction::
     WeaklyCompressibleEtienneFSIStructureForceFunction(const Mat::PAR::StVenantKirchhoff& fparams)
     : youngmodulus_(fparams.youngs_),
       poissonratio_(fparams.poissonratio_),
@@ -206,7 +206,7 @@ STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::evaluate(
+double Solid::WeaklyCompressibleEtienneFSIStructureForceFunction::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
   // ease notation
@@ -252,7 +252,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double>
-STR::WeaklyCompressibleEtienneFSIStructureForceFunction::evaluate_time_derivative(
+Solid::WeaklyCompressibleEtienneFSIStructureForceFunction::evaluate_time_derivative(
     const double* xp, const double t, const unsigned deg, const std::size_t component) const
 {
   // resulting vector holding

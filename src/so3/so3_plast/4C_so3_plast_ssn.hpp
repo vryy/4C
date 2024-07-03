@@ -354,9 +354,9 @@ namespace Discret
           Core::LinAlg::Matrix<numdofperelement_, 1>* force,      // element internal force vector
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
-          Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,  // stress output option
-          const Inpar::STR::StrainType iostrain   // strain output option
+          Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,  // stress output option
+          const Inpar::Solid::StrainType iostrain   // strain output option
       );
 
       //! Calculate the coupling matrix K_dT for monolithic TSI
@@ -589,12 +589,12 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix* d2_cauchyndir_dd_dT);
 
       virtual void output_strains(const int gp,
-          const Inpar::STR::StrainType iostrain,                 // strain output option
+          const Inpar::Solid::StrainType iostrain,               // strain output option
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestrain  // strains at GP
       );
 
       virtual void output_stress(const int gp,
-          const Inpar::STR::StressType iostress,                 // strain output option
+          const Inpar::Solid::StressType iostress,               // strain output option
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress  // strains at GP
       );
 

@@ -25,13 +25,13 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
     class BaseDataGlobalState;
   }
-}  // namespace STR
+}  // namespace Solid
 namespace Mat
 {
   class CrosslinkerMat;
@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
     virtual ~SphereBeamLinkingParams() = default;
 
     //! initialize with the stuff coming from input file
-    void init(STR::TimeInt::BaseDataGlobalState const& gstate);
+    void init(Solid::TimeInt::BaseDataGlobalState const& gstate);
 
     //! setup member variables
     void setup();

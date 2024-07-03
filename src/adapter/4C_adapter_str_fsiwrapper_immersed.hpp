@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace STR
+namespace Solid
 {
   class Dbc;
 
@@ -28,7 +28,7 @@ namespace STR
   {
     class MapExtractor;
   }
-}  // namespace STR
+}  // namespace Solid
 
 
 namespace Adapter
@@ -55,7 +55,7 @@ namespace Adapter
     Teuchos::RCP<Epetra_Vector> predict_full_interface_dispnp();
 
     /// Get mutable reference to DBC object
-    STR::Dbc& GetDBC();
+    Solid::Dbc& GetDBC();
 
     /// expand dirichlet bc map
     /// old struct. time integration version

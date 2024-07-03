@@ -39,7 +39,7 @@ bool Discret::ELEMENTS::SoHex8P1J1::ReadElement(
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_HEX8p1j1 element failed KINEM unknown");

@@ -44,7 +44,7 @@ void FSI::DirichletNeumann::fsi_op(
   // Check if the test case uses the new Structural time integration or if it is one of our legacy
   // test cases
   if (Core::UTILS::IntegralValue<int>(Global::Problem::Instance()->structural_dynamic_params(),
-          "INT_STRATEGY") == Inpar::STR::int_old &&
+          "INT_STRATEGY") == Inpar::Solid::int_old &&
       Global::Problem::Instance()->OutputControlFile()->input_file_name().find(
           "fs3i_ac_prestress") == std::string::npos)
   {

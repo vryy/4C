@@ -66,10 +66,10 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
   // kinematics type
   linedef->extract_string("KINEM", buffer);
   // geometrically linear
-  if (buffer == "linear") kintype_ = Inpar::STR::KinemType::linear;
+  if (buffer == "linear") kintype_ = Inpar::Solid::KinemType::linear;
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   else
     FOUR_C_THROW("Illegal KINEM type '%s'", buffer.c_str());
 
@@ -137,7 +137,7 @@ bool Discret::ELEMENTS::Wall1::ReadElement(
   stresstype_ = w1_xy;
 
   // check for invalid combinations
-  if (kintype_ == Inpar::STR::KinemType::linear && iseas_ == true)
+  if (kintype_ == Inpar::Solid::KinemType::linear && iseas_ == true)
     FOUR_C_THROW("ERROR: No EAS for geometrically linear WALL element");
 
   // validate kinematics of solid material

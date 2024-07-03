@@ -114,7 +114,7 @@ namespace BEAMINTERACTION
       void post_update_step_element() override;
 
       //! derived
-      std::map<STR::EnergyType, double> get_energy() const override;
+      std::map<Solid::EnergyType, double> get_energy() const override;
 
       //! derived
       void OutputStepState(Core::IO::DiscretizationWriter& iowriter) const override;
@@ -144,7 +144,7 @@ namespace BEAMINTERACTION
 
       //! derived
       void init_submodel_dependencies(
-          Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
+          Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
       void AddBinsToBinColMap(std::set<int>& colbins) override;

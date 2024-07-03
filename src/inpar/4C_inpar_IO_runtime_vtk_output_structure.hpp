@@ -26,12 +26,12 @@ namespace Inpar
 {
   namespace IORuntimeOutput
   {
-    namespace STRUCTURE
+    namespace Solid
     {
       /// set the valid parameters related to writing of VTK output at runtime
       void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 
-    }  // namespace STRUCTURE
+    }  // namespace Solid
   }    // namespace IORuntimeOutput
 }  // namespace Inpar
 

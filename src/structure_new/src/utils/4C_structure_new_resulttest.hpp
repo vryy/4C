@@ -38,7 +38,7 @@ namespace Core::IO
   class DiscretizationWriter;
 }  // namespace Core::IO
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -75,7 +75,7 @@ namespace STR
 
     //! initialization of class variables
     virtual void init(
-        const STR::TimeInt::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data);
+        const Solid::TimeInt::BaseDataGlobalState& gstate, const Solid::MODELEVALUATOR::Data& data);
 
     //! setup of class variables
     virtual void setup();
@@ -194,7 +194,7 @@ namespace STR
     /** \brief Get the value for a specific energy (internal, kinetic, total, etc.)
      *
      *  If the energy is accessible, it will be returned and special_status flag is set to
-     *  evaluated. If not, error is thrown in STR::MODELEVALUATOR::Data
+     *  evaluated. If not, error is thrown in Solid::MODELEVALUATOR::Data
      *
      *  \param[in]  quantity        name of the energy
      *  \param[out] special_status  status of the special result test
@@ -236,9 +236,9 @@ namespace STR
      */
 
     //! pointer to the global state object of the structural time integration
-    Teuchos::RCP<const STR::TimeInt::BaseDataGlobalState> gstate_;
+    Teuchos::RCP<const Solid::TimeInt::BaseDataGlobalState> gstate_;
     //! pointer to the data container of the structural time integration
-    Teuchos::RCP<const STR::MODELEVALUATOR::Data> data_;
+    Teuchos::RCP<const Solid::MODELEVALUATOR::Data> data_;
   };  // class ResultTest
 
   /*----------------------------------------------------------------------------*/
@@ -254,7 +254,7 @@ namespace STR
    *  \author hiermeier \date 11/17 */
   int GetIntegerNumberAtLastPositionOfName(const std::string& quantity);
 
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

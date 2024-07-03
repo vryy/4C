@@ -385,7 +385,7 @@ void CONTACT::Aug::Plot::init(
 {
   strat_ = dynamic_cast<const CONTACT::Aug::Strategy*>(strat);
   discret_ = plot_params.get<const Core::FE::Discretization*>("DISCRETIZATION");
-  model_ = plot_params.get<STR::MODELEVALUATOR::Contact*>("MODELEVALUATOR");
+  model_ = plot_params.get<Solid::MODELEVALUATOR::Contact*>("MODELEVALUATOR");
 
   const int output_precision = plot_params.get<int>("OUTPUT_PRECISION");
   if (output_precision < 0) FOUR_C_THROW("The specified output precision must be positive!");
@@ -1312,7 +1312,7 @@ void CONTACT::Aug::Plot::get_vector_values(const enum Inpar::CONTACT::PlotFuncNa
 void CONTACT::Aug::Plot::get_energy_direction_gradients(
     const std::vector<const Epetra_Vector*>& dirs, std::vector<double>& grad_vals) const
 {
-  const std::vector<Inpar::STR::ModelType> without_contact_model(1, model_->Type());
+  const std::vector<Inpar::Solid::ModelType> without_contact_model(1, model_->Type());
   Teuchos::RCP<Epetra_Vector> str_gradient =
       model_->assemble_force_of_models(&without_contact_model, true);
 

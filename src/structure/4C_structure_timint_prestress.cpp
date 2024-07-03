@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
+Solid::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, const Teuchos::RCP<Core::FE::Discretization>& actdis,
     const Teuchos::RCP<Core::LinAlg::Solver>& solver,
@@ -37,15 +37,15 @@ STR::TimIntPrestress::TimIntPrestress(const Teuchos::ParameterList& timeparams,
   return;
 }
 
-void STR::TimIntPrestress::setup()
+void Solid::TimIntPrestress::setup()
 {
-  STR::TimIntStatics::setup();
+  Solid::TimIntStatics::setup();
   // Check for compatible prestressing algorithms
-  const auto pre_stress = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+  const auto pre_stress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
       Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
   switch (pre_stress)
   {
-    case Inpar::STR::PreStress::mulf:
+    case Inpar::Solid::PreStress::mulf:
       break;
     default:
       FOUR_C_THROW(
@@ -57,17 +57,17 @@ void STR::TimIntPrestress::setup()
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
-void STR::TimIntPrestress::UpdateStepElement()
+void Solid::TimIntPrestress::UpdateStepElement()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
 
-  const auto pre_stress = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+  const auto pre_stress = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
       Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
   const double pstime =
       Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
   // MULF, Material iterative prestressing
-  if (pre_stress == Inpar::STR::PreStress::mulf)
+  if (pre_stress == Inpar::Solid::PreStress::mulf)
   {
     if ((*time_)[0] <= pstime + 1e-15)
     {
@@ -95,7 +95,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
 
-  if (pre_stress == Inpar::STR::PreStress::mulf && (*time_)[0] <= pstime + 1e-15)
+  if (pre_stress == Inpar::Solid::PreStress::mulf && (*time_)[0] <= pstime + 1e-15)
   {
     // prestressing for spring in spring dashpot - corresponds to storage of deformation gradient
     // in material law (mhv 12/2015) pass current displacement state to spring at end of MULF step

@@ -29,10 +29,10 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Inpar
 {
-  namespace STR
+  namespace Solid
   {
     enum ModelType : int;
-  }  // namespace STR
+  }  // namespace Solid
   namespace CONTACT
   {
     enum class PenaltyUpdate : char;
@@ -146,7 +146,7 @@ namespace CONTACT
 
       /// access the right hand side vector of the entire problem
       Teuchos::RCP<const Epetra_Vector> get_problem_rhs(const CONTACT::ParamsInterface& cparams,
-          const std::vector<Inpar::STR::ModelType>* without_these_models) const;
+          const std::vector<Inpar::Solid::ModelType>* without_these_models) const;
 
       /// do stuff before the update
       virtual void pre_update(){/* empty */};

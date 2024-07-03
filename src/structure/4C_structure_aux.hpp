@@ -24,11 +24,11 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace STR
+namespace Solid
 {
   /// Determine norm of force residual
-  double calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,  ///< type of norm to use
-      const Teuchos::RCP<Epetra_Vector> vect,                           ///< the vector of interest
+  double calculate_vector_norm(const enum Inpar::Solid::VectorNorm norm,  ///< type of norm to use
+      const Teuchos::RCP<Epetra_Vector> vect,  ///< the vector of interest
       const int numneglect =
           0  ///< number of DOFs that have to be neglected for possible length scaling
   );
@@ -64,7 +64,7 @@ namespace STR
     MAP_EXTRACTOR_VECTOR_METHODS(immersed_cond, cond_immersed)
     MAP_EXTRACTOR_VECTOR_METHODS(pasi_cond, cond_pasi)
   };
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

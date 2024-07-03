@@ -25,12 +25,12 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
+Solid::MODELEVALUATOR::PartitionedPASI::PartitionedPASI()
 {
   // empty constructor
 }
 
-void STR::MODELEVALUATOR::PartitionedPASI::setup()
+void Solid::MODELEVALUATOR::PartitionedPASI::setup()
 {
   // pasi interface force at t_{n+1}
   interface_force_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*global_state().dof_row_map(), true));
@@ -39,14 +39,14 @@ void STR::MODELEVALUATOR::PartitionedPASI::setup()
   issetup_ = true;
 }
 
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::PartitionedPASI::get_block_dof_row_map_ptr()
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::PartitionedPASI::get_block_dof_row_map_ptr()
     const
 {
   check_init_setup();
   return global_state().dof_row_map();
 }
 
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::get_current_solution_ptr()
+Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::PartitionedPASI::get_current_solution_ptr()
     const
 {
   check_init();
@@ -54,13 +54,13 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedPASI::get_curr
 }
 
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::PartitionedPASI::get_last_time_step_solution_ptr() const
+Solid::MODELEVALUATOR::PartitionedPASI::get_last_time_step_solution_ptr() const
 {
   check_init();
   return global_state().get_dis_n();
 }
 
-bool STR::MODELEVALUATOR::PartitionedPASI::assemble_force(
+bool Solid::MODELEVALUATOR::PartitionedPASI::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Core::LinAlg::AssembleMyVector(1.0, f, -timefac_np, *interface_force_np_ptr_);
@@ -68,6 +68,6 @@ bool STR::MODELEVALUATOR::PartitionedPASI::assemble_force(
   return true;
 }
 
-void STR::MODELEVALUATOR::PartitionedPASI::update_step_state(const double& timefac_n) { return; }
+void Solid::MODELEVALUATOR::PartitionedPASI::update_step_state(const double& timefac_n) { return; }
 
 FOUR_C_NAMESPACE_CLOSE

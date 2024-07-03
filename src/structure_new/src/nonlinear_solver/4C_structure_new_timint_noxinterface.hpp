@@ -38,12 +38,12 @@ namespace Core::LinAlg
 }  // namespace Core::LinAlg
 namespace Inpar
 {
-  namespace STR
+  namespace Solid
   {
     enum ModelType : int;
-  }  // namespace STR
+  }  // namespace Solid
 }  // namespace Inpar
-namespace STR
+namespace Solid
 {
   class Dbc;
   class Integrator;
@@ -60,9 +60,9 @@ namespace STR
       NoxInterface();
 
       //! Init function
-      virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<STR::Integrator>& int_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
-          const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
+      virtual void init(const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const Teuchos::RCP<Solid::Integrator>& int_ptr, const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
+          const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
 
       virtual void setup();
 
@@ -155,7 +155,7 @@ namespace STR
       calc_jacobian_contributions_from_element_level_for_ptc() override;
 
       //! Access the implicit integrator
-      STR::Integrator& ImplInt();
+      Solid::Integrator& ImplInt();
 
      protected:
       //! Returns the init state
@@ -175,7 +175,7 @@ namespace STR
           const enum NOX::Nln::MeritFunction::LinType lintype) const;
 
       void find_constraint_models(const ::NOX::Abstract::Group* grp,
-          std::vector<Inpar::STR::ModelType>& constraint_models) const;
+          std::vector<Inpar::Solid::ModelType>& constraint_models) const;
 
       //! calculate norm in Get*Norms functions
       double calculate_norm(Teuchos::RCP<Epetra_Vector> quantity,
@@ -190,16 +190,16 @@ namespace STR
 
      private:
       //! global state data container
-      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
-      Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
+      Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
 
-      Teuchos::RCP<STR::Integrator> int_ptr_;
+      Teuchos::RCP<Solid::Integrator> int_ptr_;
 
-      Teuchos::RCP<STR::Dbc> dbc_ptr_;
+      Teuchos::RCP<Solid::Dbc> dbc_ptr_;
     };  // class nox_interface
   }     // namespace TimeInt
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

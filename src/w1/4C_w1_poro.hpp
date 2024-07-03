@@ -365,7 +365,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix* elestress,      //!< stresses at GP
           Core::LinAlg::SerialDenseMatrix* elestrain,      //!< strains at GP
           Teuchos::ParameterList& params,                  //!< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress            //!< stress output option
+          const Inpar::Solid::StressType iostress          //!< stress output option
       );
 
       //! Gauss Point Loop evaluating stiffness and force

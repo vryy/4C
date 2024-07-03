@@ -52,7 +52,7 @@ namespace NOX
   }  // namespace Nln
 }  // namespace NOX
 
-namespace STR
+namespace Solid
 {
   class Integrator;
 
@@ -70,7 +70,7 @@ namespace STR
     class Generic;
   }  // namespace MODELEVALUATOR
 
-  /*! \brief Wrapper class for the STR::MODELEVALUATOR::Generic derived objects.
+  /*! \brief Wrapper class for the Solid::MODELEVALUATOR::Generic derived objects.
    *
    * Manages the access to the different distinct model evaluators. Calling any routine on this
    * evaluator basically will trigger a loop over all active model evaluators that also implement
@@ -79,8 +79,9 @@ namespace STR
   class ModelEvaluator
   {
    public:
-    typedef std::map<enum Inpar::STR::ModelType, Teuchos::RCP<STR::MODELEVALUATOR::Generic>> Map;
-    typedef std::vector<Teuchos::RCP<STR::MODELEVALUATOR::Generic>> Vector;
+    typedef std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>
+        Map;
+    typedef std::vector<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>> Vector;
 
     //! constructor
     ModelEvaluator();
@@ -99,12 +100,12 @@ namespace STR
      * \param[in] int_ptr ??
      * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
      */
-    void init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-        const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
-        const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-        const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
-        const Teuchos::RCP<STR::Integrator>& int_ptr,
-        const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
+    void init(const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+        const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
+        const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+        const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
+        const Teuchos::RCP<Solid::Integrator>& int_ptr,
+        const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
 
     //! setup
     void setup();
@@ -149,7 +150,7 @@ namespace STR
      *
      * @return Boolean flag to indicate success (true) or failure (false)
      */
-    bool apply_stiff(const Inpar::STR::ModelType& mt, const Epetra_Vector& x,
+    bool apply_stiff(const Inpar::Solid::ModelType& mt, const Epetra_Vector& x,
         Core::LinAlg::SparseOperator& jac, const double& timefac_np) const;
 
     /*! \brief Apply force and stiffness
@@ -177,7 +178,7 @@ namespace STR
      * @return Boolean flag to indicate success (true) or failure (false)
      */
     bool apply_cheap_soc_rhs(const enum NOX::Nln::CorrectionType type,
-        const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+        const std::vector<Inpar::Solid::ModelType>& constraint_models, const Epetra_Vector& x,
         Epetra_Vector& f, const double& timefac_np) const;
 
     bool correct_parameters(const enum NOX::Nln::CorrectionType type) const;
@@ -195,7 +196,7 @@ namespace STR
      *
      * @param[in] pred_type Type of predictor to be applied
      */
-    void predict(const Inpar::STR::PredEnum& pred_type) const;
+    void predict(const Inpar::Solid::PredEnum& pred_type) const;
 
     /** \brief Assembly of all force contributions
      *
@@ -208,7 +209,7 @@ namespace STR
      *
      *  \author hiermeier \date 03/17 */
     bool assemble_force(const double timefac_np, Epetra_Vector& f,
-        const std::vector<Inpar::STR::ModelType>* without_these_models) const;
+        const std::vector<Inpar::Solid::ModelType>* without_these_models) const;
 
 
     /** \brief Assembly of all jacobian contributions
@@ -223,7 +224,7 @@ namespace STR
      *
      *  \author farah \date 07/17 */
     bool assemble_jacobian(const double timefac_np, Core::LinAlg::SparseOperator& jac,
-        const std::vector<Inpar::STR::ModelType>* without_these_models) const;
+        const std::vector<Inpar::Solid::ModelType>* without_these_models) const;
 
     /** \brief Assembly of all force contributions
      *
@@ -330,20 +331,20 @@ namespace STR
     //!@{
 
     //! return global state (read-only)
-    const STR::TimeInt::BaseDataGlobalState& get_global_state() const;
+    const Solid::TimeInt::BaseDataGlobalState& get_global_state() const;
 
     //! return global state pointer (read and write access of the data)
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& global_state_ptr();
+    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr();
 
     //! return pointer to the underlying time integrator (read-only)
-    const Teuchos::RCP<const STR::TimeInt::Base>& get_tim_int_ptr() const;
+    const Teuchos::RCP<const Solid::TimeInt::Base>& get_tim_int_ptr() const;
 
     /*! \brief Access one specific model evaluator
      *
      * \param[in] mt Type of model evaluator to be accessed
      */
-    STR::MODELEVALUATOR::Generic& evaluator(const enum Inpar::STR::ModelType& mt);
-    const STR::MODELEVALUATOR::Generic& evaluator(const enum Inpar::STR::ModelType& mt) const;
+    Solid::MODELEVALUATOR::Generic& evaluator(const enum Inpar::Solid::ModelType& mt);
+    const Solid::MODELEVALUATOR::Generic& evaluator(const enum Inpar::Solid::ModelType& mt) const;
 
     //!@}
 
@@ -451,8 +452,8 @@ namespace STR
     void check_init() const;
 
    private:
-    Teuchos::RCP<STR::ModelEvaluator::Vector> transform_to_vector(
-        const STR::ModelEvaluator::Map& model_map) const;
+    Teuchos::RCP<Solid::ModelEvaluator::Vector> transform_to_vector(
+        const Solid::ModelEvaluator::Map& model_map) const;
 
     /** \brief Assembly of all force contributions
      *
@@ -496,12 +497,12 @@ namespace STR
     /** \brief split the internally stored model vector and get the set without
      *  the specified models */
     void split_model_vector(Vector& partial_me_vec,
-        const std::vector<Inpar::STR::ModelType>& without_these_models) const;
+        const std::vector<Inpar::Solid::ModelType>& without_these_models) const;
 
     /** \brief Extract from the internally stored model vector all models
      *  with the desired types */
-    void extract_model_vector(STR::ModelEvaluator::Vector& partial_me_vec,
-        const std::vector<Inpar::STR::ModelType>& only_these_models) const;
+    void extract_model_vector(Solid::ModelEvaluator::Vector& partial_me_vec,
+        const std::vector<Inpar::Solid::ModelType>& only_these_models) const;
 
    private:
     //! Flag to indicate whether init() has been called
@@ -510,28 +511,28 @@ namespace STR
     //! Flag to indicate whether setup() has been called
     bool issetup_;
 
-    Teuchos::RCP<STR::ModelEvaluator::Map> me_map_ptr_;
+    Teuchos::RCP<Solid::ModelEvaluator::Map> me_map_ptr_;
 
-    Teuchos::RCP<STR::ModelEvaluator::Vector> me_vec_ptr_;
+    Teuchos::RCP<Solid::ModelEvaluator::Vector> me_vec_ptr_;
 
-    Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
+    Teuchos::RCP<Solid::MODELEVALUATOR::Data> eval_data_ptr_;
 
     //! Pointer to the structural dynamic data container
-    Teuchos::RCP<STR::TimeInt::BaseDataSDyn> sdyn_ptr_;
+    Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
     //! Pointer to the global state data container
-    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
     //! Pointer to the input/output data container
-    Teuchos::RCP<STR::TimeInt::BaseDataIO> gio_ptr_;
+    Teuchos::RCP<Solid::TimeInt::BaseDataIO> gio_ptr_;
 
-    Teuchos::RCP<STR::Integrator> int_ptr_;
+    Teuchos::RCP<Solid::Integrator> int_ptr_;
 
     //! Pointer to the underlying time integrator (read-only)
-    Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
+    Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
 
   };  // class ModelEvaluator
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

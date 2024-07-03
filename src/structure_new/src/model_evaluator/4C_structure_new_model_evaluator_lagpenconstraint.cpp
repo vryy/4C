@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::LagPenConstraint::LagPenConstraint()
+Solid::MODELEVALUATOR::LagPenConstraint::LagPenConstraint()
     : disnp_ptr_(Teuchos::null),
       stiff_constr_ptr_(Teuchos::null),
       fstrconstr_np_ptr_(Teuchos::null),
@@ -42,7 +42,7 @@ STR::MODELEVALUATOR::LagPenConstraint::LagPenConstraint()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::setup()
+void Solid::MODELEVALUATOR::LagPenConstraint::setup()
 {
   check_init();
 
@@ -80,7 +80,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::reset(const Epetra_Vector& x)
+void Solid::MODELEVALUATOR::LagPenConstraint::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -93,7 +93,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::evaluate_force()
+bool Solid::MODELEVALUATOR::LagPenConstraint::evaluate_force()
 {
   check_init_setup();
 
@@ -110,7 +110,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::evaluate_force()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::evaluate_stiff()
+bool Solid::MODELEVALUATOR::LagPenConstraint::evaluate_stiff()
 {
   check_init_setup();
 
@@ -129,7 +129,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::evaluate_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::evaluate_force_stiff()
+bool Solid::MODELEVALUATOR::LagPenConstraint::evaluate_force_stiff()
 {
   check_init_setup();
 
@@ -148,7 +148,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::assemble_force(
+bool Solid::MODELEVALUATOR::LagPenConstraint::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
@@ -180,7 +180,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_force(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
+bool Solid::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> block_ptr = Teuchos::null;
@@ -197,7 +197,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
     block_ptr = (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(
         constrman_->GetConstrMatrix(), true));
     block_ptr->Scale(timefac_np);
-    global_state().assign_model_block(jac, *block_ptr, Type(), STR::MatBlockType::displ_lm);
+    global_state().assign_model_block(jac, *block_ptr, Type(), Solid::MatBlockType::displ_lm);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
 
@@ -205,7 +205,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
     block_ptr =
         (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(constrman_->GetConstrMatrix(), true))
             ->Transpose();
-    global_state().assign_model_block(jac, *block_ptr, Type(), STR::MatBlockType::lm_displ);
+    global_state().assign_model_block(jac, *block_ptr, Type(), Solid::MatBlockType::lm_displ);
     // reset the block pointer, just to be on the safe side
     block_ptr = Teuchos::null;
   }
@@ -216,7 +216,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::write_restart(
+void Solid::MODELEVALUATOR::LagPenConstraint::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   iowriter.write_vector("lagrmultiplier", constrman_->GetLagrMultVector());
@@ -225,7 +225,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::MODELEVALUATOR::LagPenConstraint::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   double time_n = global_state().get_time_n();
   constrman_->read_restart(ioreader, time_n);
@@ -233,7 +233,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::read_restart(Core::IO::Discretizatio
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::run_post_compute_x(
+void Solid::MODELEVALUATOR::LagPenConstraint::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   check_init_setup();
@@ -248,7 +248,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::run_post_compute_x(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::update_step_state(const double& timefac_n)
+void Solid::MODELEVALUATOR::LagPenConstraint::update_step_state(const double& timefac_n)
 {
   constrman_->update();
 
@@ -263,7 +263,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::update_step_state(const double& time
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::update_step_element()
+void Solid::MODELEVALUATOR::LagPenConstraint::update_step_element()
 {
   // empty
 }
@@ -271,28 +271,28 @@ void STR::MODELEVALUATOR::LagPenConstraint::update_step_element()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::determine_stress_strain()
+void Solid::MODELEVALUATOR::LagPenConstraint::determine_stress_strain()
 {
   // nothing to do
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::determine_energy()
+void Solid::MODELEVALUATOR::LagPenConstraint::determine_energy()
 {
   // nothing to do
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::determine_optional_quantity()
+void Solid::MODELEVALUATOR::LagPenConstraint::determine_optional_quantity()
 {
   // nothing to do
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::output_step_state(
+void Solid::MODELEVALUATOR::LagPenConstraint::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
@@ -300,7 +300,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::output_step_state(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::reset_step_state()
+void Solid::MODELEVALUATOR::LagPenConstraint::reset_step_state()
 {
   check_init_setup();
 
@@ -310,7 +310,7 @@ void STR::MODELEVALUATOR::LagPenConstraint::reset_step_state()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>&
-STR::MODELEVALUATOR::LagPenConstraint::nox_interface_ptr()
+Solid::MODELEVALUATOR::LagPenConstraint::nox_interface_ptr()
 {
   check_init_setup();
 
@@ -320,7 +320,7 @@ STR::MODELEVALUATOR::LagPenConstraint::nox_interface_ptr()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>&
-STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePrecPtr()
+Solid::MODELEVALUATOR::LagPenConstraint::NoxInterfacePrecPtr()
 {
   check_init_setup();
 
@@ -330,7 +330,7 @@ STR::MODELEVALUATOR::LagPenConstraint::NoxInterfacePrecPtr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::get_block_dof_row_map_ptr()
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::LagPenConstraint::get_block_dof_row_map_ptr()
     const
 {
   check_init_setup();
@@ -347,8 +347,8 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::LagPenConstraint::get_block_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::LagPenConstraint::get_current_solution_ptr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+Solid::MODELEVALUATOR::LagPenConstraint::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -357,7 +357,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::LagPenConstraint::get_cur
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::LagPenConstraint::get_last_time_step_solution_ptr() const
+Solid::MODELEVALUATOR::LagPenConstraint::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -365,7 +365,7 @@ STR::MODELEVALUATOR::LagPenConstraint::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::LagPenConstraint::post_output()
+void Solid::MODELEVALUATOR::LagPenConstraint::post_output()
 {
   check_init_setup();
   // empty

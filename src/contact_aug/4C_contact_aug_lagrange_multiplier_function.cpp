@@ -160,11 +160,11 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::Compute(
 Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::get_structure_gradient(
     const CONTACT::ParamsInterface& cparams) const
 {
-  const STR::MODELEVALUATOR::Generic& model = cparams.get_model_evaluator();
-  const STR::MODELEVALUATOR::Contact& cmodel =
-      dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
+  const Solid::MODELEVALUATOR::Generic& model = cparams.get_model_evaluator();
+  const Solid::MODELEVALUATOR::Contact& cmodel =
+      dynamic_cast<const Solid::MODELEVALUATOR::Contact&>(model);
 
-  const std::vector<Inpar::STR::ModelType> without_contact_model(1, model.Type());
+  const std::vector<Inpar::Solid::ModelType> without_contact_model(1, model.Type());
 
   Teuchos::RCP<Epetra_Vector> str_gradient =
       cmodel.assemble_force_of_models(&without_contact_model, true);
@@ -195,13 +195,13 @@ Teuchos::RCP<Epetra_Vector> CONTACT::Aug::LagrangeMultiplierFunction::FirstOrder
 
   Epetra_Vector rhs(data_->global_active_n_dof_row_map(), true);
 
-  const STR::MODELEVALUATOR::Generic& model = cparams.get_model_evaluator();
-  const STR::MODELEVALUATOR::Contact& cmodel =
-      dynamic_cast<const STR::MODELEVALUATOR::Contact&>(model);
+  const Solid::MODELEVALUATOR::Generic& model = cparams.get_model_evaluator();
+  const Solid::MODELEVALUATOR::Contact& cmodel =
+      dynamic_cast<const Solid::MODELEVALUATOR::Contact&>(model);
 
   // access the full stiffness matrix
   Core::LinAlg::SparseMatrix full_stiff(
-      *cmodel.get_jacobian_block(STR::MatBlockType::displ_displ), Core::LinAlg::Copy);
+      *cmodel.get_jacobian_block(Solid::MatBlockType::displ_displ), Core::LinAlg::Copy);
 
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kdd_ptr =
       strategy_->get_matrix_block_ptr(CONTACT::MatBlockType::displ_displ);

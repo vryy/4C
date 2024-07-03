@@ -29,8 +29,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
-    Core::FE::Discretization& discret, STR::TimeInt::BaseDataGlobalState& gstate, STR::Dbc& dbc)
+void Solid::MonitorDbc::init(const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& io_ptr,
+    Core::FE::Discretization& discret, Solid::TimeInt::BaseDataGlobalState& gstate, Solid::Dbc& dbc)
 {
   issetup_ = false;
   isinit_ = false;
@@ -68,7 +68,7 @@ void STR::MonitorDbc::init(const Teuchos::RCP<STR::TimeInt::BaseDataIO>& io_ptr,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::get_tagged_condition(
+void Solid::MonitorDbc::get_tagged_condition(
     std::vector<const Core::Conditions::Condition*>& tagged_conds, const std::string& cond_name,
     const std::string& tag_name, const Core::FE::Discretization& discret) const
 {
@@ -88,7 +88,7 @@ void STR::MonitorDbc::get_tagged_condition(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::MonitorDbc::get_unique_id(int tagged_id, Core::Conditions::GeometryType gtype) const
+int Solid::MonitorDbc::get_unique_id(int tagged_id, Core::Conditions::GeometryType gtype) const
 {
   switch (gtype)
   {
@@ -106,7 +106,7 @@ int STR::MonitorDbc::get_unique_id(int tagged_id, Core::Conditions::GeometryType
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::create_reaction_force_condition(
+void Solid::MonitorDbc::create_reaction_force_condition(
     const Core::Conditions::Condition& tagged_cond, Core::FE::Discretization& discret) const
 {
   const int new_id = get_unique_id(tagged_cond.Id(), tagged_cond.GType());
@@ -123,7 +123,7 @@ void STR::MonitorDbc::create_reaction_force_condition(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::setup()
+void Solid::MonitorDbc::setup()
 {
   throw_if_not_init();
 
@@ -184,7 +184,7 @@ void STR::MonitorDbc::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& discret,
+void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& discret,
     const Core::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const
 {
   const auto* onoff = &rcond.parameters().get<std::vector<int>>("onoff");
@@ -213,7 +213,7 @@ void STR::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& discr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::read_results_prior_restart_step_and_write_to_file(
+void Solid::MonitorDbc::read_results_prior_restart_step_and_write_to_file(
     const std::vector<std::string>& full_restart_filepaths, int restart_step) const
 {
   if (comm().MyPID() != 0) return;
@@ -267,7 +267,7 @@ void STR::MonitorDbc::read_results_prior_restart_step_and_write_to_file(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::Execute(Core::IO::DiscretizationWriter& writer)
+void Solid::MonitorDbc::Execute(Core::IO::DiscretizationWriter& writer)
 {
   throw_if_not_init();
   throw_if_not_setup();
@@ -303,7 +303,7 @@ void STR::MonitorDbc::Execute(Core::IO::DiscretizationWriter& writer)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::write_results_to_file(const std::string& full_filepath,
+void Solid::MonitorDbc::write_results_to_file(const std::string& full_filepath,
     const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
     const double& area_ref, const double& area_curr) const
 {
@@ -319,7 +319,7 @@ void STR::MonitorDbc::write_results_to_file(const std::string& full_filepath,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::write_results_to_screen(
+void Solid::MonitorDbc::write_results_to_screen(
     const Teuchos::RCP<Core::Conditions::Condition>& rcond_ptr,
     const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
     const double& area_ref, const double& area_curr) const
@@ -335,7 +335,7 @@ void STR::MonitorDbc::write_results_to_screen(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::vector<std::string> STR::MonitorDbc::create_file_paths(
+std::vector<std::string> Solid::MonitorDbc::create_file_paths(
     const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& rconds,
     const std::string& full_dirpath, const std::string& filename_only_prefix,
     const std::string& file_type) const
@@ -354,7 +354,7 @@ std::vector<std::string> STR::MonitorDbc::create_file_paths(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::clear_files_and_write_header(
+void Solid::MonitorDbc::clear_files_and_write_header(
     const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& rconds,
     std::vector<std::string>& full_filepaths, bool do_write_condition_header)
 {
@@ -374,7 +374,7 @@ void STR::MonitorDbc::clear_files_and_write_header(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::write_condition_header(
+void Solid::MonitorDbc::write_condition_header(
     std::ostream& os, const int col_width, const Core::Conditions::Condition* cond) const
 {
   if (cond)
@@ -386,7 +386,7 @@ void STR::MonitorDbc::write_condition_header(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::write_column_header(std::ostream& os, const int col_width) const
+void Solid::MonitorDbc::write_column_header(std::ostream& os, const int col_width) const
 {
   os << std::setw(col_width) << "step" << std::setw(col_width) << "time" << std::setw(col_width)
      << "ref_area" << std::setw(col_width) << "curr_area" << std::setw(col_width) << "f_x"
@@ -396,7 +396,7 @@ void STR::MonitorDbc::write_column_header(std::ostream& os, const int col_width)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::write_results(std::ostream& os, const int col_width, const int precision,
+void Solid::MonitorDbc::write_results(std::ostream& os, const int col_width, const int precision,
     const unsigned step, const double time, const Core::LinAlg::Matrix<DIM, 1>& rforce,
     const Core::LinAlg::Matrix<DIM, 1>& rmoment, const double& area_ref,
     const double& area_curr) const
@@ -414,11 +414,11 @@ void STR::MonitorDbc::write_results(std::ostream& os, const int col_width, const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Comm& STR::MonitorDbc::comm() const { return discret_ptr_->Comm(); }
+const Epetra_Comm& Solid::MonitorDbc::comm() const { return discret_ptr_->Comm(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::get_area(double area[], const Core::Conditions::Condition* rcond) const
+void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Condition* rcond) const
 {
   // no area for point DBCs
   if (rcond->GType() == Core::Conditions::geometry_type_point)
@@ -504,7 +504,7 @@ void STR::MonitorDbc::get_area(double area[], const Core::Conditions::Condition*
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::MonitorDbc::get_reaction_force(
+double Solid::MonitorDbc::get_reaction_force(
     Core::LinAlg::Matrix<DIM, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const
 {
   Epetra_Vector complete_freact(*gstate_ptr_->get_freact_np());
@@ -527,7 +527,7 @@ double STR::MonitorDbc::get_reaction_force(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmoment_xyz,
+double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmoment_xyz,
     const Teuchos::RCP<Epetra_Map>* react_maps, const Core::Conditions::Condition* rcond) const
 {
   Teuchos::RCP<const Epetra_Vector> dispn = gstate_ptr_->get_dis_np();

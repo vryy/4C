@@ -43,7 +43,7 @@ LAGPENCONSTRAINT::NoxInterfacePrec::NoxInterfacePrec()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void LAGPENCONSTRAINT::NoxInterface::init(
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
+    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
 
@@ -56,7 +56,7 @@ void LAGPENCONSTRAINT::NoxInterface::init(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void LAGPENCONSTRAINT::NoxInterfacePrec::init(
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr)
+    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
 
@@ -94,7 +94,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(const Epetra_Vec
   if (chQ != NOX::Nln::StatusTest::quantity_lag_pen_constraint) return -1.0;
 
   Teuchos::RCP<Epetra_Vector> constrRhs =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_lag_pen_constraint, F);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, F);
 
   // no constraint contributions present
   if (constrRhs.is_null()) return 0.0;
@@ -121,9 +121,9 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(const 
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagincr_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_lag_pen_constraint, xOld);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld);
   Teuchos::RCP<const Epetra_Vector> lagnew_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_lag_pen_constraint, xNew);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
@@ -146,9 +146,9 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagincr_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_lag_pen_constraint, xOld);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld);
   Teuchos::RCP<const Epetra_Vector> lagnew_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_lag_pen_constraint, xNew);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xNew);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
@@ -173,7 +173,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
 
   // export the constraint solution
   Teuchos::RCP<Epetra_Vector> lagold_ptr =
-      gstate_ptr_->extract_model_entries(Inpar::STR::model_lag_pen_constraint, xOld);
+      gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld);
 
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagold_nox_ptr =
       Teuchos::rcp(new ::NOX::Epetra::Vector(lagold_ptr, ::NOX::Epetra::Vector::CreateView));

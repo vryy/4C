@@ -27,44 +27,44 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* create auxiliary time integration scheme */
-Teuchos::RCP<STR::TimAda> STR::TimAdaCreate(
+Teuchos::RCP<Solid::TimAda> Solid::TimAdaCreate(
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& tap,  //!< adaptive input flags
-    Teuchos::RCP<STR::TimInt> tis       //!< marching time integrator
+    Teuchos::RCP<Solid::TimInt> tis     //!< marching time integrator
 )
 {
-  Teuchos::RCP<STR::TimAda> sta = Teuchos::null;
+  Teuchos::RCP<Solid::TimAda> sta = Teuchos::null;
 
   // auxiliary time integrator
-  switch (Core::UTILS::IntegralValue<Inpar::STR::TimAdaKind>(tap, "KIND"))
+  switch (Core::UTILS::IntegralValue<Inpar::Solid::TimAdaKind>(tap, "KIND"))
   {
-    case Inpar::STR::timada_kind_none:
+    case Inpar::Solid::timada_kind_none:
       // No adaptivity in time
       sta = Teuchos::null;
       break;
 
-    case Inpar::STR::timada_kind_zienxie:
+    case Inpar::Solid::timada_kind_zienxie:
       // Zienkiewicz-Xie error indicator for generalised-alpha
-      sta = Teuchos::rcp(new STR::TimAdaZienXie(timeparams, tap, tis));
+      sta = Teuchos::rcp(new Solid::TimAdaZienXie(timeparams, tap, tis));
       break;
 
-    case Inpar::STR::timada_kind_ab2:
+    case Inpar::Solid::timada_kind_ab2:
       // Adams-Bashforth 2nd order
       sta = Teuchos::rcp(
-          new STR::TimAdaJoint<STR::TimIntAB2>(ioflags, timeparams, sdyn, xparams, tap, tis));
+          new Solid::TimAdaJoint<Solid::TimIntAB2>(ioflags, timeparams, sdyn, xparams, tap, tis));
       break;
 
-    case Inpar::STR::timada_kind_expleuler:
+    case Inpar::Solid::timada_kind_expleuler:
       // Adams-Bashforth 2nd order
-      sta = Teuchos::rcp(
-          new STR::TimAdaJoint<STR::TimIntExplEuler>(ioflags, timeparams, sdyn, xparams, tap, tis));
+      sta = Teuchos::rcp(new Solid::TimAdaJoint<Solid::TimIntExplEuler>(
+          ioflags, timeparams, sdyn, xparams, tap, tis));
       break;
 
-    case Inpar::STR::timada_kind_centraldiff:
+    case Inpar::Solid::timada_kind_centraldiff:
       // Adams-Bashforth 2nd order
-      sta = Teuchos::rcp(
-          new STR::TimAdaJoint<STR::TimIntCentrDiff>(ioflags, timeparams, sdyn, xparams, tap, tis));
+      sta = Teuchos::rcp(new Solid::TimAdaJoint<Solid::TimIntCentrDiff>(
+          ioflags, timeparams, sdyn, xparams, tap, tis));
       break;
 
     default:

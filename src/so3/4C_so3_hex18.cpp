@@ -266,7 +266,7 @@ bool Discret::ELEMENTS::SoHex18::ReadElement(
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_HEX18 element failed KINEM unknown");
@@ -372,7 +372,7 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
       if (elemat1.is_initialized()) matptr = &elemat1;
 
       nlnstiffmass(lm, mydisp, myres, matptr, nullptr, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
       break;
     }
 
@@ -394,7 +394,7 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18> myemat(true);
 
       nlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
 
       break;
     }
@@ -418,7 +418,7 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*res, myres, lm);
 
       nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
 
       if (act == calc_struct_nlnstifflmass) lumpmass(&elemat2);
 
@@ -447,10 +447,10 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
         Core::FE::ExtractMyValues(*res, myres, lm);
         Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D> strain;
-        auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-            params, "iostress", Inpar::STR::stress_none);
-        auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-            params, "iostrain", Inpar::STR::strain_none);
+        auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+            params, "iostress", Inpar::Solid::stress_none);
+        auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+            params, "iostrain", Inpar::Solid::strain_none);
 
         nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain, params,
             iostress, iostrain);
@@ -670,9 +670,9 @@ void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
     Core::LinAlg::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
     Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-    Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,  ///< stress output option
-    const Inpar::STR::StrainType iostrain   ///< strain output option
+    Teuchos::ParameterList& params,           ///< algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,  ///< stress output option
+    const Inpar::Solid::StrainType iostrain   ///< strain output option
 )
 {
   Core::LinAlg::Matrix<NUMNOD_SOH18, 3> xrefe(false);  // X, material coord. of element

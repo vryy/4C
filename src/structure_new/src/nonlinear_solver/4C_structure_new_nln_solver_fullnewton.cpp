@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Nln::SOLVER::FullNewton::FullNewton() : Nox()
+Solid::Nln::SOLVER::FullNewton::FullNewton() : Nox()
 {
   // empty
 }
@@ -26,7 +26,7 @@ STR::Nln::SOLVER::FullNewton::FullNewton() : Nox()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::FullNewton::setup()
+void Solid::Nln::SOLVER::FullNewton::setup()
 {
   check_init();
 
@@ -43,7 +43,7 @@ void STR::Nln::SOLVER::FullNewton::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Nln::SOLVER::FullNewton::set_full_newton_params()
+void Solid::Nln::SOLVER::FullNewton::set_full_newton_params()
 {
   check_init();
 
@@ -87,12 +87,12 @@ void STR::Nln::SOLVER::FullNewton::set_full_newton_params()
   if (not is_xml_status_test_file(data_sdyn().get_nox_params().sublist("Status Test")))
   {
     std::set<enum NOX::Nln::StatusTest::QuantityType> qtypes;
-    STR::Nln::SOLVER::create_quantity_types(qtypes, data_sdyn());
+    Solid::Nln::SOLVER::create_quantity_types(qtypes, data_sdyn());
     {  // remove the unsupported quantity of status test
       qtypes.erase(NOX::Nln::StatusTest::quantity_eas);  // EAS is removed since it is an element
                                                          // quantity and not nodal dof
     }
-    STR::Nln::SOLVER::set_status_test_params(
+    Solid::Nln::SOLVER::set_status_test_params(
         data_sdyn().get_nox_params().sublist("Status Test"), data_sdyn(), qtypes);
   }
 }

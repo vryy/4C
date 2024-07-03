@@ -30,13 +30,13 @@ namespace Discret
   class PackBuffer;
 }  // namespace Discret
 // forward declaration
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
     class BaseDataGlobalState;
   }
-}  // namespace STR
+}  // namespace Solid
 namespace BEAMINTERACTION
 {
   /*!

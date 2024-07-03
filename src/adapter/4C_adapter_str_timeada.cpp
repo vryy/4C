@@ -29,10 +29,10 @@ FOUR_C_NAMESPACE_OPEN
 Adapter::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
     : StructureWrapper(structure)
 {
-  stm_ = Teuchos::rcp_dynamic_cast<STR::TimeInt::Base>(structure_);
+  stm_ = Teuchos::rcp_dynamic_cast<Solid::TimeInt::Base>(structure_);
 
   if (stm_ == Teuchos::null)
-    FOUR_C_THROW("cast from Adapter::Structure to STR::TimeInt::Base failed");
+    FOUR_C_THROW("cast from Adapter::Structure to Solid::TimeInt::Base failed");
 
   // call the setup once if stm_ has been setup
   if (stm_->is_setup()) setup_time_ada();
@@ -42,16 +42,16 @@ Adapter::StructureTimeAda::StructureTimeAda(Teuchos::RCP<Structure> structure)
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Adapter::Structure> Adapter::StructureTimeAda::Create(
     const Teuchos::ParameterList& taflags,  //!< adaptive input flags
-    Teuchos::RCP<STR::TimeInt::Base> ti_strategy)
+    Teuchos::RCP<Solid::TimeInt::Base> ti_strategy)
 {
-  auto kind = Core::UTILS::IntegralValue<Inpar::STR::TimAdaKind>(taflags, "KIND");
+  auto kind = Core::UTILS::IntegralValue<Inpar::Solid::TimAdaKind>(taflags, "KIND");
   switch (kind)
   {
-    case Inpar::STR::timada_kind_zienxie:
+    case Inpar::Solid::timada_kind_zienxie:
       // Adaptive time integration with Zienkiewicz-Xie error indicator
       return Teuchos::rcp(new Adapter::StructureTimeAdaZienXie(ti_strategy));
 
-    case Inpar::STR::timada_kind_joint_explicit:
+    case Inpar::Solid::timada_kind_joint_explicit:
       // Adaptive time integration using auxiliary time integrator
       return Teuchos::rcp(new Adapter::StructureTimeAdaJoint(ti_strategy));
 
@@ -98,7 +98,7 @@ void Adapter::StructureTimeAda::setup_time_ada()
   sizeratiomin_ = tap.get<double>("SIZERATIOMIN");
   sizeratioscale_ = tap.get<double>("SIZERATIOSCALE");
   errctrl_ = ctrl_dis;  // PROVIDE INPUT PARAMETER
-  errnorm_ = Core::UTILS::IntegralValue<Inpar::STR::VectorNorm>(tap, "LOCERRNORM");
+  errnorm_ = Core::UTILS::IntegralValue<Inpar::Solid::VectorNorm>(tap, "LOCERRNORM");
   errtol_ = tap.get<double>("LOCERRTOL");
   errorder_ = 1;  // CHANGE THIS CONSTANT
   adaptstepmax_ = tap.get<int>("ADAPTSTEPMAX");
@@ -162,7 +162,7 @@ void Adapter::StructureTimeAda::read_restart(int step)
 int Adapter::StructureTimeAda::Integrate()
 {
   // error checking variables
-  Inpar::STR::ConvergenceStatus convergencestatus = Inpar::STR::conv_success;
+  Inpar::Solid::ConvergenceStatus convergencestatus = Inpar::Solid::conv_success;
 
   int myrank = stm_->discretization()->Comm().MyPID();
 
@@ -213,18 +213,18 @@ int Adapter::StructureTimeAda::Integrate()
       PreSolve();
       convergencestatus = Solve();
 
-      if (convergencestatus != Inpar::STR::conv_success)
+      if (convergencestatus != Inpar::Solid::conv_success)
       {
         // if not converged, then we have to restart the step over
         accepted = false;
 
         // get the divergence action
-        enum Inpar::STR::DivContAct div_action = stm_->data_sdyn().get_divergence_action();
+        enum Inpar::Solid::DivContAct div_action = stm_->data_sdyn().get_divergence_action();
 
         convergencestatus = PerformErrorAction(div_action, stpsiznew);
       }
 
-      if (convergencestatus == Inpar::STR::conv_success)
+      if (convergencestatus == Inpar::Solid::conv_success)
       {
         // get local error vector on locerrdisn_
         evaluate_local_error_dis();
@@ -366,7 +366,7 @@ void Adapter::StructureTimeAda::size_for_output()
 /* Output action */
 void Adapter::StructureTimeAda::output(bool forced_writerestart)
 {
-  STR::TimeInt::BaseDataIO& dataio = stm_->data_io();
+  Solid::TimeInt::BaseDataIO& dataio = stm_->data_io();
   Teuchos::RCP<Core::IO::DiscretizationWriter> output_ptr = dataio.get_output_ptr();
 
   StructureWrapper::output(forced_writerestart);
@@ -377,7 +377,7 @@ void Adapter::StructureTimeAda::output(bool forced_writerestart)
 /* Evaluate local error vector */
 void Adapter::StructureTimeAda::evaluate_local_error_dis()
 {
-  const STR::TimeInt::Base& sti = *stm_;
+  const Solid::TimeInt::Base& sti = *stm_;
   const auto& gstate = sti.data_global_state();
 
   if (MethodAdaptDis() == ada_orderequal)
@@ -489,32 +489,32 @@ double Adapter::StructureTimeAda::calculate_dt(const double norm)
 
 /*----------------------------------------------------------------------*/
 /* Calculate vector norm */
-double Adapter::StructureTimeAda::calculate_vector_norm(const enum Inpar::STR::VectorNorm norm,
+double Adapter::StructureTimeAda::calculate_vector_norm(const enum Inpar::Solid::VectorNorm norm,
     const Teuchos::RCP<Epetra_Vector> vect, const int numneglect)
 {
   // L1 norm
-  if (norm == Inpar::STR::norm_l1)
+  if (norm == Inpar::Solid::norm_l1)
   {
     double vectnorm;
     vect->Norm1(&vectnorm);
     return vectnorm;
   }
   // L2/Euclidian norm
-  else if (norm == Inpar::STR::norm_l2)
+  else if (norm == Inpar::Solid::norm_l2)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
     return vectnorm;
   }
   // RMS norm
-  else if (norm == Inpar::STR::norm_rms)
+  else if (norm == Inpar::Solid::norm_rms)
   {
     double vectnorm;
     vect->Norm2(&vectnorm);
     return vectnorm / sqrt((double)(vect->GlobalLength() - numneglect));
   }
   // infinity/maximum norm
-  else if (norm == Inpar::STR::norm_inf)
+  else if (norm == Inpar::Solid::norm_inf)
   {
     double vectnorm;
     vect->NormInf(&vectnorm);
@@ -540,8 +540,8 @@ void Adapter::StructureTimeAda::update_period()
 }
 
 /*----------------------------------------------------------------------*/
-Inpar::STR::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
-    const Inpar::STR::DivContAct& action, double& stepsizenew)
+Inpar::Solid::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
+    const Inpar::Solid::DivContAct& action, double& stepsizenew)
 {
   int myrank = stm_->discretization()->Comm().MyPID();
 
@@ -558,7 +558,7 @@ Inpar::STR::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
   // + adapt_3D0Dptc_ele_err ??
   switch (action)
   {
-    case Inpar::STR::divcont_stop:
+    case Inpar::Solid::divcont_stop:
       // write output
       output();
 
@@ -566,7 +566,7 @@ Inpar::STR::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
       FOUR_C_THROW("Nonlinear solver did not converge! ");
       break;
 
-    case Inpar::STR::divcont_halve_step:
+    case Inpar::Solid::divcont_halve_step:
       if (myrank == 0)
       {
         Core::IO::cout << "Nonlinear solver failed to converge at time t= " << stm_->GetTimeNp()
@@ -577,9 +577,9 @@ Inpar::STR::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
       }
 
       stepsizenew = 0.5 * stepsize_;
-      return Inpar::STR::conv_fail_repeat;
+      return Inpar::Solid::conv_fail_repeat;
 
-    case Inpar::STR::divcont_continue:
+    case Inpar::Solid::divcont_continue:
       if (myrank == 0)
       {
         Core::IO::cout
@@ -590,22 +590,22 @@ Inpar::STR::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
             << Core::IO::endl;
       }
 
-      return Inpar::STR::conv_success;  // Do not surprise. We enforce successful
-                                        // status flag to force the error estimator
-                                        // to compute new step size later on.
+      return Inpar::Solid::conv_success;  // Do not surprise. We enforce successful
+                                          // status flag to force the error estimator
+                                          // to compute new step size later on.
 
-    case Inpar::STR::divcont_adapt_step:
-    case Inpar::STR::divcont_rand_adapt_step:
-    case Inpar::STR::divcont_rand_adapt_step_ele_err:
+    case Inpar::Solid::divcont_adapt_step:
+    case Inpar::Solid::divcont_rand_adapt_step:
+    case Inpar::Solid::divcont_rand_adapt_step_ele_err:
       FOUR_C_THROW(
           "Adapt the time step is handled by the adaptive time marching integrator. Use\n"
           "DIVERCONT = continue if you want to adapt the step size.");
       break;
-    case Inpar::STR::divcont_repeat_simulation:
+    case Inpar::Solid::divcont_repeat_simulation:
       FOUR_C_THROW("No use to repeat a simulation when it failed. Get a coffee instead.");
       break;
-    case Inpar::STR::divcont_adapt_penaltycontact:
-    case Inpar::STR::divcont_adapt_3D0Dptc_ele_err:
+    case Inpar::Solid::divcont_adapt_penaltycontact:
+    case Inpar::Solid::divcont_adapt_3D0Dptc_ele_err:
       FOUR_C_THROW(
           "DIVERCONT = adapt_penaltycontact/adapt_3D0Dptc_ele_err is yet to be implemented. "
           "Stay tune.");
@@ -614,7 +614,7 @@ Inpar::STR::ConvergenceStatus Adapter::StructureTimeAda::PerformErrorAction(
       FOUR_C_THROW("I don't know what to do.");
       break;
   }
-  return Inpar::STR::conv_success;  // make compiler happy
+  return Inpar::Solid::conv_success;  // make compiler happy
 }
 
 FOUR_C_NAMESPACE_CLOSE

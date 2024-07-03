@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::MODELEVALUATOR
+namespace Solid::MODELEVALUATOR
 {
   class GaussPointDataOutputManager;
 }
@@ -45,13 +45,13 @@ namespace Discret
     class Shell7p;
     struct ShellStressIO
     {
-      Inpar::STR::StressType type;
+      Inpar::Solid::StressType type;
       std::vector<char>& mutable_data;
     };
 
     struct ShellStrainIO
     {
-      Inpar::STR::StrainType type;
+      Inpar::Solid::StrainType type;
       std::vector<char>& mutable_data;
     };
 
@@ -70,8 +70,8 @@ namespace Discret
        * @param linedef (in) : Input line of the corresponding element
        */
       virtual void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
-          Input::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
-          const STR::ELEMENTS::ShellData& shell_data) = 0;
+          Input::LineDefinition* linedef, const Solid::ELEMENTS::ShellLockingTypes& locking_types,
+          const Solid::ELEMENTS::ShellData& shell_data) = 0;
 
       /*!
        * @brief A setup routine for the materials after the whole input is read before evaluation.
@@ -116,7 +116,7 @@ namespace Discret
        */
       virtual void Recover(Core::Elements::Element& ele,
           const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
-          Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& str_interface) = 0;
+          Teuchos::ParameterList& params, Solid::ELEMENTS::ParamsInterface& str_interface) = 0;
 
       /*!
        * @brief Evaluates the stresses and strains

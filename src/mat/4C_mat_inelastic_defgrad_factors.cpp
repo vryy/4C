@@ -208,7 +208,7 @@ Teuchos::RCP<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::Factory
 
   // check correct masslin type
   const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
-  if (Core::UTILS::IntegralValue<Inpar::STR::MassLin>(sdyn, "MASSLIN") != Inpar::STR::ml_none)
+  if (Core::UTILS::IntegralValue<Inpar::Solid::MassLin>(sdyn, "MASSLIN") != Inpar::Solid::ml_none)
   {
     FOUR_C_THROW(
         "If you use the material 'InelasticDefgradFactors' please set 'MASSLIN' in the "

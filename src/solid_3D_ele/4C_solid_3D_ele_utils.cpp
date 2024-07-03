@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void STR::UTILS::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
+void Solid::UTILS::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
     const Core::LinAlg::Matrix<3, 3>& defgrd, Core::LinAlg::Matrix<6, 1>& cauchy)
 {
   Core::LinAlg::Matrix<3, 3> S_matrix;
@@ -31,7 +31,7 @@ void STR::UTILS::pk2_to_cauchy(const Core::LinAlg::Matrix<6, 1>& pk2,
   Core::LinAlg::Voigt::Stresses::matrix_to_vector(cauchy_matrix, cauchy);
 }
 
-Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_euler_almansi(
+Core::LinAlg::Matrix<6, 1> Solid::UTILS::green_lagrange_to_euler_almansi(
     const Core::LinAlg::Matrix<6, 1>& gl, const Core::LinAlg::Matrix<3, 3>& defgrd)
 {
   Core::LinAlg::Matrix<3, 3> invdefgrd(defgrd);
@@ -51,7 +51,7 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_euler_almansi(
   return ea;
 }
 
-Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_log_strain(
+Core::LinAlg::Matrix<6, 1> Solid::UTILS::green_lagrange_to_log_strain(
     const Core::LinAlg::Matrix<6, 1>& gl)
 {
   Core::LinAlg::Matrix<3, 3> E_matrix;
@@ -77,30 +77,30 @@ Core::LinAlg::Matrix<6, 1> STR::UTILS::green_lagrange_to_log_strain(
   return log_strain_voigt;
 }
 
-int STR::UTILS::ReadElement::read_element_material(Input::LineDefinition* linedef)
+int Solid::UTILS::ReadElement::read_element_material(Input::LineDefinition* linedef)
 {
   int material = 0;
   linedef->extract_int("MAT", material);
   return material;
 }
 
-Inpar::STR::KinemType STR::UTILS::ReadElement::read_element_kinematic_type(
+Inpar::Solid::KinemType Solid::UTILS::ReadElement::read_element_kinematic_type(
     Input::LineDefinition* linedef)
 {
   std::string kinem;
   linedef->extract_string("KINEM", kinem);
   if (kinem == "nonlinear")
-    return Inpar::STR::KinemType::nonlinearTotLag;
+    return Inpar::Solid::KinemType::nonlinearTotLag;
   else if (kinem == "linear")
-    return Inpar::STR::KinemType::linear;
+    return Inpar::Solid::KinemType::linear;
   else
   {
     FOUR_C_THROW("unknown kinematic type %s", kinem.c_str());
-    return Inpar::STR::KinemType::vague;
+    return Inpar::Solid::KinemType::vague;
   }
 }
 
-Discret::ELEMENTS::ElementTechnology STR::UTILS::ReadElement::read_element_technology(
+Discret::ELEMENTS::ElementTechnology Solid::UTILS::ReadElement::read_element_technology(
     Input::LineDefinition* linedef)
 {
   std::string type;
@@ -125,7 +125,7 @@ Discret::ELEMENTS::ElementTechnology STR::UTILS::ReadElement::read_element_techn
     FOUR_C_THROW("unrecognized element technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::PrestressTechnology STR::UTILS::ReadElement::read_prestress_technology(
+Discret::ELEMENTS::PrestressTechnology Solid::UTILS::ReadElement::read_prestress_technology(
     Input::LineDefinition* linedef)
 {
   std::string type;
@@ -142,29 +142,30 @@ Discret::ELEMENTS::PrestressTechnology STR::UTILS::ReadElement::read_prestress_t
   FOUR_C_THROW("unrecognized prestress technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::SolidElementProperties STR::UTILS::ReadElement::read_solid_element_properties(
+Discret::ELEMENTS::SolidElementProperties Solid::UTILS::ReadElement::read_solid_element_properties(
     Input::LineDefinition* linedef)
 {
   Discret::ELEMENTS::SolidElementProperties solid_properties{};
   // element technology
   if (linedef->has_named("TECH"))
   {
-    solid_properties.element_technology = STR::UTILS::ReadElement::read_element_technology(linedef);
+    solid_properties.element_technology =
+        Solid::UTILS::ReadElement::read_element_technology(linedef);
   }
 
   // prestress technology
   if (linedef->has_named("PRESTRESS_TECH"))
   {
     solid_properties.prestress_technology =
-        STR::UTILS::ReadElement::read_prestress_technology(linedef);
+        Solid::UTILS::ReadElement::read_prestress_technology(linedef);
   }
   // kinematic type
-  solid_properties.kintype = STR::UTILS::ReadElement::read_element_kinematic_type(linedef);
+  solid_properties.kintype = Solid::UTILS::ReadElement::read_element_kinematic_type(linedef);
 
   return solid_properties;
 }
 
-void STR::UTILS::nodal_block_information_solid(
+void Solid::UTILS::nodal_block_information_solid(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;

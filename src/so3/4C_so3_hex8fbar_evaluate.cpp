@@ -116,8 +116,8 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       for (double& myre : myres) myre = 0.0;
       nlnstiffmass(lm, mydisp, nullptr, myres, &elemat1, nullptr, &elevec1, nullptr, nullptr,
-          nullptr, nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none,
-          Inpar::STR::strain_none);
+          nullptr, nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+          Inpar::Solid::strain_none);
     }
     break;
 
@@ -137,8 +137,8 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       if (elemat1.is_initialized()) matptr = &elemat1;
 
       nlnstiffmass(lm, mydisp, nullptr, myres, matptr, nullptr, &elevec1, nullptr, nullptr, nullptr,
-          nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none,
-          Inpar::STR::strain_none);
+          nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+          Inpar::Solid::strain_none);
     }
     break;
 
@@ -157,8 +157,8 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
       nlnstiffmass(lm, mydisp, nullptr, myres, &myemat, nullptr, &elevec1, nullptr, nullptr,
-          nullptr, nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none,
-          Inpar::STR::strain_none);
+          nullptr, nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+          Inpar::Solid::strain_none);
     }
     break;
 
@@ -187,8 +187,8 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*acc, myacc, lm);
 
       nlnstiffmass(lm, mydisp, &myacc, myres, &elemat1, &elemat2, &elevec1, &elevec2, nullptr,
-          nullptr, nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none,
-          Inpar::STR::strain_none);
+          nullptr, nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+          Inpar::Solid::strain_none);
 
       if (act == Core::Elements::struct_calc_nlnstifflmass) soh8_lumpmass(&elemat2);
     }
@@ -208,9 +208,9 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> plstraindata = Teuchos::null;
-      Inpar::STR::StressType iostress = Inpar::STR::stress_none;
-      Inpar::STR::StrainType iostrain = Inpar::STR::strain_none;
-      Inpar::STR::StrainType ioplstrain = Inpar::STR::strain_none;
+      Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
+      Inpar::Solid::StrainType iostrain = Inpar::Solid::strain_none;
+      Inpar::Solid::StrainType ioplstrain = Inpar::Solid::strain_none;
       if (IsParamsInterface())
       {
         stressdata = str_params_interface().stress_data_ptr();
@@ -225,14 +225,14 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-            params, "iostress", Inpar::STR::stress_none);
-        iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-            params, "iostrain", Inpar::STR::strain_none);
+        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+            params, "iostress", Inpar::Solid::stress_none);
+        iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+            params, "iostrain", Inpar::Solid::strain_none);
         // in case of small strain materials calculate plastic strains for post processing
         plstraindata = params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
-        ioplstrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-            params, "ioplstrain", Inpar::STR::strain_none);
+        ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+            params, "ioplstrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
@@ -547,7 +547,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
       else  // old structural time integration
       {
@@ -740,10 +740,10 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,    // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,    // strains at GP
     Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
-    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,    // stress output option
-    const Inpar::STR::StrainType iostrain,    // strain output option
-    const Inpar::STR::StrainType ioplstrain)  // strain output option
+    Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,    // stress output option
+    const Inpar::Solid::StrainType iostrain,    // strain output option
+    const Inpar::Solid::StrainType ioplstrain)  // strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
@@ -898,7 +898,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         if (str_params_interface().is_tolerate_errors())
         {
           str_params_interface().set_ele_eval_error_flag(
-              STR::ELEMENTS::ele_error_negative_det_of_def_gradient);
+              Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
           stiffmatrix->clear();
           force->clear();
           return;
@@ -945,14 +945,14 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain_bar(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain_bar(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
@@ -984,7 +984,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         (*elestrain)(gp, 5) = euler_almansi_bar(0, 2);
       }
       break;
-      case Inpar::STR::strain_log:
+      case Inpar::Solid::strain_log:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
@@ -1085,7 +1085,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         (*elestrain)(gp, 5) = lnv(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -1166,7 +1166,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     // CAUTION: print plastic strains ONLY in case of small strain regime!
     switch (ioplstrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain_bar =
@@ -1175,7 +1175,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain_bar(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain_bar =
@@ -1193,7 +1193,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         (*eleplstrain)(gp, 5) = euler_almansi_bar(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
 
       default:
@@ -1204,13 +1204,13 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress_bar(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF_bar = defgrd_bar.determinant();
@@ -1239,7 +1239,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         (*elestress)(gp, 5) = cauchystress_bar(0, 2);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");

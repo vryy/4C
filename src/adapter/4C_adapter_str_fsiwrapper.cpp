@@ -22,11 +22,11 @@ namespace
 {
   bool PrestressIsActive(const double currentTime)
   {
-    Inpar::STR::PreStress pstype = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+    Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
         Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     const double pstime =
         Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
-    return pstype != Inpar::STR::PreStress::none && currentTime <= pstime + 1.0e-15;
+    return pstype != Inpar::Solid::PreStress::none && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace
 
@@ -36,7 +36,7 @@ Adapter::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
     : StructureWrapper(structure)
 {
   // set-up FSI interface
-  interface_ = Teuchos::rcp(new STR::MapExtractor);
+  interface_ = Teuchos::rcp(new Solid::MapExtractor);
 
   if (Global::Problem::Instance()->GetProblemType() != Core::ProblemType::fpsi)
     interface_->setup(*discretization(), *discretization()->dof_row_map());
@@ -55,7 +55,7 @@ Adapter::FSIStructureWrapper::FSIStructureWrapper(Teuchos::RCP<Structure> struct
  *------------------------------------------------------------------------------------*/
 void Adapter::FSIStructureWrapper::RebuildInterface()
 {
-  interface_ = Teuchos::rcp(new STR::MapExtractor);
+  interface_ = Teuchos::rcp(new Solid::MapExtractor);
   interface_->setup(*discretization(), *discretization()->dof_row_map());
 }
 
@@ -223,7 +223,7 @@ void Adapter::FSIStructureWrapper::apply_interface_forces_temporary_deprecated(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<STR::MODELEVALUATOR::PartitionedFSI>
+Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedFSI>
 Adapter::FSIStructureWrapper::fsi_model_evaluator()
 {
   return fsi_model_evaluator_;

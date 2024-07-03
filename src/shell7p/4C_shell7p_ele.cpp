@@ -46,7 +46,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::Shell7pType::Create(
 void Discret::ELEMENTS::Shell7pType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  STR::UTILS::Shell::NodalBlockInformationShell(dwele, numdf, dimns, nv, np);
+  Solid::UTILS::Shell::NodalBlockInformationShell(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Shell7pType::ComputeNullSpace(
@@ -66,7 +66,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Shell7pType::ComputeNullSpace
   for (int dim = 0; dim < Shell::DETAIL::num_dim; ++dim)
     director(dim, 0) = nodal_directors(j, dim) * half_thickness;
 
-  return STR::UTILS::Shell::ComputeShellNullSpace(node, x0, director);
+  return Solid::UTILS::Shell::ComputeShellNullSpace(node, x0, director);
 }
 
 
@@ -161,7 +161,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
 
 int Discret::ELEMENTS::Shell7pType::initialize(Core::FE::Discretization& dis)
 {
-  STR::UTILS::Shell::Director::SetupShellElementDirectors(*this, dis);
+  Solid::UTILS::Shell::Director::SetupShellElementDirectors(*this, dis);
 
   return 0;
 }
@@ -278,7 +278,7 @@ void Discret::ELEMENTS::Shell7p::set_params_interface_ptr(const Teuchos::Paramet
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
+    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(
         p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
@@ -331,7 +331,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Shell7p::S
 bool Discret::ELEMENTS::Shell7p::ReadElement(
     const std::string& eletype, const std::string& distype, Input::LineDefinition* linedef)
 {
-  STR::ELEMENTS::ShellData shell_data = {};
+  Solid::ELEMENTS::ShellData shell_data = {};
 
   // set discretization type
   distype_ = Core::FE::StringToCellType(distype);
@@ -342,11 +342,11 @@ bool Discret::ELEMENTS::Shell7p::ReadElement(
   shell_data.thickness = thickness_;
 
   // extract number of EAS parameters for different locking types
-  STR::ELEMENTS::ShellLockingTypes locking_types = {};
+  Solid::ELEMENTS::ShellLockingTypes locking_types = {};
   if (linedef->has_named("EAS"))
   {
-    eletech_.insert(Inpar::STR::EleTech::eas);
-    STR::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(distype_, linedef, locking_types);
+    eletech_.insert(Inpar::Solid::EleTech::eas);
+    Solid::UTILS::Shell::ReadElement::ReadAndSetLockingTypes(distype_, linedef, locking_types);
   }
 
   // set calculation interface pointer
@@ -355,14 +355,15 @@ bool Discret::ELEMENTS::Shell7p::ReadElement(
   // read and set ANS technology for element
   if (linedef->has_named("ANS"))
   {
-    shell_data.num_ans = STR::UTILS::Shell::ReadElement::ReadAndSetNumANS(distype_);
+    shell_data.num_ans = Solid::UTILS::Shell::ReadElement::ReadAndSetNumANS(distype_);
   }
 
   // read SDC
   linedef->extract_double("SDC", shell_data.sdc);
 
   // read and set number of material model
-  SetMaterial(0, Mat::Factory(STR::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(linedef)));
+  SetMaterial(
+      0, Mat::Factory(Solid::UTILS::Shell::ReadElement::ReadAndSetElementMaterial(linedef)));
 
   // setup shell calculation interface
   shell_interface_->setup(*this, *SolidMaterial(), linedef, locking_types, shell_data);

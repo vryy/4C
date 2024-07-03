@@ -28,7 +28,7 @@ namespace
    * @tparam prestress_technology : Prestress technology (none or mulf)
    * @tparam Enable : A dummy parameter for enabling a subset of switches.
    */
-  template <Core::FE::CellType celltype, Inpar::STR::KinemType kinem,
+  template <Core::FE::CellType celltype, Inpar::Solid::KinemType kinem,
       Discret::ELEMENTS::ElementTechnology ele_tech,
       Discret::ELEMENTS::PrestressTechnology prestress_technology, typename Enable = void>
   struct SolidScatraCalculationFormulation
@@ -40,7 +40,7 @@ namespace
    * celltypes
    */
   template <Core::FE::CellType celltype>
-  struct SolidScatraCalculationFormulation<celltype, Inpar::STR::KinemType::nonlinearTotLag,
+  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
       Discret::ELEMENTS::ElementTechnology::none, Discret::ELEMENTS::PrestressTechnology::none>
   {
     using type = Discret::ELEMENTS::Details::DisplacementBasedSolidScatraIntegrator<celltype>;
@@ -50,7 +50,7 @@ namespace
    * @brief Nonlinear total lagrangian formulation with F-Bar for hex8 and pyramid 5
    */
   template <Core::FE::CellType celltype>
-  struct SolidScatraCalculationFormulation<celltype, Inpar::STR::KinemType::nonlinearTotLag,
+  struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
       Discret::ELEMENTS::ElementTechnology::fbar, Discret::ELEMENTS::PrestressTechnology::none,
       std::enable_if_t<celltype == Core::FE::CellType::hex8>>
   {
@@ -94,7 +94,7 @@ Discret::ELEMENTS::create_solid_scatra_calculation_interface(Core::FE::CellType 
                         [&](auto prestress_tech_t) -> SolidScatraCalcVariant
                         {
                           constexpr Core::FE::CellType celltype_c = celltype_t();
-                          constexpr Inpar::STR::KinemType kinemtype_c = kinemtype_t();
+                          constexpr Inpar::Solid::KinemType kinemtype_c = kinemtype_t();
                           constexpr ElementTechnology eletech_c = eletech_t();
                           constexpr PrestressTechnology prestress_tech_c = prestress_tech_t();
                           if constexpr (is_valid_type<SolidScatraCalculationFormulation<celltype_c,
@@ -109,7 +109,7 @@ Discret::ELEMENTS::create_solid_scatra_calculation_interface(Core::FE::CellType 
                               " elememt technology %s and prestress type %s oes not exist in the "
                               "solid-scatra context.",
                               Core::FE::celltype_string<celltype_t()>,
-                              Inpar::STR::KinemTypeString(element_properties.kintype).c_str(),
+                              Inpar::Solid::KinemTypeString(element_properties.kintype).c_str(),
                               element_technology_string(element_properties.element_technology)
                                   .c_str(),
                               prestress_technology_string(element_properties.prestress_technology)

@@ -28,13 +28,13 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace STR
+namespace Solid
 {
   namespace ELEMENTS
   {
     class ParamsInterface;
   }  // namespace ELEMENTS
-}  // namespace STR
+}  // namespace Solid
 
 // forward declaration
 namespace Mat
@@ -420,7 +420,7 @@ namespace Discret
        *
        *  \author vuong
        *  \date 11/16 */
-      STR::ELEMENTS::ParamsInterface& str_params_interface();
+      Solid::ELEMENTS::ParamsInterface& str_params_interface();
 
      private:
       /** \brief interface ptr
@@ -464,8 +464,8 @@ namespace Discret
           Core::LinAlg::Matrix<numgpt_post_, 6>* elestress,     // stresses at GP
           Core::LinAlg::Matrix<numgpt_post_, 6>* elestrain,     // strains at GP
           Teuchos::ParameterList& params,                       // algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,                // stress output option
-          const Inpar::STR::StrainType iostrain);               // strain output option
+          const Inpar::Solid::StressType iostress,              // stress output option
+          const Inpar::Solid::StrainType iostrain);             // strain output option
 
       //! get reference and current configuration
       void mem_configuration(const std::vector<double>& disp,

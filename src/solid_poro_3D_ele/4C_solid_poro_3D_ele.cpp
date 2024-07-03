@@ -94,7 +94,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidPoroType::Create(
 void Discret::ELEMENTS::SolidPoroType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  STR::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
+  FourC::Solid::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidPoroType::ComputeNullSpace(
@@ -139,7 +139,7 @@ void Discret::ELEMENTS::SolidPoro::set_params_interface_ptr(const Teuchos::Param
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
+    interface_ptr_ = Teuchos::rcp_dynamic_cast<FourC::Solid::ELEMENTS::ParamsInterface>(
         p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
@@ -154,22 +154,24 @@ bool Discret::ELEMENTS::SolidPoro::ReadElement(
   celltype_ = Core::FE::StringToCellType(elecelltype);
 
   // read number of material model
-  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::read_element_material(linedef)));
+  SetMaterial(0, Mat::Factory(FourC::Solid::UTILS::ReadElement::read_element_material(linedef)));
 
   // kinematic type
-  solid_ele_property_.kintype = STR::UTILS::ReadElement::read_element_kinematic_type(linedef);
+  solid_ele_property_.kintype =
+      FourC::Solid::UTILS::ReadElement::read_element_kinematic_type(linedef);
 
   // check element technology
   if (linedef->has_named("TECH"))
   {
-    if (STR::UTILS::ReadElement::read_element_technology(linedef) != ElementTechnology::none)
+    if (FourC::Solid::UTILS::ReadElement::read_element_technology(linedef) !=
+        ElementTechnology::none)
       FOUR_C_THROW("SOLIDPORO elements do not support any element technology!");
   }
 
   // read scalar transport implementation type
   if (linedef->has_named("POROTYPE"))
   {
-    poro_ele_property_.porotype = STR::UTILS::ReadElement::ReadPoroType(linedef);
+    poro_ele_property_.porotype = FourC::Solid::UTILS::ReadElement::ReadPoroType(linedef);
   }
   else
   {
@@ -179,7 +181,7 @@ bool Discret::ELEMENTS::SolidPoro::ReadElement(
   // read scalar transport implementation type
   if (linedef->has_named("TYPE"))
   {
-    poro_ele_property_.impltype = STR::UTILS::ReadElement::read_type(linedef);
+    poro_ele_property_.impltype = FourC::Solid::UTILS::ReadElement::read_type(linedef);
   }
   else
   {

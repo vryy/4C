@@ -88,7 +88,7 @@ namespace ModelOrderRed
 }
 
 /*----------------------------------------------------------------------*/
-namespace STR
+namespace Solid
 {
   /*====================================================================*/
   /*!
@@ -271,8 +271,8 @@ namespace STR
     }
 
     //! do something in case nonlinear solution does not converge for some reason
-    Inpar::STR::ConvergenceStatus PerformErrorAction(
-        Inpar::STR::ConvergenceStatus nonlinsoldiv) override;
+    Inpar::Solid::ConvergenceStatus PerformErrorAction(
+        Inpar::Solid::ConvergenceStatus nonlinsoldiv) override;
 
     //! Do time integration of single step
     virtual int IntegrateStep() = 0;
@@ -283,7 +283,7 @@ namespace STR
      *  Do the nonlinear solve, i.e. (multiple) corrector,
      *  for the time step. All boundary conditions have been set.
      */
-    Inpar::STR::ConvergenceStatus Solve() override = 0;
+    Inpar::Solid::ConvergenceStatus Solve() override = 0;
 
     //! Linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override = 0;
@@ -500,14 +500,14 @@ namespace STR
      *  Apply all sets of forces (external, internal, damping, inertia, ...)
      *  based on the current solution state.
      *
-     *  On the level of STR::TimInt, we only deal with forces. There are no
+     *  On the level of Solid::TimInt, we only deal with forces. There are no
      *  stiffnesses since thay are not needed in a general time integration
      *  scheme, but only in an implicit one.
      *
      *  For the application of forces AND
-     *  stiffnesses, see STR::TimIntImpl.
+     *  stiffnesses, see Solid::TimIntImpl.
      *
-     *  \sa STR::TimIntImpl
+     *  \sa Solid::TimIntImpl
      */
     //@{
 
@@ -566,10 +566,10 @@ namespace STR
     //@{
 
     //! Provide Name
-    virtual enum Inpar::STR::DynamicType MethodName() const = 0;
+    virtual enum Inpar::Solid::DynamicType MethodName() const = 0;
 
     //! Provide title
-    std::string MethodTitle() const { return Inpar::STR::DynamicTypeString(MethodName()); }
+    std::string MethodTitle() const { return Inpar::Solid::DynamicTypeString(MethodName()); }
 
     //! Return true, if time integrator is implicit
     virtual bool MethodImplicit() = 0;
@@ -810,7 +810,7 @@ namespace STR
     Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override = 0;
 
     //! get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale get_stc_algo() override = 0;
+    Inpar::Solid::StcScale get_stc_algo() override = 0;
 
     //! Access to scaling matrix for STC
     Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override = 0;
@@ -920,13 +920,13 @@ namespace STR
     }
 
     /// do we have this model
-    bool HaveModel(Inpar::STR::ModelType model) override
+    bool HaveModel(Inpar::Solid::ModelType model) override
     {
       FOUR_C_THROW("new structural time integration only");
       return false;
     }
 
-    STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) override
+    Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) override
     {
       FOUR_C_THROW("new time integration only");
       exit(EXIT_FAILURE);
@@ -1051,7 +1051,7 @@ namespace STR
                                                         //!< map of global DOFs on Dirichlet
                                                         //!< boundary conditions
 
-    enum Inpar::STR::DivContAct divcontype_;  //!< what to do when nonlinear solution fails
+    enum Inpar::Solid::DivContAct divcontype_;  //!< what to do when nonlinear solution fails
     int divconrefinementlevel_;  //!< number of refinement level in case of divercontype_ ==
                                  //!< adapt_step
     int divconnumfinestep_;      //!< number of converged time steps on current refinement level
@@ -1065,27 +1065,27 @@ namespace STR
     //! @name Printing and output
     //@{
     Teuchos::RCP<Core::IO::DiscretizationWriter> output_;  //!< binary output
-    int printscreen_;                          //!< print infos to standard out every n steps
-    bool printlogo_;                           //!< print the logo (or not)?
-    bool printiter_;                           //!< print intermediate iterations during solution
-    bool outputeveryiter_;                     //!< switch
-    int oei_filecounter_;                      //!< filename counter
-    int outputcounter_;                        //!< output counter for OutputEveryIter
-    int writerestartevery_;                    //!< write restart every given step;
-                                               //!< if 0, restart is not written
-    bool writeele_;                            //!< write elements on/off
-    bool writestate_;                          //!< write state on/off
-    bool writevelacc_;                         //!< write velocity and acceleration on/off
-    int writeresultsevery_;                    //!< write state/stress/strain every given step
-    Inpar::STR::StressType writestress_;       //!< stress output type
-    Inpar::STR::StressType writecouplstress_;  //!< output type of coupling stress
-    Inpar::STR::StrainType writestrain_;       //!< strain output type
-    Inpar::STR::StrainType writeplstrain_;     //!< plastic strain output type
-    Inpar::STR::OptQuantityType writeoptquantity_;  //!< stress output type
-    int writeenergyevery_;                          //!< write system energy every given step
-    bool writesurfactant_;                          //!< write surfactant output
-    bool writerotation_;                            //!< write strutural rotation tensor output
-    Teuchos::RCP<std::ofstream> energyfile_;        //!< outputfile for energy
+    int printscreen_;                            //!< print infos to standard out every n steps
+    bool printlogo_;                             //!< print the logo (or not)?
+    bool printiter_;                             //!< print intermediate iterations during solution
+    bool outputeveryiter_;                       //!< switch
+    int oei_filecounter_;                        //!< filename counter
+    int outputcounter_;                          //!< output counter for OutputEveryIter
+    int writerestartevery_;                      //!< write restart every given step;
+                                                 //!< if 0, restart is not written
+    bool writeele_;                              //!< write elements on/off
+    bool writestate_;                            //!< write state on/off
+    bool writevelacc_;                           //!< write velocity and acceleration on/off
+    int writeresultsevery_;                      //!< write state/stress/strain every given step
+    Inpar::Solid::StressType writestress_;       //!< stress output type
+    Inpar::Solid::StressType writecouplstress_;  //!< output type of coupling stress
+    Inpar::Solid::StrainType writestrain_;       //!< strain output type
+    Inpar::Solid::StrainType writeplstrain_;     //!< plastic strain output type
+    Inpar::Solid::OptQuantityType writeoptquantity_;  //!< stress output type
+    int writeenergyevery_;                            //!< write system energy every given step
+    bool writesurfactant_;                            //!< write surfactant output
+    bool writerotation_;                              //!< write strutural rotation tensor output
+    Teuchos::RCP<std::ofstream> energyfile_;          //!< outputfile for energy
 
     Teuchos::RCP<std::vector<char>> stressdata_;  //!< container for element GP stresses
     Teuchos::RCP<std::vector<char>>
@@ -1104,9 +1104,9 @@ namespace STR
     //!
     //! Rayleigh damping means \f${C} = c_\text{K} {K} + c_\text{M} {M}\f$
     //@{
-    enum Inpar::STR::DampKind damping_;  //!< damping type
-    double dampk_;                       //!< damping factor for stiffness \f$c_\text{K}\f$
-    double dampm_;                       //!< damping factor for mass \f$c_\text{M}\f$
+    enum Inpar::Solid::DampKind damping_;  //!< damping type
+    double dampk_;                         //!< damping factor for stiffness \f$c_\text{K}\f$
+    double dampm_;                         //!< damping factor for mass \f$c_\text{M}\f$
     //@}
 
     //! @name Managed stuff
@@ -1277,7 +1277,7 @@ namespace STR
 
   };  // class TimInt
 
-}  // namespace STR
+}  // namespace Solid
 
 /*----------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_CLOSE

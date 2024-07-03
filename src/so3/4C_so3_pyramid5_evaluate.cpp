@@ -103,8 +103,8 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       sop5_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none, Inpar::STR::strain_none);
+          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -126,17 +126,18 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         sop5_linstiffmass(lm, mydisp, myres, matptr, nullptr, &elevec1, nullptr, nullptr, nullptr,
-            params, Inpar::STR::stress_none, Inpar::STR::strain_none, Inpar::STR::strain_none);
+            params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+            Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
         sop5_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr, &elevec1,
-            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-            Inpar::STR::strain_none, Inpar::STR::strain_none);
+            nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+            Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
     }
     break;
@@ -158,17 +159,18 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         sop5_linstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
-            params, Inpar::STR::stress_none, Inpar::STR::strain_none, Inpar::STR::strain_none);
+            params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+            Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
         sop5_nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr,
-            &elevec1, nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-            Inpar::STR::strain_none, Inpar::STR::strain_none);
+            &elevec1, nullptr, nullptr, nullptr, nullptr, nullptr, params,
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
     }
     break;
@@ -204,18 +206,18 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         sop5_linstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, nullptr, nullptr,
-            nullptr, params, Inpar::STR::stress_none, Inpar::STR::strain_none,
-            Inpar::STR::strain_none);
+            nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none,
+            Inpar::Solid::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
         sop5_nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2,
             &elevec1, &elevec2, &elevec3, nullptr, nullptr, nullptr, params,
-            Inpar::STR::stress_none, Inpar::STR::strain_none, Inpar::STR::strain_none);
+            Inpar::Solid::stress_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none);
       }
 
       if (act == calc_struct_nlnstifflmass) sop5_lumpmass(&elemat2);
@@ -244,17 +246,17 @@ int Discret::ELEMENTS::SoPyramid5::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D> strain;
       Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D> plstrain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
-      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "ioplstrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
+      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "ioplstrain", Inpar::Solid::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       // special case: geometrically linear
-      if (kintype_ == Inpar::STR::KinemType::linear)
+      if (kintype_ == Inpar::Solid::KinemType::linear)
       {
         sop5_linstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, &stress, &strain, &plstrain,
             params, iostress, iostrain, ioplstrain);
@@ -628,10 +630,10 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
     Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestress,    // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestrain,    // strains at GP
     Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
-    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,    // stress output option
-    const Inpar::STR::StrainType iostrain,    // strain output option
-    const Inpar::STR::StrainType ioplstrain)  // plastic strain output option
+    Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,    // stress output option
+    const Inpar::Solid::StrainType iostrain,    // strain output option
+    const Inpar::Solid::StrainType ioplstrain)  // plastic strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS                              *
@@ -747,14 +749,14 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
@@ -786,7 +788,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
         (*elestrain)(gp, 5) = euler_almansi(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -802,7 +804,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
     // return gp plastic strains (only in case of plastic strain output)
     switch (ioplstrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain =
@@ -811,7 +813,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain(i);
         break;
       }
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain =
@@ -845,7 +847,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
         (*eleplstrain)(gp, 5) = euler_almansi(0, 2);
         break;
       }
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested plastic strain type not available");
@@ -855,13 +857,13 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF = defgrd.determinant();
@@ -890,7 +892,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_linstiffmass(std::vector<int>& lm,  // 
         (*elestress)(gp, 5) = cauchystress(0, 2);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");
@@ -958,10 +960,10 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
     Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestress,    // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestrain,    // strains at GP
     Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
-    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,    // stress output option
-    const Inpar::STR::StrainType iostrain,    // strain output option
-    const Inpar::STR::StrainType ioplstrain)  // plastic strain output option
+    Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,    // stress output option
+    const Inpar::Solid::StrainType iostrain,    // strain output option
+    const Inpar::Solid::StrainType ioplstrain)  // plastic strain output option
 {
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS                              *
@@ -1061,14 +1063,14 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
@@ -1100,7 +1102,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
         (*elestrain)(gp, 5) = euler_almansi(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -1160,7 +1162,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
     // return gp plastic strains (only in case of plastic strain output)
     switch (ioplstrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain =
@@ -1169,7 +1171,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain(i);
         break;
       }
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain =
@@ -1203,7 +1205,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
         (*eleplstrain)(gp, 5) = euler_almansi(0, 2);
         break;
       }
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested plastic strain type not available");
@@ -1213,13 +1215,13 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF = defgrd.determinant();
@@ -1248,7 +1250,7 @@ void Discret::ELEMENTS::SoPyramid5::sop5_nlnstiffmass(std::vector<int>& lm,  // 
         (*elestress)(gp, 5) = cauchystress(0, 2);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");

@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace STR
+namespace Solid
 {
   namespace Predict
   {
@@ -38,18 +38,19 @@ namespace STR
       virtual ~Factory() = default;
 
       //! build the desired predictor
-      Teuchos::RCP<STR::Predict::Generic> build_predictor(
-          const enum Inpar::STR::PredEnum& predType) const;
+      Teuchos::RCP<Solid::Predict::Generic> build_predictor(
+          const enum Inpar::Solid::PredEnum& predType) const;
     };
 
-    /*! \brief Non-member function, which relates to the STR::Predict::Factory class
+    /*! \brief Non-member function, which relates to the Solid::Predict::Factory class
      *
      * \note Call this method from outside!
      */
-    Teuchos::RCP<STR::Predict::Generic> build_predictor(const enum Inpar::STR::PredEnum& predType);
+    Teuchos::RCP<Solid::Predict::Generic> build_predictor(
+        const enum Inpar::Solid::PredEnum& predType);
 
   }  // namespace Predict
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

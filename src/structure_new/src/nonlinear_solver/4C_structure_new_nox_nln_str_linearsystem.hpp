@@ -23,7 +23,7 @@ namespace NOX
 {
   namespace Nln
   {
-    namespace STR
+    namespace Solid
     {
       class LinearSystem : public NOX::Nln::LinearSystem
       {
@@ -82,7 +82,7 @@ namespace NOX
             Teuchos::RCP<Core::LinAlg::Solver>& currSolver) override;
 
       };  // class LinearSystem
-    }     // namespace STR
+    }     // namespace Solid
   }       // namespace Nln
 }  // namespace NOX
 

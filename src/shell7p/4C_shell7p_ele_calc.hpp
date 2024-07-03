@@ -25,10 +25,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::ELEMENTS
+namespace Solid::ELEMENTS
 {
   class ParamsInterface;
-}  // namespace STR::ELEMENTS
+}  // namespace Solid::ELEMENTS
 
 namespace Discret
 {
@@ -42,8 +42,8 @@ namespace Discret
       Shell7pEleCalc();
 
       void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
-          Input::LineDefinition* linedef, const STR::ELEMENTS::ShellLockingTypes& locking_types,
-          const STR::ELEMENTS::ShellData& shell_data) override;
+          Input::LineDefinition* linedef, const Solid::ELEMENTS::ShellLockingTypes& locking_types,
+          const Solid::ELEMENTS::ShellData& shell_data) override;
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
@@ -62,7 +62,7 @@ namespace Discret
 
       void Recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
-          STR::ELEMENTS::ParamsInterface& str_interface) override;
+          Solid::ELEMENTS::ParamsInterface& str_interface) override;
 
       void calculate_stresses_strains(Core::Elements::Element& ele,
           Mat::So3Material& solid_material, const ShellStressIO& stressIO,
@@ -95,7 +95,7 @@ namespace Discret
       Core::FE::IntegrationPoints2D intpoints_midsurface_;
 
       //! shell data (thickness, SDC, number of ANS parameter)
-      STR::ELEMENTS::ShellData shell_data_ = {};
+      Solid::ELEMENTS::ShellData shell_data_ = {};
 
       //! shell thickness at gauss point in spatial frame
       std::vector<double> cur_thickness_;

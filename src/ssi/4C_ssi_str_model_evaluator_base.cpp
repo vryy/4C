@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
+void Solid::MODELEVALUATOR::BaseSSI::determine_stress_strain()
 {
   // extract raw data for element-wise stresses
   const std::vector<char>& stressdata = eval_data().stress_data();
@@ -89,7 +89,7 @@ void STR::MODELEVALUATOR::BaseSSI::determine_stress_strain()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BaseSSI::get_block_dof_row_map_ptr() const
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::BaseSSI::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
   return global_state().dof_row_map();
@@ -97,7 +97,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BaseSSI::get_block_dof_row_m
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BaseSSI::setup()
+void Solid::MODELEVALUATOR::BaseSSI::setup()
 {
   // check initialization
   check_init();

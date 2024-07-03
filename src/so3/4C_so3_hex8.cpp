@@ -122,7 +122,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(int id, int owner)
     : SoBase(id, owner),
       easdata_(EASData()),
       analyticalmaterialtangent_(true),
-      pstype_(Inpar::STR::PreStress::none),
+      pstype_(Inpar::Solid::PreStress::none),
       pstime_(0.0),
       time_(0.0),
       old_step_length_(0.0)
@@ -148,7 +148,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(int id, int owner)
 
   if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::struct_ale)
   {
-    if (kintype_ == Inpar::STR::KinemType::linear)
+    if (kintype_ == Inpar::Solid::KinemType::linear)
       FOUR_C_THROW("Structure-Ale approach only for nonlinear kinematics !!!");
 
     structale_ = true;
@@ -189,7 +189,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(const Discret::ELEMENTS::SoHex8& old)
 
   if (Global::Problem::Instance()->GetProblemType() == Core::ProblemType::struct_ale)
   {
-    if (kintype_ == Inpar::STR::KinemType::linear)
+    if (kintype_ == Inpar::Solid::KinemType::linear)
       FOUR_C_THROW("Structure-Ale approach only for nonlinear kinematics !!!");
 
     structale_ = true;
@@ -285,7 +285,7 @@ void Discret::ELEMENTS::SoHex8::unpack(const std::vector<char>& data)
   // line search
   extract_from_pack(position, data, old_step_length_);
   // Extract prestress
-  pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
+  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))

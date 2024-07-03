@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
+NOX::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
     const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
     const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
@@ -67,7 +67,7 @@ NOX::STR::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::STR::LinearSystem::OperatorType NOX::STR::LinearSystem::getOperatorType(
+NOX::Solid::LinearSystem::OperatorType NOX::Solid::LinearSystem::getOperatorType(
     const Epetra_Operator& Op)
 {
   // check per dynamik cast, which type of Jacobian was broadcast
@@ -96,7 +96,7 @@ NOX::STR::LinearSystem::OperatorType NOX::STR::LinearSystem::getOperatorType(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::STR::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
+void NOX::Solid::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
 {
   zeroInitialGuess_ = linearSolverParams.get("Zero Initial Guess", false);
   manualScaling_ = linearSolverParams.get("Compute Scaling Manually", true);
@@ -106,7 +106,7 @@ void NOX::STR::LinearSystem::reset(Teuchos::ParameterList& linearSolverParams)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::applyJacobian(
+bool NOX::Solid::LinearSystem::applyJacobian(
     const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   jacPtr_->SetUseTranspose(false);
@@ -117,7 +117,7 @@ bool NOX::STR::LinearSystem::applyJacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::applyJacobianTranspose(
+bool NOX::Solid::LinearSystem::applyJacobianTranspose(
     const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const
 {
   jacPtr_->SetUseTranspose(true);
@@ -129,7 +129,7 @@ bool NOX::STR::LinearSystem::applyJacobianTranspose(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::applyJacobianInverse(
+bool NOX::Solid::LinearSystem::applyJacobianInverse(
     Teuchos::ParameterList& p, const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result)
 {
   double startTime = timer_.wallTime();
@@ -178,7 +178,7 @@ bool NOX::STR::LinearSystem::applyJacobianInverse(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::applyRightPreconditioning(bool useTranspose,
+bool NOX::Solid::LinearSystem::applyRightPreconditioning(bool useTranspose,
     Teuchos::ParameterList& params, const ::NOX::Epetra::Vector& input,
     ::NOX::Epetra::Vector& result) const
 {
@@ -189,12 +189,13 @@ bool NOX::STR::LinearSystem::applyRightPreconditioning(bool useTranspose,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Epetra::Scaling> NOX::STR::LinearSystem::getScaling() { return scaling_; }
+Teuchos::RCP<::NOX::Epetra::Scaling> NOX::Solid::LinearSystem::getScaling() { return scaling_; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::STR::LinearSystem::resetScaling(const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
+void NOX::Solid::LinearSystem::resetScaling(
+    const Teuchos::RCP<::NOX::Epetra::Scaling>& scalingObject)
 {
   scaling_ = scalingObject;
 }
@@ -202,7 +203,7 @@ void NOX::STR::LinearSystem::resetScaling(const Teuchos::RCP<::NOX::Epetra::Scal
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
+bool NOX::Solid::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 {
   bool success = jacInterfacePtr_->computeJacobian(x.getEpetraVector(), *jacPtr_);
   return success;
@@ -211,7 +212,7 @@ bool NOX::STR::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::createPreconditioner(
+bool NOX::Solid::LinearSystem::createPreconditioner(
     const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const
 {
   return false;
@@ -220,12 +221,12 @@ bool NOX::STR::LinearSystem::createPreconditioner(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::destroyPreconditioner() const { return false; }
+bool NOX::Solid::LinearSystem::destroyPreconditioner() const { return false; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::recomputePreconditioner(
+bool NOX::Solid::LinearSystem::recomputePreconditioner(
     const ::NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const
 {
   return false;
@@ -234,8 +235,8 @@ bool NOX::STR::LinearSystem::recomputePreconditioner(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::STR::LinearSystem::PreconditionerReusePolicyType
-NOX::STR::LinearSystem::getPreconditionerPolicy(bool advanceReuseCounter)
+NOX::Solid::LinearSystem::PreconditionerReusePolicyType
+NOX::Solid::LinearSystem::getPreconditionerPolicy(bool advanceReuseCounter)
 {
   return PRPT_REBUILD;
 }
@@ -243,17 +244,17 @@ NOX::STR::LinearSystem::getPreconditionerPolicy(bool advanceReuseCounter)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::isPreconditionerConstructed() const { return false; }
+bool NOX::Solid::LinearSystem::isPreconditionerConstructed() const { return false; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::STR::LinearSystem::hasPreconditioner() const { return false; }
+bool NOX::Solid::LinearSystem::hasPreconditioner() const { return false; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Operator> NOX::STR::LinearSystem::getJacobianOperator() const
+Teuchos::RCP<const Epetra_Operator> NOX::Solid::LinearSystem::getJacobianOperator() const
 {
   return jacPtr_;
 }
@@ -261,12 +262,12 @@ Teuchos::RCP<const Epetra_Operator> NOX::STR::LinearSystem::getJacobianOperator(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> NOX::STR::LinearSystem::getJacobianOperator() { return jacPtr_; }
+Teuchos::RCP<Epetra_Operator> NOX::Solid::LinearSystem::getJacobianOperator() { return jacPtr_; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Operator> NOX::STR::LinearSystem::getGeneratedPrecOperator() const
+Teuchos::RCP<const Epetra_Operator> NOX::Solid::LinearSystem::getGeneratedPrecOperator() const
 {
   return Teuchos::null;
 }
@@ -274,7 +275,7 @@ Teuchos::RCP<const Epetra_Operator> NOX::STR::LinearSystem::getGeneratedPrecOper
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> NOX::STR::LinearSystem::getGeneratedPrecOperator()
+Teuchos::RCP<Epetra_Operator> NOX::Solid::LinearSystem::getGeneratedPrecOperator()
 {
   return Teuchos::null;
 }
@@ -282,7 +283,7 @@ Teuchos::RCP<Epetra_Operator> NOX::STR::LinearSystem::getGeneratedPrecOperator()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::STR::LinearSystem::setJacobianOperatorForSolve(
+void NOX::Solid::LinearSystem::setJacobianOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
 {
   jacPtr_ = Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp);
@@ -292,7 +293,7 @@ void NOX::STR::LinearSystem::setJacobianOperatorForSolve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::STR::LinearSystem::setPrecOperatorForSolve(
+void NOX::Solid::LinearSystem::setPrecOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solvePrecOp)
 {
   throw_error("setPrecOperatorForSolve", "no preconditioner supported");
@@ -301,13 +302,13 @@ void NOX::STR::LinearSystem::setPrecOperatorForSolve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::STR::LinearSystem::throw_error(
+void NOX::Solid::LinearSystem::throw_error(
     const std::string& functionName, const std::string& errorMsg) const
 {
   if (utils_.isPrintType(::NOX::Utils::Error))
 
   {
-    utils_.out() << "NOX::STR::LinearSystem::" << functionName << " - " << errorMsg << std::endl;
+    utils_.out() << "NOX::Solid::LinearSystem::" << functionName << " - " << errorMsg << std::endl;
   }
   throw "NOX Error";
 }

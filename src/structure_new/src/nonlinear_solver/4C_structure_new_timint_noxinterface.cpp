@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::NoxInterface::NoxInterface()
+Solid::TimeInt::NoxInterface::NoxInterface()
     : isinit_(false),
       issetup_(false),
       gstate_ptr_(Teuchos::null),
@@ -42,10 +42,10 @@ STR::TimeInt::NoxInterface::NoxInterface()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::init(
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<STR::Integrator>& int_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
-    const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr)
+void Solid::TimeInt::NoxInterface::init(
+    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const Teuchos::RCP<Solid::Integrator>& int_ptr, const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
+    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr)
 {
   // reset the setup flag
   issetup_ = false;
@@ -61,7 +61,7 @@ void STR::TimeInt::NoxInterface::init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::setup()
+void Solid::TimeInt::NoxInterface::setup()
 {
   check_init();
 
@@ -70,20 +70,20 @@ void STR::TimeInt::NoxInterface::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::check_init() const
+void Solid::TimeInt::NoxInterface::check_init() const
 {
   FOUR_C_ASSERT(is_init(), "Call init() first!");
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::check_init_setup() const
+void Solid::TimeInt::NoxInterface::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Integrator& STR::TimeInt::NoxInterface::ImplInt()
+Solid::Integrator& Solid::TimeInt::NoxInterface::ImplInt()
 {
   check_init_setup();
   return *int_ptr_;
@@ -91,7 +91,7 @@ STR::Integrator& STR::TimeInt::NoxInterface::ImplInt()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TimeInt::NoxInterface::computeF(
+bool Solid::TimeInt::NoxInterface::computeF(
     const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
   check_init_setup();
@@ -108,7 +108,7 @@ bool STR::TimeInt::NoxInterface::computeF(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TimeInt::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_Operator& jac)
+bool Solid::TimeInt::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_Operator& jac)
 {
   check_init_setup();
 
@@ -127,7 +127,7 @@ bool STR::TimeInt::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TimeInt::NoxInterface::computeFandJacobian(
+bool Solid::TimeInt::NoxInterface::computeFandJacobian(
     const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac)
 {
   check_init_setup();
@@ -152,16 +152,16 @@ bool STR::TimeInt::NoxInterface::computeFandJacobian(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TimeInt::NoxInterface::compute_correction_system(const enum NOX::Nln::CorrectionType type,
-    const ::NOX::Abstract::Group& grp, const Epetra_Vector& x, Epetra_Vector& rhs,
-    Epetra_Operator& jac)
+bool Solid::TimeInt::NoxInterface::compute_correction_system(
+    const enum NOX::Nln::CorrectionType type, const ::NOX::Abstract::Group& grp,
+    const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac)
 {
   check_init_setup();
 
   Core::LinAlg::SparseOperator* jac_ptr = dynamic_cast<Core::LinAlg::SparseOperator*>(&jac);
   FOUR_C_ASSERT(jac_ptr != nullptr, "Dynamic cast failed!");
 
-  std::vector<Inpar::STR::ModelType> constraint_models;
+  std::vector<Inpar::Solid::ModelType> constraint_models;
   find_constraint_models(&grp, constraint_models);
 
   if (not int_ptr_->apply_correction_system(type, constraint_models, x, rhs, *jac_ptr))
@@ -177,7 +177,7 @@ bool STR::TimeInt::NoxInterface::compute_correction_system(const enum NOX::Nln::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TimeInt::NoxInterface::computePreconditioner(
+bool Solid::TimeInt::NoxInterface::computePreconditioner(
     const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams)
 {
   check_init_setup();
@@ -187,7 +187,7 @@ bool STR::TimeInt::NoxInterface::computePreconditioner(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& F,
+double Solid::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& F,
     const NOX::Nln::StatusTest::QuantityType& checkquantity,
     const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
@@ -195,7 +195,7 @@ double STR::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& F,
   double rhsnorm = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::STR::ModelType mt = STR::Nln::ConvertQuantityType2ModelType(checkquantity);
+  const Inpar::Solid::ModelType mt = Solid::Nln::ConvertQuantityType2ModelType(checkquantity);
 
   switch (checkquantity)
   {
@@ -239,7 +239,7 @@ double STR::TimeInt::NoxInterface::get_primary_rhs_norms(const Epetra_Vector& F,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetra_Vector& xnew,
+double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetra_Vector& xnew,
     const Epetra_Vector& xold, const double& atol, const double& rtol,
     const NOX::Nln::StatusTest::QuantityType& checkquantity,
     const bool& disable_implicit_weighting) const
@@ -249,7 +249,7 @@ double STR::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetra_
   double rms = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::STR::ModelType mt = STR::Nln::ConvertQuantityType2ModelType(checkquantity);
+  const Inpar::Solid::ModelType mt = Solid::Nln::ConvertQuantityType2ModelType(checkquantity);
 
   switch (checkquantity)
   {
@@ -307,7 +307,7 @@ double STR::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetra_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epetra_Vector& xnew,
+double Solid::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epetra_Vector& xnew,
     const Epetra_Vector& xold, const NOX::Nln::StatusTest::QuantityType& checkquantity,
     const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
@@ -316,7 +316,7 @@ double STR::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epetr
   double updatenorm = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::STR::ModelType mt = STR::Nln::ConvertQuantityType2ModelType(checkquantity);
+  const Inpar::Solid::ModelType mt = Solid::Nln::ConvertQuantityType2ModelType(checkquantity);
 
   switch (checkquantity)
   {
@@ -378,7 +378,7 @@ double STR::TimeInt::NoxInterface::get_primary_solution_update_norms(const Epetr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::get_previous_primary_solution_norms(const Epetra_Vector& xold,
+double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const Epetra_Vector& xold,
     const NOX::Nln::StatusTest::QuantityType& checkquantity,
     const ::NOX::Abstract::Vector::NormType& type, const bool& isscaled) const
 {
@@ -387,7 +387,7 @@ double STR::TimeInt::NoxInterface::get_previous_primary_solution_norms(const Epe
   double xoldnorm = -1.0;
 
   // convert the given quantity type to a model type
-  const Inpar::STR::ModelType mt = STR::Nln::ConvertQuantityType2ModelType(checkquantity);
+  const Inpar::Solid::ModelType mt = Solid::Nln::ConvertQuantityType2ModelType(checkquantity);
 
   switch (checkquantity)
   {
@@ -441,7 +441,7 @@ double STR::TimeInt::NoxInterface::get_previous_primary_solution_norms(const Epe
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::calculate_norm(Teuchos::RCP<Epetra_Vector> quantity,
+double Solid::TimeInt::NoxInterface::calculate_norm(Teuchos::RCP<Epetra_Vector> quantity,
     const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const
 {
   Teuchos::RCP<const ::NOX::Epetra::Vector> quantity_nox =
@@ -456,7 +456,7 @@ double STR::TimeInt::NoxInterface::calculate_norm(Teuchos::RCP<Epetra_Vector> qu
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::get_model_value(const Epetra_Vector& x, const Epetra_Vector& F,
+double Solid::TimeInt::NoxInterface::get_model_value(const Epetra_Vector& x, const Epetra_Vector& F,
     const NOX::Nln::MeritFunction::MeritFctName merit_func_type) const
 {
   check_init_setup();
@@ -494,7 +494,7 @@ double STR::TimeInt::NoxInterface::get_model_value(const Epetra_Vector& x, const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::get_linearized_model_terms(const ::NOX::Abstract::Group* group,
+double Solid::TimeInt::NoxInterface::get_linearized_model_terms(const ::NOX::Abstract::Group* group,
     const Epetra_Vector& dir, const enum NOX::Nln::MeritFunction::MeritFctName mf_type,
     const enum NOX::Nln::MeritFunction::LinOrder linorder,
     const enum NOX::Nln::MeritFunction::LinType lintype) const
@@ -520,7 +520,7 @@ double STR::TimeInt::NoxInterface::get_linearized_model_terms(const ::NOX::Abstr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::get_linearized_energy_model_terms(
+double Solid::TimeInt::NoxInterface::get_linearized_energy_model_terms(
     const ::NOX::Abstract::Group* group, const Epetra_Vector& dir,
     const enum NOX::Nln::MeritFunction::LinOrder linorder,
     const enum NOX::Nln::MeritFunction::LinType lintype) const
@@ -539,7 +539,7 @@ double STR::TimeInt::NoxInterface::get_linearized_energy_model_terms(
         {
           Epetra_Vector str_gradient(dir.Map(), true);
 
-          std::vector<Inpar::STR::ModelType> constraint_models;
+          std::vector<Inpar::Solid::ModelType> constraint_models;
           find_constraint_models(group, constraint_models);
 
           // assemble the force and exclude all constraint models
@@ -572,8 +572,8 @@ double STR::TimeInt::NoxInterface::get_linearized_energy_model_terms(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::find_constraint_models(
-    const ::NOX::Abstract::Group* grp, std::vector<Inpar::STR::ModelType>& constraint_models) const
+void Solid::TimeInt::NoxInterface::find_constraint_models(const ::NOX::Abstract::Group* grp,
+    std::vector<Inpar::Solid::ModelType>& constraint_models) const
 {
   const NOX::Nln::CONSTRAINT::Group* constr_grp =
       dynamic_cast<const NOX::Nln::CONSTRAINT::Group*>(grp);
@@ -588,7 +588,7 @@ void STR::TimeInt::NoxInterface::find_constraint_models(
   for (auto cit = imap.begin(); cit != imap.end(); ++cit)
   {
     const enum NOX::Nln::SolutionType soltype = cit->first;
-    const enum Inpar::STR::ModelType mtype = STR::Nln::ConvertSolType2ModelType(soltype);
+    const enum Inpar::Solid::ModelType mtype = Solid::Nln::ConvertSolType2ModelType(soltype);
 
     constraint_models.push_back(mtype);
   }
@@ -597,7 +597,7 @@ void STR::TimeInt::NoxInterface::find_constraint_models(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::TimeInt::NoxInterface::calc_ref_norm_force()
+double Solid::TimeInt::NoxInterface::calc_ref_norm_force()
 {
   check_init_setup();
   const ::NOX::Epetra::Vector::NormType& nox_normtype =
@@ -608,7 +608,7 @@ double STR::TimeInt::NoxInterface::calc_ref_norm_force()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Core::LinAlg::SparseMatrix>
-STR::TimeInt::NoxInterface::calc_jacobian_contributions_from_element_level_for_ptc()
+Solid::TimeInt::NoxInterface::calc_jacobian_contributions_from_element_level_for_ptc()
 {
   check_init_setup();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> scalingMatrixOpPtr =
@@ -620,7 +620,7 @@ STR::TimeInt::NoxInterface::calc_jacobian_contributions_from_element_level_for_p
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::create_backup_state(const Epetra_Vector& dir)
+void Solid::TimeInt::NoxInterface::create_backup_state(const Epetra_Vector& dir)
 {
   check_init_setup();
   int_ptr_->create_backup_state(dir);
@@ -628,7 +628,7 @@ void STR::TimeInt::NoxInterface::create_backup_state(const Epetra_Vector& dir)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::recover_from_backup_state()
+void Solid::TimeInt::NoxInterface::recover_from_backup_state()
 {
   check_init_setup();
   int_ptr_->recover_from_backup_state();
@@ -636,7 +636,7 @@ void STR::TimeInt::NoxInterface::recover_from_backup_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::TimeInt::NoxInterface::compute_element_volumes(
+bool Solid::TimeInt::NoxInterface::compute_element_volumes(
     const Epetra_Vector& x, Teuchos::RCP<Epetra_Vector>& ele_vols) const
 {
   check_init_setup();
@@ -645,7 +645,7 @@ bool STR::TimeInt::NoxInterface::compute_element_volumes(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TimeInt::NoxInterface::get_dofs_from_elements(
+void Solid::TimeInt::NoxInterface::get_dofs_from_elements(
     const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const
 {
   check_init_setup();

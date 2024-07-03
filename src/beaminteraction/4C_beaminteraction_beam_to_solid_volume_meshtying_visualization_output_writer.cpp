@@ -58,7 +58,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::init(
  *
  */
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::setup(
-    Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
+    Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
     Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
         output_params_ptr)
 {

@@ -859,9 +859,9 @@ void SSI::SSIBase::check_adaptive_time_stepping(
         "just ScaTra)");
   }
   if (Core::UTILS::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
-      Inpar::STR::timada_kind_none)
+      Inpar::Solid::timada_kind_none)
     FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
-  if (Core::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == Inpar::STR::dyna_ab2)
+  if (Core::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == Inpar::Solid::dyna_ab2)
     FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
 }
 
@@ -903,8 +903,8 @@ bool SSI::SSIBase::check_s2_i_kinetics_condition_for_pseudo_contact(
   }
 
   const bool do_output_cauchy_stress =
-      Core::UTILS::IntegralValue<Inpar::STR::StressType>(
-          Global::Problem::Instance()->IOParams(), "STRUCT_STRESS") == Inpar::STR::stress_cauchy;
+      Core::UTILS::IntegralValue<Inpar::Solid::StressType>(
+          Global::Problem::Instance()->IOParams(), "STRUCT_STRESS") == Inpar::Solid::stress_cauchy;
 
   if (is_s2i_kinetic_with_pseudo_contact and !do_output_cauchy_stress)
   {
@@ -953,7 +953,7 @@ void SSI::SSIBase::setup_model_evaluator()
   // register the model evaluator if s2i condition with pseudo contact is available
   if (is_s2_i_kinetics_with_pseudo_contact())
   {
-    modelevaluator_ssi_base_ = Teuchos::rcp(new STR::MODELEVALUATOR::BaseSSI());
+    modelevaluator_ssi_base_ = Teuchos::rcp(new Solid::MODELEVALUATOR::BaseSSI());
     structure_base_algorithm()->register_model_evaluator(
         "Basic Coupling Model", modelevaluator_ssi_base_);
   }
@@ -969,14 +969,14 @@ void SSI::SSIBase::setup_contact_strategy()
 
   if (contact_solution_type == Inpar::CONTACT::solution_nitsche)
   {
-    if (Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(
+    if (Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(
             Global::Problem::Instance()->structural_dynamic_params(), "INT_STRATEGY") !=
-        Inpar::STR::int_standard)
+        Inpar::Solid::int_standard)
       FOUR_C_THROW("ssi contact only with new structural time integration");
 
     // get the contact model evaluator and store a pointer to the strategy
-    auto& model_evaluator_contact = dynamic_cast<STR::MODELEVALUATOR::Contact&>(
-        structure_field()->ModelEvaluator(Inpar::STR::model_contact));
+    auto& model_evaluator_contact = dynamic_cast<Solid::MODELEVALUATOR::Contact&>(
+        structure_field()->ModelEvaluator(Inpar::Solid::model_contact));
     contact_strategy_nitsche_ = Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategySsi>(
         model_evaluator_contact.strategy_ptr(), true);
   }

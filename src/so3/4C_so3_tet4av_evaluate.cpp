@@ -89,7 +89,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       nlnstiffmass(lm, mydisp, &elemat1, nullptr, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -104,7 +104,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
       nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -120,7 +120,7 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
 
       nlnstiffmass(lm, mydisp, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -140,10 +140,10 @@ int Discret::ELEMENTS::SoTet4av::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*disp, mydisp, lm);
       Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D> stress(true);  // set to zero
       Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D> strain(true);
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
 
       nlnstiffmass(
           lm, mydisp, nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
@@ -352,9 +352,9 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
     Core::LinAlg::Matrix<NUMDOF_SOTET4av, 1>* force,  // element internal force vector
     Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
-    Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,  // stress output option
-    const Inpar::STR::StrainType iostrain   // strain output option
+    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,  // stress output option
+    const Inpar::Solid::StrainType iostrain   // strain output option
 )
 {
   // current  displacements of element
@@ -424,13 +424,13 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = pk2(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF_bar = defgrd_bar.determinant();
@@ -459,7 +459,7 @@ void Discret::ELEMENTS::SoTet4av::nlnstiffmass(std::vector<int>& lm,  // locatio
         (*elestress)(gp, 5) = cauchystress_bar(0, 2);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");

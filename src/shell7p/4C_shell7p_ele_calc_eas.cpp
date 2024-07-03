@@ -108,8 +108,8 @@ Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::setup(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, Input::LineDefinition* linedef,
-    const STR::ELEMENTS::ShellLockingTypes& locking_types,
-    const STR::ELEMENTS::ShellData& shell_data)
+    const Solid::ELEMENTS::ShellLockingTypes& locking_types,
+    const Solid::ELEMENTS::ShellData& shell_data)
 {
   shell_data_ = shell_data;
   cur_thickness_.resize(intpoints_midsurface_.NumPoints(), shell_data_.thickness);
@@ -707,7 +707,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Recover(Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
-    Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& interface_ptr)
+    Teuchos::ParameterList& params, Solid::ELEMENTS::ParamsInterface& interface_ptr)
 {
   Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");
   if (res == Teuchos::null) FOUR_C_THROW("Cannot get residual displacement state vector");

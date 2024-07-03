@@ -108,7 +108,7 @@ void Discret::ELEMENTS::SoTet10Type::setup_element_definition(
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
 Discret::ELEMENTS::SoTet10::SoTet10(int id, int owner)
-    : SoBase(id, owner), pstype_(Inpar::STR::PreStress::none), pstime_(0.0), time_(0.0)
+    : SoBase(id, owner), pstype_(Inpar::Solid::PreStress::none), pstime_(0.0), time_(0.0)
 {
   invJ_.resize(NUMGPT_SOTET10, Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10>(true));
   detJ_.resize(NUMGPT_SOTET10, 0.0);
@@ -248,7 +248,7 @@ void Discret::ELEMENTS::SoTet10::unpack(const std::vector<char>& data)
   for (int i = 0; i < size_mass; ++i) extract_from_pack(position, data, invJ_mass_[i]);
 
   // Unpack prestress
-  pstype_ = static_cast<Inpar::STR::PreStress>(extract_int(position, data));
+  pstype_ = static_cast<Inpar::Solid::PreStress>(extract_int(position, data));
   extract_from_pack(position, data, pstime_);
   extract_from_pack(position, data, time_);
   if (Prestress::IsMulf(pstype_))

@@ -249,8 +249,8 @@ void PoroElast::MonolithicSplitNoPenetration::setup_system_matrix(
   const int& fidx_other = FLD::UTILS::MapExtractor::cond_other;
   const int& fidx_nopen = FLD::UTILS::MapExtractor::cond_fsi;
 
-  const int& sidx_other = STR::MapExtractor::cond_other;
-  const int& sidx_nopen = STR::MapExtractor::cond_fsi;
+  const int& sidx_other = Solid::MapExtractor::cond_other;
+  const int& sidx_nopen = Solid::MapExtractor::cond_fsi;
 
   /*----------------------------------------------------------------------*/
 

@@ -18,21 +18,21 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace STR
+namespace Solid
 {
   namespace Aux
   {
     class MapExtractor;
   }
-}  // namespace STR
+}  // namespace Solid
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
     class PartitionedSSI;
   }
-}  // namespace STR
+}  // namespace Solid
 
 
 namespace Adapter
@@ -44,7 +44,7 @@ namespace Adapter
     explicit SSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
     /// set pointer to model evaluator
-    void set_model_evaluator_ptr(Teuchos::RCP<STR::MODELEVALUATOR::PartitionedSSI> me)
+    void set_model_evaluator_ptr(Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedSSI> me)
     {
       ssi_model_evaluator_ = me;
       return;
@@ -56,10 +56,10 @@ namespace Adapter
     /// If this method is related to the structural field,
     /// a corresponding method in the model evaluator may be
     /// called, if necessary.
-    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedSSI> ssi_model_evaluator_;
+    Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedSSI> ssi_model_evaluator_;
 
     /// access the fsi model evaluator
-    Teuchos::RCP<STR::MODELEVALUATOR::PartitionedSSI> ssi_model_evaluator()
+    Teuchos::RCP<Solid::MODELEVALUATOR::PartitionedSSI> ssi_model_evaluator()
     {
       return ssi_model_evaluator_;
     };

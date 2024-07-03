@@ -89,12 +89,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_setup()
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_dependencies(
-    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
+    Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
 
   // init pointer to crosslinker submodel
-  STR::MODELEVALUATOR::BeamInteraction::Map::const_iterator miter;
+  Solid::MODELEVALUATOR::BeamInteraction::Map::const_iterator miter;
   for (miter = (*submodelmap).begin(); miter != (*submodelmap).end(); ++miter)
     if (miter->first == Inpar::BEAMINTERACTION::submodel_crosslinking)
       sm_crosslinkink_ptr_ =
@@ -447,12 +447,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_update_step_ele
 
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
-std::map<STR::EnergyType, double>
+std::map<Solid::EnergyType, double>
 BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_energy() const
 {
   check_init_setup();
 
-  std::map<STR::EnergyType, double> sp_beam_link_energies;
+  std::map<Solid::EnergyType, double> sp_beam_link_energies;
 
   int unsigned const numrowsphereeles = EleTypeMapExtractor().sphere_map()->NumMyElements();
   for (unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i)
@@ -463,9 +463,9 @@ BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::get_energy() const
 
     for (auto const& bond_iter : sphere->GetBondMap())
     {
-      sp_beam_link_energies[STR::beam_to_sphere_link_internal_energy] +=
+      sp_beam_link_energies[Solid::beam_to_sphere_link_internal_energy] +=
           bond_iter.second->GetInternalEnergy();
-      sp_beam_link_energies[STR::beam_to_sphere_link_kinetic_energy] +=
+      sp_beam_link_energies[Solid::beam_to_sphere_link_kinetic_energy] +=
           bond_iter.second->GetKineticEnergy();
     }
   }

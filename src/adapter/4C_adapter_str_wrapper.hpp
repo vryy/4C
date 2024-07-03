@@ -194,7 +194,7 @@ namespace Adapter
     }
 
     /// get type of thickness scaling for thin shell structures
-    Inpar::STR::StcScale get_stc_algo() override { return structure_->get_stc_algo(); }
+    Inpar::Solid::StcScale get_stc_algo() override { return structure_->get_stc_algo(); }
 
     /// access to scaling matrix for STC
     Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
@@ -275,8 +275,8 @@ namespace Adapter
     int Integrate() override { return structure_->Integrate(); }
 
     //! do something in case nonlinear solution does not converge for some reason
-    Inpar::STR::ConvergenceStatus PerformErrorAction(
-        Inpar::STR::ConvergenceStatus nonlinsoldiv) override
+    Inpar::Solid::ConvergenceStatus PerformErrorAction(
+        Inpar::Solid::ConvergenceStatus nonlinsoldiv) override
     {
       return structure_->PerformErrorAction(nonlinsoldiv);
     }
@@ -407,7 +407,7 @@ namespace Adapter
     //@{
 
     /// nonlinear solve
-    Inpar::STR::ConvergenceStatus Solve() override { return structure_->Solve(); }
+    Inpar::Solid::ConvergenceStatus Solve() override { return structure_->Solve(); }
 
     //! linear structure solve with just an interface load
     Teuchos::RCP<Epetra_Vector> solve_relaxation_linear() override
@@ -507,10 +507,10 @@ namespace Adapter
     bool HaveMicroMat() override { return structure_->HaveMicroMat(); }
 
     /// do we have this model
-    bool HaveModel(Inpar::STR::ModelType model) override { return structure_->HaveModel(model); }
+    bool HaveModel(Inpar::Solid::ModelType model) override { return structure_->HaveModel(model); }
 
     /// return model evaluator
-    STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) override
+    Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) override
     {
       return structure_->ModelEvaluator(mtype);
     }

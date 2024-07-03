@@ -17,13 +17,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declarations
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
     class ParamsRuntimeOutput;
   }
-}  // namespace STR
+}  // namespace Solid
 namespace Core::LinAlg
 {
   class MultiMapExtractor;
@@ -84,7 +84,7 @@ namespace Adapter
     virtual void setup_multi_map_extractor();
 
     /// Get Runtime Output data
-    virtual Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> GetIOData();
+    virtual Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> GetIOData();
 
    private:
     /// Map extractor seperating the beam elements from the structure elements

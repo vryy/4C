@@ -158,7 +158,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::post_setup()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::init_submodel_dependencies(
-    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
+    Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
   // no active influence on other submodels
@@ -535,16 +535,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::post_update_step_element
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-std::map<STR::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::get_energy()
+std::map<Solid::EnergyType, double> BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::get_energy()
     const
 {
   check_init_setup();
 
-  std::map<STR::EnergyType, double> beam_interaction_potential;
+  std::map<Solid::EnergyType, double> beam_interaction_potential;
 
   for (auto& elepairptr : beam_potential_element_pairs_)
   {
-    beam_interaction_potential[STR::beam_interaction_potential] += elepairptr->get_energy();
+    beam_interaction_potential[Solid::beam_interaction_potential] += elepairptr->get_energy();
   }
 
   return beam_interaction_potential;

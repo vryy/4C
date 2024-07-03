@@ -43,7 +43,7 @@ namespace Core::IO
   class EveryIterationWriter;
 }  // namespace Core::IO
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -227,7 +227,7 @@ namespace STR
       }
 
       /// Shall we compute and write the condition number?
-      Inpar::STR::ConditionNumber condition_number_type() const
+      Inpar::Solid::ConditionNumber condition_number_type() const
       {
         check_init_setup();
         return conditionnumbertype_;
@@ -283,35 +283,35 @@ namespace STR
       }
 
       /// get stress output type
-      const Inpar::STR::StressType& get_stress_output_type() const
+      const Inpar::Solid::StressType& get_stress_output_type() const
       {
         check_init_setup();
         return writestress_;
       }
 
       /// get output type of coupling stress
-      const Inpar::STR::StressType& get_coupling_stress_output_type() const
+      const Inpar::Solid::StressType& get_coupling_stress_output_type() const
       {
         check_init_setup();
         return writecouplstress_;
       }
 
       /// get strain output type
-      const Inpar::STR::StrainType& get_strain_output_type() const
+      const Inpar::Solid::StrainType& get_strain_output_type() const
       {
         check_init_setup();
         return writestrain_;
       }
 
       /// get plastic strain output type
-      const Inpar::STR::StrainType& get_plastic_strain_output_type() const
+      const Inpar::Solid::StrainType& get_plastic_strain_output_type() const
       {
         check_init_setup();
         return writeplstrain_;
       };
 
       /// get optional quantity output type
-      const Inpar::STR::OptQuantityType& get_opt_quantity_output_type() const
+      const Inpar::Solid::OptQuantityType& get_opt_quantity_output_type() const
       {
         check_init_setup();
         return writeoptquantity_;
@@ -414,28 +414,28 @@ namespace STR
       int lastwrittenresultsstep_;
 
       /// stress output type
-      Inpar::STR::StressType writestress_;
+      Inpar::Solid::StressType writestress_;
 
       /// output type of coupling stress
-      Inpar::STR::StressType writecouplstress_;
+      Inpar::Solid::StressType writecouplstress_;
 
       /// strain output type
-      Inpar::STR::StrainType writestrain_;
+      Inpar::Solid::StrainType writestrain_;
 
       /// plastic strain output type
-      Inpar::STR::StrainType writeplstrain_;
+      Inpar::Solid::StrainType writeplstrain_;
 
       /// optional quantity type
-      Inpar::STR::OptQuantityType writeoptquantity_;
+      Inpar::Solid::OptQuantityType writeoptquantity_;
 
-      Inpar::STR::ConditionNumber conditionnumbertype_;
+      Inpar::Solid::ConditionNumber conditionnumbertype_;
 
       Teuchos::RCP<Teuchos::ParameterList> p_io_every_iteration_;
 
       ///@}
     };  // class BaseDataIO
   }     // namespace TimeInt
-}  // namespace STR
+}  // namespace Solid
 
 namespace NOX
 {

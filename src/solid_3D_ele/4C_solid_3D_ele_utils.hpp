@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::UTILS
+namespace Solid::UTILS
 {
   void nodal_block_information_solid(
       Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
@@ -55,7 +55,7 @@ namespace STR::UTILS
   {
     int read_element_material(Input::LineDefinition* linedef);
 
-    Inpar::STR::KinemType read_element_kinematic_type(Input::LineDefinition* linedef);
+    Inpar::Solid::KinemType read_element_kinematic_type(Input::LineDefinition* linedef);
 
     Discret::ELEMENTS::ElementTechnology read_element_technology(Input::LineDefinition* linedef);
 
@@ -67,7 +67,7 @@ namespace STR::UTILS
 
   }  // namespace ReadElement
 
-}  // namespace STR::UTILS
+}  // namespace Solid::UTILS
 
 FOUR_C_NAMESPACE_CLOSE
 

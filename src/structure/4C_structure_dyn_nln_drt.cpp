@@ -40,18 +40,18 @@ void caldyn_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
   // major switch to different time integrators
-  switch (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdyn, "DYNAMICTYP"))
+  switch (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP"))
   {
-    case Inpar::STR::dyna_statics:
-    case Inpar::STR::dyna_genalpha:
-    case Inpar::STR::dyna_genalpha_liegroup:
-    case Inpar::STR::dyna_onesteptheta:
-    case Inpar::STR::dyna_expleuler:
-    case Inpar::STR::dyna_centrdiff:
-    case Inpar::STR::dyna_ab2:
-    case Inpar::STR::dyna_ab4:
-    case Inpar::STR::dyna_euma:
-    case Inpar::STR::dyna_euimsto:
+    case Inpar::Solid::dyna_statics:
+    case Inpar::Solid::dyna_genalpha:
+    case Inpar::Solid::dyna_genalpha_liegroup:
+    case Inpar::Solid::dyna_onesteptheta:
+    case Inpar::Solid::dyna_expleuler:
+    case Inpar::Solid::dyna_centrdiff:
+    case Inpar::Solid::dyna_ab2:
+    case Inpar::Solid::dyna_ab4:
+    case Inpar::Solid::dyna_euma:
+    case Inpar::Solid::dyna_euimsto:
       dyn_nlnstructural_drt();
       break;
     default:
@@ -89,14 +89,14 @@ void dyn_nlnstructural_drt()
   Teuchos::RCP<Adapter::Structure> structadapter = Teuchos::null;
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
-  const enum Inpar::STR::IntegrationStrategy intstrat =
-      Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const enum Inpar::Solid::IntegrationStrategy intstrat =
+      Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
   switch (intstrat)
   {
     // -------------------------------------------------------------------
     // old implementation
     // -------------------------------------------------------------------
-    case Inpar::STR::int_old:
+    case Inpar::Solid::int_old:
     {
       Teuchos::RCP<Adapter::StructureBaseAlgorithm> adapterbase_old_ptr =
           Teuchos::rcp(new Adapter::StructureBaseAlgorithm(

@@ -20,14 +20,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration ...
-namespace STR
+namespace Solid
 {
   namespace ELEMENTS
   {
     class ParamsInterface;
     enum EvalErrorFlag : int;
   }  // namespace ELEMENTS
-}  // namespace STR
+}  // namespace Solid
 namespace Mat
 {
   class So3Material;
@@ -82,10 +82,10 @@ namespace Discret
       void unpack(const std::vector<char>& data) override;
 
       // get the kinematic type from the element
-      Inpar::STR::KinemType KinematicType() const { return kintype_; }
+      Inpar::Solid::KinemType KinematicType() const { return kintype_; }
 
       // get the kinematic type from the element
-      void SetKinematicType(Inpar::STR::KinemType kintype) { kintype_ = kintype; }
+      void SetKinematicType(Inpar::Solid::KinemType kintype) { kintype_ = kintype; }
 
       /*!
       \brief Does this element use EAS?
@@ -292,13 +292,13 @@ namespace Discret
        *
        *  \author vuong
        *  \date 11/16 */
-      STR::ELEMENTS::ParamsInterface& str_params_interface();
+      Solid::ELEMENTS::ParamsInterface& str_params_interface();
 
       /** \brief error handling for structural elements
        *
        *  \author hiermeier \date 09/18 */
       void error_handling(const double& det_curr, Teuchos::ParameterList& params, int line_id,
-          STR::ELEMENTS::EvalErrorFlag flag);
+          Solid::ELEMENTS::EvalErrorFlag flag);
 
      protected:
       /*!
@@ -320,7 +320,7 @@ namespace Discret
       virtual void material_post_setup(Teuchos::ParameterList& params);
 
       //! kinematic type
-      Inpar::STR::KinemType kintype_;
+      Inpar::Solid::KinemType kintype_;
 
      private:
       /** \brief interface ptr

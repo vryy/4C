@@ -33,12 +33,12 @@ bool Discret::ELEMENTS::SoShw6::ReadElement(
   // geometrically non-linear with Total Lagrangean approach
   if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   // geometrically linear
   else if (buffer == "linear")
   {
-    kintype_ = Inpar::STR::KinemType::linear;
+    kintype_ = Inpar::Solid::KinemType::linear;
     FOUR_C_THROW("Reading of SOLIDSHW6 element failed onlz nonlinear kinetmatics implemented");
   }
 

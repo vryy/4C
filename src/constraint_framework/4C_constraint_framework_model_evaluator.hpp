@@ -24,7 +24,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
   class RveMultiPointConstraintManager;
 
 }
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -52,9 +52,9 @@ namespace STR
        */
       void setup() override;
 
-      //! @name Derived public STR::MODELEVALUATOR::Generic methods
+      //! @name Derived public Solid::MODELEVALUATOR::Generic methods
       //! @{
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_constraints; }
+      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_constraints; }
 
       void reset(const Epetra_Vector& x) override;
 
@@ -90,7 +90,7 @@ namespace STR
 
       void run_post_iterate(const ::NOX::Solver::Generic& solver) override {}
 
-      void Predict(const Inpar::STR::PredEnum& pred_type) override;
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override;
 
       void update_step_state(const double& timefac_n) override;
 
@@ -157,7 +157,7 @@ namespace STR
       //! @}
     };
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

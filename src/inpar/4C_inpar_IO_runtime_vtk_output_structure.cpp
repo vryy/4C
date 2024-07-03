@@ -21,7 +21,7 @@ namespace Inpar
 {
   namespace IORuntimeOutput
   {
-    namespace STRUCTURE
+    namespace Solid
     {
       /*----------------------------------------------------------------------*
        *----------------------------------------------------------------------*/
@@ -73,20 +73,21 @@ namespace Inpar
             &sublist_IO_VTK_structure);
 
         // mode to write gauss point data
-        setStringToIntegralParameter<Inpar::STR::GaussPointDataOutputType>(
+        setStringToIntegralParameter<Inpar::Solid::GaussPointDataOutputType>(
             "GAUSS_POINT_DATA_OUTPUT_TYPE", "none",
             "Where to write gauss point data. (none, projected to nodes, projected to element "
             "center, raw at gauss points)",
             tuple<std::string>("none", "nodes", "element_center", "gauss_points"),
-            tuple<Inpar::STR::GaussPointDataOutputType>(Inpar::STR::GaussPointDataOutputType::none,
-                Inpar::STR::GaussPointDataOutputType::nodes,
-                Inpar::STR::GaussPointDataOutputType::element_center,
-                Inpar::STR::GaussPointDataOutputType::gauss_points),
+            tuple<Inpar::Solid::GaussPointDataOutputType>(
+                Inpar::Solid::GaussPointDataOutputType::none,
+                Inpar::Solid::GaussPointDataOutputType::nodes,
+                Inpar::Solid::GaussPointDataOutputType::element_center,
+                Inpar::Solid::GaussPointDataOutputType::gauss_points),
             &sublist_IO_VTK_structure);
       }
 
 
-    }  // namespace STRUCTURE
+    }  // namespace Solid
   }    // namespace IORuntimeOutput
 }  // namespace Inpar
 

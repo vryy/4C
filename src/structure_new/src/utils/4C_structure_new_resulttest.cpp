@@ -136,7 +136,7 @@ namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::ResultTest::ResultTest()
+Solid::ResultTest::ResultTest()
     : Core::UTILS::ResultTest("STRUCTURE"),
       isinit_(false),
       issetup_(false),
@@ -153,8 +153,8 @@ STR::ResultTest::ResultTest()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ResultTest::init(
-    const STR::TimeInt::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data)
+void Solid::ResultTest::init(
+    const Solid::TimeInt::BaseDataGlobalState& gstate, const Solid::MODELEVALUATOR::Data& data)
 {
   issetup_ = false;
 
@@ -177,7 +177,7 @@ void STR::ResultTest::init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ResultTest::setup()
+void Solid::ResultTest::setup()
 {
   check_init();
   // currently unused
@@ -186,7 +186,7 @@ void STR::ResultTest::setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
+void Solid::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test_count)
 {
   check_init_setup();
 
@@ -229,7 +229,7 @@ void STR::ResultTest::test_node(Input::LineDefinition& res, int& nerr, int& test
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int STR::ResultTest::get_nodal_result(
+int Solid::ResultTest::get_nodal_result(
     double& result, const int node, const std::string& position) const
 {
   result = 0.0;
@@ -408,8 +408,8 @@ int STR::ResultTest::get_nodal_result(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& nerr, int& test_count,
-    const std::vector<std::vector<std::vector<int>>>& nodeset)
+void Solid::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& nerr,
+    int& test_count, const std::vector<std::vector<std::vector<int>>>& nodeset)
 {
   check_init_setup();
 
@@ -559,7 +559,7 @@ void STR::ResultTest::test_node_on_geometry(Input::LineDefinition& res, int& ner
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ResultTest::TestSpecial(
+void Solid::ResultTest::TestSpecial(
     Input::LineDefinition& res, int& nerr, int& test_count, int& uneval_test_count)
 {
   check_init_setup();
@@ -578,7 +578,7 @@ void STR::ResultTest::TestSpecial(
         nerr += compare_values(*result, "SPECIAL", res);
       else
         FOUR_C_THROW(
-            "STR::ResultTest::TestSpecial: Special result has no defined value assigned to it!");
+            "Solid::ResultTest::TestSpecial: Special result has no defined value assigned to it!");
       ++test_count;
       break;
     }
@@ -590,7 +590,7 @@ void STR::ResultTest::TestSpecial(
     default:
     {
       FOUR_C_THROW(
-          "STR::ResultTest::TestSpecial: Undefined status type (enum=%d)!", special_status);
+          "Solid::ResultTest::TestSpecial: Undefined status type (enum=%d)!", special_status);
       exit(EXIT_FAILURE);
     }
   }
@@ -598,7 +598,7 @@ void STR::ResultTest::TestSpecial(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<double> STR::ResultTest::get_special_result(
+std::optional<double> Solid::ResultTest::get_special_result(
     const std::string& quantity, Status& special_status) const
 {
   if (quantity.find("num_iter_step_") != quantity.npos)
@@ -634,7 +634,7 @@ std::optional<double> STR::ResultTest::get_special_result(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<int> STR::ResultTest::get_last_lin_iteration_number(
+std::optional<int> Solid::ResultTest::get_last_lin_iteration_number(
     const std::string& quantity, Status& special_status) const
 {
   std::optional<int> result = std::nullopt;
@@ -655,7 +655,7 @@ std::optional<int> STR::ResultTest::get_last_lin_iteration_number(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<int> STR::ResultTest::get_nln_iteration_number(
+std::optional<int> Solid::ResultTest::get_nln_iteration_number(
     const std::string& quantity, Status& special_status) const
 {
   std::optional<int> result = std::nullopt;
@@ -676,7 +676,7 @@ std::optional<int> STR::ResultTest::get_nln_iteration_number(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<int> STR::ResultTest::get_nodes_per_proc_number(
+std::optional<int> Solid::ResultTest::get_nodes_per_proc_number(
     const std::string& quantity, Status& special_status) const
 {
   std::optional<int> result = std::nullopt;
@@ -686,7 +686,7 @@ std::optional<int> STR::ResultTest::get_nodes_per_proc_number(
 
   // extract processor ID
   if (proc_num >= strudisc_->Comm().NumProc())
-    FOUR_C_THROW("STR::ResultTest::get_nodes_per_proc_number: Invalid processor ID!");
+    FOUR_C_THROW("Solid::ResultTest::get_nodes_per_proc_number: Invalid processor ID!");
 
   if (strudisc_->Comm().MyPID() == proc_num)
   {
@@ -700,7 +700,7 @@ std::optional<int> STR::ResultTest::get_nodes_per_proc_number(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::optional<double> STR::ResultTest::get_energy(
+std::optional<double> Solid::ResultTest::get_energy(
     const std::string& quantity, Status& special_status) const
 {
   std::optional<double> result = std::nullopt;
@@ -716,7 +716,7 @@ std::optional<double> STR::ResultTest::get_energy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int STR::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
+int Solid::GetIntegerNumberAtLastPositionOfName(const std::string& quantity)
 {
   std::stringstream ss(quantity);
   std::string s;

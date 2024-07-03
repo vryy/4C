@@ -111,7 +111,7 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
       strparams_(strparams),
       cv0dparams_(cv0dparams),
       intstrat_(
-          Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(strparams, "INT_STRATEGY")),
+          Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(strparams, "INT_STRATEGY")),
       mor_(mor),
       have_mor_(false)
 {
@@ -126,9 +126,9 @@ UTILS::Cardiovascular0DManager::Cardiovascular0DManager(
 
   switch (intstrat_)
   {
-    case Inpar::STR::int_standard:
+    case Inpar::Solid::int_standard:
       break;
-    case Inpar::STR::int_old:
+    case Inpar::Solid::int_old:
       // setup solver
       SolverSetup(solver, strparams);
       break;

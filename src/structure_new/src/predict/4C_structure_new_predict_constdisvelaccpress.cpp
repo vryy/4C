@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Predict::ConstDisVelAccPress::ConstDisVelAccPress()
+Solid::Predict::ConstDisVelAccPress::ConstDisVelAccPress()
 {
   // empty
 }
@@ -32,12 +32,12 @@ STR::Predict::ConstDisVelAccPress::ConstDisVelAccPress()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::ConstDisVelAccPress::setup()
+void Solid::Predict::ConstDisVelAccPress::setup()
 {
   check_init();
 
   // fallback predictor
-  tangdis_ptr_ = STR::Predict::build_predictor(Inpar::STR::pred_tangdis);
+  tangdis_ptr_ = Solid::Predict::build_predictor(Inpar::Solid::pred_tangdis);
   tangdis_ptr_->init(
       get_type(), impl_int_ptr(), dbc_ptr(), global_state_ptr(), io_data_ptr(), nox_params_ptr());
   tangdis_ptr_->setup();
@@ -48,7 +48,7 @@ void STR::Predict::ConstDisVelAccPress::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
+void Solid::Predict::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
 
@@ -59,24 +59,24 @@ void STR::Predict::ConstDisVelAccPress::Compute(::NOX::Abstract::Group& grp)
   bool ok = true;
   switch (get_type())
   {
-    case Inpar::STR::pred_constdis:
-    case Inpar::STR::pred_constdispres:
+    case Inpar::Solid::pred_constdis:
+    case Inpar::Solid::pred_constdispres:
     {
       impl_int().predict_const_dis_consist_vel_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
-    case Inpar::STR::pred_constvel:
+    case Inpar::Solid::pred_constvel:
     {
       ok = impl_int().predict_const_vel_consist_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
-    case Inpar::STR::pred_constacc:
+    case Inpar::Solid::pred_constacc:
     {
       ok = impl_int().predict_const_acc(*disnp_ptr, *velnp_ptr, *accnp_ptr);
       break;
     }
-    case Inpar::STR::pred_constdisvelacc:
-    case Inpar::STR::pred_constdisvelaccpres:
+    case Inpar::Solid::pred_constdisvelacc:
+    case Inpar::Solid::pred_constdisvelaccpres:
     {
       disnp_ptr->Update(1.0, *global_state().get_dis_n(), 0.0);
       velnp_ptr->Update(1.0, *global_state().get_vel_n(), 0.0);

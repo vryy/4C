@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::SpringDashpot::SpringDashpot()
+Solid::MODELEVALUATOR::SpringDashpot::SpringDashpot()
     : disnp_ptr_(Teuchos::null),
       velnp_ptr_(Teuchos::null),
       stiff_spring_ptr_(Teuchos::null),
@@ -41,7 +41,7 @@ STR::MODELEVALUATOR::SpringDashpot::SpringDashpot()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::setup()
+void Solid::MODELEVALUATOR::SpringDashpot::setup()
 {
   FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
@@ -68,7 +68,7 @@ void STR::MODELEVALUATOR::SpringDashpot::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::reset(const Epetra_Vector& x)
+void Solid::MODELEVALUATOR::SpringDashpot::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -87,7 +87,7 @@ void STR::MODELEVALUATOR::SpringDashpot::reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::SpringDashpot::evaluate_force()
+bool Solid::MODELEVALUATOR::SpringDashpot::evaluate_force()
 {
   check_init_setup();
 
@@ -117,7 +117,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_force()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::SpringDashpot::evaluate_stiff()
+bool Solid::MODELEVALUATOR::SpringDashpot::evaluate_stiff()
 {
   check_init_setup();
 
@@ -158,7 +158,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::SpringDashpot::evaluate_force_stiff()
+bool Solid::MODELEVALUATOR::SpringDashpot::evaluate_force_stiff()
 {
   check_init_setup();
 
@@ -201,7 +201,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::SpringDashpot::assemble_force(
+bool Solid::MODELEVALUATOR::SpringDashpot::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *fspring_np_ptr_);
@@ -210,7 +210,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::assemble_force(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::SpringDashpot::assemble_jacobian(
+bool Solid::MODELEVALUATOR::SpringDashpot::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
@@ -223,7 +223,7 @@ bool STR::MODELEVALUATOR::SpringDashpot::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::write_restart(
+void Solid::MODELEVALUATOR::SpringDashpot::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // row maps for export
@@ -253,7 +253,7 @@ void STR::MODELEVALUATOR::SpringDashpot::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::MODELEVALUATOR::SpringDashpot::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   Teuchos::RCP<Epetra_Vector> tempvec = Teuchos::rcp(new Epetra_Vector(*discret().dof_row_map()));
   Teuchos::RCP<Epetra_MultiVector> tempvecold =
@@ -277,23 +277,23 @@ void STR::MODELEVALUATOR::SpringDashpot::read_restart(Core::IO::DiscretizationRe
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::update_step_state(const double& timefac_n)
+void Solid::MODELEVALUATOR::SpringDashpot::update_step_state(const double& timefac_n)
 {
   // add the old time factor scaled contributions to the residual
   Teuchos::RCP<Epetra_Vector>& fstructold_ptr = global_state().get_fstructure_old();
   fstructold_ptr->Update(timefac_n, *fspring_np_ptr_, 1.0);
 
   // check for prestressing and reset if necessary
-  const Inpar::STR::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
+  const Inpar::Solid::PreStress prestress_type = tim_int().get_data_sdyn().get_pre_stress_type();
   const double prestress_time = tim_int().get_data_sdyn().get_pre_stress_time();
 
-  if (prestress_type != Inpar::STR::PreStress::none &&
+  if (prestress_type != Inpar::Solid::PreStress::none &&
       global_state().get_time_np() <= prestress_time + 1.0e-15)
   {
     switch (prestress_type)
     {
-      case Inpar::STR::PreStress::mulf:
-      case Inpar::STR::PreStress::material_iterative:
+      case Inpar::Solid::PreStress::mulf:
+      case Inpar::Solid::PreStress::material_iterative:
         for (const auto& spring : springs_) spring->ResetPrestress(global_state().get_dis_np());
       default:
         break;
@@ -304,7 +304,7 @@ void STR::MODELEVALUATOR::SpringDashpot::update_step_state(const double& timefac
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::output_step_state(
+void Solid::MODELEVALUATOR::SpringDashpot::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   // row maps for export
@@ -340,7 +340,7 @@ void STR::MODELEVALUATOR::SpringDashpot::output_step_state(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::reset_step_state()
+void Solid::MODELEVALUATOR::SpringDashpot::reset_step_state()
 {
   check_init_setup();
 
@@ -352,7 +352,8 @@ void STR::MODELEVALUATOR::SpringDashpot::reset_step_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::SpringDashpot::get_block_dof_row_map_ptr() const
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::SpringDashpot::get_block_dof_row_map_ptr()
+    const
 {
   check_init_setup();
   return global_state().dof_row_map();
@@ -360,7 +361,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::SpringDashpot::get_block_dof
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::get_current_solution_ptr()
+Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::SpringDashpot::get_current_solution_ptr()
     const
 {
   // there are no model specific solution entries
@@ -370,7 +371,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::SpringDashpot::get_curren
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::SpringDashpot::get_last_time_step_solution_ptr() const
+Solid::MODELEVALUATOR::SpringDashpot::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -378,6 +379,6 @@ STR::MODELEVALUATOR::SpringDashpot::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::SpringDashpot::post_output() { check_init_setup(); }
+void Solid::MODELEVALUATOR::SpringDashpot::post_output() { check_init_setup(); }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -229,10 +229,10 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr = nullptr;
       if (elemat1.is_initialized()) matptr = &elemat1;
 
-      enum Inpar::STR::DampKind damping =
-          params.get<enum Inpar::STR::DampKind>("damping", Inpar::STR::damp_none);
+      enum Inpar::Solid::DampKind damping =
+          params.get<enum Inpar::Solid::DampKind>("damping", Inpar::Solid::damp_none);
       Core::LinAlg::Matrix<numdof_, numdof_>* matptr2 = nullptr;
-      if (elemat2.is_initialized() and (damping == Inpar::STR::damp_material)) matptr2 = &elemat2;
+      if (elemat2.is_initialized() and (damping == Inpar::Solid::damp_material)) matptr2 = &elemat2;
 
       if (la.Size() > 1)
       {
@@ -462,11 +462,11 @@ int Discret::ELEMENTS::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
     case Core::Elements::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      auto iocouplstress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iocouplstress", Inpar::STR::stress_none);
+      auto iocouplstress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iocouplstress", Inpar::Solid::stress_none);
 
       // check for output of coupling stress
-      if (iocouplstress == Inpar::STR::stress_none)
+      if (iocouplstress == Inpar::Solid::stress_none)
       {
         // nothing to do here for calculation of effective stress
         break;
@@ -1730,7 +1730,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
     Core::LinAlg::SerialDenseMatrix* elestress,      // stresses at GP
     Core::LinAlg::SerialDenseMatrix* elestrain,      // strains at GP
     Teuchos::ParameterList& params,                  // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress            // stress output option
+    const Inpar::Solid::StressType iostress          // stress output option
 )
 {
   // update element geometry
@@ -1776,13 +1776,13 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
@@ -1796,7 +1796,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::coupling_stress_poroelast(
         (*elestress)(gp, 3) = cauchycouplstress(0, 1);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
 
       default:
@@ -1865,13 +1865,13 @@ void Discret::ELEMENTS::Wall1Poro<
   // compute linearization of J
   compute_linearization_of_jacobian(dJ_dus, J, N_XYZ, defgrd_inv);
 
-  if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
+  if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
     volchange = J;
     dvolchange_dus = dJ_dus;
   }
-  else if (kintype_ == Inpar::STR::KinemType::linear)  // linear kinematics
+  else if (kintype_ == Inpar::Solid::KinemType::linear)  // linear kinematics
   {
     // for linear kinematics the volume change is the trace of the linearized strains
 
@@ -1901,12 +1901,12 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_jacobian_determinant_volume_
   // compute J
   J = defgrd.determinant();
 
-  if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
+  if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)  // total lagrange (nonlinear)
   {
     // for nonlinear kinematics the Jacobian of the deformation gradient is the volume change
     volchange = J;
   }
-  else if (kintype_ == Inpar::STR::KinemType::linear)  // linear kinematics
+  else if (kintype_ == Inpar::Solid::KinemType::linear)  // linear kinematics
   {
     // for linear kinematics the volume change is the trace of the linearized strains
 
@@ -1950,12 +1950,12 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_def_gradient(
     const Core::LinAlg::Matrix<numdim_, numnod_>& N_XYZ,
     const Core::LinAlg::Matrix<numdim_, numnod_>& xcurr)
 {
-  if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+  if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
   {
     // (material) deformation gradient F = d xcurr / d xrefe = xcurr * N_XYZ^T
     defgrd.multiply_nt(xcurr, N_XYZ);  //  (6.17)
   }
-  else if (kintype_ == Inpar::STR::KinemType::linear)
+  else if (kintype_ == Inpar::Solid::KinemType::linear)
   {
     defgrd.clear();
     for (int i = 0; i < numdim_; i++) defgrd(i, i) = 1.0;
@@ -2105,7 +2105,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::compute_auxiliary_values(
   // F^-T * Grad p
   Finvgradp.multiply_tn(defgrd_inv, Gradp);
 
-  if (kintype_ != Inpar::STR::KinemType::linear)
+  if (kintype_ != Inpar::Solid::KinemType::linear)
   {
     // dF^-T/dus
     for (int i = 0; i < numdim_; i++)

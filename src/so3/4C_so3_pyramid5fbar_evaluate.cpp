@@ -109,8 +109,8 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none, Inpar::STR::strain_none);
+          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -131,8 +131,8 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, matptr, nullptr, &elevec1,
-          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none, Inpar::STR::strain_none);
+          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -153,8 +153,8 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
-          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none, Inpar::STR::strain_none);
+          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -190,8 +190,8 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2, &elevec1,
-          &elevec2, &elevec3, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none, Inpar::STR::strain_none);
+          &elevec2, &elevec3, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_none);
 
       if (act == calc_struct_nlnstifflmass) sop5_lumpmass(&elemat2);
     }
@@ -215,10 +215,10 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D> stress;
       Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D> strain;
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
@@ -227,8 +227,8 @@ int Discret::ELEMENTS::SoPyramid5fbar::evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
       if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get 'plastic strain' data");
       Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D> plstrain;
-      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "ioplstrain", Inpar::STR::strain_none);
+      auto ioplstrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "ioplstrain", Inpar::Solid::strain_none);
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
           nullptr, nullptr, &stress, &strain, &plstrain, params, iostress, iostrain, ioplstrain);
@@ -657,10 +657,10 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
     Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestress,    // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* elestrain,    // strains at GP
     Core::LinAlg::Matrix<NUMGPT_SOP5, Mat::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
-    Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,    // stress output option
-    const Inpar::STR::StrainType iostrain,    // strain output option
-    const Inpar::STR::StrainType ioplstrain)  // plastic strain output option
+    Teuchos::ParameterList& params,             // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,    // stress output option
+    const Inpar::Solid::StrainType iostrain,    // strain output option
+    const Inpar::Solid::StrainType ioplstrain)  // plastic strain output option
 {
   /* ================================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for PYRAMID_5 with ? GAUSS POINTS*
@@ -845,14 +845,14 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain_bar(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain_bar(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
         // rewriting Green-Lagrange strains in matrix format
@@ -884,7 +884,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
         (*elestrain)(gp, 5) = euler_almansi_bar(0, 2);
       }
       break;
-      case Inpar::STR::strain_log:
+      case Inpar::Solid::strain_log:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
@@ -985,7 +985,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
         (*elestrain)(gp, 5) = lnv(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain type not available");
@@ -1065,7 +1065,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
     // CAUTION: print plastic strains ONLY in case of small strain regime!
     switch (ioplstrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain_bar =
@@ -1074,7 +1074,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
         for (int i = 3; i < 6; ++i) (*eleplstrain)(gp, i) = 0.5 * plglstrain_bar(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (eleplstrain == nullptr) FOUR_C_THROW("plastic strain data not available");
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> plglstrain_bar =
@@ -1092,7 +1092,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
         (*eleplstrain)(gp, 5) = euler_almansi_bar(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
 
       default:
@@ -1103,13 +1103,13 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress_bar(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("stress data not available");
         const double detF_bar = defgrd_bar.determinant();
@@ -1138,7 +1138,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
         (*elestress)(gp, 5) = cauchystress_bar(0, 2);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");
@@ -1275,7 +1275,7 @@ void Discret::ELEMENTS::SoPyramid5fbar::nlnstiffmass(std::vector<int>& lm,  // l
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         Core::LinAlg::SerialDenseVector glstrain_epetra(Mat::NUM_STRESS_3D);
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
-        // if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+        // if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
         //{
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);

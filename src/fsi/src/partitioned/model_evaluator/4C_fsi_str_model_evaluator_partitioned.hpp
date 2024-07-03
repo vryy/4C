@@ -24,7 +24,7 @@ namespace Adapter
   class Structure;
 }  // namespace Adapter
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -49,7 +49,10 @@ namespace STR
       //! @{
 
       //! [derived]
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_partitioned_coupling; }
+      Inpar::Solid::ModelType Type() const override
+      {
+        return Inpar::Solid::model_partitioned_coupling;
+      }
 
       //! reset class variables (without jacobian) [derived]
       void reset(const Epetra_Vector& x) override { return; };
@@ -90,7 +93,7 @@ namespace STR
       void read_restart(Core::IO::DiscretizationReader& ioreader) override { return; };
 
       //! [derived]
-      void Predict(const Inpar::STR::PredEnum& pred_type) override { return; };
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -159,7 +162,7 @@ namespace STR
       void set_is_relaxation_solve(bool trueorfalse) { is_relaxationsolve_ = trueorfalse; };
 
       //! Returns the global input/output data container
-      const STR::TimeInt::BaseDataIO& GetInOutput() const;
+      const Solid::TimeInt::BaseDataIO& GetInOutput() const;
 
      private:
       //! fsi interface force at \f$t_{n+1}\f$
@@ -171,7 +174,7 @@ namespace STR
     };  // class PartitionedFSI
 
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

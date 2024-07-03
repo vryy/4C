@@ -33,7 +33,7 @@ namespace Discret
 }  // namespace Discret
 
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -152,7 +152,7 @@ namespace STR
     };
 
   }  // namespace TimeInt
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

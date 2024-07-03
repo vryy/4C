@@ -23,10 +23,10 @@ namespace Mat
   class FluidPoroMultiPhase;
   class StructPoro;
 }  // namespace Mat
-namespace STR::ELEMENTS
+namespace Solid::ELEMENTS
 {
   class ParamsInterface;
-}  // namespace STR::ELEMENTS
+}  // namespace Solid::ELEMENTS
 
 namespace Discret
 {
@@ -41,14 +41,14 @@ namespace Discret
 
       void evaluate_nonlinear_force_stiffness(const Core::Elements::Element& ele,
           Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
-          const Inpar::STR::KinemType& kinematictype,
+          const Inpar::Solid::KinemType& kinematictype,
           const Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
           Core::LinAlg::SerialDenseVector* force_vector,
           Core::LinAlg::SerialDenseMatrix* stiffness_matrix);
 
       void coupling_poroelast(const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
-          Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::STR::KinemType& kinematictype,
+          Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::Solid::KinemType& kinematictype,
           const Core::FE::Discretization& discretization,
           Core::Elements::Element::LocationArray& la, Teuchos::ParameterList& params,
           Core::LinAlg::SerialDenseMatrix& stiffness_matrix);

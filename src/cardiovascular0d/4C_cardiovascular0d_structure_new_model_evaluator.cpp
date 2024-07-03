@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D()
+Solid::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D()
     : disnp_ptr_(Teuchos::null),
       stiff_cardio_ptr_(Teuchos::null),
       fstructcardio_np_ptr_(Teuchos::null)
@@ -42,7 +42,7 @@ STR::MODELEVALUATOR::Cardiovascular0D::Cardiovascular0D()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::setup()
+void Solid::MODELEVALUATOR::Cardiovascular0D::setup()
 {
   check_init();
 
@@ -77,7 +77,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::reset(const Epetra_Vector& x)
+void Solid::MODELEVALUATOR::Cardiovascular0D::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -92,7 +92,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Cardiovascular0D::evaluate_force()
+bool Solid::MODELEVALUATOR::Cardiovascular0D::evaluate_force()
 {
   check_init_setup();
 
@@ -109,7 +109,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::evaluate_force()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Cardiovascular0D::evaluate_stiff()
+bool Solid::MODELEVALUATOR::Cardiovascular0D::evaluate_stiff()
 {
   check_init_setup();
 
@@ -128,7 +128,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::evaluate_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Cardiovascular0D::evaluate_force_stiff()
+bool Solid::MODELEVALUATOR::Cardiovascular0D::evaluate_force_stiff()
 {
   check_init_setup();
 
@@ -146,7 +146,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_force(
+bool Solid::MODELEVALUATOR::Cardiovascular0D::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   Teuchos::RCP<const Epetra_Vector> block_vec_ptr = Teuchos::null;
@@ -174,7 +174,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_force(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
+bool Solid::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> block_ptr = Teuchos::null;
@@ -210,7 +210,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::write_restart(
+void Solid::MODELEVALUATOR::Cardiovascular0D::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   iowriter.write_vector("cv0d_df_np", cardvasc0dman_->Get0D_df_np());
@@ -224,7 +224,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::MODELEVALUATOR::Cardiovascular0D::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   double time_n = global_state().get_time_n();
   cardvasc0dman_->read_restart(ioreader, time_n);
@@ -234,13 +234,13 @@ void STR::MODELEVALUATOR::Cardiovascular0D::read_restart(Core::IO::Discretizatio
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::run_post_compute_x(
+void Solid::MODELEVALUATOR::Cardiovascular0D::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   check_init_setup();
 
   Teuchos::RCP<Epetra_Vector> cv0d_incr =
-      global_state().extract_model_entries(Inpar::STR::model_cardiovascular0d, dir);
+      global_state().extract_model_entries(Inpar::Solid::model_cardiovascular0d, dir);
 
   cardvasc0dman_->UpdateCv0DDof(cv0d_incr);
 
@@ -249,7 +249,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::run_post_compute_x(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::update_step_state(const double& timefac_n)
+void Solid::MODELEVALUATOR::Cardiovascular0D::update_step_state(const double& timefac_n)
 {
   // only update 0D model at the end of the time step!
   if (eval_data().get_total_time() == global_state().get_time_np())
@@ -273,7 +273,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::update_step_state(const double& time
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::update_step_element()
+void Solid::MODELEVALUATOR::Cardiovascular0D::update_step_element()
 {
   // nothing to do
   return;
@@ -282,7 +282,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::update_step_element()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::determine_stress_strain()
+void Solid::MODELEVALUATOR::Cardiovascular0D::determine_stress_strain()
 {
   // nothing to do
   return;
@@ -290,7 +290,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::determine_stress_strain()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::determine_energy()
+void Solid::MODELEVALUATOR::Cardiovascular0D::determine_energy()
 {
   // nothing to do
   return;
@@ -298,7 +298,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::determine_energy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::determine_optional_quantity()
+void Solid::MODELEVALUATOR::Cardiovascular0D::determine_optional_quantity()
 {
   // nothing to do
   return;
@@ -306,7 +306,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::determine_optional_quantity()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::output_step_state(
+void Solid::MODELEVALUATOR::Cardiovascular0D::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   // nothing to do
@@ -315,7 +315,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::output_step_state(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::reset_step_state()
+void Solid::MODELEVALUATOR::Cardiovascular0D::reset_step_state()
 {
   check_init_setup();
 
@@ -326,7 +326,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::reset_step_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Cardiovascular0D::get_block_dof_row_map_ptr()
+Teuchos::RCP<const Epetra_Map> Solid::MODELEVALUATOR::Cardiovascular0D::get_block_dof_row_map_ptr()
     const
 {
   check_init_setup();
@@ -336,8 +336,8 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::Cardiovascular0D::get_block_
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Cardiovascular0D::get_current_solution_ptr()
-    const
+Teuchos::RCP<const Epetra_Vector>
+Solid::MODELEVALUATOR::Cardiovascular0D::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -346,7 +346,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::Cardiovascular0D::get_cur
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::Cardiovascular0D::get_last_time_step_solution_ptr() const
+Solid::MODELEVALUATOR::Cardiovascular0D::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -354,7 +354,7 @@ STR::MODELEVALUATOR::Cardiovascular0D::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::Cardiovascular0D::post_output()
+void Solid::MODELEVALUATOR::Cardiovascular0D::post_output()
 {
   check_init_setup();
   // empty

@@ -31,10 +31,10 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
   bool use_safe_ghosting_branch = false;
   {
     const Teuchos::ParameterList& sdyn = Global::Problem::Instance()->structural_dynamic_params();
-    const enum Inpar::STR::IntegrationStrategy intstrat =
-        Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+    const enum Inpar::Solid::IntegrationStrategy intstrat =
+        Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
-    if (intstrat == Inpar::STR::int_old)
+    if (intstrat == Inpar::Solid::int_old)
     {
       /* Enable new safe ghosting only for interface discretization type "mortar"
        *

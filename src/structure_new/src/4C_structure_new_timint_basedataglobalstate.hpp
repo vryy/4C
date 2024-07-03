@@ -60,7 +60,7 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace STR
+namespace Solid
 {
   class ModelEvaluator;
   namespace MODELEVALUATOR
@@ -131,7 +131,7 @@ namespace STR
        * @return Max GID in the entire problem
        */
       int setup_block_information(
-          const STR::MODELEVALUATOR::Generic& me, const Inpar::STR::ModelType& mt);
+          const Solid::MODELEVALUATOR::Generic& me, const Inpar::Solid::ModelType& mt);
 
       /// setup the multi map extractor for saddle point problems
       void setup_multi_map_extractor();
@@ -146,7 +146,7 @@ namespace STR
        * @return MultiMapExtractor for the required type of element technology
        */
       const Core::LinAlg::MultiMapExtractor& get_element_technology_map_extractor(
-          const Inpar::STR::EleTech etech) const;
+          const Inpar::Solid::EleTech etech) const;
 
       /** setup the map extractor for translational <-> rotation pseudo-vector DoFs
        *                              (additive)    <->  (non-additive)      */
@@ -167,7 +167,7 @@ namespace STR
        * \param mt (in)     : model type of the desired block.
        * \param source (in) : full vector to extract from. */
       Teuchos::RCP<Epetra_Vector> extract_model_entries(
-          const Inpar::STR::ModelType& mt, const Epetra_Vector& source) const;
+          const Inpar::Solid::ModelType& mt, const Epetra_Vector& source) const;
 
       //! Remove DOFs that are specific to element technologies (e.g. pressure DOFs)
       void remove_element_technologies(Teuchos::RCP<Epetra_Vector>& rhs_ptr) const;
@@ -199,7 +199,7 @@ namespace STR
        *
        *  \author hiermeier \date 04/17 */
       Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_jacobian_block(
-          const Inpar::STR::ModelType mt, const MatBlockType bt) const;
+          const Inpar::Solid::ModelType mt, const MatBlockType bt) const;
 
       /// Get the block of the stiffness matrix which belongs to the displacement dofs.
       Teuchos::RCP<Core::LinAlg::SparseMatrix> extract_displ_block(
@@ -211,14 +211,14 @@ namespace STR
        * \param mt (in)  : Model type of the desired block.
        * \param bt (in)  : Desired matrix block type.  */
       Teuchos::RCP<Core::LinAlg::SparseMatrix> extract_model_block(
-          Core::LinAlg::SparseOperator& jac, const Inpar::STR::ModelType& mt,
+          Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt,
           const MatBlockType& bt) const;
 
       Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> extract_displ_row_of_blocks(
           Core::LinAlg::SparseOperator& jac) const;
 
       Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> extract_row_of_blocks(
-          Core::LinAlg::SparseOperator& jac, const Inpar::STR::ModelType& mt) const;
+          Core::LinAlg::SparseOperator& jac, const Inpar::Solid::ModelType& mt) const;
 
       /** \brief Assign a Core::LinAlg::SparseMatrix to one of the blocks of the corresponding
        * model
@@ -231,13 +231,13 @@ namespace STR
        *         | LmD    LmLm |
        *          ===       ===     */
       void assign_model_block(Core::LinAlg::SparseOperator& jac,
-          const Core::LinAlg::SparseMatrix& matrix, const Inpar::STR::ModelType& mt,
+          const Core::LinAlg::SparseMatrix& matrix, const Inpar::Solid::ModelType& mt,
           const MatBlockType& bt) const
       {
         assign_model_block(jac, matrix, mt, bt, Core::LinAlg::View);
       };
       void assign_model_block(Core::LinAlg::SparseOperator& jac,
-          const Core::LinAlg::SparseMatrix& matrix, const Inpar::STR::ModelType& mt,
+          const Core::LinAlg::SparseMatrix& matrix, const Inpar::Solid::ModelType& mt,
           const MatBlockType& bt, const Core::LinAlg::DataAccess& access) const;
 
       /// Get the displacement block of the global jacobian matrix in the global
@@ -251,7 +251,7 @@ namespace STR
       /// Create the global solution vector
       Teuchos::RCP<::NOX::Epetra::Vector> create_global_vector() const;
       Teuchos::RCP<::NOX::Epetra::Vector> create_global_vector(const enum VecInitType& vecinittype,
-          const Teuchos::RCP<const STR::ModelEvaluator>& modeleval) const;
+          const Teuchos::RCP<const Solid::ModelEvaluator>& modeleval) const;
 
       /// Create the structural stiffness matrix block
       Core::LinAlg::SparseOperator* create_structural_stiffness_matrix_block();
@@ -269,12 +269,12 @@ namespace STR
       inline void check_init_setup() const
       {
         FOUR_C_ASSERT(
-            is_init() and is_setup(), "Call STR::BaseDataGlobalState::init() and setup() first!");
+            is_init() and is_setup(), "Call Solid::BaseDataGlobalState::init() and setup() first!");
       }
 
       inline void check_init() const
       {
-        FOUR_C_ASSERT(is_init(), "STR::BaseDataGlobalState::init() has not been called, yet!");
+        FOUR_C_ASSERT(is_init(), "Solid::BaseDataGlobalState::init() has not been called, yet!");
       }
 
      public:
@@ -596,7 +596,7 @@ namespace STR
       /** \brief Returns Epetra_Map pointer of the given model
        *
        *  If the given model is not found, Teuchos::null is returned. */
-      Teuchos::RCP<const Epetra_Map> block_map_ptr(const Inpar::STR::ModelType& mt) const
+      Teuchos::RCP<const Epetra_Map> block_map_ptr(const Inpar::Solid::ModelType& mt) const
       {
         if (model_maps_.find(mt) != model_maps_.end()) return model_maps_.at(mt);
 
@@ -604,13 +604,13 @@ namespace STR
       };
 
       /// Returns Epetra_Map of the given model
-      Epetra_Map block_map(const Inpar::STR::ModelType& mt) const
+      Epetra_Map block_map(const Inpar::Solid::ModelType& mt) const
       {
         if (model_maps_.find(mt) == model_maps_.end())
           FOUR_C_THROW(
               "There is no block map for the given "
               "modeltype \"%s\".",
-              Inpar::STR::ModelTypeString(mt).c_str());
+              Inpar::Solid::ModelTypeString(mt).c_str());
 
         return *(model_maps_.at(mt));
       };
@@ -618,7 +618,7 @@ namespace STR
       /** \brief Returns the Block id of the given model type.
        *
        *  If the block is not found, -1 is returned. */
-      int block_id(const enum Inpar::STR::ModelType& mt) const
+      int block_id(const enum Inpar::Solid::ModelType& mt) const
       {
         if (model_block_id_.find(mt) != model_block_id_.end()) return model_block_id_.at(mt);
 
@@ -1079,10 +1079,10 @@ namespace STR
       /// @{
 
       /// Epetra_Map s of the different models
-      std::map<Inpar::STR::ModelType, Teuchos::RCP<const Epetra_Map>> model_maps_;
+      std::map<Inpar::Solid::ModelType, Teuchos::RCP<const Epetra_Map>> model_maps_;
 
       /// block information for the different models
-      std::map<Inpar::STR::ModelType, int> model_block_id_;
+      std::map<Inpar::Solid::ModelType, int> model_block_id_;
 
       int max_block_num_;
 
@@ -1093,7 +1093,7 @@ namespace STR
       Core::LinAlg::MultiMapExtractor blockextractor_;
 
       // all active element technology map extractors
-      std::map<Inpar::STR::EleTech, Core::LinAlg::MultiMapExtractor> mapextractors_;
+      std::map<Inpar::Solid::EleTech, Core::LinAlg::MultiMapExtractor> mapextractors_;
 
       /// map extractor for split of translational <-> rotational pseudo-vector DoFs
       Core::LinAlg::MultiMapExtractor rotvecextractor_;
@@ -1103,7 +1103,7 @@ namespace STR
       /// @}
     };  // class BaseDataGlobalState
   }     // namespace TimeInt
-}  // namespace STR
+}  // namespace Solid
 
 namespace NOX
 {
@@ -1129,7 +1129,7 @@ namespace NOX
            public:
             //! constructor
             RotVecUpdater(
-                const Teuchos::RCP<const FourC::STR::TimeInt::BaseDataGlobalState>& gstate_ptr);
+                const Teuchos::RCP<const FourC::Solid::TimeInt::BaseDataGlobalState>& gstate_ptr);
 
             /*! \brief Derived function, which is called before a call to
              * NOX::Nln::Group::computeX()
@@ -1139,8 +1139,8 @@ namespace NOX
                 const double& step, const NOX::Nln::Group& curr_grp) override;
 
            private:
-            //! pointer to the FourC::STR::TimeInt::BaseDataGlobalState object (read-only)
-            Teuchos::RCP<const FourC::STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+            //! pointer to the FourC::Solid::TimeInt::BaseDataGlobalState object (read-only)
+            Teuchos::RCP<const FourC::Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
           };  // class RotVecUpdater
         }     // namespace TimeInt

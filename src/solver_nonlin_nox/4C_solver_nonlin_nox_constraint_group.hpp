@@ -24,7 +24,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
-namespace STR
+namespace Solid
 {
   class TimIntImpl;
 }

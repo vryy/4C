@@ -42,7 +42,7 @@ namespace Core::Geo
   }
 }  // namespace Core::Geo
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -59,9 +59,9 @@ namespace STR
     class GaussPointDataOutputManager;
 
 
-    /*! \brief Discrete implementation of the STR::ELEMENTS::ParamsInterface
+    /*! \brief Discrete implementation of the Solid::ELEMENTS::ParamsInterface
      *
-     * This class represents an actual implementation of the STR::ELEMENTS::ParamsInterface class
+     * This class represents an actual implementation of the Solid::ELEMENTS::ParamsInterface class
      * and gives you all the functionality to interchange data between the elements and the
      * structural time integrators.
      *
@@ -80,7 +80,7 @@ namespace STR
      *
      * \author hiermeier \date 03/2016
      */
-    class Data : public STR::ELEMENTS::ParamsInterface
+    class Data : public Solid::ELEMENTS::ParamsInterface
     {
       typedef std::map<enum NOX::Nln::StatusTest::QuantityType,
           enum ::NOX::Abstract::Vector::NormType>
@@ -92,12 +92,12 @@ namespace STR
 
 
       //! initialize the stuff coming from outside
-      void init(const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
+      void init(const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
 
       //! setup member variables
       void setup();
 
-      //! @name Derived STR::ELEMENTS::ParamsInterface accessors
+      //! @name Derived Solid::ELEMENTS::ParamsInterface accessors
       //!@{
 
       //! get the desired action type [derived]
@@ -142,7 +142,7 @@ namespace STR
       }
 
       //! get the current damping type [derived]
-      [[nodiscard]] enum Inpar::STR::DampKind get_damping_type() const override;
+      [[nodiscard]] enum Inpar::Solid::DampKind get_damping_type() const override;
 
       //! get the tolerate errors indicator [derived]
       [[nodiscard]] inline bool is_tolerate_errors() const override
@@ -166,7 +166,7 @@ namespace STR
       }
 
       //! get the predictor type of the structural time integration
-      [[nodiscard]] enum Inpar::STR::PredEnum get_predictor_type() const override
+      [[nodiscard]] enum Inpar::Solid::PredEnum get_predictor_type() const override
       {
         check_init_setup();
         return predict_type_;
@@ -193,37 +193,37 @@ namespace STR
       Teuchos::RCP<std::vector<char>>& opt_quantity_data_ptr() override;
 
       //! get the current stress type [derived]
-      [[nodiscard]] enum Inpar::STR::StressType get_stress_output_type() const override;
+      [[nodiscard]] enum Inpar::Solid::StressType get_stress_output_type() const override;
 
       //! get the current strain type [derived]
-      [[nodiscard]] enum Inpar::STR::StrainType get_strain_output_type() const override;
+      [[nodiscard]] enum Inpar::Solid::StrainType get_strain_output_type() const override;
 
       //! get the current plastic strain type [derived]
-      [[nodiscard]] enum Inpar::STR::StrainType get_plastic_strain_output_type() const override;
+      [[nodiscard]] enum Inpar::Solid::StrainType get_plastic_strain_output_type() const override;
 
       //! get the current coupling stress type [derived]
-      [[nodiscard]] enum Inpar::STR::StressType get_coupling_stress_output_type() const override;
+      [[nodiscard]] enum Inpar::Solid::StressType get_coupling_stress_output_type() const override;
 
       //! get the current strain type [derived]
-      virtual enum Inpar::STR::OptQuantityType get_opt_quantity_output_type() const;
+      virtual enum Inpar::Solid::OptQuantityType get_opt_quantity_output_type() const;
 
       //< get the manager of Gauss point data output
       Teuchos::RCP<GaussPointDataOutputManager>& gauss_point_data_output_manager_ptr() override;
 
       //! register energy type to be computed and written to file
-      void insert_energy_type_to_be_considered(enum STR::EnergyType type);
+      void insert_energy_type_to_be_considered(enum Solid::EnergyType type);
 
       //! read-only access to energy data
-      std::map<enum STR::EnergyType, double> const& get_energy_data() const;
+      std::map<enum Solid::EnergyType, double> const& get_energy_data() const;
 
       //! read-only access to energy data
-      double get_energy_data(enum STR::EnergyType type) const;
+      double get_energy_data(enum Solid::EnergyType type) const;
 
       //! read-only access to energy data
       double get_energy_data(const std::string type) const;
 
       //! set value for a specific energy type
-      void set_value_for_energy_type(double value, enum STR::EnergyType type);
+      void set_value_for_energy_type(double value, enum Solid::EnergyType type);
 
       //! set function manager
       void set_function_manager(const Core::UTILS::FunctionManager& function_manager)
@@ -240,7 +240,7 @@ namespace STR
        * @param type Type of energy to be added to
        */
       void add_contribution_to_energy_type(
-          const double value, const enum STR::EnergyType type) override;
+          const double value, const enum Solid::EnergyType type) override;
 
       //! get Interface to brownian dyn data [derived]
       [[nodiscard]] inline Teuchos::RCP<BROWNIANDYN::ParamsInterface>
@@ -251,7 +251,7 @@ namespace STR
       }
 
       //! get special parameter interface for beam elements [derived]
-      [[nodiscard]] inline Teuchos::RCP<STR::ELEMENTS::BeamParamsInterface>
+      [[nodiscard]] inline Teuchos::RCP<Solid::ELEMENTS::BeamParamsInterface>
       get_beam_params_interface_ptr() const override
       {
         FOUR_C_ASSERT(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
@@ -442,7 +442,7 @@ namespace STR
        *
        * @return Flag describing errors during element evaluation
        */
-      inline STR::ELEMENTS::EvalErrorFlag get_ele_eval_error_flag() const override
+      inline Solid::ELEMENTS::EvalErrorFlag get_ele_eval_error_flag() const override
       {
         return ele_eval_error_flag_;
       }
@@ -514,7 +514,7 @@ namespace STR
       }
 
       //! set the predictor type of the structural time integration
-      inline void set_predictor_type(const Inpar::STR::PredEnum predictor_type)
+      inline void set_predictor_type(const Inpar::Solid::PredEnum predictor_type)
       {
         predict_type_ = predictor_type;
       }
@@ -710,28 +710,28 @@ namespace STR
       //!@{
 
       //! Time integration strategy
-      inline const STR::TimeInt::Base& tim_int() const
+      inline const Solid::TimeInt::Base& tim_int() const
       {
         check_init();
         return *timint_ptr_;
       }
 
       //! Structural dynamic data
-      inline const STR::TimeInt::BaseDataSDyn& sdyn() const
+      inline const Solid::TimeInt::BaseDataSDyn& sdyn() const
       {
         check_init();
         return *sdyn_ptr_;
       }
 
       //! input/ouput parameters
-      inline const STR::TimeInt::BaseDataIO& in_output() const
+      inline const Solid::TimeInt::BaseDataIO& in_output() const
       {
         check_init();
         return *io_ptr_;
       }
 
       //! global state variables
-      inline const STR::TimeInt::BaseDataGlobalState& global_state() const
+      inline const Solid::TimeInt::BaseDataGlobalState& global_state() const
       {
         check_init();
         return *gstate_ptr_;
@@ -846,10 +846,10 @@ namespace STR
       enum Core::Elements::ActionType ele_action_;
 
       //! Current predictor type
-      enum Inpar::STR::PredEnum predict_type_;
+      enum Inpar::Solid::PredEnum predict_type_;
 
       //! element evaluation error flag
-      enum STR::ELEMENTS::EvalErrorFlag ele_eval_error_flag_;
+      enum Solid::ELEMENTS::EvalErrorFlag ele_eval_error_flag_;
 
       //! tolerate errors flag
       bool is_tolerate_errors_;
@@ -930,7 +930,7 @@ namespace STR
       Teuchos::RCP<std::vector<char>> optquantitydata_ptr_;
 
       //! system energy, stored separately by type
-      std::map<enum STR::EnergyType, double> energy_data_;
+      std::map<enum Solid::EnergyType, double> energy_data_;
 
       //! Manager of gauss point data output
       Teuchos::RCP<GaussPointDataOutputManager> gauss_point_data_manager_ptr_;
@@ -964,16 +964,16 @@ namespace STR
       std::map<enum NOX::Nln::StatusTest::QuantityType, double> my_prev_sol_norm_;
 
       //! read-only access to the structural dynamic parameters
-      Teuchos::RCP<const STR::TimeInt::BaseDataSDyn> sdyn_ptr_;
+      Teuchos::RCP<const Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
       //! read-only access to the input/output parameters
-      Teuchos::RCP<const STR::TimeInt::BaseDataIO> io_ptr_;
+      Teuchos::RCP<const Solid::TimeInt::BaseDataIO> io_ptr_;
 
       //! read-only access to the global state data container
-      Teuchos::RCP<const STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<const Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! read-only access to the timint object
-      Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
+      Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
 
       //! read-only access to the epetra communicator
       Teuchos::RCP<const Epetra_Comm> comm_ptr_;
@@ -996,7 +996,7 @@ namespace STR
      *
      * \author Maximilian Grill
      * \date 08/16 */
-    class BeamData : public STR::ELEMENTS::BeamParamsInterface
+    class BeamData : public Solid::ELEMENTS::BeamParamsInterface
     {
      public:
       //! constructor
@@ -1008,7 +1008,7 @@ namespace STR
       //! setup member variables
       void setup();
 
-      //! @name Derived STR::ELEMENTS::BeamParamsInterface accessors
+      //! @name Derived Solid::ELEMENTS::BeamParamsInterface accessors
       //!@{
 
       //! get the Lie group GenAlpha time integration parameters [derived]
@@ -1085,7 +1085,7 @@ namespace STR
        *
        * See Lie-group Generalized-\f$\alpha\f$ time integration for details.
        *
-       * \sa STR::IMPLICIT::GenAlphaLieGroup
+       * \sa Solid::IMPLICIT::GenAlphaLieGroup
        */
       double beta_;
       double gamma_;
@@ -1109,7 +1109,7 @@ namespace STR
       ContactData();
 
       //! initialize the stuff coming from outside
-      void init(const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr);
+      void init(const Teuchos::RCP<const Solid::MODELEVALUATOR::Data>& str_data_ptr);
 
       //! setup member variables
       void setup();
@@ -1162,7 +1162,7 @@ namespace STR
        * @return Type of predictor
        *
        * \author hiermeier \date 02/18 */
-      [[nodiscard]] enum Inpar::STR::PredEnum get_predictor_type() const override
+      [[nodiscard]] enum Inpar::Solid::PredEnum get_predictor_type() const override
       {
         check_init();
         return str_data_ptr_->get_predictor_type();
@@ -1275,28 +1275,28 @@ namespace STR
       }
 
       //! Time integration strategy
-      inline const STR::TimeInt::Base& tim_int() const
+      inline const Solid::TimeInt::Base& tim_int() const
       {
         check_init();
         return str_data_ptr_->tim_int();
       }
 
       //! Structural dynamic data
-      inline const STR::TimeInt::BaseDataSDyn& sdyn() const
+      inline const Solid::TimeInt::BaseDataSDyn& sdyn() const
       {
         check_init();
         return str_data_ptr_->sdyn();
       }
 
       //! input/ouput parameters
-      inline const STR::TimeInt::BaseDataIO& in_output() const
+      inline const Solid::TimeInt::BaseDataIO& in_output() const
       {
         check_init();
         return str_data_ptr_->in_output();
       }
 
       //! global state variables
-      inline const STR::TimeInt::BaseDataGlobalState& global_state() const
+      inline const Solid::TimeInt::BaseDataGlobalState& global_state() const
       {
         check_init();
         return str_data_ptr_->global_state();
@@ -1313,7 +1313,7 @@ namespace STR
 
       enum Inpar::CONTACT::CouplingScheme coupling_scheme_;
 
-      Teuchos::RCP<const STR::MODELEVALUATOR::Data> str_data_ptr_;
+      Teuchos::RCP<const Solid::MODELEVALUATOR::Data> str_data_ptr_;
 
     };  // class ContactData
 
@@ -1328,13 +1328,13 @@ namespace STR
       BrownianDynData();
 
       //! initialize the stuff coming from outside
-      void init(Teuchos::RCP<const STR::MODELEVALUATOR::Data> const& str_data_ptr);
+      void init(Teuchos::RCP<const Solid::MODELEVALUATOR::Data> const& str_data_ptr);
 
       //! setup member variables
       void setup();
 
       //! Structural dynamic data
-      inline STR::TimeInt::BaseDataSDyn const& sdyn() const
+      inline Solid::TimeInt::BaseDataSDyn const& sdyn() const
       {
         check_init();
         return str_data_ptr_->sdyn();
@@ -1438,7 +1438,7 @@ namespace STR
 
       bool issetup_;
 
-      Teuchos::RCP<const STR::MODELEVALUATOR::Data> str_data_ptr_;
+      Teuchos::RCP<const Solid::MODELEVALUATOR::Data> str_data_ptr_;
 
       /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
       double viscosity_;
@@ -1463,7 +1463,7 @@ namespace STR
     };
 
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -171,7 +171,7 @@ namespace Mat
     /*!
      * @brief Check if element kinematics and material kinematics are compatible
      */
-    virtual void ValidKinematics(Inpar::STR::KinemType kinem) = 0;
+    virtual void ValidKinematics(Inpar::Solid::KinemType kinem) = 0;
 
     /*!
      * @brief Set up for materials with GP data (e.g., history variables)

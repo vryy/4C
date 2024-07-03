@@ -40,7 +40,7 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace STR
+namespace Solid
 {
   class Integrator;
   namespace TimeInt
@@ -78,11 +78,12 @@ namespace STR
 
 
       //! initialize the class variables
-      void init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-          const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
-          const Teuchos::RCP<STR::Integrator>& int_ptr,
-          const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset) override;
+      void init(const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
+          const Teuchos::RCP<Solid::Integrator>& int_ptr,
+          const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr,
+          const int& dof_offset) override;
 
       //! setup class variables
       void setup() override;
@@ -90,7 +91,7 @@ namespace STR
       //! set the active model type wrapped in this class.
       //! only active model type is evaluated.
       //! e.g. mt_fsi in case fluid-structure interaction is to be evaluated
-      void SetActiveModelType(enum STR::MODELEVALUATOR::MultiphysicType mtype)
+      void SetActiveModelType(enum Solid::MODELEVALUATOR::MultiphysicType mtype)
       {
         active_mt_ = mtype;
       };
@@ -103,7 +104,10 @@ namespace STR
       //! @name Functions which are derived from the base generic class
       //! @{
       //! [derived]
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_partitioned_coupling; }
+      Inpar::Solid::ModelType Type() const override
+      {
+        return Inpar::Solid::model_partitioned_coupling;
+      }
 
       //! reset class variables (without jacobian) [derived]
       void reset(const Epetra_Vector& x) override;
@@ -138,7 +142,7 @@ namespace STR
       void read_restart(Core::IO::DiscretizationReader& ioreader) override{};
 
       //! [derived]
-      void Predict(const Inpar::STR::PredEnum& pred_type) override{};
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -202,16 +206,16 @@ namespace STR
 
      protected:
       //! map containing the model evaluators of the sub modules
-      std::map<enum STR::MODELEVALUATOR::MultiphysicType,
-          Teuchos::RCP<STR::MODELEVALUATOR::Generic>>
+      std::map<enum Solid::MODELEVALUATOR::MultiphysicType,
+          Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>
           me_map_;
 
       //! currently active model evaluator type
-      STR::MODELEVALUATOR::MultiphysicType active_mt_;
+      Solid::MODELEVALUATOR::MultiphysicType active_mt_;
 
       //! return reference to map containing the model evaluators
-      std::map<enum STR::MODELEVALUATOR::MultiphysicType,
-          Teuchos::RCP<STR::MODELEVALUATOR::Generic>>&
+      std::map<enum Solid::MODELEVALUATOR::MultiphysicType,
+          Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>&
       get_model_evalutaor_map()
       {
         return me_map_;
@@ -219,8 +223,8 @@ namespace STR
 
      public:
       //! return RCP to model evaluator of specific MultiphysicType
-      Teuchos::RCP<STR::MODELEVALUATOR::Generic> get_model_evaluator_from_map(
-          enum STR::MODELEVALUATOR::MultiphysicType mtype) const
+      Teuchos::RCP<Solid::MODELEVALUATOR::Generic> get_model_evaluator_from_map(
+          enum Solid::MODELEVALUATOR::MultiphysicType mtype) const
       {
         return me_map_.at(mtype);
       }
@@ -229,7 +233,7 @@ namespace STR
     };  // class Multiphysics
 
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

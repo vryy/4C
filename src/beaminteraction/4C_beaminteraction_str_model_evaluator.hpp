@@ -56,7 +56,7 @@ namespace BEAMINTERACTION
   }
 }  // namespace BEAMINTERACTION
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -81,12 +81,12 @@ namespace STR
       /// print welcome to biopolymer network simulation
       virtual void Logo() const;
 
-      //! @name Derived public STR::MODELEVALUATOR::Generic methods
+      //! @name Derived public Solid::MODELEVALUATOR::Generic methods
       //! @{
       //! derived
 
       //! derived
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_beaminteraction; }
+      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_beaminteraction; }
 
       //! derived
       bool evaluate_force() override;
@@ -118,7 +118,7 @@ namespace STR
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::STR::PredEnum& pred_type) override { return; };
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
       void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
@@ -195,8 +195,8 @@ namespace STR
       void init_and_setup_sub_model_evaluators();
 
       //! give submodels a certain order in which they are evaluated
-      virtual Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector> transform_to_vector(
-          STR::MODELEVALUATOR::BeamInteraction::Map submodel_map,
+      virtual Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Vector> transform_to_vector(
+          Solid::MODELEVALUATOR::BeamInteraction::Map submodel_map,
           std::vector<Inpar::BEAMINTERACTION::SubModelType>& sorted_submodel_types) const;
 
       //! @}
@@ -250,9 +250,9 @@ namespace STR
       /// current active model types for the model evaluator
       Teuchos::RCP<std::set<enum Inpar::BEAMINTERACTION::SubModelType>> submodeltypes_;
 
-      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Map> me_map_ptr_;
+      Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Map> me_map_ptr_;
 
-      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteraction::Vector> me_vec_ptr_;
+      Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteraction::Vector> me_vec_ptr_;
       //! @}
 
       //!@name data for handling two distinct parallel distributed discretizations
@@ -278,7 +278,7 @@ namespace STR
       Teuchos::RCP<Core::LinAlg::MultiMapExtractor> eletypeextractor_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> ia_state_ptr_;
+      Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState> ia_state_ptr_;
 
       //! force based on ia_discret at \f$t_{n+1}\f$
       Teuchos::RCP<Epetra_Vector> ia_force_beaminteraction_;
@@ -311,7 +311,7 @@ namespace STR
       //! @}
     };
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*======================================================================*/
 /* constructor */
 Adapter::StructureTimIntAda::StructureTimIntAda(
-    Teuchos::RCP<STR::TimAda> sta, Teuchos::RCP<Structure> sti)
+    Teuchos::RCP<Solid::TimAda> sta, Teuchos::RCP<Structure> sti)
     : StructureWrapper(sti), sta_(sta)
 {
   // make sure

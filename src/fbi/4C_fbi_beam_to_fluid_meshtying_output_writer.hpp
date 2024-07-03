@@ -34,7 +34,7 @@ namespace FBI
 {
   class BeamToFluidMeshtyingVtkOutputParams;
 }
-namespace STR::TimeInt
+namespace Solid::TimeInt
 {
   class ParamsRuntimeOutput;
 }
@@ -70,7 +70,7 @@ namespace BEAMINTERACTION
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      */
     void setup(const Core::IO::VisualizationParameters& visualization_params,
-        Teuchos::RCP<const STR::TimeInt::ParamsRuntimeOutput> visualization_output_params,
+        Teuchos::RCP<const Solid::TimeInt::ParamsRuntimeOutput> visualization_output_params,
         Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr);
 
     /**

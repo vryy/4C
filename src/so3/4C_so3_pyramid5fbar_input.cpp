@@ -35,7 +35,7 @@ bool Discret::ELEMENTS::SoPyramid5fbar::ReadElement(
   }
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
   }
   else
     FOUR_C_THROW("Reading SO_PYRAMID5FBAR element failed KINEM unknown");

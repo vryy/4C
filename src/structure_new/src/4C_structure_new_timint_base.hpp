@@ -39,7 +39,7 @@ namespace Adapter
 {
   class StructureTimeAda;
 }
-namespace STR
+namespace Solid
 {
   class ModelEvaluator;
   class Dbc;
@@ -62,9 +62,9 @@ namespace STR
       Base();
 
       /// initialize (all already existing) class variables
-      virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio,
-          const Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn,
-          const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate);
+      virtual void init(const Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> datasdyn,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> dataglobalstate);
 
       /// setup of the new class variables
       void setup() override;
@@ -125,7 +125,7 @@ namespace STR
       Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override
       {
         check_init();
-        return datasdyn_->GetLinSolvers()[Inpar::STR::model_structure];
+        return datasdyn_->GetLinSolvers()[Inpar::Solid::model_structure];
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
@@ -136,11 +136,11 @@ namespace STR
       Teuchos::RCP<Core::Conditions::LocsysManager> LocsysManager() override;
 
       //! Return the desired model evaluator (read-only)
-      [[nodiscard]] const STR::MODELEVALUATOR::Generic& ModelEvaluator(
-          Inpar::STR::ModelType mtype) const override;
+      [[nodiscard]] const Solid::MODELEVALUATOR::Generic& ModelEvaluator(
+          Inpar::Solid::ModelType mtype) const override;
 
       //! Return the desired model evaluator (read and write)
-      STR::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::STR::ModelType mtype) override;
+      Solid::MODELEVALUATOR::Generic& ModelEvaluator(Inpar::Solid::ModelType mtype) override;
 
       ///@}
 
@@ -264,14 +264,14 @@ namespace STR
       bool HaveConstraint() override
       {
         check_init_setup();
-        return datasdyn_->HaveModelType(Inpar::STR::model_lag_pen_constraint);
+        return datasdyn_->HaveModelType(Inpar::Solid::model_lag_pen_constraint);
       }
 
       /// do we need a semi-smooth Newton-type plasticity algorithm
       virtual bool have_semi_smooth_plasticity()
       {
         check_init_setup();
-        return datasdyn_->HaveEleTech(Inpar::STR::EleTech::plasticity);
+        return datasdyn_->HaveEleTech(Inpar::Solid::EleTech::plasticity);
       }
 
       /// FixMe get constraint manager defined in the structure
@@ -289,7 +289,7 @@ namespace STR
       }
 
       /// do we have this model
-      bool HaveModel(Inpar::STR::ModelType model) override
+      bool HaveModel(Inpar::Solid::ModelType model) override
       {
         return datasdyn_->HaveModelType(model);
       }
@@ -413,7 +413,7 @@ namespace STR
       }
 
       //! Get divcont type
-      [[nodiscard]] virtual enum Inpar::STR::DivContAct GetDivergenceAction() const
+      [[nodiscard]] virtual enum Inpar::Solid::DivContAct GetDivergenceAction() const
       {
         check_init_setup();
         return datasdyn_->get_divergence_action();
@@ -635,28 +635,28 @@ namespace STR
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (read access)
-      [[nodiscard]] const STR::Dbc& get_dbc() const
+      [[nodiscard]] const Solid::Dbc& get_dbc() const
       {
         check_init_setup();
         return *dbc_ptr_;
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (write access)
-      STR::Dbc& get_dbc()
+      Solid::Dbc& get_dbc()
       {
         check_init_setup();
         return *dbc_ptr_;
       }
 
       /// return a pointer to the Dirichlet Boundary Condition handler (read access)
-      [[nodiscard]] Teuchos::RCP<const STR::Dbc> get_dbc_ptr() const
+      [[nodiscard]] Teuchos::RCP<const Solid::Dbc> get_dbc_ptr() const
       {
         check_init_setup();
         return dbc_ptr_;
       }
 
       /// return the integrator (read-only)
-      [[nodiscard]] const STR::Integrator& integrator() const
+      [[nodiscard]] const Solid::Integrator& integrator() const
       {
         check_init_setup();
         return *int_ptr_;
@@ -677,7 +677,7 @@ namespace STR
       }
 
       /// return a pointer to the Dirichlet Boundary Condition handler (read and write access)
-      const Teuchos::RCP<STR::Dbc>& dbc_ptr()
+      const Teuchos::RCP<Solid::Dbc>& dbc_ptr()
       {
         check_init_setup();
         return dbc_ptr_;
@@ -695,10 +695,10 @@ namespace STR
       //@{
 
       //! Provide Name
-      virtual enum Inpar::STR::DynamicType method_name() const = 0;
+      virtual enum Inpar::Solid::DynamicType method_name() const = 0;
 
       //! Provide title
-      std::string method_title() const { return Inpar::STR::DynamicTypeString(method_name()); }
+      std::string method_title() const { return Inpar::Solid::DynamicTypeString(method_name()); }
 
       //! Return true, if time integrator is implicit
       virtual bool is_implicit() const = 0;
@@ -777,21 +777,21 @@ namespace STR
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (read and write access)
-      STR::Dbc& dbc()
+      Solid::Dbc& dbc()
       {
         check_init_setup();
         return *dbc_ptr_;
       }
 
       /// return a reference to the integrator (read and write access)
-      STR::Integrator& integrator()
+      Solid::Integrator& integrator()
       {
         check_init_setup();
         return *int_ptr_;
       }
 
       /// return a pointer to the integrator (read and write access)
-      const Teuchos::RCP<STR::Integrator>& integrator_ptr()
+      const Teuchos::RCP<Solid::Integrator>& integrator_ptr()
       {
         check_init_setup();
         return int_ptr_;
@@ -912,13 +912,13 @@ namespace STR
       Teuchos::RCP<BaseDataGlobalState> dataglobalstate_;
 
       /// pointer to the integrator (implicit or explicit)
-      Teuchos::RCP<STR::Integrator> int_ptr_;
+      Teuchos::RCP<Solid::Integrator> int_ptr_;
 
       /// pointer to the dirichlet boundary condition handler
-      Teuchos::RCP<STR::Dbc> dbc_ptr_;
+      Teuchos::RCP<Solid::Dbc> dbc_ptr_;
     };  // class Base
   }     // namespace TimeInt
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

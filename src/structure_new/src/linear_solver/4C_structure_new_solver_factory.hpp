@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations...
 namespace Inpar
 {
-  namespace STR
+  namespace Solid
   {
     enum ModelType : int;
   }
@@ -47,7 +47,7 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
-namespace STR
+namespace Solid
 {
   namespace SOLVER
   {
@@ -58,7 +58,7 @@ namespace STR
     class Factory
     {
      private:
-      typedef std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>> LinSolMap;
+      typedef std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>> LinSolMap;
 
      public:
       //! constructor
@@ -69,7 +69,7 @@ namespace STR
 
       //! build the desired linear solvers
       Teuchos::RCP<LinSolMap> build_lin_solvers(
-          const std::set<enum Inpar::STR::ModelType>& modeltypes,
+          const std::set<enum Inpar::Solid::ModelType>& modeltypes,
           const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const;
 
       //! create the meshtying/contact linear solver
@@ -96,13 +96,13 @@ namespace STR
 
     };  // class Factory
 
-    /*! Non-member function, which relates to the STR::SOLVER::Factory class
+    /*! Non-member function, which relates to the Solid::SOLVER::Factory class
      *  Please call this method from outside! */
-    Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
-    build_lin_solvers(const std::set<enum Inpar::STR::ModelType>& modeltypes,
+    Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+    build_lin_solvers(const std::set<enum Inpar::Solid::ModelType>& modeltypes,
         const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis);
   }  // namespace SOLVER
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

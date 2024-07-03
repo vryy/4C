@@ -144,7 +144,7 @@ CONTACT::Aug::SteepestAscent::Strategy::get_matrix_block_ptr(
     }
     default:
     {
-      FOUR_C_THROW("Unknown STR::MatBlockType!");
+      FOUR_C_THROW("Unknown Solid::MatBlockType!");
       break;
     }
   }
@@ -157,12 +157,12 @@ CONTACT::Aug::SteepestAscent::Strategy::get_matrix_block_ptr(
 void CONTACT::Aug::SteepestAscent::Strategy::add_contributions_to_matrix_block_displ_displ(
     Core::LinAlg::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams) const
 {
-  //  if ( cparams and cparams->get_predictor_type() != Inpar::STR::pred_tangdis )
+  //  if ( cparams and cparams->get_predictor_type() != Inpar::Solid::pred_tangdis )
   kdd.Add(*data().DGGLinMatrixPtr(), false, 1.0, 1.0);
 
   /* ignore the Lagrange multiplier dependent contact contributions during the
    * TangDis predictor */
-  //  if ( cparams and cparams->get_predictor_type() != Inpar::STR::pred_tangdis )
+  //  if ( cparams and cparams->get_predictor_type() != Inpar::Solid::pred_tangdis )
   kdd.Add(*data().DGLmLinMatrixPtr(), false, -1.0, 1.0);
 
   // add inactive contributions (this is not well tested)

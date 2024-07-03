@@ -38,8 +38,8 @@ Discret::ELEMENTS::Shell7pEleCalc<distype>::Shell7pEleCalc()
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalc<distype>::setup(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, Input::LineDefinition* linedef,
-    const STR::ELEMENTS::ShellLockingTypes& locking_types,
-    const STR::ELEMENTS::ShellData& shell_data)
+    const Solid::ELEMENTS::ShellLockingTypes& locking_types,
+    const Solid::ELEMENTS::ShellData& shell_data)
 {
   shell_data_ = shell_data;
   // initialize current thickness at all gp
@@ -479,7 +479,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::Shell7pEleCalc<distype>::Recover(Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
-    Teuchos::ParameterList& params, STR::ELEMENTS::ParamsInterface& str_interface)
+    Teuchos::ParameterList& params, Solid::ELEMENTS::ParamsInterface& str_interface)
 {
 }
 

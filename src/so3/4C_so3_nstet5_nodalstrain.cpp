@@ -178,14 +178,14 @@ void Discret::ELEMENTS::NStet5Type::pre_evaluate(Core::FE::Discretization& dis,
       if (action == "calc_struct_internalforce") stiffptr = nullptr;
       TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::NStet5Type::nodal_integration");
       nodal_integration(stiffptr, &force, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis, nullptr,
-          nullptr, Inpar::STR::stress_none, Inpar::STR::strain_none);
+          nullptr, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
     }
     else if (action == "calc_struct_stress")
     {
-      auto iostress =
-          Core::UTILS::GetAsEnum<Inpar::STR::StressType>(p, "iostress", Inpar::STR::stress_none);
-      auto iostrain =
-          Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(p, "iostrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          p, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          p, "iostrain", Inpar::Solid::strain_none);
       std::vector<double> nodalstress(6);
       std::vector<double> nodalstrain(6);
       nodal_integration(nullptr, nullptr, adjnode, adjele, adjsubele, lm, lmlm, *disp, dis,
@@ -393,8 +393,8 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
     std::vector<Discret::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
     std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
     const Epetra_Vector& disp, Core::FE::Discretization& dis, std::vector<double>* nodalstress,
-    std::vector<double>* nodalstrain, const Inpar::STR::StressType iostress,
-    const Inpar::STR::StrainType iostrain)
+    std::vector<double>* nodalstrain, const Inpar::Solid::StressType iostress,
+    const Inpar::Solid::StrainType iostrain)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::NStet5Type::nodal_integration");
   //  typedef Sacado::Fad::DFad<double> FAD; // for first derivs
@@ -570,7 +570,7 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
 
 
   //-------------------------------------------------------- output of strain
-  if (iostrain != Inpar::STR::strain_none)
+  if (iostrain != Inpar::Solid::strain_none)
   {
 #ifndef PUSO_NSTET5
     strain_output(iostrain, *nodalstrain, Fnode, Fnode.determinant(), 1.0, 1.0 - ALPHA_NSTET5);
@@ -649,7 +649,7 @@ void Discret::ELEMENTS::NStet5Type::nodal_integration(Core::LinAlg::SerialDenseM
 #endif
   //-----------------------------------------------------------------------
   // stress output
-  if (iostress != Inpar::STR::stress_none)
+  if (iostress != Inpar::Solid::stress_none)
   {
     stress_output(iostress, *nodalstress, stress, Fnode, Fnode.determinant());
   }
@@ -836,7 +836,7 @@ void Discret::ELEMENTS::NStet5Type::dev_stress_tangent(Core::LinAlg::Matrix<6, 1
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType iostrain,
+void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::Solid::StrainType iostrain,
     std::vector<double>& nodalstrain, Core::LinAlg::Matrix<3, 3>& F, const double& detF,
     const double volweight, const double devweight)
 {
@@ -882,7 +882,7 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
 
   switch (iostrain)
   {
-    case Inpar::STR::strain_gl:
+    case Inpar::Solid::strain_gl:
     {
       nodalstrain[0] = glstrainout(0, 0);
       nodalstrain[1] = glstrainout(1, 1);
@@ -892,7 +892,7 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
       nodalstrain[5] = glstrainout(0, 2);
     }
     break;
-    case Inpar::STR::strain_ea:
+    case Inpar::Solid::strain_ea:
     {
       // inverse of deformation gradient
       Core::LinAlg::Matrix<3, 3> invdefgrd;
@@ -909,7 +909,7 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
       nodalstrain[5] = euler_almansi(0, 2);
     }
     break;
-    case Inpar::STR::strain_none:
+    case Inpar::Solid::strain_none:
       break;
     default:
       FOUR_C_THROW("requested strain type not available");
@@ -922,7 +922,7 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType iostrain,
+void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::Solid::StrainType iostrain,
     std::vector<double>& nodalstrain, Core::LinAlg::Matrix<3, 3>& F,
     Core::LinAlg::Matrix<6, 1>& glstrain, const double weight)
 {
@@ -938,7 +938,7 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
 
   switch (iostrain)
   {
-    case Inpar::STR::strain_gl:
+    case Inpar::Solid::strain_gl:
     {
       nodalstrain[0] = glstrainout(0, 0);
       nodalstrain[1] = glstrainout(1, 1);
@@ -948,7 +948,7 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
       nodalstrain[5] = glstrainout(0, 2);
     }
     break;
-    case Inpar::STR::strain_ea:
+    case Inpar::Solid::strain_ea:
     {
       // inverse of deformation gradient
       Core::LinAlg::Matrix<3, 3> invdefgrd;
@@ -965,7 +965,7 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
       nodalstrain[5] = euler_almansi(0, 2);
     }
     break;
-    case Inpar::STR::strain_none:
+    case Inpar::Solid::strain_none:
       break;
     default:
       FOUR_C_THROW("requested strain type not available");
@@ -978,18 +978,18 @@ void Discret::ELEMENTS::NStet5Type::strain_output(const Inpar::STR::StrainType i
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::NStet5Type::stress_output(const Inpar::STR::StressType iostress,
+void Discret::ELEMENTS::NStet5Type::stress_output(const Inpar::Solid::StressType iostress,
     std::vector<double>& nodalstress, Core::LinAlg::Matrix<6, 1>& stress,
     Core::LinAlg::Matrix<3, 3>& F, const double& detF)
 {
   switch (iostress)
   {
-    case Inpar::STR::stress_2pk:
+    case Inpar::Solid::stress_2pk:
     {
       for (int i = 0; i < 6; ++i) nodalstress[i] = stress(i);
     }
     break;
-    case Inpar::STR::stress_cauchy:
+    case Inpar::Solid::stress_cauchy:
     {
       Core::LinAlg::Matrix<3, 3> pkstress;
       pkstress(0, 0) = stress(0);
@@ -1013,7 +1013,7 @@ void Discret::ELEMENTS::NStet5Type::stress_output(const Inpar::STR::StressType i
       nodalstress[5] = cauchystress(0, 2);
     }
     break;
-    case Inpar::STR::stress_none:
+    case Inpar::Solid::stress_none:
       break;
     default:
       FOUR_C_THROW("requested stress type not available");

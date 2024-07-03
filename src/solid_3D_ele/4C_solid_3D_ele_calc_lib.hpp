@@ -521,13 +521,13 @@ namespace Discret::ELEMENTS
   SpatialMaterialMapping<celltype> evaluate_spatial_material_mapping(
       const JacobianMapping<celltype>& jacobian_mapping,
       const ElementNodes<celltype>& nodal_coordinates, const double scale_defgrd = 1.0,
-      const Inpar::STR::KinemType& kinematictype = Inpar::STR::KinemType::nonlinearTotLag)
+      const Inpar::Solid::KinemType& kinematictype = Inpar::Solid::KinemType::nonlinearTotLag)
   {
     SpatialMaterialMapping<celltype> spatial_material_mapping;
     spatial_material_mapping.deformation_gradient_ =
         Core::LinAlg::IdentityMatrix<Core::FE::dim<celltype>>();
 
-    if (kinematictype == Inpar::STR::KinemType::nonlinearTotLag)
+    if (kinematictype == Inpar::Solid::KinemType::nonlinearTotLag)
     {
       spatial_material_mapping.deformation_gradient_.multiply_tt(
           scale_defgrd, nodal_coordinates.displacements_, jacobian_mapping.N_XYZ_, scale_defgrd);

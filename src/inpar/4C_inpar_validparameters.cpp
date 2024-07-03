@@ -324,7 +324,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()
   /* Finally call the problem-specific SetValidParameter functions        */
   /*----------------------------------------------------------------------*/
 
-  Inpar::STR::SetValidParameters(list);
+  Inpar::Solid::SetValidParameters(list);
   Inpar::IO::SetValidParameters(list);
   Inpar::IOMonitorStructureDBC::SetValidParameters(list);
   Inpar::IORuntimeOutput::SetValidParameters(list);
@@ -334,7 +334,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::ValidParameters()
   Inpar::VolMortar::SetValidParameters(list);
   Inpar::Wear::SetValidParameters(list);
   Inpar::IORuntimeOutput::FLUID::SetValidParameters(list);
-  Inpar::IORuntimeOutput::STRUCTURE::SetValidParameters(list);
+  Inpar::IORuntimeOutput::Solid::SetValidParameters(list);
   Inpar::IORuntimeOutput::BEAMS::SetValidParameters(list);
   Inpar::BEAMCONTACT::SetValidParameters(list);
   Inpar::BEAMPOTENTIAL::SetValidParameters(list);

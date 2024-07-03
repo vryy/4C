@@ -95,7 +95,7 @@ namespace Discret
       };
 
       /// Return output type of Gauss point data
-      Inpar::STR::GaussPointDataOutputType gauss_point_data_output() const
+      Inpar::Solid::GaussPointDataOutputType gauss_point_data_output() const
       {
         check_init_setup();
         return gauss_point_data_output_type_;
@@ -146,7 +146,7 @@ namespace Discret
       bool output_stress_strain_;
 
       /// Output type of Gauss point data
-      Inpar::STR::GaussPointDataOutputType gauss_point_data_output_type_;
+      Inpar::Solid::GaussPointDataOutputType gauss_point_data_output_type_;
       //@}
     };
 

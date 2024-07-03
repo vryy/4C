@@ -31,7 +31,7 @@ namespace Mortar
   class StrategyBase;
 }  // namespace Mortar
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -56,11 +56,12 @@ namespace STR
        * @param timint_ptr
        * @param dof_offset
        */
-      void init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-          const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
-          const Teuchos::RCP<STR::Integrator>& int_ptr,
-          const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset) override;
+      void init(const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
+          const Teuchos::RCP<Solid::Integrator>& int_ptr,
+          const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr,
+          const int& dof_offset) override;
 
       //! setup class variables [derived]
       void setup() override;
@@ -69,7 +70,7 @@ namespace STR
       //!@{
 
       //! [derived]
-      Inpar::STR::ModelType Type() const override { return Inpar::STR::model_meshtying; }
+      Inpar::Solid::ModelType Type() const override { return Inpar::Solid::model_meshtying; }
 
       //! [derived]
       void remove_condensed_contributions_from_rhs(Epetra_Vector& rhs) override;
@@ -89,7 +90,7 @@ namespace STR
       void read_restart(Core::IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      void Predict(const Inpar::STR::PredEnum& pred_type) override{};
+      void Predict(const Inpar::Solid::PredEnum& pred_type) override{};
 
       //! [derived]
       void run_post_compute_x(
@@ -163,7 +164,7 @@ namespace STR
       //!@{
 
       Teuchos::RCP<const Core::LinAlg::SparseMatrix> GetJacobianBlock(
-          const STR::MatBlockType bt) const;
+          const Solid::MatBlockType bt) const;
 
       /** \brief Assemble the structural right-hand side vector
        *
@@ -173,7 +174,7 @@ namespace STR
        *
        *  \author hiermeier \date 08/17 */
       Teuchos::RCP<Epetra_Vector> assemble_force_of_models(
-          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr,
+          const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
       virtual Teuchos::RCP<Core::LinAlg::SparseOperator> GetAuxDisplJacobian() const
@@ -231,7 +232,7 @@ namespace STR
     };  // namespace MODELEVALUATOR
 
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

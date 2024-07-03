@@ -189,9 +189,9 @@ namespace Discret
           Core::LinAlg::Matrix<numdofperelement_, 1>* force,      // element internal force vector
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
           Core::LinAlg::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
-          Teuchos::ParameterList& params,         // algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,  // stress output option
-          const Inpar::STR::StrainType iostrain   // strain output option
+          Teuchos::ParameterList& params,           // algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,  // stress output option
+          const Inpar::Solid::StrainType iostrain   // strain output option
           ) override;
 
       //! don't want sosh18 nlnstiffmass
@@ -204,9 +204,9 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_SOH18, 1>* force,  ///< element internal force vector
           Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH18, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-          Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,  ///< stress output option
-          const Inpar::STR::StrainType iostrain   ///< strain output option
+          Teuchos::ParameterList& params,           ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,  ///< stress output option
+          const Inpar::Solid::StrainType iostrain   ///< strain output option
           ) override
       {
         FOUR_C_THROW("don't want this");

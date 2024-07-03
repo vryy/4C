@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace EXPLICIT
   {
@@ -27,7 +27,7 @@ namespace STR
      *
      * This serves as a base class for all fully explicit time integration schemes.
      */
-    class Generic : public STR::Integrator
+    class Generic : public Solid::Integrator
     {
      public:
       //! constructor
@@ -50,7 +50,7 @@ namespace STR
        *
        */
       bool apply_correction_system(const enum NOX::Nln::CorrectionType type,
-          const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+          const std::vector<Inpar::Solid::ModelType>& constraint_models, const Epetra_Vector& x,
           Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override
       {
         return false;
@@ -69,8 +69,9 @@ namespace STR
           Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) override;
 
       //! Assemble the right hand side
-      bool assemble_force(Epetra_Vector& f,
-          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const override;
+      bool assemble_force(
+          Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models =
+                                nullptr) const override;
 
       //! @name Monolithic update routines
       //! @{
@@ -98,7 +99,7 @@ namespace STR
       //@{
 
       //! Provide Name
-      [[nodiscard]] virtual enum Inpar::STR::DynamicType method_name() const = 0;
+      [[nodiscard]] virtual enum Inpar::Solid::DynamicType method_name() const = 0;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$
@@ -123,7 +124,7 @@ namespace STR
       void reset_eval_params() override;
     };
   }  // namespace EXPLICIT
-}  // namespace STR
+}  // namespace Solid
 
 namespace NOX
 {
@@ -139,7 +140,7 @@ namespace NOX
         {
          public:
           //! constructor
-          Generic(const STR::EXPLICIT::Generic& expl)
+          Generic(const Solid::EXPLICIT::Generic& expl)
               : default_step_(expl.get_default_step_length())
           {
           }

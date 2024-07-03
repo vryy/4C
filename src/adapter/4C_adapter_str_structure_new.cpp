@@ -101,18 +101,18 @@ void Adapter::StructureBaseAlgorithmNew::setup()
   if (not is_init()) FOUR_C_THROW("You have to call init() first!");
 
   // major switch to different time integrators
-  switch (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(*sdyn_, "DYNAMICTYP"))
+  switch (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(*sdyn_, "DYNAMICTYP"))
   {
-    case Inpar::STR::dyna_statics:
-    case Inpar::STR::dyna_genalpha:
-    case Inpar::STR::dyna_genalpha_liegroup:
-    case Inpar::STR::dyna_onesteptheta:
-    case Inpar::STR::dyna_expleuler:
-    case Inpar::STR::dyna_centrdiff:
-    case Inpar::STR::dyna_ab2:
-    case Inpar::STR::dyna_ab4:
-    case Inpar::STR::dyna_euma:
-    case Inpar::STR::dyna_euimsto:
+    case Inpar::Solid::dyna_statics:
+    case Inpar::Solid::dyna_genalpha:
+    case Inpar::Solid::dyna_genalpha_liegroup:
+    case Inpar::Solid::dyna_onesteptheta:
+    case Inpar::Solid::dyna_expleuler:
+    case Inpar::Solid::dyna_centrdiff:
+    case Inpar::Solid::dyna_ab2:
+    case Inpar::Solid::dyna_ab4:
+    case Inpar::Solid::dyna_euma:
+    case Inpar::Solid::dyna_euimsto:
       setup_tim_int();  // <-- here is the show
       break;
     default:
@@ -128,7 +128,7 @@ void Adapter::StructureBaseAlgorithmNew::setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::register_model_evaluator(
-    const std::string name, Teuchos::RCP<STR::MODELEVALUATOR::Generic> me)
+    const std::string name, Teuchos::RCP<Solid::MODELEVALUATOR::Generic> me)
 {
   // safety checks
   if (not is_init())
@@ -136,7 +136,7 @@ void Adapter::StructureBaseAlgorithmNew::register_model_evaluator(
   if (is_setup()) FOUR_C_THROW("register_model_evaluator(...) must be called before setup() !");
 
   // set RCP ptr to model evaluator in problem dynamic parameter list
-  const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+  const_cast<Teuchos::ParameterList&>(*prbdyn_).set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
       name, me);
 }
 
@@ -211,17 +211,17 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // the different conditions
   // ---------------------------------------------------------------------------
   // define and initial with default value
-  Teuchos::RCP<std::set<enum Inpar::STR::ModelType>> modeltypes =
-      Teuchos::rcp(new std::set<enum Inpar::STR::ModelType>());
-  modeltypes->insert(Inpar::STR::model_structure);
+  Teuchos::RCP<std::set<enum Inpar::Solid::ModelType>> modeltypes =
+      Teuchos::rcp(new std::set<enum Inpar::Solid::ModelType>());
+  modeltypes->insert(Inpar::Solid::model_structure);
   set_model_types(*modeltypes);
 
   // ---------------------------------------------------------------------------
   // Setup a element technology set by checking
   // the elements of the discretization
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<std::set<enum Inpar::STR::EleTech>> eletechs =
-      Teuchos::rcp(new std::set<enum Inpar::STR::EleTech>());
+  Teuchos::RCP<std::set<enum Inpar::Solid::EleTech>> eletechs =
+      Teuchos::rcp(new std::set<enum Inpar::Solid::EleTech>());
   detect_element_technologies(*eletechs);
 
   // ---------------------------------------------------------------------------
@@ -238,8 +238,8 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // Setup and create model specific linear solvers
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<std::map<enum Inpar::STR::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
-      linsolvers = STR::SOLVER::build_lin_solvers(*modeltypes, *sdyn_, *actdis_);
+  Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+      linsolvers = Solid::SOLVER::build_lin_solvers(*modeltypes, *sdyn_, *actdis_);
 
   // ---------------------------------------------------------------------------
   // Checks in case of multi-scale simulations
@@ -252,11 +252,11 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
     {
       if (mat->Type() == Core::Materials::m_struct_multiscale)
       {
-        if (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(*sdyn_, "DYNAMICTYP") !=
-            Inpar::STR::dyna_genalpha)
+        if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(*sdyn_, "DYNAMICTYP") !=
+            Inpar::Solid::dyna_genalpha)
           FOUR_C_THROW("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
-        else if (Core::UTILS::IntegralValue<Inpar::STR::MidAverageEnum>(
-                     sdyn_->sublist("GENALPHA"), "GENAVG") != Inpar::STR::midavg_trlike)
+        else if (Core::UTILS::IntegralValue<Inpar::Solid::MidAverageEnum>(
+                     sdyn_->sublist("GENALPHA"), "GENAVG") != Inpar::Solid::midavg_trlike)
           FOUR_C_THROW(
               "In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
         break;
@@ -276,7 +276,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // initialize/setup the input/output data container
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new STR::TimeInt::BaseDataIO());
+  Teuchos::RCP<Solid::TimeInt::BaseDataIO> dataio = Teuchos::rcp(new Solid::TimeInt::BaseDataIO());
   dataio->init(*ioflags, *sdyn_, *xparams, output);
   dataio->setup();
 
@@ -284,20 +284,20 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // initialize/setup the structural dynamics data
   // container
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TimeInt::BaseDataSDyn> datasdyn = STR::TimeInt::build_data_sdyn(*sdyn_);
+  Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> datasdyn = Solid::TimeInt::build_data_sdyn(*sdyn_);
   datasdyn->init(actdis_, *sdyn_, *xparams, modeltypes, eletechs, linsolvers);
   datasdyn->setup();
 
   // ---------------------------------------------------------------------------
   // initialize/setup the global state data container
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> dataglobalstate = Teuchos::null;
+  Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> dataglobalstate = Teuchos::null;
   set_global_state(dataglobalstate, datasdyn);
 
   // ---------------------------------------------------------------------------
   // in case of non-additive rotation (pseudo-)vector DOFs:
   // ---------------------------------------------------------------------------
-  if (eletechs->find(Inpar::STR::EleTech::rotvec) != eletechs->end())
+  if (eletechs->find(Inpar::Solid::EleTech::rotvec) != eletechs->end())
   {
     // -------------------------------------------------------------------------
     // set the RotVecUpdater as new precomputeX operator for the nox nln group
@@ -316,7 +316,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
   // ---------------------------------------------------------------------------
   // Build time integrator
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<STR::TimeInt::Base> ti_strategy = Teuchos::null;
+  Teuchos::RCP<Solid::TimeInt::Base> ti_strategy = Teuchos::null;
   set_time_integration_strategy(ti_strategy, dataio, datasdyn, dataglobalstate, restart);
 
 
@@ -330,7 +330,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::set_model_types(
-    std::set<enum Inpar::STR::ModelType>& modeltypes) const
+    std::set<enum Inpar::Solid::ModelType>& modeltypes) const
 {
   if (not is_init()) FOUR_C_THROW("You have to call init() first!");
   // ---------------------------------------------------------------------------
@@ -352,15 +352,15 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
       const Teuchos::ParameterList& contact = Global::Problem::Instance()->contact_dynamic_params();
       if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
           Inpar::CONTACT::solution_nitsche)
-        modeltypes.insert(Inpar::STR::model_contact);
+        modeltypes.insert(Inpar::Solid::model_contact);
     }
     else
-      modeltypes.insert(Inpar::STR::model_contact);
+      modeltypes.insert(Inpar::Solid::model_contact);
   }
   // --- meshtying conditions
   std::vector<Core::Conditions::Condition*> mtcond(0);
   actdis_->GetCondition("Mortar", mtcond);
-  if (mtcond.size()) modeltypes.insert(Inpar::STR::model_meshtying);
+  if (mtcond.size()) modeltypes.insert(Inpar::Solid::model_meshtying);
 
   // check for 0D cardiovascular conditions
   // ---------------------------------------------------------------------------
@@ -379,7 +379,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   if (cardiovasc0dcond_4elementwindkessel.size() or cardiovasc0dcond_arterialproxdist.size() or
       cardiovasc0dcond_syspulcirculation.size() or
       cardiovascrespir0dcond_syspulperiphcirculation.size())
-    modeltypes.insert(Inpar::STR::model_cardiovascular0d);
+    modeltypes.insert(Inpar::Solid::model_cardiovascular0d);
 
   // ---------------------------------------------------------------------------
   // check for constraint conditions
@@ -412,14 +412,14 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
   if (pencond_volconstr3d.size() or pencond_areaconstr3d.size() or pencond_mpcnormcomp3d.size())
     have_pen_constraint = true;
   if (have_lag_constraint or have_pen_constraint)
-    modeltypes.insert(Inpar::STR::model_lag_pen_constraint);
+    modeltypes.insert(Inpar::Solid::model_lag_pen_constraint);
 
   // ---------------------------------------------------------------------------
   // check for spring dashpot conditions
   // ---------------------------------------------------------------------------
   std::vector<Core::Conditions::Condition*> sdp_cond(0);
   actdis_->GetCondition("RobinSpringDashpot", sdp_cond);
-  if (sdp_cond.size()) modeltypes.insert(Inpar::STR::model_springdashpot);
+  if (sdp_cond.size()) modeltypes.insert(Inpar::Solid::model_springdashpot);
   // ---------------------------------------------------------------------------
   // check for coupled problems
   // ---------------------------------------------------------------------------
@@ -443,52 +443,53 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
     case Core::ProblemType::ssi:
     case Core::ProblemType::ssti:
     {
-      if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+      if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
               "Partitioned Coupling Model"))
       {
-        if (prbdyn_->INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
-                "Monolithic Coupling Model"))
+        if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
+                isType<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>("Monolithic Coupling Model"))
           FOUR_C_THROW("Cannot have both partitioned and monolithic coupling at the same time!");
         const auto coupling_model_ptr =
-            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
                 "Partitioned Coupling Model");
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW(
               "The partitioned coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
-        modeltypes.insert(Inpar::STR::model_partitioned_coupling);
+        modeltypes.insert(Inpar::Solid::model_partitioned_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
-        sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+        sdyn_->set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
             "Partitioned Coupling Model", coupling_model_ptr);
       }
 
       else if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
-                   isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>("Monolithic Coupling Model"))
+                   isType<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
+                       "Monolithic Coupling Model"))
       {
         const auto coupling_model_ptr =
-            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
                 "Monolithic Coupling Model");
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW("The monolithic coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
-        modeltypes.insert(Inpar::STR::model_monolithic_coupling);
+        modeltypes.insert(Inpar::Solid::model_monolithic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
-        sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+        sdyn_->set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
             "Monolithic Coupling Model", coupling_model_ptr);
       }
 
       else if (prbdyn_->INVALID_TEMPLATE_QUALIFIER
-                   isType<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>("Basic Coupling Model"))
+                   isType<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>("Basic Coupling Model"))
       {
         const auto coupling_model_ptr =
-            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+            prbdyn_->INVALID_TEMPLATE_QUALIFIER get<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
                 "Basic Coupling Model");
         if (coupling_model_ptr.is_null())
           FOUR_C_THROW("The basic coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
-        modeltypes.insert(Inpar::STR::model_basic_coupling);
+        modeltypes.insert(Inpar::Solid::model_basic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
-        sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
+        sdyn_->set<Teuchos::RCP<Solid::MODELEVALUATOR::Generic>>(
             "Basic Coupling Model", coupling_model_ptr);
       }
       break;
@@ -519,14 +520,14 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
 
 
   if (strategy != Inpar::BEAMCONTACT::bstr_none and modelevaluator == Inpar::BEAMCONTACT::bstr_old)
-    modeltypes.insert(Inpar::STR::model_beam_interaction_old);
+    modeltypes.insert(Inpar::Solid::model_beam_interaction_old);
 
   // ---------------------------------------------------------------------------
   // check for brownian dynamics
   // ---------------------------------------------------------------------------
   if (Core::UTILS::IntegralValue<int>(
           Global::Problem::Instance()->brownian_dynamics_params(), "BROWNDYNPROB"))
-    modeltypes.insert(Inpar::STR::model_browniandyn);
+    modeltypes.insert(Inpar::Solid::model_browniandyn);
 
   // ---------------------------------------------------------------------------
   // check for beam interaction
@@ -556,7 +557,7 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
               "BEAM TO SOLID SURFACE CONTACT"),
           "CONTACT_DISCRETIZATION") != Inpar::BeamToSolid::BeamToSolidContactDiscretization::none or
       beampotconditions.size() > 0 or beampenaltycouplingconditions.size() > 0)
-    modeltypes.insert(Inpar::STR::model_beaminteraction);
+    modeltypes.insert(Inpar::Solid::model_beaminteraction);
 
   // ---------------------------------------------------------------------------
   // check for constraints
@@ -569,14 +570,14 @@ void Adapter::StructureBaseAlgorithmNew::set_model_types(
 
   if (linePeriodicRve.size() > 0 || surfPeriodicRve.size() > 0 ||
       pointLinearCoupledEquation.size() > 0)
-    modeltypes.insert(Inpar::STR::model_constraints);
+    modeltypes.insert(Inpar::Solid::model_constraints);
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
-    std::set<enum Inpar::STR::EleTech>& eletechs) const
+    std::set<enum Inpar::Solid::EleTech>& eletechs) const
 {
   int isplasticity_local = 0;
   int isplasticity_global = 0;
@@ -616,7 +617,7 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
 
     Discret::ELEMENTS::Shell7p* shell7p = dynamic_cast<Discret::ELEMENTS::Shell7p*>(actele);
     if (shell7p)
-      if (shell7p->GetEleTech().find(Inpar::STR::EleTech::eas) != shell7p->GetEleTech().end())
+      if (shell7p->GetEleTech().find(Inpar::Solid::EleTech::eas) != shell7p->GetEleTech().end())
         iseas_local = 1;
 
     Discret::ELEMENTS::Solid* solid = dynamic_cast<Discret::ELEMENTS::Solid*>(actele);
@@ -642,23 +643,23 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
 
   // plasticity - sum over all processors
   actdis_->Comm().SumAll(&isplasticity_local, &isplasticity_global, 1);
-  if (isplasticity_global > 0) eletechs.insert(Inpar::STR::EleTech::plasticity);
+  if (isplasticity_global > 0) eletechs.insert(Inpar::Solid::EleTech::plasticity);
 
   // eas - sum over all processors
   actdis_->Comm().SumAll(&iseas_local, &iseas_global, 1);
-  if (iseas_global > 0) eletechs.insert(Inpar::STR::EleTech::eas);
+  if (iseas_global > 0) eletechs.insert(Inpar::Solid::EleTech::eas);
 
   // pressure - sum over all processors
   actdis_->Comm().SumAll(&ispressure_local, &ispressure_global, 1);
-  if (ispressure_global > 0) eletechs.insert(Inpar::STR::EleTech::pressure);
+  if (ispressure_global > 0) eletechs.insert(Inpar::Solid::EleTech::pressure);
 
   // fbar - sum over all processors
   actdis_->Comm().SumAll(&isfbar_local, &isfbar_global, 1);
-  if (isfbar_global > 0) eletechs.insert(Inpar::STR::EleTech::fbar);
+  if (isfbar_global > 0) eletechs.insert(Inpar::Solid::EleTech::fbar);
 
   // rotation vector DOFs - sum over all processors
   actdis_->Comm().SumAll(&isrotvec_local, &isrotvec_global, 1);
-  if (isrotvec_global > 0) eletechs.insert(Inpar::STR::EleTech::rotvec);
+  if (isrotvec_global > 0) eletechs.insert(Inpar::Solid::EleTech::rotvec);
 }
 
 
@@ -702,8 +703,8 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
 
   // Check if for chosen Rayleigh damping the regarding parameters are given explicitly in the .dat
   // file
-  if (Core::UTILS::IntegralValue<Inpar::STR::DampKind>(*sdyn_, "DAMPING") ==
-      Inpar::STR::damp_rayleigh)
+  if (Core::UTILS::IntegralValue<Inpar::Solid::DampKind>(*sdyn_, "DAMPING") ==
+      Inpar::Solid::damp_rayleigh)
   {
     if (sdyn_->get<double>("K_DAMP") < 0.0)
     {
@@ -789,10 +790,10 @@ void Adapter::StructureBaseAlgorithmNew::set_params(Teuchos::ParameterList& iofl
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::set_global_state(
-    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate,
-    const Teuchos::RCP<const STR::TimeInt::BaseDataSDyn>& datasdyn)
+    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& dataglobalstate,
+    const Teuchos::RCP<const Solid::TimeInt::BaseDataSDyn>& datasdyn)
 {
-  dataglobalstate = STR::TimeInt::build_data_global_state();
+  dataglobalstate = Solid::TimeInt::build_data_global_state();
   dataglobalstate->init(actdis_, *sdyn_, datasdyn);
   dataglobalstate->setup();
 }
@@ -801,16 +802,16 @@ void Adapter::StructureBaseAlgorithmNew::set_global_state(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::set_time_integration_strategy(
-    Teuchos::RCP<STR::TimeInt::Base>& ti_strategy,
-    const Teuchos::RCP<STR::TimeInt::BaseDataIO>& dataio,
-    const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& datasdyn,
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& dataglobalstate, const int& restart)
+    Teuchos::RCP<Solid::TimeInt::Base>& ti_strategy,
+    const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& dataio,
+    const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& datasdyn,
+    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& dataglobalstate, const int& restart)
 {
-  ti_strategy = STR::TimeInt::build_strategy(*sdyn_);
+  ti_strategy = Solid::TimeInt::build_strategy(*sdyn_);
   ti_strategy->init(dataio, datasdyn, dataglobalstate);
 
   /* In the restart case, we Setup the structural time integration after the
-   * discretization has been redistributed. See STR::TimeInt::Base::read_restart()
+   * discretization has been redistributed. See Solid::TimeInt::Base::read_restart()
    * for more information.                                     hiermeier 05/16*/
   if (not restart) ti_strategy->setup();
 }
@@ -821,7 +822,7 @@ void Adapter::StructureBaseAlgorithmNew::set_time_integration_strategy(
 void Adapter::StructureBaseAlgorithmNew::set_structure_wrapper(
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& sdyn,
     const Teuchos::ParameterList& xparams, const Teuchos::ParameterList& time_adaptivity_params,
-    Teuchos::RCP<STR::TimeInt::Base> ti_strategy)
+    Teuchos::RCP<Solid::TimeInt::Base> ti_strategy)
 {
   // try to firstly create the adaptive wrapper
   if (str_wrapper_.is_null())
@@ -837,7 +838,7 @@ void Adapter::StructureBaseAlgorithmNew::set_structure_wrapper(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Adapter::StructureBaseAlgorithmNew::create_wrapper(
-    Teuchos::RCP<STR::TimeInt::Base> ti_strategy)
+    Teuchos::RCP<Solid::TimeInt::Base> ti_strategy)
 {
   // get the problem instance and the problem type
   Global::Problem* problem = Global::Problem::Instance();
@@ -858,9 +859,9 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
       const int coupling = Core::UTILS::IntegralValue<int>(fsidyn, "COUPALGO");
 
       // Are there any constraint conditions active?
-      const std::set<Inpar::STR::ModelType>& modeltypes =
+      const std::set<Inpar::Solid::ModelType>& modeltypes =
           ti_strategy->get_data_sdyn().GetModelTypes();
-      if (modeltypes.find(Inpar::STR::model_lag_pen_constraint) != modeltypes.end())
+      if (modeltypes.find(Inpar::Solid::model_lag_pen_constraint) != modeltypes.end())
       {
         if ((actdis_->Comm()).MyPID() == 0)
           Core::IO::cout << "Using StructureNOXCorrectionWrapper()..." << Core::IO::endl;
@@ -931,9 +932,9 @@ void Adapter::StructureBaseAlgorithmNew::create_wrapper(
           Core::UTILS::IntegralValue<Inpar::PoroElast::SolutionSchemeOverFields>(
               porodyn, "COUPALGO");
       // Are there any constraint conditions active?
-      const std::set<Inpar::STR::ModelType>& modeltypes =
+      const std::set<Inpar::Solid::ModelType>& modeltypes =
           ti_strategy->get_data_sdyn().GetModelTypes();
-      if (modeltypes.find(Inpar::STR::model_lag_pen_constraint) != modeltypes.end())
+      if (modeltypes.find(Inpar::Solid::model_lag_pen_constraint) != modeltypes.end())
       {
         if (coupling == Inpar::PoroElast::Monolithic_structuresplit or
             coupling == Inpar::PoroElast::Monolithic_fluidsplit or

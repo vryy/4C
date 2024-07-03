@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::UTILS::ReadElement
+namespace Solid::UTILS::ReadElement
 {
   Inpar::ScaTra::ImplType read_type(Input::LineDefinition* linedef)
   {
@@ -73,7 +73,7 @@ namespace STR::UTILS::ReadElement
 
 
 
-}  // namespace STR::UTILS::ReadElement
+}  // namespace Solid::UTILS::ReadElement
 
 FOUR_C_NAMESPACE_CLOSE
 

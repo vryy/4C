@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
-STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
+Solid::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
@@ -46,12 +46,12 @@ STR::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntExplEuler::init(const Teuchos::ParameterList& timeparams,
+void Solid::TimIntExplEuler::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
-  STR::TimIntExpl::init(timeparams, sdynparams, xparams, actdis, solver);
+  Solid::TimIntExpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
 
   // info to user
@@ -70,10 +70,10 @@ void STR::TimIntExplEuler::init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntExplEuler::setup()
+void Solid::TimIntExplEuler::setup()
 {
   // call setup() in base class
-  STR::TimIntExpl::setup();
+  Solid::TimIntExpl::setup();
 
   // determine mass, damping and initial accelerations
   determine_mass_damp_consist_accel();
@@ -93,7 +93,7 @@ void STR::TimIntExplEuler::setup()
 
 /*----------------------------------------------------------------------*/
 /* Resizing of multi-step quantities */
-void STR::TimIntExplEuler::ResizeMStep()
+void Solid::TimIntExplEuler::ResizeMStep()
 {
   // nothing to do, because ExplEuler is a 1-step method
   return;
@@ -101,7 +101,7 @@ void STR::TimIntExplEuler::ResizeMStep()
 
 /*----------------------------------------------------------------------*/
 /* Integrate step */
-int STR::TimIntExplEuler::IntegrateStep()
+int Solid::TimIntExplEuler::IntegrateStep()
 {
   // things to be done before integrating
   PreSolve();
@@ -160,7 +160,7 @@ int STR::TimIntExplEuler::IntegrateStep()
   // *********** time measurement ***********
 
   // viscous forces due Rayleigh damping
-  if (damping_ == Inpar::STR::damp_rayleigh)
+  if (damping_ == Inpar::Solid::damp_rayleigh)
   {
     damp_->Multiply(false, *veln_, *fviscn_);
   }
@@ -190,7 +190,7 @@ int STR::TimIntExplEuler::IntegrateStep()
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
-  if (damping_ == Inpar::STR::damp_rayleigh)
+  if (damping_ == Inpar::Solid::damp_rayleigh)
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }
@@ -248,7 +248,7 @@ int STR::TimIntExplEuler::IntegrateStep()
 
 /*----------------------------------------------------------------------*/
 /* Update step */
-void STR::TimIntExplEuler::UpdateStepState()
+void Solid::TimIntExplEuler::UpdateStepState()
 {
   // new displacements at t_{n+1} -> t_n
   //    D_{n} := D_{n+1}
@@ -270,7 +270,7 @@ void STR::TimIntExplEuler::UpdateStepState()
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
-void STR::TimIntExplEuler::UpdateStepElement()
+void Solid::TimIntExplEuler::UpdateStepElement()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -285,11 +285,11 @@ void STR::TimIntExplEuler::UpdateStepElement()
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
-void STR::TimIntExplEuler::ReadRestartForce() { return; }
+void Solid::TimIntExplEuler::ReadRestartForce() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Solid::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   return;
 }

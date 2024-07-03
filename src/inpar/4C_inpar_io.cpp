@@ -45,48 +45,48 @@ void Inpar::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Output of current element volume as scalar value for each structural element", &io);
   setStringToIntegralParameter<int>("STRUCT_STRESS", "No", "Output of stress",
       tuple<std::string>("No", "no", "NO", "Yes", "yes", "YES", "Cauchy", "cauchy", "2PK", "2pk"),
-      tuple<int>(Inpar::STR::stress_none, Inpar::STR::stress_none, Inpar::STR::stress_none,
-          Inpar::STR::stress_2pk, Inpar::STR::stress_2pk, Inpar::STR::stress_2pk,
-          Inpar::STR::stress_cauchy, Inpar::STR::stress_cauchy, Inpar::STR::stress_2pk,
-          Inpar::STR::stress_2pk),
+      tuple<int>(Inpar::Solid::stress_none, Inpar::Solid::stress_none, Inpar::Solid::stress_none,
+          Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk,
+          Inpar::Solid::stress_cauchy, Inpar::Solid::stress_cauchy, Inpar::Solid::stress_2pk,
+          Inpar::Solid::stress_2pk),
       &io);
   // in case of a coupled problem (e.g. TSI) the additional stresses are
   // (TSI: thermal stresses) are printed here
   setStringToIntegralParameter<int>("STRUCT_COUPLING_STRESS", "No", "",
       tuple<std::string>("No", "no", "NO", "Yes", "yes", "YES", "Cauchy", "cauchy", "2PK", "2pk"),
-      tuple<int>(Inpar::STR::stress_none, Inpar::STR::stress_none, Inpar::STR::stress_none,
-          Inpar::STR::stress_2pk, Inpar::STR::stress_2pk, Inpar::STR::stress_2pk,
-          Inpar::STR::stress_cauchy, Inpar::STR::stress_cauchy, Inpar::STR::stress_2pk,
-          Inpar::STR::stress_2pk),
+      tuple<int>(Inpar::Solid::stress_none, Inpar::Solid::stress_none, Inpar::Solid::stress_none,
+          Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk, Inpar::Solid::stress_2pk,
+          Inpar::Solid::stress_cauchy, Inpar::Solid::stress_cauchy, Inpar::Solid::stress_2pk,
+          Inpar::Solid::stress_2pk),
       &io);
   setStringToIntegralParameter<int>("STRUCT_STRAIN", "No", "Output of strains",
       tuple<std::string>(
           "No", "no", "NO", "Yes", "yes", "YES", "EA", "ea", "GL", "gl", "LOG", "log"),
-      tuple<int>(Inpar::STR::strain_none, Inpar::STR::strain_none, Inpar::STR::strain_none,
-          Inpar::STR::strain_gl, Inpar::STR::strain_gl, Inpar::STR::strain_gl,
-          Inpar::STR::strain_ea, Inpar::STR::strain_ea, Inpar::STR::strain_gl,
-          Inpar::STR::strain_gl, Inpar::STR::strain_log, Inpar::STR::strain_log),
+      tuple<int>(Inpar::Solid::strain_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none,
+          Inpar::Solid::strain_gl, Inpar::Solid::strain_gl, Inpar::Solid::strain_gl,
+          Inpar::Solid::strain_ea, Inpar::Solid::strain_ea, Inpar::Solid::strain_gl,
+          Inpar::Solid::strain_gl, Inpar::Solid::strain_log, Inpar::Solid::strain_log),
       &io);
   setStringToIntegralParameter<int>("STRUCT_PLASTIC_STRAIN", "No", "",
       tuple<std::string>("No", "no", "NO", "Yes", "yes", "YES", "EA", "ea", "GL", "gl"),
-      tuple<int>(Inpar::STR::strain_none, Inpar::STR::strain_none, Inpar::STR::strain_none,
-          Inpar::STR::strain_gl, Inpar::STR::strain_gl, Inpar::STR::strain_gl,
-          Inpar::STR::strain_ea, Inpar::STR::strain_ea, Inpar::STR::strain_gl,
-          Inpar::STR::strain_gl),
+      tuple<int>(Inpar::Solid::strain_none, Inpar::Solid::strain_none, Inpar::Solid::strain_none,
+          Inpar::Solid::strain_gl, Inpar::Solid::strain_gl, Inpar::Solid::strain_gl,
+          Inpar::Solid::strain_ea, Inpar::Solid::strain_ea, Inpar::Solid::strain_gl,
+          Inpar::Solid::strain_gl),
       &io);
   setStringToIntegralParameter<int>("STRUCT_OPTIONAL_QUANTITY", "No",
       "Output of an optional quantity", tuple<std::string>("No", "no", "NO", "membranethickness"),
-      tuple<int>(Inpar::STR::optquantity_none, Inpar::STR::optquantity_none,
-          Inpar::STR::optquantity_none, Inpar::STR::optquantity_membranethickness),
+      tuple<int>(Inpar::Solid::optquantity_none, Inpar::Solid::optquantity_none,
+          Inpar::Solid::optquantity_none, Inpar::Solid::optquantity_membranethickness),
       &io);
   Core::UTILS::BoolParameter("STRUCT_SURFACTANT", "No", "", &io);
   Core::UTILS::BoolParameter("STRUCT_JACOBIAN_MATLAB", "No", "", &io);
-  setStringToIntegralParameter<Inpar::STR::ConditionNumber>("STRUCT_CONDITION_NUMBER", "none",
+  setStringToIntegralParameter<Inpar::Solid::ConditionNumber>("STRUCT_CONDITION_NUMBER", "none",
       "Compute the condition number of the structural system matrix and write it to a text file.",
       tuple<std::string>("gmres_estimate", "max_min_ev_ratio", "one-norm", "inf-norm", "none"),
-      tuple<Inpar::STR::ConditionNumber>(Inpar::STR::ConditionNumber::gmres_estimate,
-          Inpar::STR::ConditionNumber::max_min_ev_ratio, Inpar::STR::ConditionNumber::one_norm,
-          Inpar::STR::ConditionNumber::inf_norm, Inpar::STR::ConditionNumber::none),
+      tuple<Inpar::Solid::ConditionNumber>(Inpar::Solid::ConditionNumber::gmres_estimate,
+          Inpar::Solid::ConditionNumber::max_min_ev_ratio, Inpar::Solid::ConditionNumber::one_norm,
+          Inpar::Solid::ConditionNumber::inf_norm, Inpar::Solid::ConditionNumber::none),
       &io);
   Core::UTILS::BoolParameter("FLUID_STRESS", "No", "", &io);
   Core::UTILS::BoolParameter("FLUID_WALL_SHEAR_STRESS", "No", "", &io);

@@ -21,7 +21,7 @@ class Epetra_MultiVector;
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace IMPLICIT
   {
@@ -203,7 +203,7 @@ namespace STR
       //! @}
     };
   }  // namespace IMPLICIT
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -34,7 +34,7 @@ bool Discret::ELEMENTS::Nurbs::SoNurbs27::ReadElement(
     if (ngp[i] != 3) FOUR_C_THROW("Only version with 3 GP for So_N27 implemented");
 
   // we expect kintype to be total lagrangian
-  kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+  kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
 
   // check if material kinematics is compatible to element kinematics
   SolidMaterial()->ValidKinematics(kintype_);

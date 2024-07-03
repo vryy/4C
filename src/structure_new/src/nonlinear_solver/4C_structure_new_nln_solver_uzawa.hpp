@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace Nln
   {
@@ -32,7 +32,7 @@ namespace STR
       };
     }  // namespace SOLVER
   }    // namespace Nln
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -248,9 +248,9 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_WEG6, 1>* force_str,  // structure force
           Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestress,  // stresses at GP
           Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestrain,  // strains at GP
-          Teuchos::ParameterList& params,          // algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,   // stress output option
-          const Inpar::STR::StrainType iostrain);  // strain output option
+          Teuchos::ParameterList& params,            // algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,   // stress output option
+          const Inpar::Solid::StrainType iostrain);  // strain output option
 
       static constexpr int num_sp = 5;   ///< number of ANS sampling points
       static constexpr int num_ans = 3;  ///< number of modified ANS strains (E_rt,E_st,E_tt)

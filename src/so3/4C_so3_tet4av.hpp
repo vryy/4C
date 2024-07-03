@@ -377,8 +377,8 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_SOTET4av, 1>* force,
           Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D>* elestress,
           Core::LinAlg::Matrix<NUMGPT_SOTET4av, Mat::NUM_STRESS_3D>* elestrain,
-          Teuchos::ParameterList& params, const Inpar::STR::StressType iostress,
-          const Inpar::STR::StrainType iostrain);
+          Teuchos::ParameterList& params, const Inpar::Solid::StressType iostress,
+          const Inpar::Solid::StrainType iostrain);
 
       //@}
 

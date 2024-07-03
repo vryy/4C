@@ -22,10 +22,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Predict::Generic::Generic()
+Solid::Predict::Generic::Generic()
     : isinit_(false),
       issetup_(false),
-      type_(Inpar::STR::pred_vague),
+      type_(Inpar::Solid::pred_vague),
       implint_ptr_(Teuchos::null),
       dbc_ptr_(Teuchos::null),
       noxparams_ptr_(Teuchos::null)
@@ -36,10 +36,11 @@ STR::Predict::Generic::Generic()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::init(const enum Inpar::STR::PredEnum& type,
-    const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
-    const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<STR::TimeInt::BaseDataIO>& iodata_ptr,
+void Solid::Predict::Generic::init(const enum Inpar::Solid::PredEnum& type,
+    const Teuchos::RCP<Solid::IMPLICIT::Generic>& implint_ptr,
+    const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
+    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& iodata_ptr,
     const Teuchos::RCP<Teuchos::ParameterList>& noxparams_ptr)
 {
   issetup_ = false;
@@ -57,7 +58,7 @@ void STR::Predict::Generic::init(const enum Inpar::STR::PredEnum& type,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::pre_predict(::NOX::Abstract::Group& grp)
+void Solid::Predict::Generic::pre_predict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
   print();
@@ -66,7 +67,7 @@ void STR::Predict::Generic::pre_predict(::NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::Predict(::NOX::Abstract::Group& grp)
+void Solid::Predict::Generic::Predict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
   bool& ispredict = gstate_ptr_->is_predict();
@@ -86,7 +87,7 @@ void STR::Predict::Generic::Predict(::NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
+void Solid::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
 
@@ -109,26 +110,26 @@ void STR::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-std::string STR::Predict::Generic::Name() const
+std::string Solid::Predict::Generic::Name() const
 {
   check_init();
-  return Inpar::STR::PredEnumString(type_);
+  return Inpar::Solid::PredEnumString(type_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
+void Solid::Predict::Generic::check_init() const { FOUR_C_ASSERT(is_init(), "Call init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::check_init_setup() const
+void Solid::Predict::Generic::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::IMPLICIT::Generic>& STR::Predict::Generic::impl_int_ptr()
+Teuchos::RCP<Solid::IMPLICIT::Generic>& Solid::Predict::Generic::impl_int_ptr()
 {
   check_init();
   return implint_ptr_;
@@ -136,7 +137,7 @@ Teuchos::RCP<STR::IMPLICIT::Generic>& STR::Predict::Generic::impl_int_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::Generic& STR::Predict::Generic::impl_int()
+Solid::IMPLICIT::Generic& Solid::Predict::Generic::impl_int()
 {
   check_init();
   return *implint_ptr_;
@@ -144,7 +145,7 @@ STR::IMPLICIT::Generic& STR::Predict::Generic::impl_int()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Dbc>& STR::Predict::Generic::dbc_ptr()
+Teuchos::RCP<Solid::Dbc>& Solid::Predict::Generic::dbc_ptr()
 {
   check_init();
   return dbc_ptr_;
@@ -152,7 +153,7 @@ Teuchos::RCP<STR::Dbc>& STR::Predict::Generic::dbc_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Dbc& STR::Predict::Generic::dbc()
+Solid::Dbc& Solid::Predict::Generic::dbc()
 {
   check_init();
   return *dbc_ptr_;
@@ -160,7 +161,7 @@ STR::Dbc& STR::Predict::Generic::dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& STR::Predict::Generic::global_state_ptr()
+Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& Solid::Predict::Generic::global_state_ptr()
 {
   check_init();
   return gstate_ptr_;
@@ -168,7 +169,7 @@ Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& STR::Predict::Generic::global_s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataGlobalState& STR::Predict::Generic::global_state()
+Solid::TimeInt::BaseDataGlobalState& Solid::Predict::Generic::global_state()
 {
   check_init();
   return *gstate_ptr_;
@@ -176,7 +177,7 @@ STR::TimeInt::BaseDataGlobalState& STR::Predict::Generic::global_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimeInt::BaseDataIO>& STR::Predict::Generic::io_data_ptr()
+Teuchos::RCP<Solid::TimeInt::BaseDataIO>& Solid::Predict::Generic::io_data_ptr()
 {
   check_init();
   return iodata_ptr_;
@@ -184,7 +185,7 @@ Teuchos::RCP<STR::TimeInt::BaseDataIO>& STR::Predict::Generic::io_data_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataIO& STR::Predict::Generic::io_data()
+Solid::TimeInt::BaseDataIO& Solid::Predict::Generic::io_data()
 {
   check_init();
   return *iodata_ptr_;
@@ -192,7 +193,7 @@ STR::TimeInt::BaseDataIO& STR::Predict::Generic::io_data()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const STR::TimeInt::BaseDataGlobalState& STR::Predict::Generic::global_state() const
+const Solid::TimeInt::BaseDataGlobalState& Solid::Predict::Generic::global_state() const
 {
   check_init();
   return *gstate_ptr_;
@@ -200,7 +201,7 @@ const STR::TimeInt::BaseDataGlobalState& STR::Predict::Generic::global_state() c
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Teuchos::ParameterList>& STR::Predict::Generic::nox_params_ptr()
+Teuchos::RCP<Teuchos::ParameterList>& Solid::Predict::Generic::nox_params_ptr()
 {
   check_init();
   return noxparams_ptr_;
@@ -208,7 +209,7 @@ Teuchos::RCP<Teuchos::ParameterList>& STR::Predict::Generic::nox_params_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::ParameterList& STR::Predict::Generic::nox_params()
+Teuchos::ParameterList& Solid::Predict::Generic::nox_params()
 {
   check_init();
   return *noxparams_ptr_;
@@ -216,7 +217,7 @@ Teuchos::ParameterList& STR::Predict::Generic::nox_params()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::Generic::print() const
+void Solid::Predict::Generic::print() const
 {
   check_init_setup();
   if (gstate_ptr_->get_my_rank() == 0 and iodata_ptr_->get_print2_screen_every_n_step() and
@@ -228,7 +229,7 @@ void STR::Predict::Generic::print() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Predict::Generic::pre_apply_force_external(Epetra_Vector& fextnp) const
+bool Solid::Predict::Generic::pre_apply_force_external(Epetra_Vector& fextnp) const
 {
   // do nothing
   return false;

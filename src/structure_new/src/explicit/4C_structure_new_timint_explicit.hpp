@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -55,7 +55,7 @@ namespace STR
 
       void reset_step() override;
 
-      Inpar::STR::ConvergenceStatus Solve() override;
+      Inpar::Solid::ConvergenceStatus Solve() override;
 
       void prepare_partition_step() override;
 
@@ -63,7 +63,7 @@ namespace STR
 
       void print_step() override;
 
-      Inpar::STR::StcScale get_stc_algo() override;
+      Inpar::Solid::StcScale get_stc_algo() override;
 
       Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override;
 
@@ -85,7 +85,7 @@ namespace STR
       //! @name Attribute access functions
       //@{
 
-      enum Inpar::STR::DynamicType method_name() const override;
+      enum Inpar::Solid::DynamicType method_name() const override;
 
       bool is_implicit() const override { return false; }
 
@@ -104,13 +104,13 @@ namespace STR
       //@}
 
      protected:
-      STR::EXPLICIT::Generic& expl_int()
+      Solid::EXPLICIT::Generic& expl_int()
       {
         check_init_setup();
         return *explint_ptr_;
       };
 
-      STR::Nln::SOLVER::Generic& nln_solver()
+      Solid::Nln::SOLVER::Generic& nln_solver()
       {
         check_init_setup();
         return *nlnsolver_ptr_;
@@ -118,13 +118,13 @@ namespace STR
 
      private:
       //! ptr to the explicit time integrator object
-      Teuchos::RCP<STR::EXPLICIT::Generic> explint_ptr_;
+      Teuchos::RCP<Solid::EXPLICIT::Generic> explint_ptr_;
 
       //! ptr to the non-linear solver object
-      Teuchos::RCP<STR::Nln::SOLVER::Generic> nlnsolver_ptr_;
+      Teuchos::RCP<Solid::Nln::SOLVER::Generic> nlnsolver_ptr_;
     };
   }  // namespace TimeInt
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

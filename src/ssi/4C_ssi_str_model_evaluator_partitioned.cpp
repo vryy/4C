@@ -29,14 +29,15 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(const Teuchos::RCP<const SSI::SSIPart> ssi_part)
+Solid::MODELEVALUATOR::PartitionedSSI::PartitionedSSI(
+    const Teuchos::RCP<const SSI::SSIPart> ssi_part)
     : ssi_part_(ssi_part)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
+bool Solid::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   // perform structural meshtying
@@ -119,7 +120,7 @@ bool STR::MODELEVALUATOR::PartitionedSSI::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedSSI::run_pre_compute_x(
+void Solid::MODELEVALUATOR::PartitionedSSI::run_pre_compute_x(
     const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::Nln::Group& curr_grp)
 {
   // perform structural meshtying
@@ -140,11 +141,11 @@ void STR::MODELEVALUATOR::PartitionedSSI::run_pre_compute_x(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::PartitionedSSI::setup()
+void Solid::MODELEVALUATOR::PartitionedSSI::setup()
 {
   check_init();
 
-  STR::MODELEVALUATOR::BaseSSI::setup();
+  Solid::MODELEVALUATOR::BaseSSI::setup();
 
   // set flag
   issetup_ = true;
@@ -152,7 +153,7 @@ void STR::MODELEVALUATOR::PartitionedSSI::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::PartitionedSSI::assemble_force(
+bool Solid::MODELEVALUATOR::PartitionedSSI::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   // perform structural meshtying

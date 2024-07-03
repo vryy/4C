@@ -28,7 +28,7 @@ namespace SSI
   class SSIPart;
 }
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -44,9 +44,9 @@ namespace STR
 
       //! @name Functions which are derived from the base generic class
       //! @{
-      [[nodiscard]] Inpar::STR::ModelType Type() const override
+      [[nodiscard]] Inpar::Solid::ModelType Type() const override
       {
-        return Inpar::STR::model_partitioned_coupling;
+        return Inpar::Solid::model_partitioned_coupling;
       }
 
       bool assemble_force(Epetra_Vector& f, const double& timefac_np) const override;
@@ -66,7 +66,7 @@ namespace STR
     };  // class PartitionedSSI
 
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR::MODELEVALUATOR
+namespace Solid::MODELEVALUATOR
 {
   class BaseSSI : public Generic
   {
@@ -65,7 +65,7 @@ namespace STR::MODELEVALUATOR
 
     void post_output() override {}
 
-    void Predict(const Inpar::STR::PredEnum& pred_type) override {}
+    void Predict(const Inpar::Solid::PredEnum& pred_type) override {}
 
     void pre_evaluate() override {}
 
@@ -89,9 +89,9 @@ namespace STR::MODELEVALUATOR
 
     void setup() override;
 
-    [[nodiscard]] Inpar::STR::ModelType Type() const override
+    [[nodiscard]] Inpar::Solid::ModelType Type() const override
     {
-      return Inpar::STR::model_basic_coupling;
+      return Inpar::Solid::model_basic_coupling;
     }
 
     void update_step_element() override {}
@@ -107,7 +107,7 @@ namespace STR::MODELEVALUATOR
     //! mechanical stress state
     Teuchos::RCP<Epetra_Vector> mechanical_stress_state_;
   };
-}  // namespace STR::MODELEVALUATOR
+}  // namespace Solid::MODELEVALUATOR
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

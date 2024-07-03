@@ -195,13 +195,13 @@ bool MultiScale::MicroStatic::Converged()
   // residual displacement
   switch (normtypedisi_)
   {
-    case Inpar::STR::convnorm_abs:
+    case Inpar::Solid::convnorm_abs:
       convdis = normdisi_ < toldisi_;
       break;
-    case Inpar::STR::convnorm_rel:
+    case Inpar::Solid::convnorm_rel:
       convdis = normdisi_ / normchardis_ < toldisi_;
       break;
-    case Inpar::STR::convnorm_mix:
+    case Inpar::Solid::convnorm_mix:
       convdis = ((normdisi_ < toldisi_) or (normdisi_ / normchardis_ < toldisi_));
       break;
     default:
@@ -212,13 +212,13 @@ bool MultiScale::MicroStatic::Converged()
   // residual forces
   switch (normtypefres_)
   {
-    case Inpar::STR::convnorm_abs:
+    case Inpar::Solid::convnorm_abs:
       convfres = normfres_ < tolfres_;
       break;
-    case Inpar::STR::convnorm_rel:
+    case Inpar::Solid::convnorm_rel:
       convfres = normfres_ / normcharforce_ < tolfres_;
       break;
-    case Inpar::STR::convnorm_mix:
+    case Inpar::Solid::convnorm_mix:
       convfres = ((normfres_ < tolfres_) or (normfres_ / normcharforce_ < tolfres_));
       break;
     default:
@@ -228,9 +228,9 @@ bool MultiScale::MicroStatic::Converged()
 
   // combine displacement-like and force-like residuals
   bool conv = false;
-  if (combdisifres_ == Inpar::STR::bop_and)
+  if (combdisifres_ == Inpar::Solid::bop_and)
     conv = convdis and convfres;
-  else if (combdisifres_ == Inpar::STR::bop_or)
+  else if (combdisifres_ == Inpar::Solid::bop_or)
     conv = convdis or convfres;
   else
     FOUR_C_THROW("Something went terribly wrong with binary operator!");
@@ -259,11 +259,11 @@ void MultiScale::MicroStatic::CalcRefNorms()
   // the chosen tolerances. Simply testing against 0 only works for
   // the displacements, but not for the residual!
 
-  normchardis_ = STR::calculate_vector_norm(iternorm_, dis_);
+  normchardis_ = Solid::calculate_vector_norm(iternorm_, dis_);
   if (normchardis_ < toldisi_) normchardis_ = 1.0;
 
-  double fintnorm = STR::calculate_vector_norm(iternorm_, fintn_);
-  double freactnorm = STR::calculate_vector_norm(iternorm_, freactn_);
+  double fintnorm = Solid::calculate_vector_norm(iternorm_, fintn_);
+  double freactnorm = Solid::calculate_vector_norm(iternorm_, freactn_);
   normcharforce_ = std::max(fintnorm, freactnorm);
   if (normcharforce_ < tolfres_) normcharforce_ = 1.0;
 }
@@ -274,9 +274,9 @@ void MultiScale::MicroStatic::CalcRefNorms()
  *----------------------------------------------------------------------*/
 void MultiScale::MicroStatic::PrintNewton(bool print_unconv, Teuchos::Time timer)
 {
-  bool relres = (normtypefres_ == Inpar::STR::convnorm_rel);
+  bool relres = (normtypefres_ == Inpar::Solid::convnorm_rel);
 
-  bool relres_reldis = ((normtypedisi_ == Inpar::STR::convnorm_rel) && relres);
+  bool relres_reldis = ((normtypedisi_ == Inpar::Solid::convnorm_rel) && relres);
 
   if (relres)
   {
@@ -350,7 +350,7 @@ void MultiScale::MicroStatic::PrintNewton(bool print_unconv, Teuchos::Time timer
  *----------------------------------------------------------------------*/
 void MultiScale::MicroStatic::print_predictor()
 {
-  if (normtypefres_ == Inpar::STR::convnorm_rel)
+  if (normtypefres_ == Inpar::Solid::convnorm_rel)
   {
     normfres_ /= normcharforce_;
     std::cout << "      MICROSCALE Predictor scaled res-norm " << normfres_ << std::endl;

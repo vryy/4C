@@ -52,7 +52,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
   invalid_ele_data();
   if (distype == Core::FE::CellType::nurbs27) get_nurbs_ele_info(&discretization);
 
-  FOUR_C_ASSERT(kintype_ == Inpar::STR::KinemType::nonlinearTotLag,
+  FOUR_C_ASSERT(kintype_ == Inpar::Solid::KinemType::nonlinearTotLag,
       "only geometricallly nonlinear formluation for plasticity!");
 
   // start with "none"
@@ -134,7 +134,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
       nln_stiffmass(mydisp, myvel, mytempnp, &myemat, nullptr, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
 
 
       break;
@@ -195,7 +195,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
       nln_stiffmass(mydisp, myvel, mytempnp, matptr, nullptr, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
 
       break;
     }  // calc_struct_nlnstiff
@@ -256,7 +256,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
       // default: geometrically non-linear analysis with Total Lagrangean approach
       nln_stiffmass(mydisp, myvel, mytempnp, &elemat1, &elemat2, &elevec1, nullptr, nullptr, params,
-          Inpar::STR::stress_none, Inpar::STR::strain_none);
+          Inpar::Solid::stress_none, Inpar::Solid::strain_none);
 
       if (act == Core::Elements::struct_calc_nlnstifflmass)
         // lump mass matrix
@@ -280,8 +280,8 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0, "displacement");
       Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
       Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
-      Inpar::STR::StressType iostress = Inpar::STR::stress_none;
-      Inpar::STR::StrainType iostrain = Inpar::STR::strain_none;
+      Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
+      Inpar::Solid::StrainType iostrain = Inpar::Solid::strain_none;
       if (IsParamsInterface())
       {
         stressdata = str_params_interface().stress_data_ptr();
@@ -294,10 +294,10 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       {
         stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
         straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-        iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-            params, "iostress", Inpar::STR::stress_none);
-        iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-            params, "iostrain", Inpar::STR::strain_none);
+        iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+            params, "iostress", Inpar::Solid::stress_none);
+        iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+            params, "iostrain", Inpar::Solid::strain_none);
       }
       if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
@@ -424,7 +424,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
       if (IsParamsInterface())  // new structural time integration
       {
-        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
       else  // old structural time integration
       {
@@ -473,14 +473,14 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     {
       switch (str_params_interface().get_predictor_type())
       {
-        case Inpar::STR::pred_constdis:
+        case Inpar::Solid::pred_constdis:
         default:
           for (int gp = 0; gp < numgpt_; ++gp) dDp_last_iter_[gp].putScalar(0.0);
           if (eastype_ != soh8p_easnone)
             for (int i = 0; i < neas_; i++) (*alpha_eas_)(i) = (*alpha_eas_last_timestep_)(i);
           break;
-        case Inpar::STR::pred_constvel:
-        case Inpar::STR::pred_tangdis:
+        case Inpar::Solid::pred_constvel:
+        case Inpar::Solid::pred_tangdis:
           // do nothing for plasticity
           if (eastype_ != soh8p_easnone)
             for (int i = 0; i < neas_; i++)
@@ -528,7 +528,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         {
           switch (str_params_interface().gauss_point_data_output_manager_ptr()->get_output_type())
           {
-            case Inpar::STR::GaussPointDataOutputType::element_center:
+            case Inpar::Solid::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
@@ -540,7 +540,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
                   *global_data, gp_data, *this);
               break;
             }
-            case Inpar::STR::GaussPointDataOutputType::nodes:
+            case Inpar::Solid::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
                   str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
@@ -573,7 +573,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
               Discret::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
               break;
             }
-            case Inpar::STR::GaussPointDataOutputType::gauss_points:
+            case Inpar::Solid::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                   str_params_interface()
@@ -583,7 +583,7 @@ int Discret::ELEMENTS::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
               Discret::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }
-            case Inpar::STR::GaussPointDataOutputType::none:
+            case Inpar::Solid::GaussPointDataOutputType::none:
               FOUR_C_THROW(
                   "You specified a Gauss point data output type of none, so you should not end up "
                   "here.");
@@ -809,12 +809,12 @@ void Discret::ELEMENTS::So3Plast<distype>::nln_stiffmass(
     Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
     Core::LinAlg::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
     Teuchos::ParameterList& params,                         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,                  // stress output option
-    const Inpar::STR::StrainType iostrain                   // strain output option
+    const Inpar::Solid::StressType iostress,                // stress output option
+    const Inpar::Solid::StrainType iostrain                 // strain output option
 )
 {
   const bool eval_tsi = (temperature.size() != 0);
-  const bool is_tangDis = str_params_interface().get_predictor_type() == Inpar::STR::pred_tangdis;
+  const bool is_tangDis = str_params_interface().get_predictor_type() == Inpar::Solid::pred_tangdis;
   const double dt = str_params_interface().get_delta_time();
   const double timefac_d = str_params_interface().get_tim_int_factor_vel() /
                            str_params_interface().get_tim_int_factor_disp();
@@ -2534,7 +2534,7 @@ void Discret::ELEMENTS::So3Plast<distype>::get_cauchy_n_dir_and_derivatives_at_x
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::output_strains(const int gp,
-    const Inpar::STR::StrainType iostrain,                 // strain output option
+    const Inpar::Solid::StrainType iostrain,               // strain output option
     Core::LinAlg::Matrix<numgpt_post, numstr_>* elestrain  // strains at GP
 )
 {
@@ -2547,7 +2547,7 @@ void Discret::ELEMENTS::So3Plast<distype>::output_strains(const int gp,
   {
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         Core::LinAlg::Matrix<numstr_, 1> total_glstrain(false);
@@ -2563,7 +2563,7 @@ void Discret::ELEMENTS::So3Plast<distype>::output_strains(const int gp,
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * total_glstrain(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
@@ -2586,7 +2586,7 @@ void Discret::ELEMENTS::So3Plast<distype>::output_strains(const int gp,
         (*elestrain)(gp, 5) = total_euler_almansi(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
       {
@@ -2600,20 +2600,20 @@ void Discret::ELEMENTS::So3Plast<distype>::output_strains(const int gp,
 
 template <Core::FE::CellType distype>
 void Discret::ELEMENTS::So3Plast<distype>::output_stress(const int gp,
-    const Inpar::STR::StressType iostress,                 // strain output option
+    const Inpar::Solid::StressType iostress,               // strain output option
     Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress  // strains at GP
 )
 {
   // return gp stresses
   switch (iostress)
   {
-    case Inpar::STR::stress_2pk:
+    case Inpar::Solid::stress_2pk:
     {
       if (elestress == nullptr) FOUR_C_THROW("stress data not available");
       for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = p_k2()(i);
     }
     break;
-    case Inpar::STR::stress_cauchy:
+    case Inpar::Solid::stress_cauchy:
     {
       if (elestress == nullptr) FOUR_C_THROW("stress data not available");
 
@@ -2641,7 +2641,7 @@ void Discret::ELEMENTS::So3Plast<distype>::output_stress(const int gp,
       (*elestress)(gp, 5) = cauchystress(0, 2);
     }
     break;
-    case Inpar::STR::stress_none:
+    case Inpar::Solid::stress_none:
       break;
     default:
     {
@@ -2794,7 +2794,7 @@ void Discret::ELEMENTS::So3Plast<distype>::integrate_stiff_matrix(const int gp,
   // end of integrate additional fbar matrix*****************************
 
   // EAS technology: integrate matrices --------------------------------- EAS
-  if (not(str_params_interface().get_predictor_type() == Inpar::STR::pred_tangdis))
+  if (not(str_params_interface().get_predictor_type() == Inpar::Solid::pred_tangdis))
     if (eastype_ != soh8p_easnone)
     {
       // integrate Kaa: Kaa += (M^T . cmat . M) * detJ * w(gp)

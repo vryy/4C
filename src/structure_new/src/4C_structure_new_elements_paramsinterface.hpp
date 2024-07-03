@@ -41,7 +41,7 @@ namespace BROWNIANDYN
 {
   class ParamsInterface;
 }
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -85,10 +85,11 @@ namespace STR
       return "";
     };  // EvalErrorFlag2String
 
-    /*! \brief Parameter interface for the structural elements and the STR::Integrator data exchange
+    /*! \brief Parameter interface for the structural elements and the Solid::Integrator data
+     * exchange
      *
      *  This class is a special case of the Core::Elements::ParamsInterface class and gives you all
-     * the basic function definitions which you can use to get access to the STR::Integrator and
+     * the basic function definitions which you can use to get access to the Solid::Integrator and
      * many more objects. Please consider to derive a special interface class, if you need special
      * parameters inside of your element. Keep the Evaluate call untouched and cast the interface
      * object to the desired specification.
@@ -102,10 +103,10 @@ namespace STR
     {
      public:
       //! return the damping type
-      virtual enum Inpar::STR::DampKind get_damping_type() const = 0;
+      virtual enum Inpar::Solid::DampKind get_damping_type() const = 0;
 
       //! return the predictor type
-      virtual enum Inpar::STR::PredEnum get_predictor_type() const = 0;
+      virtual enum Inpar::Solid::PredEnum get_predictor_type() const = 0;
 
       /// Shall errors during the element evaluation be tolerated?
       virtual bool is_tolerate_errors() const = 0;
@@ -141,7 +142,7 @@ namespace STR
       //! @{
 
       //! get the evaluation error flag
-      virtual STR::ELEMENTS::EvalErrorFlag get_ele_eval_error_flag() const = 0;
+      virtual Solid::ELEMENTS::EvalErrorFlag get_ele_eval_error_flag() const = 0;
 
       //! @}
 
@@ -167,22 +168,22 @@ namespace STR
       virtual Teuchos::RCP<std::vector<char>>& opt_quantity_data_ptr() = 0;
 
       //! get the current stress type
-      virtual enum Inpar::STR::StressType get_stress_output_type() const = 0;
+      virtual enum Inpar::Solid::StressType get_stress_output_type() const = 0;
 
       //! get the current strain type
-      virtual enum Inpar::STR::StrainType get_strain_output_type() const = 0;
+      virtual enum Inpar::Solid::StrainType get_strain_output_type() const = 0;
 
       //! get the current plastic strain type
-      virtual enum Inpar::STR::StrainType get_plastic_strain_output_type() const = 0;
+      virtual enum Inpar::Solid::StrainType get_plastic_strain_output_type() const = 0;
 
       //! get the current coupling stress type
-      virtual enum Inpar::STR::StressType get_coupling_stress_output_type() const = 0;
+      virtual enum Inpar::Solid::StressType get_coupling_stress_output_type() const = 0;
 
       virtual Teuchos::RCP<MODELEVALUATOR::GaussPointDataOutputManager>&
       gauss_point_data_output_manager_ptr() = 0;
 
       //! add contribution to energy of specified type
-      virtual void add_contribution_to_energy_type(double value, enum STR::EnergyType type) = 0;
+      virtual void add_contribution_to_energy_type(double value, enum Solid::EnergyType type) = 0;
 
       //! add the current partial update norm of the given quantity
       virtual void sum_into_my_update_norm(const enum NOX::Nln::StatusTest::QuantityType& qtype,
@@ -199,7 +200,7 @@ namespace STR
 
 
     /*! \brief Parameter interface for the data exchange between beam elements and the
-     * STR::Integrator \author grill */
+     * Solid::Integrator \author grill */
     class BeamParamsInterface
     {
      public:
@@ -217,7 +218,7 @@ namespace STR
     };  // class BeamParamsInterface
   }     // namespace ELEMENTS
 
-}  // namespace STR
+}  // namespace Solid
 
 namespace BROWNIANDYN
 {

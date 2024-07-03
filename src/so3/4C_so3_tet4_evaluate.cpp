@@ -163,8 +163,8 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &elemat1, nullptr, &elevec1,
-          nullptr, &elevec3, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none, Inpar::STR::strain_none);
+          nullptr, &elevec3, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -186,8 +186,8 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       Core::LinAlg::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> myemat(true);  // to zero
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, &myemat, nullptr, &elevec1,
-          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none, Inpar::STR::strain_none);
+          nullptr, nullptr, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_none);
     }
     break;
 
@@ -219,8 +219,8 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       nlnstiffmass(lm, mydisp, &myvel, &myacc, myres, mydispmat, &elemat1, &elemat2, &elevec1,
-          &elevec2, &elevec3, nullptr, nullptr, nullptr, params, Inpar::STR::stress_none,
-          Inpar::STR::strain_none, Inpar::STR::strain_none);
+          &elevec2, &elevec3, nullptr, nullptr, nullptr, params, Inpar::Solid::stress_none,
+          Inpar::Solid::strain_none, Inpar::Solid::strain_none);
 
       if (act == calc_struct_nlnstifflmass) so_tet4_lumpmass(&elemat2);
     }
@@ -245,16 +245,16 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
       Core::FE::ExtractMyValues(*res, myres, lm);
       Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D> stress(true);  // set to zero
       Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D> strain(true);
-      auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-          params, "iostress", Inpar::STR::stress_none);
-      auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-          params, "iostrain", Inpar::STR::strain_none);
+      auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+          params, "iostress", Inpar::Solid::stress_none);
+      auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+          params, "iostrain", Inpar::Solid::strain_none);
 
       std::vector<double> mydispmat(lm.size(), 0.0);
 
       nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
           nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain,
-          Inpar::STR::strain_none);
+          Inpar::Solid::strain_none);
 
       {
         Core::Communication::PackBuffer data;
@@ -282,7 +282,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
 
       switch (pstype_)
       {
-        case Inpar::STR::PreStress::mulf:
+        case Inpar::Solid::PreStress::mulf:
         {
           // build incremental def gradient for every gauss point
           Core::LinAlg::SerialDenseMatrix gpdefgrd(NUMGPT_SOTET4, 9);
@@ -410,7 +410,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
 
           // build multiplicative incremental defgrd
           // defgrd.multiply('T','N',1.0,xdisp,N_xyz,0.0);
-          if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+          if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
           {
             defgrd.multiply_tn(xdisp, N_xyz);
           }
@@ -430,7 +430,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
         else
         {
           // in kinematically linear analysis the deformation gradient is equal to identity
-          if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+          if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
           {
             defgrd.multiply_tn(xdisp, nxyz);
           }
@@ -464,7 +464,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
 
       if (IsParamsInterface())  // new structural time integration
       {
-        str_params_interface().add_contribution_to_energy_type(intenergy, STR::internal_energy);
+        str_params_interface().add_contribution_to_energy_type(intenergy, Solid::internal_energy);
       }
       else  // old structural time integration
       {
@@ -626,15 +626,15 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
         Core::FE::ExtractMyValues(*res, myres, lm);
         Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D> stress;
         Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D> strain;
-        auto iostress = Core::UTILS::GetAsEnum<Inpar::STR::StressType>(
-            params, "iostress", Inpar::STR::stress_none);
-        auto iostrain = Core::UTILS::GetAsEnum<Inpar::STR::StrainType>(
-            params, "iostrain", Inpar::STR::strain_none);
+        auto iostress = Core::UTILS::GetAsEnum<Inpar::Solid::StressType>(
+            params, "iostress", Inpar::Solid::stress_none);
+        auto iostrain = Core::UTILS::GetAsEnum<Inpar::Solid::StrainType>(
+            params, "iostrain", Inpar::Solid::strain_none);
 
         std::vector<double> mydispmat(lm.size(), 0.0);
 
         // if a linear analysis is desired
-        if (kintype_ == Inpar::STR::KinemType::linear)
+        if (kintype_ == Inpar::Solid::KinemType::linear)
         {
           FOUR_C_THROW("Linear case not implemented");
         }
@@ -643,7 +643,7 @@ int Discret::ELEMENTS::SoTet4::evaluate(Teuchos::ParameterList& params,
         {
           nlnstiffmass(lm, mydisp, nullptr, nullptr, myres, mydispmat, nullptr, nullptr, nullptr,
               nullptr, nullptr, &stress, &strain, nullptr, params, iostress, iostrain,
-              Inpar::STR::strain_none);
+              Inpar::Solid::strain_none);
         }
         // add stresses to global map
         // get EleID Id()
@@ -938,10 +938,10 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
     Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D>* elestress,    // stresses at GP
     Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D>* elestrain,    // strains at GP
     Core::LinAlg::Matrix<NUMGPT_SOTET4, Mat::NUM_STRESS_3D>* eleplstrain,  // plastic strains at GP
-    Teuchos::ParameterList& params,          // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,   // stress output option
-    const Inpar::STR::StrainType iostrain,   // strain output option
-    const Inpar::STR::StrainType ioplstrain  // plastic strain output option
+    Teuchos::ParameterList& params,            // algorithmic parameters e.g. time
+    const Inpar::Solid::StressType iostress,   // stress output option
+    const Inpar::Solid::StrainType iostrain,   // strain output option
+    const Inpar::Solid::StrainType ioplstrain  // plastic strain output option
 )
 {
   /* =============================================================================*
@@ -1070,7 +1070,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(false);
-    if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+    if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
     {
       // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
       glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
@@ -1097,14 +1097,14 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
     // return gp strains (only in case of stress/strain output)
     switch (iostrain)
     {
-      case Inpar::STR::strain_gl:
+      case Inpar::Solid::strain_gl:
       {
         if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
         for (int i = 0; i < 3; ++i) (*elestrain)(gp, i) = glstrain(i);
         for (int i = 3; i < 6; ++i) (*elestrain)(gp, i) = 0.5 * glstrain(i);
       }
       break;
-      case Inpar::STR::strain_ea:
+      case Inpar::Solid::strain_ea:
       {
         if (elestrain == nullptr) FOUR_C_THROW("no strain data available");
 
@@ -1137,7 +1137,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
         (*elestrain)(gp, 5) = euler_almansi(0, 2);
       }
       break;
-      case Inpar::STR::strain_log:
+      case Inpar::Solid::strain_log:
       {
         if (elestrain == nullptr) FOUR_C_THROW("strain data not available");
 
@@ -1238,7 +1238,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
         (*elestrain)(gp, 5) = lnv(0, 2);
       }
       break;
-      case Inpar::STR::strain_none:
+      case Inpar::Solid::strain_none:
         break;
       default:
         FOUR_C_THROW("requested strain option not available");
@@ -1267,13 +1267,13 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
     // return gp stresses
     switch (iostress)
     {
-      case Inpar::STR::stress_2pk:
+      case Inpar::Solid::stress_2pk:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         for (int i = 0; i < Mat::NUM_STRESS_3D; ++i) (*elestress)(gp, i) = stress(i);
       }
       break;
-      case Inpar::STR::stress_cauchy:
+      case Inpar::Solid::stress_cauchy:
       {
         if (elestress == nullptr) FOUR_C_THROW("no stress data available");
         double detF = defgrd.determinant();
@@ -1302,7 +1302,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
         (*elestress)(gp, 5) = cauchystress(0, 2);
       }
       break;
-      case Inpar::STR::stress_none:
+      case Inpar::Solid::stress_none:
         break;
       default:
         FOUR_C_THROW("requested stress type not available");
@@ -1329,7 +1329,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
       // size is 12x12
       stiffmatrix->multiply_tn(detJ_w, bop, cb, 1.0);
 
-      if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+      if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
       {
         // integrate `geometric' stiffness matrix and add to keu
         // auxiliary integrated stress
@@ -1473,7 +1473,7 @@ void Discret::ELEMENTS::SoTet4::nlnstiffmass(std::vector<int>& lm,  // location 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(false);
-        if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+        if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
         {
           // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
           glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
@@ -1757,7 +1757,7 @@ void Discret::ELEMENTS::SoTet4::def_gradient(const std::vector<double>& disp,
 
     // build multiplicative incremental defgrd
     Core::LinAlg::Matrix<3, 3> defgrd(true);
-    if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+    if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
     {
       defgrd.multiply_tn(xdisp, N_xyz);
     }
@@ -1774,7 +1774,7 @@ void Discret::ELEMENTS::SoTet4::compute_deformation_gradient(
     Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4>& defgrd,
     const Core::LinAlg::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4>& xdisp, const int gp) const
 {
-  if (kintype_ == Inpar::STR::KinemType::linear)
+  if (kintype_ == Inpar::Solid::KinemType::linear)
   {
     // in the linear case, the deformation gradient is the identity matrix
     defgrd.clear();
@@ -1785,7 +1785,7 @@ void Discret::ELEMENTS::SoTet4::compute_deformation_gradient(
     return;
   }
 
-  if (pstype_ == Inpar::STR::PreStress::mulf)
+  if (pstype_ == Inpar::Solid::PreStress::mulf)
   {
     // get derivatives wrt to last spatial configuration
     Core::LinAlg::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> N_xyz;
@@ -1842,7 +1842,7 @@ void Discret::ELEMENTS::SoTet4::update_jacobian_mapping(
     // get the nxyz old state
     prestress.StoragetoMatrix(gp, nxyzhist, prestress.JHistory());
     // build multiplicative incremental defgrd
-    if (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+    if (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
     {
       defgrd.multiply_tn(xdisp, nxyzhist);
     }

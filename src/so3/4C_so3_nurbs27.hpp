@@ -289,7 +289,7 @@ namespace Discret
          \return void
          */
         void do_calc_stc_matrix(Core::LinAlg::Matrix<81, 81>& elemat1,
-            const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
+            const Inpar::Solid::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
             Core::FE::Discretization& discretization, bool do_inverse);
 
        protected:

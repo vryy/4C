@@ -60,7 +60,7 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace STR
+namespace Solid
 {
   class Integrator;
 
@@ -79,7 +79,7 @@ namespace STR
      *
      *  This class summarizes the functionality which all model evaluators share
      *  and/or have to implement. Look in the derived classes for examples. A minimal
-     *  example can be found at \ref STR::MODELEVALUATOR::PartitionedFSI.
+     *  example can be found at \ref Solid::MODELEVALUATOR::PartitionedFSI.
      *
      *  \date 08/15
      *  \author hiermeier */
@@ -103,11 +103,11 @@ namespace STR
        * @param timint_ptr
        * @param[in] dof_offset
        */
-      virtual void init(const Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr,
-          const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
-          const Teuchos::RCP<STR::Integrator>& int_ptr,
-          const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr, const int& dof_offset);
+      virtual void init(const Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
+          const Teuchos::RCP<Solid::Integrator>& int_ptr,
+          const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr, const int& dof_offset);
 
       //! setup class variables
       virtual void setup() = 0;
@@ -130,7 +130,7 @@ namespace STR
        *
        * @return Enum encoding the type of model evaluator
        */
-      virtual Inpar::STR::ModelType Type() const = 0;
+      virtual Inpar::Solid::ModelType Type() const = 0;
 
       /*! \brief Reset model specific variables (without jacobian)
        *
@@ -179,7 +179,7 @@ namespace STR
       /*! \brief Perform actions just before the evaluate() call
        *
        * Called in the very beginning of each call to one of the
-       * STR::ModelEvaluator::Evaluate routines, such as evaluate_force,
+       * Solid::ModelEvaluator::Evaluate routines, such as evaluate_force,
        * evaluate_stiff, evaluate_force_stiff.
        *
        * \author hiermeier \date 03/17
@@ -189,7 +189,7 @@ namespace STR
       /*! \brief Perform actions right after the evaluate() call
        *
        * Called at the end of each call to one of the
-       * STR::ModelEvaluator::Evaluate routines, i.e. evaluate_force,
+       * Solid::ModelEvaluator::Evaluate routines, i.e. evaluate_force,
        * evaluate_stiff, evaluate_force_stiff.
        *
        * \author hiermeier \date 03/17
@@ -261,7 +261,7 @@ namespace STR
 
       /*! \brief predict the values for DoFs that are defined in
        *         the respective model evaluators, e.g. condensed variables.*/
-      virtual void Predict(const Inpar::STR::PredEnum& pred_type) = 0;
+      virtual void Predict(const Inpar::Solid::PredEnum& pred_type) = 0;
 
       /*! \brief Recover condensed solution variables, meant to be called by run_post_compute_x
        */
@@ -351,7 +351,7 @@ namespace STR
 
       /*! \brief calculate the stress/strain contributions of each model evaluator
        *
-       *  \remark This function is called from STR::TimeInt::Base::prepare_output() and calculates
+       *  \remark This function is called from Solid::TimeInt::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  output_step_state() routine, because of the const status of the named function!
@@ -363,7 +363,7 @@ namespace STR
 
       /*! \brief calculate energy contributions of each model evaluator
        *
-       *  \remark This function is called from STR::TimeInt::Base::prepare_output() and calculates
+       *  \remark This function is called from Solid::TimeInt::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  output_step_state() routine, because of the const status of the named function!
@@ -375,7 +375,7 @@ namespace STR
 
       /*! \brief calculate optional quantity contribution of each model evaluator
        *
-       *  \remark This function is called from STR::TimeInt::Base::prepare_output() and calculates
+       *  \remark This function is called from Solid::TimeInt::Base::prepare_output() and calculates
        *  missing quantities, which were not evaluated during the standard evaluate call and are
        *  only calculated once per load/time step. You can not do the calculations during the
        *  output_step_state() routine, because of the const status of the named function!
@@ -450,22 +450,22 @@ namespace STR
       //! @name internal accessors
       //! @{
       //! Returns the model evaluator data container
-      const STR::MODELEVALUATOR::Data& eval_data() const;
+      const Solid::MODELEVALUATOR::Data& eval_data() const;
 
       //! Returns the global state data container
-      const STR::TimeInt::BaseDataGlobalState& global_state() const;
+      const Solid::TimeInt::BaseDataGlobalState& global_state() const;
 
       //! Returns the global input/output data container
-      const STR::TimeInt::BaseDataIO& global_in_output() const;
+      const Solid::TimeInt::BaseDataIO& global_in_output() const;
 
       //! Returns the (structural) discretization
       const Core::FE::Discretization& discret() const;
 
-      //! Returns the underlying STR::Integrator object
-      const STR::Integrator& integrator() const;
+      //! Returns the underlying Solid::Integrator object
+      const Solid::Integrator& integrator() const;
 
-      //! Returns the underlying STR::TIMINT object
-      const STR::TimeInt::Base& tim_int() const;
+      //! Returns the underlying Solid::TIMINT object
+      const Solid::TimeInt::Base& tim_int() const;
       //! @}
 
      protected:
@@ -485,24 +485,24 @@ namespace STR
       //! @name internal accessors
       //! @{
       //! Returns the model evaluator data container
-      STR::MODELEVALUATOR::Data& eval_data();
-      Teuchos::RCP<STR::MODELEVALUATOR::Data>& eval_data_ptr();
+      Solid::MODELEVALUATOR::Data& eval_data();
+      Teuchos::RCP<Solid::MODELEVALUATOR::Data>& eval_data_ptr();
 
       //! Returns the global state data container
-      STR::TimeInt::BaseDataGlobalState& global_state();
-      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& global_state_ptr();
+      Solid::TimeInt::BaseDataGlobalState& global_state();
+      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr();
 
       //! Returns the global input/output data container
-      STR::TimeInt::BaseDataIO& global_in_output();
-      Teuchos::RCP<STR::TimeInt::BaseDataIO> global_in_output_ptr();
+      Solid::TimeInt::BaseDataIO& global_in_output();
+      Teuchos::RCP<Solid::TimeInt::BaseDataIO> global_in_output_ptr();
 
       //! Returns the (structural) discretization
       Core::FE::Discretization& discret();
       Teuchos::RCP<Core::FE::Discretization>& discret_ptr();
 
-      //! Returns the underlying STR::Integrator object
-      STR::Integrator& integrator();
-      Teuchos::RCP<STR::Integrator>& integrator_ptr();
+      //! Returns the underlying Solid::Integrator object
+      Solid::Integrator& integrator();
+      Teuchos::RCP<Solid::Integrator>& integrator_ptr();
 
       const int& dof_offset() const;
       //! @}
@@ -515,22 +515,22 @@ namespace STR
 
      private:
       //! pointer to the model evaluator data container
-      Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
+      Teuchos::RCP<Solid::MODELEVALUATOR::Data> eval_data_ptr_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! pointer to input/ouput data container
-      Teuchos::RCP<STR::TimeInt::BaseDataIO> gio_ptr_;
+      Teuchos::RCP<Solid::TimeInt::BaseDataIO> gio_ptr_;
 
       //! pointer to the problem discretization
       Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
 
       //! pointer to the structural (time) integrator
-      Teuchos::RCP<STR::Integrator> int_ptr_;
+      Teuchos::RCP<Solid::Integrator> int_ptr_;
 
       //! pointer to the time integrator strategy object
-      Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
+      Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
 
       /*! \brief initial dof offset
        *
@@ -542,7 +542,7 @@ namespace STR
     };  // class Generic
 
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

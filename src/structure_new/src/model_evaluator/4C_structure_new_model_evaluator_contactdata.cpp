@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::ContactData::ContactData()
+Solid::MODELEVALUATOR::ContactData::ContactData()
     : isinit_(false),
       issetup_(false),
       mortar_action_(Mortar::eval_none),
@@ -33,8 +33,8 @@ STR::MODELEVALUATOR::ContactData::ContactData()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::ContactData::init(
-    const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr)
+void Solid::MODELEVALUATOR::ContactData::init(
+    const Teuchos::RCP<const Solid::MODELEVALUATOR::Data>& str_data_ptr)
 {
   issetup_ = false;
   str_data_ptr_ = str_data_ptr;
@@ -43,7 +43,7 @@ void STR::MODELEVALUATOR::ContactData::init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::ContactData::setup()
+void Solid::MODELEVALUATOR::ContactData::setup()
 {
   check_init();
 

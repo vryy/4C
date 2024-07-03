@@ -31,12 +31,12 @@ Adapter::StructureFactory::build_structure_algorithm(const Teuchos::ParameterLis
 {
   Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase = Teuchos::null;
 
-  const enum Inpar::STR::IntegrationStrategy intstrat =
-      Core::UTILS::IntegralValue<Inpar::STR::IntegrationStrategy>(sdyn, "INT_STRATEGY");
+  const enum Inpar::Solid::IntegrationStrategy intstrat =
+      Core::UTILS::IntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
 
   switch (intstrat)
   {
-    case Inpar::STR::int_standard:
+    case Inpar::Solid::int_standard:
       adapterbase = Teuchos::rcp(new Adapter::StructureBaseAlgorithmNew());
       break;
     default:

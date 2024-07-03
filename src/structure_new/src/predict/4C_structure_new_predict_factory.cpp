@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Predict::Factory::Factory()
+Solid::Predict::Factory::Factory()
 {
   // empty
 }
@@ -29,26 +29,26 @@ STR::Predict::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Predict::Generic> STR::Predict::Factory::build_predictor(
-    const enum Inpar::STR::PredEnum& predType) const
+Teuchos::RCP<Solid::Predict::Generic> Solid::Predict::Factory::build_predictor(
+    const enum Inpar::Solid::PredEnum& predType) const
 {
-  Teuchos::RCP<STR::Predict::Generic> predictor = Teuchos::null;
+  Teuchos::RCP<Solid::Predict::Generic> predictor = Teuchos::null;
 
   switch (predType)
   {
-    case Inpar::STR::pred_constdis:
-    case Inpar::STR::pred_constvel:
-    case Inpar::STR::pred_constacc:
-    case Inpar::STR::pred_constdisvelacc:
-    case Inpar::STR::pred_constdispres:
-    case Inpar::STR::pred_constdisvelaccpres:
-      predictor = Teuchos::rcp(new STR::Predict::ConstDisVelAccPress());
+    case Inpar::Solid::pred_constdis:
+    case Inpar::Solid::pred_constvel:
+    case Inpar::Solid::pred_constacc:
+    case Inpar::Solid::pred_constdisvelacc:
+    case Inpar::Solid::pred_constdispres:
+    case Inpar::Solid::pred_constdisvelaccpres:
+      predictor = Teuchos::rcp(new Solid::Predict::ConstDisVelAccPress());
       break;
-    case Inpar::STR::pred_tangdis:
-    case Inpar::STR::pred_tangdis_constfext:
-      predictor = Teuchos::rcp(new STR::Predict::TangDis());
+    case Inpar::Solid::pred_tangdis:
+    case Inpar::Solid::pred_tangdis_constfext:
+      predictor = Teuchos::rcp(new Solid::Predict::TangDis());
       break;
-    case Inpar::STR::pred_vague:
+    case Inpar::Solid::pred_vague:
     default:
       FOUR_C_THROW("Unknown predictor type!");
       break;
@@ -60,8 +60,8 @@ Teuchos::RCP<STR::Predict::Generic> STR::Predict::Factory::build_predictor(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::Predict::Generic> STR::Predict::build_predictor(
-    const enum Inpar::STR::PredEnum& predType)
+Teuchos::RCP<Solid::Predict::Generic> Solid::Predict::build_predictor(
+    const enum Inpar::Solid::PredEnum& predType)
 {
   Factory factory;
   return factory.build_predictor(predType);

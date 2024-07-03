@@ -35,13 +35,13 @@ void Inpar::Plasticity::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
   // solver convergence test parameters for semi-smooth plasticity formulation
   setStringToIntegralParameter<int>("NORMCOMBI_RESFPLASTCONSTR", "And",
       "binary operator to combine plasticity constraints and residual force values",
-      tuple<std::string>("And", "Or"), tuple<int>(Inpar::STR::bop_and, Inpar::STR::bop_or),
+      tuple<std::string>("And", "Or"), tuple<int>(Inpar::Solid::bop_and, Inpar::Solid::bop_or),
       &iplast);
 
   setStringToIntegralParameter<int>("NORMCOMBI_DISPPLASTINCR", "And",
       "binary operator to combine displacement increments and plastic flow (Delta Lp) increment "
       "values",
-      tuple<std::string>("And", "Or"), tuple<int>(Inpar::STR::bop_and, Inpar::STR::bop_or),
+      tuple<std::string>("And", "Or"), tuple<int>(Inpar::Solid::bop_and, Inpar::Solid::bop_or),
       &iplast);
 
   Core::UTILS::DoubleParameter("TOLPLASTCONSTR", 1.0E-8,
@@ -51,12 +51,12 @@ void Inpar::Plasticity::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> 
 
   setStringToIntegralParameter<int>("NORMCOMBI_EASRES", "And",
       "binary operator to combine EAS-residual and residual force values",
-      tuple<std::string>("And", "Or"), tuple<int>(Inpar::STR::bop_and, Inpar::STR::bop_or),
+      tuple<std::string>("And", "Or"), tuple<int>(Inpar::Solid::bop_and, Inpar::Solid::bop_or),
       &iplast);
 
   setStringToIntegralParameter<int>("NORMCOMBI_EASINCR", "And",
       "binary operator to combine displacement increments and EAS increment values",
-      tuple<std::string>("And", "Or"), tuple<int>(Inpar::STR::bop_and, Inpar::STR::bop_or),
+      tuple<std::string>("And", "Or"), tuple<int>(Inpar::Solid::bop_and, Inpar::Solid::bop_or),
       &iplast);
 
   Core::UTILS::DoubleParameter(

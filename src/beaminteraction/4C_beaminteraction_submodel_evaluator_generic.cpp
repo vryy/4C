@@ -45,9 +45,9 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::init(
     Teuchos::RCP<Core::FE::Discretization> const& ia_discret,
     Teuchos::RCP<Core::FE::Discretization> const& bindis,
-    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> const& gstate,
-    Teuchos::RCP<STR::TimeInt::BaseDataIO> const& gio_ptr,
-    Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
+    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> const& gstate,
+    Teuchos::RCP<Solid::TimeInt::BaseDataIO> const& gio_ptr,
+    Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState> const& ia_gstate_ptr,
     Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
     Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
     Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
@@ -150,7 +150,7 @@ Core::FE::Discretization const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Bin
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataGlobalState& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GState()
+Solid::TimeInt::BaseDataGlobalState& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GState()
 {
   check_init();
   return *gstate_ptr_;
@@ -158,7 +158,7 @@ STR::TimeInt::BaseDataGlobalState& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>&
+Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GStatePtr()
 {
   check_init();
@@ -167,7 +167,8 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GStatePtr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataGlobalState const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GState() const
+Solid::TimeInt::BaseDataGlobalState const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GState()
+    const
 {
   check_init();
   return *gstate_ptr_;
@@ -175,7 +176,7 @@ STR::TimeInt::BaseDataGlobalState const& BEAMINTERACTION::SUBMODELEVALUATOR::Gen
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataIO& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput()
+Solid::TimeInt::BaseDataIO& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput()
 {
   check_init();
   return *gio_ptr_;
@@ -183,7 +184,7 @@ STR::TimeInt::BaseDataIO& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::TimeInt::BaseDataIO const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput() const
+Solid::TimeInt::BaseDataIO const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GInOutput() const
 {
   check_init();
   return *gio_ptr_;
@@ -191,7 +192,7 @@ STR::TimeInt::BaseDataIO const& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::GIn
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::BeamInteractionDataState&
+Solid::MODELEVALUATOR::BeamInteractionDataState&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state()
 {
   check_init();
@@ -200,7 +201,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<STR::MODELEVALUATOR::BeamInteractionDataState>&
+Teuchos::RCP<Solid::MODELEVALUATOR::BeamInteractionDataState>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state_ptr()
 {
   check_init();
@@ -209,7 +210,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::MODELEVALUATOR::BeamInteractionDataState const&
+Solid::MODELEVALUATOR::BeamInteractionDataState const&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state() const
 {
   check_init();

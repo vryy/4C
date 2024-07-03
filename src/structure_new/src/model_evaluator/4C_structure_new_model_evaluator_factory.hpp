@@ -23,7 +23,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace MODELEVALUATOR
   {
@@ -42,26 +42,26 @@ namespace STR
       virtual ~Factory() = default;
 
 
-      Teuchos::RCP<STR::ModelEvaluator::Map> build_model_evaluators(
-          const std::set<enum Inpar::STR::ModelType>& modeltypes,
-          const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr) const;
+      Teuchos::RCP<Solid::ModelEvaluator::Map> build_model_evaluators(
+          const std::set<enum Inpar::Solid::ModelType>& modeltypes,
+          const Teuchos::RCP<Solid::MODELEVALUATOR::Generic>& coupling_model_ptr) const;
 
      private:
       //! return the proper type for the contact model evaluator
-      Teuchos::RCP<STR::MODELEVALUATOR::Generic> build_contact_model_evaluator() const;
+      Teuchos::RCP<Solid::MODELEVALUATOR::Generic> build_contact_model_evaluator() const;
 
       //! return the proper type for the standard structural model evaluator
-      Teuchos::RCP<STR::MODELEVALUATOR::Generic> build_structure_model_evaluator() const;
+      Teuchos::RCP<Solid::MODELEVALUATOR::Generic> build_structure_model_evaluator() const;
 
     };  // class Factory
 
-    //! non-member function, which relates to the STR::MODELEVALUATOR::Factory
-    Teuchos::RCP<STR::ModelEvaluator::Map> build_model_evaluators(
-        const std::set<enum Inpar::STR::ModelType>& modeltypes,
-        const Teuchos::RCP<STR::MODELEVALUATOR::Generic>& coupling_model_ptr);
+    //! non-member function, which relates to the Solid::MODELEVALUATOR::Factory
+    Teuchos::RCP<Solid::ModelEvaluator::Map> build_model_evaluators(
+        const std::set<enum Inpar::Solid::ModelType>& modeltypes,
+        const Teuchos::RCP<Solid::MODELEVALUATOR::Generic>& coupling_model_ptr);
 
   }  // namespace MODELEVALUATOR
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

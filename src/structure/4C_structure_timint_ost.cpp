@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::VerifyCoeff()
+void Solid::TimIntOneStepTheta::VerifyCoeff()
 {
   // check value of theta
   if ((theta_ <= 0.0) or (theta_ > 1.0)) FOUR_C_THROW("theta out of range (0.0,1.0]");
@@ -31,7 +31,7 @@ void STR::TimIntOneStepTheta::VerifyCoeff()
 
 /*======================================================================*/
 /* constructor */
-STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timeparams,
+Solid::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
     const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
@@ -61,12 +61,12 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& timepa
 /*----------------------------------------------------------------------------------------------*
  * Initialize this class                                                            rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::init(const Teuchos::ParameterList& timeparams,
+void Solid::TimIntOneStepTheta::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
     Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
-  STR::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
+  Solid::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
 
   // general variable verifications:
   // info to user about current time integration scheme and its parametrization
@@ -85,10 +85,10 @@ void STR::TimIntOneStepTheta::init(const Teuchos::ParameterList& timeparams,
 /*----------------------------------------------------------------------------------------------*
  * Setup this class                                                                 rauch 09/16 |
  *----------------------------------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::setup()
+void Solid::TimIntOneStepTheta::setup()
 {
   // call setup() in base class
-  STR::TimIntImpl::setup();
+  Solid::TimIntImpl::setup();
 
   if (!HaveNonlinearMass())
   {
@@ -169,7 +169,7 @@ void STR::TimIntOneStepTheta::setup()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant displacements
  * and consistent velocities and displacements */
-void STR::TimIntOneStepTheta::predict_const_dis_consist_vel_acc()
+void Solid::TimIntOneStepTheta::predict_const_dis_consist_vel_acc()
 {
   // time step size
   const double dt = (*dt_)[0];
@@ -197,7 +197,7 @@ void STR::TimIntOneStepTheta::predict_const_dis_consist_vel_acc()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant velocities,
  * extrapolated displacements and consistent accelerations */
-void STR::TimIntOneStepTheta::predict_const_vel_consist_acc()
+void Solid::TimIntOneStepTheta::predict_const_vel_consist_acc()
 {
   // time step size
   const double dt = (*dt_)[0];
@@ -226,7 +226,7 @@ void STR::TimIntOneStepTheta::predict_const_vel_consist_acc()
 /*----------------------------------------------------------------------*/
 /* Consistent predictor with constant accelerations
  * and extrapolated velocities and displacements */
-void STR::TimIntOneStepTheta::PredictConstAcc()
+void Solid::TimIntOneStepTheta::PredictConstAcc()
 {
   // time step size
   const double dt = (*dt_)[0];
@@ -256,7 +256,7 @@ void STR::TimIntOneStepTheta::PredictConstAcc()
 /*----------------------------------------------------------------------*/
 /* evaluate residual force and its stiffness, ie derivative
  * with respect to end-point displacements \f$D_{n+1}\f$ */
-void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterList& params)
+void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterList& params)
 {
   // get info about prediction step from parameter list
   bool predict = false;
@@ -264,7 +264,7 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterLi
 
   // initialise stiffness matrix to zero
   stiff_->Zero();
-  if (damping_ == Inpar::STR::damp_material) damp_->Zero();
+  if (damping_ == Inpar::Solid::damp_material) damp_->Zero();
 
   // theta-interpolate state vectors
   EvaluateMidState();
@@ -356,7 +356,7 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterLi
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due Rayleigh damping
-  if (damping_ == Inpar::STR::damp_rayleigh)
+  if (damping_ == Inpar::Solid::damp_rayleigh)
   {
     damp_->Multiply(false, *velt_, *fvisct_);
   }
@@ -369,22 +369,22 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterLi
   //                     - F_{ext;n+theta}
   fres_->Update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 0.0);
   fres_->Update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
-  if (damping_ == Inpar::STR::damp_rayleigh)
+  if (damping_ == Inpar::Solid::damp_rayleigh)
   {
     fres_->Update(1.0, *fvisct_, 1.0);
   }
   fres_->Update(1.0, *finertt_, 1.0);
 
-  // std::cout << STR::calculate_vector_norm(vectornorm_l2, fextn_) << std::endl;
+  // std::cout << Solid::calculate_vector_norm(vectornorm_l2, fextn_) << std::endl;
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = 1/(theta*dt^2) M
   //                + 1/dt C
   //                + theta K_{T}
   stiff_->Add(*mass_, false, 1.0 / (theta_ * (*dt_)[0] * (*dt_)[0]), theta_);
-  if (damping_ != Inpar::STR::damp_none)
+  if (damping_ != Inpar::Solid::damp_none)
   {
-    if (damping_ == Inpar::STR::damp_material) damp_->Complete();
+    if (damping_ == Inpar::Solid::damp_material) damp_->Complete();
     stiff_->Add(*damp_, false, 1.0 / (*dt_)[0], 1.0);
   }
 
@@ -408,7 +408,7 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual(Teuchos::ParameterLi
 /*----------------------------------------------------------------------*/
 /* Evaluate/define the residual force vector #fres_ for
  * relaxation solution with solve_relaxation_linear */
-void STR::TimIntOneStepTheta::evaluate_force_stiff_residual_relax(Teuchos::ParameterList& params)
+void Solid::TimIntOneStepTheta::evaluate_force_stiff_residual_relax(Teuchos::ParameterList& params)
 {
   // compute residual forces #fres_ and stiffness #stiff_
   evaluate_force_stiff_residual(params);
@@ -419,7 +419,7 @@ void STR::TimIntOneStepTheta::evaluate_force_stiff_residual_relax(Teuchos::Param
 
 /*----------------------------------------------------------------------*/
 /* Evaluate residual */
-void STR::TimIntOneStepTheta::evaluate_force_residual()
+void Solid::TimIntOneStepTheta::evaluate_force_residual()
 {
   // theta-interpolate state vectors
   EvaluateMidState();
@@ -465,7 +465,7 @@ void STR::TimIntOneStepTheta::evaluate_force_residual()
   // ************************** (4) DAMPING FORCES ****************************
 
   // viscous forces due Rayleigh damping
-  if (damping_ == Inpar::STR::damp_rayleigh)
+  if (damping_ == Inpar::Solid::damp_rayleigh)
   {
     damp_->Multiply(false, *velt_, *fvisct_);
   }
@@ -478,7 +478,7 @@ void STR::TimIntOneStepTheta::evaluate_force_residual()
   //                     - F_{ext;n+theta}
   fres_->Update(-theta_, *fextn_, -(1.0 - theta_), *fext_, 0.0);
   fres_->Update(theta_, *fintn_, (1.0 - theta_), *fint_, 1.0);
-  if (damping_ == Inpar::STR::damp_rayleigh)
+  if (damping_ == Inpar::Solid::damp_rayleigh)
   {
     fres_->Update(1.0, *fvisct_, 1.0);
   }
@@ -490,7 +490,7 @@ void STR::TimIntOneStepTheta::evaluate_force_residual()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::DetermineMass()
+void Solid::TimIntOneStepTheta::DetermineMass()
 {
   // F_{inert;1+theta} := theta * F_{inert;n+1} + (1-theta) * F_{inert;n}
   finertt_->Update(theta_, *finertn_, (1.0 - theta_), *finert_, 0.0);
@@ -499,7 +499,7 @@ void STR::TimIntOneStepTheta::DetermineMass()
 
 /*----------------------------------------------------------------------*/
 /* evaluate theta-state vectors by averaging end-point vectors */
-void STR::TimIntOneStepTheta::EvaluateMidState()
+void Solid::TimIntOneStepTheta::EvaluateMidState()
 {
   // mid-displacements D_{n+1-alpha_f} (dism)
   //    D_{n+theta} := theta * D_{n+1} + (1-theta) * D_{n}
@@ -520,7 +520,7 @@ void STR::TimIntOneStepTheta::EvaluateMidState()
 /*----------------------------------------------------------------------*/
 /* calculate characteristic/reference norms for forces
  * originally by lw */
-double STR::TimIntOneStepTheta::CalcRefNormForce()
+double Solid::TimIntOneStepTheta::CalcRefNormForce()
 {
   // The reference norms are used to scale the calculated iterative
   // displacement norm and/or the residual force norm. For this
@@ -530,26 +530,26 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  fintnorm = STR::calculate_vector_norm(iternorm_, fintn_);
+  fintnorm = Solid::calculate_vector_norm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
-  fextnorm = STR::calculate_vector_norm(iternorm_, fextn_);
+  fextnorm = Solid::calculate_vector_norm(iternorm_, fextn_);
 
   // norm of the inertial forces
   double finertnorm = 0.0;
-  finertnorm = STR::calculate_vector_norm(iternorm_, finertt_);
+  finertnorm = Solid::calculate_vector_norm(iternorm_, finertt_);
 
   // norm of viscous forces
   double fviscnorm = 0.0;
-  if (damping_ == Inpar::STR::damp_rayleigh)
+  if (damping_ == Inpar::Solid::damp_rayleigh)
   {
-    fviscnorm = STR::calculate_vector_norm(iternorm_, fvisct_);
+    fviscnorm = Solid::calculate_vector_norm(iternorm_, fvisct_);
   }
 
   // norm of reaction forces
   double freactnorm = 0.0;
-  freactnorm = STR::calculate_vector_norm(iternorm_, freact_);
+  freactnorm = Solid::calculate_vector_norm(iternorm_, freact_);
 
   // return char norm
   return std::max(
@@ -557,7 +557,7 @@ double STR::TimIntOneStepTheta::CalcRefNormForce()
 }
 
 /*----------------------------------------------------------------------*/
-void STR::TimIntOneStepTheta::update_iter_incrementally()
+void Solid::TimIntOneStepTheta::update_iter_incrementally()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -576,7 +576,7 @@ void STR::TimIntOneStepTheta::update_iter_incrementally()
 
 /*----------------------------------------------------------------------*/
 /* iterative iteration update of state */
-void STR::TimIntOneStepTheta::update_iter_iteratively()
+void Solid::TimIntOneStepTheta::update_iter_iteratively()
 {
   // new end-point displacements
   // D_{n+1}^{<k+1>} := D_{n+1}^{<k>} + IncD_{n+1}^{<k>}
@@ -594,7 +594,7 @@ void STR::TimIntOneStepTheta::update_iter_iteratively()
 
 /*----------------------------------------------------------------------*/
 /* update after time step */
-void STR::TimIntOneStepTheta::UpdateStepState()
+void Solid::TimIntOneStepTheta::UpdateStepState()
 {
   // update state
   // new displacements at t_{n+1} -> t_n
@@ -644,7 +644,7 @@ void STR::TimIntOneStepTheta::UpdateStepState()
 /*----------------------------------------------------------------------*/
 /* update after time step after output on element level*/
 // update anything that needs to be updated at the element level
-void STR::TimIntOneStepTheta::UpdateStepElement()
+void Solid::TimIntOneStepTheta::UpdateStepElement()
 {
   // create the parameters for the discretization
   Teuchos::ParameterList p;
@@ -700,7 +700,7 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
 
 /*----------------------------------------------------------------------*/
 /* read restart forces */
-void STR::TimIntOneStepTheta::ReadRestartForce()
+void Solid::TimIntOneStepTheta::ReadRestartForce()
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::Instance()->InputControlFile(), step_);
@@ -715,7 +715,8 @@ void STR::TimIntOneStepTheta::ReadRestartForce()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Solid::TimIntOneStepTheta::WriteRestartForce(
+    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
 {
   output->write_vector("fexternal", fext_);
   output->write_vector("fint", fint_);

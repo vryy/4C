@@ -47,7 +47,7 @@ namespace Core::IO
   class DiscretizationReader;
 }  // namespace Core::IO
 
-namespace STR
+namespace Solid
 {
   class ModelEvaluator;
   class Dbc;
@@ -87,11 +87,11 @@ namespace STR
      * \param[in] dpc_ptr Pointer to the dirichlet boundary condition object
      * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
      */
-    virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn_ptr,
-        const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate_ptr,
-        const Teuchos::RCP<STR::TimeInt::BaseDataIO>& gio_ptr,
-        const Teuchos::RCP<STR::Dbc>& dbc_ptr,
-        const Teuchos::RCP<const STR::TimeInt::Base>& timint_ptr);
+    virtual void init(const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
+        const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+        const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
+        const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
+        const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
 
     //! Setup (has to be implemented by the derived classes)
     virtual void setup();
@@ -105,7 +105,7 @@ namespace STR
 
     //! Set initial displacement field
     virtual void set_initial_displacement(
-        const Inpar::STR::InitialDisp init, const int startfuncno);
+        const Inpar::Solid::InitialDisp init, const int startfuncno);
 
     /*! \brief Reset state variables of all models
      *  (incl. the structural dynamic state variables)
@@ -152,7 +152,7 @@ namespace STR
      * action of one (or several) second order constraint (SOC) model(s)
      */
     virtual bool apply_correction_system(const enum NOX::Nln::CorrectionType type,
-        const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+        const std::vector<Inpar::Solid::ModelType>& constraint_models, const Epetra_Vector& x,
         Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) = 0;
 
     /*! \brief Remove contributions from the structural right-hand side stemming
@@ -176,11 +176,11 @@ namespace STR
 
     //! Assemble the right hand side
     virtual bool assemble_force(Epetra_Vector& f,
-        const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const = 0;
+        const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr) const = 0;
 
     //! Assemble Jacobian
     virtual bool assemble_jac(Core::LinAlg::SparseOperator& jac,
-        const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const
+        const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr) const
     {
       return false;
     };
@@ -322,26 +322,26 @@ namespace STR
     int get_condensed_dof_number(const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
     //! Return the model evaluator control object (read and write)
-    STR::ModelEvaluator& model_eval();
+    Solid::ModelEvaluator& model_eval();
 
     //! Return the model evaluator control object (read-only)
-    const STR::ModelEvaluator& model_eval() const;
-    Teuchos::RCP<const STR::ModelEvaluator> model_eval_ptr() const;
+    const Solid::ModelEvaluator& model_eval() const;
+    Teuchos::RCP<const Solid::ModelEvaluator> model_eval_ptr() const;
 
     //! Return the model evaluator object for the given model type
-    STR::MODELEVALUATOR::Generic& evaluator(const Inpar::STR::ModelType& mt);
+    Solid::MODELEVALUATOR::Generic& evaluator(const Inpar::Solid::ModelType& mt);
 
     //! Return the model evaluator object for the given model type
-    const STR::MODELEVALUATOR::Generic& evaluator(const Inpar::STR::ModelType& mt) const;
+    const Solid::MODELEVALUATOR::Generic& evaluator(const Inpar::Solid::ModelType& mt) const;
 
     //! Return the model evaluator data object (read-only)
-    const STR::MODELEVALUATOR::Data& eval_data() const;
+    const Solid::MODELEVALUATOR::Data& eval_data() const;
 
     //! Return the model evaluator data object (read and write access)
-    STR::MODELEVALUATOR::Data& eval_data();
+    Solid::MODELEVALUATOR::Data& eval_data();
 
     //! Return the Dirichlet boundary condition object (read-only)
-    const STR::Dbc& get_dbc() const;
+    const Solid::Dbc& get_dbc() const;
 
     //!@}
 
@@ -372,22 +372,22 @@ namespace STR
     bool current_state_is_equilibrium(const double& tol);
 
     //! Return the structural dynamic data container
-    STR::TimeInt::BaseDataSDyn& sdyn();
+    Solid::TimeInt::BaseDataSDyn& sdyn();
 
     //! Return the structural dynamic data container (read-only)
-    const STR::TimeInt::BaseDataSDyn& s_dyn() const;
+    const Solid::TimeInt::BaseDataSDyn& s_dyn() const;
 
     //! Return the global state data container
-    STR::TimeInt::BaseDataGlobalState& global_state();
+    Solid::TimeInt::BaseDataGlobalState& global_state();
 
     //! Return the global state data container (read-only)
-    const STR::TimeInt::BaseDataGlobalState& global_state() const;
+    const Solid::TimeInt::BaseDataGlobalState& global_state() const;
 
     //! Return the Dirichlet boundary condition object
-    STR::Dbc& dbc();
+    Solid::Dbc& dbc();
 
     //! Return the time integration strategy object (read-only)
-    const STR::TimeInt::Base& tim_int() const;
+    const Solid::TimeInt::Base& tim_int() const;
 
     //! reset the time step dependent parameters for the element evaluation
     virtual void reset_eval_params(){};
@@ -452,7 +452,7 @@ namespace STR
       const Integrator& integrator_;
 
       /// mid-time energy averaging type
-      enum Inpar::STR::MidAverageEnum avg_type_;
+      enum Inpar::Solid::MidAverageEnum avg_type_;
 
       /// setup flag
       bool issetup_ = false;
@@ -461,30 +461,30 @@ namespace STR
 
    private:
     //! pointer to the model evaluator
-    Teuchos::RCP<STR::ModelEvaluator> modelevaluator_ptr_;
+    Teuchos::RCP<Solid::ModelEvaluator> modelevaluator_ptr_;
 
     //! pointer to model evaluator data
-    Teuchos::RCP<STR::MODELEVALUATOR::Data> eval_data_ptr_;
+    Teuchos::RCP<Solid::MODELEVALUATOR::Data> eval_data_ptr_;
 
     //! pointer to the structural dynamic data container
-    Teuchos::RCP<STR::TimeInt::BaseDataSDyn> sdyn_ptr_;
+    Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
     //! pointer to the global state data container
-    Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
     //! pointer to the input/output data container
-    Teuchos::RCP<STR::TimeInt::BaseDataIO> io_ptr_;
+    Teuchos::RCP<Solid::TimeInt::BaseDataIO> io_ptr_;
 
     //! pointer to the dirichlet boundary condition object
-    Teuchos::RCP<STR::Dbc> dbc_ptr_;
+    Teuchos::RCP<Solid::Dbc> dbc_ptr_;
 
     //! pointer to the underlying time integrator (read-only)
-    Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
+    Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
 
     //! pointer to the dirichlet boundary condition monitor
-    Teuchos::RCP<STR::MonitorDbc> monitor_dbc_ptr_ = Teuchos::null;
-  };  // namespace STR
-}  // namespace STR
+    Teuchos::RCP<Solid::MonitorDbc> monitor_dbc_ptr_ = Teuchos::null;
+  };  // namespace Solid
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

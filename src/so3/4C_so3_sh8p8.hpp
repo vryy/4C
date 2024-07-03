@@ -368,17 +368,17 @@ namespace Discret
           Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           double* volume,                                                ///< current element volume
-          Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,  ///< stress output option
-          const Inpar::STR::StrainType iostrain   ///< strain output option
+          Teuchos::ParameterList& params,           ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,  ///< stress output option
+          const Inpar::Solid::StrainType iostrain   ///< strain output option
       );
 
       /// Return stress at Gauss point
       void stress(Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D>*
-                      elestress,                  ///< store the stress herein
-          const Inpar::STR::StressType iostress,  ///< stress type
-          const int gp,                           ///< Gauss point index
-          const double& detdefgrd,                ///< determinant of (assumed) deformation gradient
+                      elestress,                    ///< store the stress herein
+          const Inpar::Solid::StressType iostress,  ///< stress type
+          const int gp,                             ///< Gauss point index
+          const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
           const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& defgrd,  ///< (assumed) deformation gradient
           const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>&
               glstrain,  ///< Green-Lagrange strain vector
@@ -389,10 +389,10 @@ namespace Discret
 
       /// Return strain at Gauss point
       void strain(Core::LinAlg::Matrix<NUMGPT_, Mat::NUM_STRESS_3D>*
-                      elestrain,                  ///< store the strain herein
-          const Inpar::STR::StrainType iostrain,  ///< strain type
-          const int gp,                           ///< Gauss point index
-          const double& detdefgrd,                ///< determinant of (assumed) deformation gradient
+                      elestrain,                    ///< store the strain herein
+          const Inpar::Solid::StrainType iostrain,  ///< strain type
+          const int gp,                             ///< Gauss point index
+          const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
           const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>& defgrd,  ///< (assumed) deformation gradient
           const Core::LinAlg::Matrix<NUMDIM_, NUMDIM_>&
               invdefgrd,  ///< (assumed) inverted deformation gradient
@@ -898,7 +898,7 @@ namespace Discret
 
       //! Calculate the STC matrix
       virtual void do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_, NUMDOF_>& elemat1,
-          const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
+          const Inpar::Solid::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
           Core::FE::Discretization& discretization, bool calcinverse);
 
 

@@ -29,7 +29,7 @@ namespace NOX
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace TimeInt
   {
@@ -47,7 +47,7 @@ namespace STR
       ImplicitBase();
 
       /// Get type of thickness scaling for thin shell structures (derived)
-      Inpar::STR::StcScale get_stc_algo() override;
+      Inpar::Solid::StcScale get_stc_algo() override;
 
       /// Get stc matrix (derived)
       Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override;
@@ -100,7 +100,7 @@ namespace STR
       virtual Teuchos::RCP<::NOX::Abstract::Group> solution_group_ptr() = 0;
     };
   }  // namespace TimeInt
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

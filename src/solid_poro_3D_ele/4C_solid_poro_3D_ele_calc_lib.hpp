@@ -122,9 +122,9 @@ namespace Discret::ELEMENTS
   double ComputeVolumeChange(const SpatialMaterialMapping<celltype>& spatial_material_mapping,
       const JacobianMapping<celltype>& jacobian_mapping, const Core::Elements::Element& ele,
       const Core::FE::Discretization& discretization, const std::vector<int>& lm,
-      const Inpar::STR::KinemType& kinematictype)
+      const Inpar::Solid::KinemType& kinematictype)
   {
-    if (kinematictype == Inpar::STR::KinemType::linear)
+    if (kinematictype == Inpar::Solid::KinemType::linear)
     {
       // for linear kinematics the volume change is the trace of the linearized strains
 
@@ -168,11 +168,12 @@ namespace Discret::ELEMENTS
   Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>>
   ComputeLinearizationOfDetDefGradWrtDisp(
       const SpatialMaterialMapping<celltype> spatial_material_mapping,
-      const JacobianMapping<celltype> jacobian_mapping, const Inpar::STR::KinemType& kinematictype)
+      const JacobianMapping<celltype> jacobian_mapping,
+      const Inpar::Solid::KinemType& kinematictype)
   {
     Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>> dDetDefGrad_dDisp;
 
-    if (kinematictype == Inpar::STR::KinemType::linear)
+    if (kinematictype == Inpar::Solid::KinemType::linear)
     {
       dDetDefGrad_dDisp.clear();
       return dDetDefGrad_dDisp;
@@ -231,9 +232,10 @@ namespace Discret::ELEMENTS
   ComputeLinearizationOfVolchangeWrtDisp(
       const Core::LinAlg::Matrix<1, DETAIL::num_dim<celltype> * DETAIL::num_nodes<celltype>>
           dDetDefGrad_dDisp,
-      const JacobianMapping<celltype>& jacobian_mapping, const Inpar::STR::KinemType& kinematictype)
+      const JacobianMapping<celltype>& jacobian_mapping,
+      const Inpar::Solid::KinemType& kinematictype)
   {
-    if (kinematictype == Inpar::STR::KinemType::linear)
+    if (kinematictype == Inpar::Solid::KinemType::linear)
     {
       Core::LinAlg::Matrix<1, DETAIL::num_dof_per_ele<celltype>> dVolchange_dDisp;
 

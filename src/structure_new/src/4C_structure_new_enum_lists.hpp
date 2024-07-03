@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   //! Supported types of energy contributions
   enum EnergyType : int
@@ -121,7 +121,7 @@ namespace STR
     }
   }
 
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

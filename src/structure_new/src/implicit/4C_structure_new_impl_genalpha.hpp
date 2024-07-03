@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   namespace IMPLICIT
   {
@@ -61,11 +61,13 @@ namespace STR
           const Epetra_Vector& x, Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override;
 
       //! [derived]
-      bool assemble_force(Epetra_Vector& f,
-          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const override;
+      bool assemble_force(
+          Epetra_Vector& f, const std::vector<Inpar::Solid::ModelType>* without_these_models =
+                                nullptr) const override;
 
       bool assemble_jac(Core::LinAlg::SparseOperator& jac,
-          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const override;
+          const std::vector<Inpar::Solid::ModelType>* without_these_models =
+              nullptr) const override;
 
       //! [derived]
       void write_restart(
@@ -148,9 +150,9 @@ namespace STR
       //@{
 
       //! Return name
-      enum Inpar::STR::DynamicType method_name() const override
+      enum Inpar::Solid::DynamicType method_name() const override
       {
-        return Inpar::STR::dyna_genalpha;
+        return Inpar::Solid::dyna_genalpha;
       }
 
       //! Provide number of steps, e.g. a single-step method returns 1,
@@ -377,9 +379,9 @@ namespace STR
    *
    * @param coeffs
    */
-  void ComputeGeneralizedAlphaParameters(STR::IMPLICIT::GenAlpha::Coefficients& coeffs);
+  void ComputeGeneralizedAlphaParameters(Solid::IMPLICIT::GenAlpha::Coefficients& coeffs);
 
-}  // namespace STR
+}  // namespace Solid
 
 
 FOUR_C_NAMESPACE_CLOSE

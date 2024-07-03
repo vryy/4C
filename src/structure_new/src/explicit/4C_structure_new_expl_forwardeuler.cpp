@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::EXPLICIT::ForwardEuler::ForwardEuler()
+Solid::EXPLICIT::ForwardEuler::ForwardEuler()
     : modexpleuler_(true),
       fvisconp_ptr_(Teuchos::null),
       fviscon_ptr_(Teuchos::null),
@@ -33,7 +33,7 @@ STR::EXPLICIT::ForwardEuler::ForwardEuler()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::setup()
+void Solid::EXPLICIT::ForwardEuler::setup()
 {
   check_init();
 
@@ -56,7 +56,7 @@ void STR::EXPLICIT::ForwardEuler::setup()
       tim_int().get_data_sdyn().get_initial_disp(), tim_int().get_data_sdyn().StartFuncNo());
 
   // mode of Forward Euler interpolation
-  modexpleuler_ = dynamic_cast<const STR::TimeInt::ExplEulerDataSDyn&>(tim_int().get_data_sdyn())
+  modexpleuler_ = dynamic_cast<const Solid::TimeInt::ExplEulerDataSDyn&>(tim_int().get_data_sdyn())
                       .get_modified_forward_euler();
 
   // Has to be set before the post_setup() routine is called!
@@ -65,7 +65,7 @@ void STR::EXPLICIT::ForwardEuler::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::post_setup()
+void Solid::EXPLICIT::ForwardEuler::post_setup()
 {
   check_init_setup();
   equilibrate_initial_state();
@@ -73,7 +73,7 @@ void STR::EXPLICIT::ForwardEuler::post_setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::set_state(const Epetra_Vector& x)
+void Solid::EXPLICIT::ForwardEuler::set_state(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -109,7 +109,7 @@ void STR::EXPLICIT::ForwardEuler::set_state(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::add_visco_mass_contributions(Epetra_Vector& f) const
+void Solid::EXPLICIT::ForwardEuler::add_visco_mass_contributions(Epetra_Vector& f) const
 {
   // viscous damping forces at t_{n+1}
   Core::LinAlg::AssembleMyVector(1.0, f, 1.0, *fvisconp_ptr_);
@@ -117,7 +117,7 @@ void STR::EXPLICIT::ForwardEuler::add_visco_mass_contributions(Epetra_Vector& f)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::add_visco_mass_contributions(
+void Solid::EXPLICIT::ForwardEuler::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
@@ -127,7 +127,7 @@ void STR::EXPLICIT::ForwardEuler::add_visco_mass_contributions(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::write_restart(
+void Solid::EXPLICIT::ForwardEuler::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -140,7 +140,7 @@ void STR::EXPLICIT::ForwardEuler::write_restart(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::EXPLICIT::ForwardEuler::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
   check_init_setup();
   ioreader.read_vector(finertian_ptr_, "finert");
@@ -152,7 +152,7 @@ void STR::EXPLICIT::ForwardEuler::read_restart(Core::IO::DiscretizationReader& i
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::EXPLICIT::ForwardEuler::update_step_state()
+void Solid::EXPLICIT::ForwardEuler::update_step_state()
 {
   check_init_setup();
 

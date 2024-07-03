@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::Predict::TangDis::TangDis()
+Solid::Predict::TangDis::TangDis()
     : dbc_incr_ptr_(Teuchos::null), apply_linear_reaction_forces_(false)
 {
   // empty constructor
@@ -40,7 +40,7 @@ STR::Predict::TangDis::TangDis()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::TangDis::setup()
+void Solid::Predict::TangDis::setup()
 {
   check_init();
   // ---------------------------------------------------------------------------
@@ -61,14 +61,14 @@ void STR::Predict::TangDis::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Predict::TangDis::Compute(::NOX::Abstract::Group& grp)
+void Solid::Predict::TangDis::Compute(::NOX::Abstract::Group& grp)
 {
   check_init_setup();
   NOX::Nln::Group* grp_ptr = dynamic_cast<NOX::Nln::Group*>(&grp);
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
   grp_ptr->reset_pre_post_operator(nox_params().sublist("Group Options"));
 
-  impl_int().eval_data().set_predictor_type(Inpar::STR::pred_tangdis);
+  impl_int().eval_data().set_predictor_type(Inpar::Solid::pred_tangdis);
 
   // ---------------------------------------------------------------------------
   // calculate the dbc increment on the dirichlet boundary
@@ -137,12 +137,12 @@ void STR::Predict::TangDis::Compute(::NOX::Abstract::Group& grp)
 
   impl_int().model_eval().predict(get_type());
 
-  impl_int().eval_data().set_predictor_type(Inpar::STR::pred_vague);
+  impl_int().eval_data().set_predictor_type(Inpar::Solid::pred_vague);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Vector& STR::Predict::TangDis::get_dbc_incr() const
+const Epetra_Vector& Solid::Predict::TangDis::get_dbc_incr() const
 {
   FOUR_C_ASSERT(!dbc_incr_ptr_.is_null(), "The dbc increment is not initialized!");
   return *dbc_incr_ptr_;
@@ -150,18 +150,18 @@ const Epetra_Vector& STR::Predict::TangDis::get_dbc_incr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const bool& STR::Predict::TangDis::is_apply_linear_reaction_forces() const
+const bool& Solid::Predict::TangDis::is_apply_linear_reaction_forces() const
 {
   return apply_linear_reaction_forces_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool STR::Predict::TangDis::pre_apply_force_external(Epetra_Vector& fextnp) const
+bool Solid::Predict::TangDis::pre_apply_force_external(Epetra_Vector& fextnp) const
 {
   check_init_setup();
 
-  if (get_type() != Inpar::STR::pred_tangdis_constfext) return false;
+  if (get_type() != Inpar::Solid::pred_tangdis_constfext) return false;
 
   if (apply_linear_reaction_forces_)
   {
@@ -174,7 +174,7 @@ bool STR::Predict::TangDis::pre_apply_force_external(Epetra_Vector& fextnp) cons
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 NOX::Nln::GROUP::PrePostOp::TangDis::TangDis(
-    const Teuchos::RCP<const STR::Predict::TangDis>& tang_predict_ptr)
+    const Teuchos::RCP<const Solid::Predict::TangDis>& tang_predict_ptr)
     : tang_predict_ptr_(tang_predict_ptr)
 {
   // empty

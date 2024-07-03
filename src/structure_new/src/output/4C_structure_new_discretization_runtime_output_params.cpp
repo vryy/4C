@@ -30,7 +30,7 @@ Discret::ELEMENTS::StructureRuntimeOutputParams::StructureRuntimeOutputParams()
       output_element_ghosting_(false),
       output_node_gid_(false),
       output_stress_strain_(false),
-      gauss_point_data_output_type_(Inpar::STR::GaussPointDataOutputType::none)
+      gauss_point_data_output_type_(Inpar::Solid::GaussPointDataOutputType::none)
 {
   // empty constructor
 }
@@ -58,7 +58,7 @@ void Discret::ELEMENTS::StructureRuntimeOutputParams::init(
       Core::UTILS::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "NODE_GID");
   output_stress_strain_ =
       Core::UTILS::IntegralValue<bool>(IO_vtk_structure_structure_paramslist, "STRESS_STRAIN");
-  gauss_point_data_output_type_ = Teuchos::getIntegralValue<Inpar::STR::GaussPointDataOutputType>(
+  gauss_point_data_output_type_ = Teuchos::getIntegralValue<Inpar::Solid::GaussPointDataOutputType>(
       IO_vtk_structure_structure_paramslist, "GAUSS_POINT_DATA_OUTPUT_TYPE");
 
   if (output_stress_strain_)
@@ -66,11 +66,11 @@ void Discret::ELEMENTS::StructureRuntimeOutputParams::init(
     // If stress / strain data should be output, check that the relevant parameters in the --IO
     // section are set.
     const Teuchos::ParameterList& io_parameter_list = Global::Problem::Instance()->IOParams();
-    Inpar::STR::StressType io_stress =
-        Core::UTILS::IntegralValue<Inpar::STR::StressType>(io_parameter_list, "STRUCT_STRESS");
-    Inpar::STR::StrainType io_strain =
-        Core::UTILS::IntegralValue<Inpar::STR::StrainType>(io_parameter_list, "STRUCT_STRAIN");
-    if (io_stress == Inpar::STR::stress_none and io_strain == Inpar::STR::strain_none)
+    Inpar::Solid::StressType io_stress =
+        Core::UTILS::IntegralValue<Inpar::Solid::StressType>(io_parameter_list, "STRUCT_STRESS");
+    Inpar::Solid::StrainType io_strain =
+        Core::UTILS::IntegralValue<Inpar::Solid::StrainType>(io_parameter_list, "STRUCT_STRAIN");
+    if (io_stress == Inpar::Solid::stress_none and io_strain == Inpar::Solid::strain_none)
       FOUR_C_THROW(
           "If stress / strain runtime output is required, one or two of the flags STRUCT_STRAIN / "
           "STRUCT_STRESS in the --IO section has to be set.");

@@ -123,7 +123,7 @@ namespace Discret::ELEMENTS
       return (not interface_ptr_.is_null());
     }
 
-    [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& params_interface() const
+    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface() const
     {
       if (not IsParamsInterface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
@@ -167,7 +167,7 @@ namespace Discret::ELEMENTS
     SolidScatraElementProperties properties_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
-    Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
+    Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> interface_ptr_;
 
     //! solid element calculation holding one of the implemented variants
     SolidScatraCalcVariant solid_scatra_calc_variant_;

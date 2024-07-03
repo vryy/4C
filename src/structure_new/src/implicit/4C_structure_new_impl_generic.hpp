@@ -28,7 +28,7 @@ namespace Core::LinAlg
   class SparseMatrix;
 }  // namespace Core::LinAlg
 
-namespace STR
+namespace Solid
 {
   namespace IMPLICIT
   {
@@ -47,7 +47,7 @@ namespace STR
 
       //! derived
       bool apply_correction_system(const enum NOX::Nln::CorrectionType type,
-          const std::vector<Inpar::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+          const std::vector<Inpar::Solid::ModelType>& constraint_models, const Epetra_Vector& x,
           Epetra_Vector& f, Core::LinAlg::SparseOperator& jac) override;
 
       //! derived
@@ -55,7 +55,7 @@ namespace STR
 
       //! derived
       bool assemble_jac(Core::LinAlg::SparseOperator& jac,
-          const std::vector<Inpar::STR::ModelType>* without_these_models = nullptr) const override
+          const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr) const override
       {
         return false;
       };
@@ -163,7 +163,7 @@ namespace STR
       //@{
 
       //! Provide Name
-      virtual enum Inpar::STR::DynamicType method_name() const = 0;
+      virtual enum Inpar::Solid::DynamicType method_name() const = 0;
 
       //! Provide number of steps, e.g. a single-step method returns 1,
       //! a \f$m\f$-multistep method returns \f$m\f$
@@ -200,7 +200,7 @@ namespace STR
 
     };  // namespace IMPLICIT
   }     // namespace IMPLICIT
-}  // namespace STR
+}  // namespace Solid
 
 namespace NOX
 {
@@ -221,7 +221,7 @@ namespace NOX
         {
          public:
           //! constructor
-          Generic(const STR::IMPLICIT::Generic& implicit)
+          Generic(const Solid::IMPLICIT::Generic& implicit)
               : impl_(implicit), default_step_(implicit.get_default_step_length()){/* empty */};
 
           /*! \brief Derived function, which is called at the very beginning of a call to
@@ -315,8 +315,8 @@ namespace NOX
           int get_number_of_modified_newton_corrections(const ::NOX::Solver::Generic& solver) const;
 
          private:
-          //! reference to the STR::IMPLICIT::Generic object (read-only)
-          const STR::IMPLICIT::Generic& impl_;
+          //! reference to the Solid::IMPLICIT::Generic object (read-only)
+          const Solid::IMPLICIT::Generic& impl_;
 
           //! default step length
           const double default_step_;

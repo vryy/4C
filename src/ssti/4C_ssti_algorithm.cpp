@@ -121,9 +121,9 @@ void SSTI::SSTIAlgorithm::init(const Epetra_Comm& comm,
       FOUR_C_THROW(
           "Must provide adaptive time stepping in one of the subproblems. (Currently just ScaTra)");
     if (Core::UTILS::IntegralValue<int>(structparams.sublist("TIMEADAPTIVITY"), "KIND") !=
-        Inpar::STR::timada_kind_none)
+        Inpar::Solid::timada_kind_none)
       FOUR_C_THROW("Adaptive time stepping in SSI currently just from ScaTra");
-    if (Core::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == Inpar::STR::dyna_ab2)
+    if (Core::UTILS::IntegralValue<int>(structparams, "DYNAMICTYP") == Inpar::Solid::dyna_ab2)
       FOUR_C_THROW("Currently, only one step methods are allowed for adaptive time stepping");
   }
 

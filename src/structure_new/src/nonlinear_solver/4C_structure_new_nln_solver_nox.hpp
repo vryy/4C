@@ -53,7 +53,7 @@ namespace Core::LinAlg
   class Solver;
 }  // namespace Core::LinAlg
 
-namespace STR
+namespace Solid
 {
   namespace Nln
   {
@@ -75,7 +75,7 @@ namespace STR
         void reset() override;
 
         //! derived from the base class
-        Inpar::STR::ConvergenceStatus Solve() override;
+        Inpar::Solid::ConvergenceStatus Solve() override;
 
         //! returns the outer status test object pointer
         const ::NOX::StatusTest::Generic& get_outer_status_test() const
@@ -100,7 +100,7 @@ namespace STR
         virtual void reset_params();
 
         //! Convert the final nox status into a structural status
-        enum Inpar::STR::ConvergenceStatus convert_final_status(
+        enum Inpar::Solid::ConvergenceStatus convert_final_status(
             const ::NOX::StatusTest::StatusType& finalstatus) const;
 
        protected:
@@ -138,7 +138,7 @@ namespace STR
       };  // class Nox
     }     // namespace SOLVER
   }       // namespace Nln
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

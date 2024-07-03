@@ -101,7 +101,7 @@ PoroElast::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::Parame
   equilibration_method_ =
       Teuchos::getIntegralValue<Core::LinAlg::EquilibrationMethod>(poroparams, "EQUILIBRATION");
 
-  strmethodname_ = Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(sdynparams, "DYNAMICTYP");
+  strmethodname_ = Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
   no_penetration_ = false;
   nit_contact_ = false;
   // if inpar is set to nopenetration for contact!!! to be done!

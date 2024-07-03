@@ -38,10 +38,10 @@ namespace PARTICLEALGORITHM
   class ParticleAlgorithm;
 }
 
-namespace STR
+namespace Solid
 {
   class MapExtractor;
-}  // namespace STR
+}  // namespace Solid
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -212,7 +212,7 @@ namespace PaSI
     Teuchos::RCP<PARTICLEALGORITHM::ParticleAlgorithm> particlealgorithm_;
 
     //! communication object at the interface
-    Teuchos::RCP<const STR::MapExtractor> interface_;
+    Teuchos::RCP<const Solid::MapExtractor> interface_;
 
     //! interface displacement
     Teuchos::RCP<Epetra_Vector> intfdispnp_;

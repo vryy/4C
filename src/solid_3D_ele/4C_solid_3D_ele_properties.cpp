@@ -28,7 +28,7 @@ void Discret::ELEMENTS::add_to_pack(Core::Communication::PackBuffer& data,
 void Discret::ELEMENTS::ExtractFromPack(std::size_t& position, const std::vector<char>& data,
     Discret::ELEMENTS::SolidElementProperties& properties)
 {
-  properties.kintype = static_cast<Inpar::STR::KinemType>(
+  properties.kintype = static_cast<Inpar::Solid::KinemType>(
       Core::Communication::ParObject::extract_int(position, data));
   properties.element_technology =
       static_cast<ElementTechnology>(Core::Communication::ParObject::extract_int(position, data));

@@ -338,15 +338,15 @@ namespace Discret
       //@}
 
       //! kinematic type passed from structural element
-      virtual void SetKinematicType(Inpar::STR::KinemType kintype)
+      virtual void SetKinematicType(Inpar::Solid::KinemType kintype)
       {
         kintype_ = kintype;
         return;
       };
       //! kinematic type
-      Inpar::STR::KinemType kintype_;
+      Inpar::Solid::KinemType kintype_;
 
-      Inpar::STR::KinemType KinType() const { return kintype_; }
+      Inpar::Solid::KinemType KinType() const { return kintype_; }
 
      private:
       //! number of dofs per node (for systems of thermo equations)

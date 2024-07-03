@@ -23,39 +23,39 @@ namespace
 {
   inline bool IsMaterialIterative()
   {
-    return Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+    return Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
                Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS") ==
-           Inpar::STR::PreStress::material_iterative;
+           Inpar::Solid::PreStress::material_iterative;
   }
 
   inline bool IsMaterialIterativeActive(const double currentTime)
   {
-    Inpar::STR::PreStress pstype = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+    Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
         Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     double pstime =
         Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
-    return pstype == Inpar::STR::PreStress::material_iterative && currentTime <= pstime + 1.0e-15;
+    return pstype == Inpar::Solid::PreStress::material_iterative && currentTime <= pstime + 1.0e-15;
   }
 
   static inline bool IsMulfActive(const double currentTime)
   {
-    Inpar::STR::PreStress pstype = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+    Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
         Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     double pstime =
         Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
-    return pstype == Inpar::STR::PreStress::mulf && currentTime <= pstime + 1.0e-15;
+    return pstype == Inpar::Solid::PreStress::mulf && currentTime <= pstime + 1.0e-15;
   }
 }  // namespace
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-STR::IMPLICIT::PreStress::PreStress() : absolute_displacement_norm_(1e9)
+Solid::IMPLICIT::PreStress::PreStress() : absolute_displacement_norm_(1e9)
 {
   // empty constructor
 }
 
 
-void STR::IMPLICIT::PreStress::write_restart(
+void Solid::IMPLICIT::PreStress::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   check_init_setup();
@@ -69,7 +69,7 @@ void STR::IMPLICIT::PreStress::write_restart(
   model_eval().write_restart(iowriter, forced_writerestart);
 }
 
-void STR::IMPLICIT::PreStress::update_step_state()
+void Solid::IMPLICIT::PreStress::update_step_state()
 {
   check_init_setup();
 
@@ -84,7 +84,7 @@ void STR::IMPLICIT::PreStress::update_step_state()
   }
 }
 
-void STR::IMPLICIT::PreStress::update_step_element()
+void Solid::IMPLICIT::PreStress::update_step_element()
 {
   check_init_setup();
 
@@ -95,7 +95,7 @@ void STR::IMPLICIT::PreStress::update_step_element()
   }
 }
 
-void STR::IMPLICIT::PreStress::post_update()
+void Solid::IMPLICIT::PreStress::post_update()
 {
   // Check for prestressing
   if (IsMulfActive(global_state().get_time_n()))
@@ -122,14 +122,14 @@ void STR::IMPLICIT::PreStress::post_update()
   }
 }
 
-bool STR::IMPLICIT::PreStress::is_material_iterative_prestress_converged() const
+bool Solid::IMPLICIT::PreStress::is_material_iterative_prestress_converged() const
 {
   return IsMaterialIterative() &&
          global_state().get_step_n() >= s_dyn().get_pre_stress_minimum_number_of_load_steps() &&
          absolute_displacement_norm_ < s_dyn().get_pre_stress_displacement_tolerance();
 }
 
-bool STR::IMPLICIT::PreStress::early_stopping() const
+bool Solid::IMPLICIT::PreStress::early_stopping() const
 {
   check_init_setup();
 
@@ -147,7 +147,7 @@ bool STR::IMPLICIT::PreStress::early_stopping() const
   return false;
 }
 
-void STR::IMPLICIT::PreStress::post_time_loop()
+void Solid::IMPLICIT::PreStress::post_time_loop()
 {
   if (IsMaterialIterative())
   {

@@ -229,11 +229,11 @@ namespace Discret
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>*
-              eleplstrain,                           ///< plastic strains at GP
-          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,     ///< stress output option
-          const Inpar::STR::StrainType iostrain,     ///< strain output option
-          const Inpar::STR::StrainType ioplstrain);  ///< strain output option
+              eleplstrain,                             ///< plastic strains at GP
+          Teuchos::ParameterList& params,              ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,     ///< stress output option
+          const Inpar::Solid::StrainType iostrain,     ///< strain output option
+          const Inpar::Solid::StrainType ioplstrain);  ///< strain output option
 
       //! Update history variables at the end of time step (inelastic deformation) (braeu 07/16)
       void update_element(std::vector<double>& disp,      // current displacements

@@ -49,7 +49,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
 }
 
 void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
-    STR::TimeInt::BaseDataGlobalState& gstate)
+    Solid::TimeInt::BaseDataGlobalState& gstate)
 {
   // Get the number of multipoint equations
   int ncon_ = 0;

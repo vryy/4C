@@ -419,7 +419,7 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer == "nonlinear")
   {
-    kintype_ = Inpar::STR::KinemType::nonlinearTotLag;
+    kintype_ = Inpar::Solid::KinemType::nonlinearTotLag;
     // everything ok
   }
   else
@@ -447,7 +447,7 @@ bool Discret::ELEMENTS::SoSh8Plast::ReadElement(
 
   Teuchos::RCP<Mat::So3Material> so3mat = SolidMaterial();
   so3mat->setup(numgpt_, linedef);
-  so3mat->ValidKinematics(Inpar::STR::KinemType::nonlinearTotLag);
+  so3mat->ValidKinematics(Inpar::Solid::KinemType::nonlinearTotLag);
   if (have_plastic_spin())
     plspintype_ = plspin;
   else
@@ -971,12 +971,12 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
     Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  // stresses at GP
     Core::LinAlg::Matrix<numgpt_post, numstr_>* elestrain,  // strains at GP
     Teuchos::ParameterList& params,                         // algorithmic parameters e.g. time
-    const Inpar::STR::StressType iostress,                  // stress output option
-    const Inpar::STR::StrainType iostrain                   // strain output option
+    const Inpar::Solid::StressType iostress,                // stress output option
+    const Inpar::Solid::StrainType iostrain                 // strain output option
 )
 {
   invalid_ele_data();
-  const bool is_tangDis = str_params_interface().get_predictor_type() == Inpar::STR::pred_tangdis;
+  const bool is_tangDis = str_params_interface().get_predictor_type() == Inpar::Solid::pred_tangdis;
 
   fill_position_arrays(disp, vel, temp);
 

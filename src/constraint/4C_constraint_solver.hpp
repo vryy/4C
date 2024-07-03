@@ -87,7 +87,7 @@ namespace CONSTRAINTS
       return;
     }
 
-    void SetSTCProp(Inpar::STR::StcScale stcalgo, Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat)
+    void SetSTCProp(Inpar::Solid::StcScale stcalgo, Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat)
     {
       stcalgo_ = stcalgo;
       stcmat_ = stcmat;
@@ -158,8 +158,8 @@ namespace CONSTRAINTS
     bool adaptolbetter_;  ///< adaptive tolerance for solver useful?
     Teuchos::RCP<Core::LinAlg::Solver> solver_;  ///< solver for linear standard linear system
     int counter_;                                ///< counts how often #Solve is called
-    Inpar::STR::ConSolveAlgo algochoice_;
-    Inpar::STR::StcScale stcalgo_;
+    Inpar::Solid::ConSolveAlgo algochoice_;
+    Inpar::Solid::StcScale stcalgo_;
     Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat_;
 
   };  // class

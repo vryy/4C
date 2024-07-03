@@ -486,14 +486,14 @@ void Mat::ConstraintMixture::ResetAll(const int numgp)
   minindex_ = 0;
 
   {
-    const Inpar::STR::PreStress pstype = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+    const Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
         Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
     const double pstime =
         Global::Problem::Instance()->structural_dynamic_params().get<double>("PRESTRESSTIME");
 
     const double currentTime = params_->starttime_ + dt;
     // prestress time
-    if (pstype == Inpar::STR::PreStress::mulf && currentTime <= pstime + 1.0e-15)
+    if (pstype == Inpar::Solid::PreStress::mulf && currentTime <= pstime + 1.0e-15)
     {
       FOUR_C_THROW("MULF is only working for PRESTRESSTIME smaller than STARTTIME!");
     }
@@ -3096,7 +3096,7 @@ bool Mat::ConstraintMixture::VisData(
 /*----------------------------------------------------------------------*
  |  Debug output to gmsh-file                                      01/11|
  *----------------------------------------------------------------------*
- this needs to be copied to STR::TimInt::OutputStep() to enable debug output
+ this needs to be copied to Solid::TimInt::OutputStep() to enable debug output
  {
    discret_->set_state("displacement",Dis());
    Mat::ConstraintMixtureOutputToGmsh(discret_, StepOld(), 1);

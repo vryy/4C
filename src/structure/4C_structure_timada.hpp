@@ -41,7 +41,7 @@ namespace Core::IO
 
 /*----------------------------------------------------------------------*/
 /* belongs to structure dynamics namespace */
-namespace STR
+namespace Solid
 {
   // forward declarations
   class TimInt;
@@ -62,21 +62,21 @@ namespace STR
   {
    public:
     //! Provide the name as std::string
-    static std::string MapKindEnumToString(const enum Inpar::STR::TimAdaKind term  //!< the enum
+    static std::string MapKindEnumToString(const enum Inpar::Solid::TimAdaKind term  //!< the enum
     )
     {
       switch (term)
       {
-        case Inpar::STR::timada_kind_zienxie:
+        case Inpar::Solid::timada_kind_zienxie:
           return "ZienkiewiczXie";
           break;
-        case Inpar::STR::timada_kind_ab2:
+        case Inpar::Solid::timada_kind_ab2:
           return "AdamsBashforth2";
           break;
-        case Inpar::STR::timada_kind_expleuler:
+        case Inpar::Solid::timada_kind_expleuler:
           return "ExplicitEuler";
           break;
-        case Inpar::STR::timada_kind_centraldiff:
+        case Inpar::Solid::timada_kind_centraldiff:
           return "CentralDifference";
           break;
         default:
@@ -273,7 +273,7 @@ namespace STR
     //@{
 
     //! Provide the name
-    virtual enum Inpar::STR::TimAdaKind MethodName() const = 0;
+    virtual enum Inpar::Solid::TimAdaKind MethodName() const = 0;
 
     //! Provide the name as std::string
     std::string MethodTitle() const { return MapKindEnumToString(MethodName()); }
@@ -332,18 +332,18 @@ namespace STR
 
     //! @name Adaptive time integration constants
     //@{
-    double stepsizemax_;                   //!< maximum time step size (upper limit)
-    double stepsizemin_;                   //!< minimum time step size (lower limit)
-    double sizeratiomax_;                  //!< maximally permitted increase of current step size
-                                           //!< relative to last converged one
-    double sizeratiomin_;                  //!< minimally permitted increase
-                                           //!< (or maximally permitted decrease)
-                                           //!< of current step size relative to last converged one
-    double sizeratioscale_;                //!< safety factor, should be lower than 1.0
-    enum CtrlEnum errctrl_;                //!< type of control, see #CtrlEnum
-    enum Inpar::STR::VectorNorm errnorm_;  //!< norm for local error vector
-    double errtol_;                        //!< target local error tolerance
-    int errorder_;                         //!< order of local error indication
+    double stepsizemax_;     //!< maximum time step size (upper limit)
+    double stepsizemin_;     //!< minimum time step size (lower limit)
+    double sizeratiomax_;    //!< maximally permitted increase of current step size
+                             //!< relative to last converged one
+    double sizeratiomin_;    //!< minimally permitted increase
+                             //!< (or maximally permitted decrease)
+                             //!< of current step size relative to last converged one
+    double sizeratioscale_;  //!< safety factor, should be lower than 1.0
+    enum CtrlEnum errctrl_;  //!< type of control, see #CtrlEnum
+    enum Inpar::Solid::VectorNorm errnorm_;  //!< norm for local error vector
+    double errtol_;                          //!< target local error tolerance
+    int errorder_;                           //!< order of local error indication
     int adaptstepmax_;  //!< maximally permitted trials to find tolerable step size
     //@}
 
@@ -388,15 +388,15 @@ namespace STR
 
   };  // class TimAda
 
-}  // namespace STR
+}  // namespace Solid
 
 /*======================================================================*/
 /*!
- * \brief Out stream inserter for STR::TimAda
+ * \brief Out stream inserter for Solid::TimAda
  *
  * \author bborn \date 10/07
  */
-std::ostream& operator<<(std::ostream& str, const STR::TimAda& ta);
+std::ostream& operator<<(std::ostream& str, const Solid::TimAda& ta);
 
 
 /*----------------------------------------------------------------------*/

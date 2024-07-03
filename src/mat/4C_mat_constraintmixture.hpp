@@ -233,9 +233,9 @@ namespace Mat
     }
 
     /// check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::STR::KinemType kinem) override
+    void ValidKinematics(Inpar::Solid::KinemType kinem) override
     {
-      if (!(kinem == Inpar::STR::KinemType::nonlinearTotLag))
+      if (!(kinem == Inpar::Solid::KinemType::nonlinearTotLag))
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
@@ -513,7 +513,7 @@ namespace Mat
   };
 
   /// Debug output to gmsh-file
-  /* this needs to be copied to STR::TimInt::OutputStep() to enable debug output
+  /* this needs to be copied to Solid::TimInt::OutputStep() to enable debug output
   {
     discret_->set_state("displacement",Dis());
     Mat::ConstraintMixtureOutputToGmsh(discret_, StepOld(), 1);

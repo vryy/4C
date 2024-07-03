@@ -89,7 +89,7 @@ Core::Communication::ParObject* Discret::ELEMENTS::SolidScatraType::Create(
 void Discret::ELEMENTS::SolidScatraType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  STR::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
+  Solid::UTILS::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
 Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidScatraType::ComputeNullSpace(
@@ -136,7 +136,7 @@ void Discret::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::Par
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
+    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(
         p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
@@ -151,13 +151,13 @@ bool Discret::ELEMENTS::SolidScatra::ReadElement(
   celltype_ = Core::FE::StringToCellType(celltype);
 
   // read number of material model
-  SetMaterial(0, Mat::Factory(STR::UTILS::ReadElement::read_element_material(linedef)));
+  SetMaterial(0, Mat::Factory(Solid::UTILS::ReadElement::read_element_material(linedef)));
 
   // read scalar transport implementation type
   properties_.impltype = ReadScatraImplType(*linedef);
 
 
-  properties_.solid = STR::UTILS::ReadElement::read_solid_element_properties(linedef);
+  properties_.solid = Solid::UTILS::ReadElement::read_solid_element_properties(linedef);
 
   solid_scatra_calc_variant_ =
       create_solid_scatra_calculation_interface(celltype_, properties_.solid);

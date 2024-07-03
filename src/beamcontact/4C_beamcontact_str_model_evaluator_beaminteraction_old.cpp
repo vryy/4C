@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-STR::MODELEVALUATOR::BeamInteractionOld::BeamInteractionOld()
+Solid::MODELEVALUATOR::BeamInteractionOld::BeamInteractionOld()
     : disnp_ptr_(Teuchos::null),
       stiff_beaminteract_ptr_(Teuchos::null),
       f_beaminteract_np_ptr_(Teuchos::null),
@@ -38,7 +38,7 @@ STR::MODELEVALUATOR::BeamInteractionOld::BeamInteractionOld()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::setup()
+void Solid::MODELEVALUATOR::BeamInteractionOld::setup()
 {
   if (not is_init()) FOUR_C_THROW("init() has not been called, yet!");
 
@@ -62,7 +62,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::setup()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::reset(const Epetra_Vector& x)
+void Solid::MODELEVALUATOR::BeamInteractionOld::reset(const Epetra_Vector& x)
 {
   check_init_setup();
 
@@ -76,7 +76,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::reset(const Epetra_Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force()
+bool Solid::MODELEVALUATOR::BeamInteractionOld::evaluate_force()
 {
   check_init_setup();
 
@@ -94,7 +94,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_stiff()
+bool Solid::MODELEVALUATOR::BeamInteractionOld::evaluate_stiff()
 {
   check_init_setup();
 
@@ -113,7 +113,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force_stiff()
+bool Solid::MODELEVALUATOR::BeamInteractionOld::evaluate_force_stiff()
 {
   check_init_setup();
 
@@ -140,7 +140,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::evaluate_force_stiff()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_force(
+bool Solid::MODELEVALUATOR::BeamInteractionOld::assemble_force(
     Epetra_Vector& f, const double& timefac_np) const
 {
   // Todo take care of the minus sign in front of timefac_np
@@ -150,7 +150,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_force(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
+bool Solid::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
   Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
@@ -163,7 +163,7 @@ bool STR::MODELEVALUATOR::BeamInteractionOld::assemble_jacobian(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::write_restart(
+void Solid::MODELEVALUATOR::BeamInteractionOld::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   beamcman_->write_restart(iowriter);  // ToDo
@@ -176,7 +176,8 @@ void STR::MODELEVALUATOR::BeamInteractionOld::write_restart(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::read_restart(Core::IO::DiscretizationReader& ioreader)
+void Solid::MODELEVALUATOR::BeamInteractionOld::read_restart(
+    Core::IO::DiscretizationReader& ioreader)
 {
   beamcman_->read_restart(ioreader);  // ToDo
   return;
@@ -184,7 +185,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::read_restart(Core::IO::Discretizat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::run_post_compute_x(
+void Solid::MODELEVALUATOR::BeamInteractionOld::run_post_compute_x(
     const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew)
 {
   // empty ToDo
@@ -192,7 +193,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::run_post_compute_x(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::update_step_state(const double& timefac_n)
+void Solid::MODELEVALUATOR::BeamInteractionOld::update_step_state(const double& timefac_n)
 {
   beamcman_->update(*disnp_ptr_, eval_data().get_step_np(), eval_data().get_nln_iter());
 
@@ -205,7 +206,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::update_step_state(const double& ti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::update_step_element()
+void Solid::MODELEVALUATOR::BeamInteractionOld::update_step_element()
 {
   // empty
 }
@@ -213,7 +214,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::update_step_element()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::determine_stress_strain()
+void Solid::MODELEVALUATOR::BeamInteractionOld::determine_stress_strain()
 {
   // nothing to do
   return;
@@ -221,7 +222,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::determine_stress_strain()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::determine_energy()
+void Solid::MODELEVALUATOR::BeamInteractionOld::determine_energy()
 {
   // ToDo
   return;
@@ -229,7 +230,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::determine_energy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::determine_optional_quantity()
+void Solid::MODELEVALUATOR::BeamInteractionOld::determine_optional_quantity()
 {
   // nothing to do
   return;
@@ -237,7 +238,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::determine_optional_quantity()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::output_step_state(
+void Solid::MODELEVALUATOR::BeamInteractionOld::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   return;
@@ -245,12 +246,12 @@ void STR::MODELEVALUATOR::BeamInteractionOld::output_step_state(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::reset_step_state() { return; }
+void Solid::MODELEVALUATOR::BeamInteractionOld::reset_step_state() { return; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteractionOld::get_block_dof_row_map_ptr()
-    const
+Teuchos::RCP<const Epetra_Map>
+Solid::MODELEVALUATOR::BeamInteractionOld::get_block_dof_row_map_ptr() const
 {
   check_init_setup();
   return global_state().dof_row_map();
@@ -259,7 +260,7 @@ Teuchos::RCP<const Epetra_Map> STR::MODELEVALUATOR::BeamInteractionOld::get_bloc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::BeamInteractionOld::get_current_solution_ptr() const
+Solid::MODELEVALUATOR::BeamInteractionOld::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -268,7 +269,7 @@ STR::MODELEVALUATOR::BeamInteractionOld::get_current_solution_ptr() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Vector>
-STR::MODELEVALUATOR::BeamInteractionOld::get_last_time_step_solution_ptr() const
+Solid::MODELEVALUATOR::BeamInteractionOld::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
   return Teuchos::null;
@@ -276,7 +277,7 @@ STR::MODELEVALUATOR::BeamInteractionOld::get_last_time_step_solution_ptr() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void STR::MODELEVALUATOR::BeamInteractionOld::post_output()
+void Solid::MODELEVALUATOR::BeamInteractionOld::post_output()
 {
   check_init_setup();
   // empty

@@ -180,13 +180,13 @@ void FS3I::FS3IBase::CheckFS3IInputs()
           scatradynparams, "TIMEINTEGR");
   Inpar::FLUID::TimeIntegrationScheme fluidtimealgo =
       Core::UTILS::IntegralValue<Inpar::FLUID::TimeIntegrationScheme>(fluiddynparams, "TIMEINTEGR");
-  Inpar::STR::DynamicType structtimealgo =
-      Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(structdynparams, "DYNAMICTYP");
+  Inpar::Solid::DynamicType structtimealgo =
+      Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYP");
 
   if (fluidtimealgo == Inpar::FLUID::timeint_one_step_theta)
   {
     if (scatratimealgo != Inpar::ScaTra::timeint_one_step_theta or
-        structtimealgo != Inpar::STR::dyna_onesteptheta)
+        structtimealgo != Inpar::Solid::dyna_onesteptheta)
       FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a one-step-theta scheme is intended to be used for the "
@@ -203,7 +203,7 @@ void FS3I::FS3IBase::CheckFS3IInputs()
   else if (fluidtimealgo == Inpar::FLUID::timeint_afgenalpha)
   {
     if (scatratimealgo != Inpar::ScaTra::timeint_gen_alpha or
-        structtimealgo != Inpar::STR::dyna_genalpha)
+        structtimealgo != Inpar::Solid::dyna_genalpha)
       FOUR_C_THROW(
           "Partitioned FS3I computations should feature consistent time-integration schemes for "
           "the subproblems; in this case, a (alpha_f-based) generalized-alpha scheme is intended "
@@ -248,12 +248,12 @@ void FS3I::FS3IBase::CheckFS3IInputs()
             "since the velocity field in the structure is NOT divergence free!");
     }
   }
-  Inpar::STR::PreStress pstype = Teuchos::getIntegralValue<Inpar::STR::PreStress>(
+  Inpar::Solid::PreStress pstype = Teuchos::getIntegralValue<Inpar::Solid::PreStress>(
       Global::Problem::Instance()->structural_dynamic_params(), "PRESTRESS");
   // is structure calculated dynamic when not prestressing?
-  if (Core::UTILS::IntegralValue<Inpar::STR::DynamicType>(structdynparams, "DYNAMICTYP") ==
-          Inpar::STR::dyna_statics and
-      pstype != Inpar::STR::PreStress::mulf)
+  if (Core::UTILS::IntegralValue<Inpar::Solid::DynamicType>(structdynparams, "DYNAMICTYP") ==
+          Inpar::Solid::dyna_statics and
+      pstype != Inpar::Solid::PreStress::mulf)
     FOUR_C_THROW(
         "Since we need a velocity field in the structure domain for the scalar field you need do "
         "calculate the structure dynamically! Exception: when prestressing..");

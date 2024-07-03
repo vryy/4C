@@ -159,7 +159,7 @@ namespace Mat
     double InvBulkModulus() const;
 
     //! check if element kinematics and material kinematics are compatible
-    void ValidKinematics(Inpar::STR::KinemType kinem) override { mat_->ValidKinematics(kinem); }
+    void ValidKinematics(Inpar::Solid::KinemType kinem) override { mat_->ValidKinematics(kinem); }
 
     //! return material
     Teuchos::RCP<Core::Mat::Material> GetMaterial() const { return mat_; }

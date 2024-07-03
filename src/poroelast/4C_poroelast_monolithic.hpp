@@ -301,7 +301,7 @@ namespace PoroElast
 
     //!@}
 
-    enum Inpar::STR::DynamicType strmethodname_;  //!< enum for STR time integration
+    enum Inpar::Solid::DynamicType strmethodname_;  //!< enum for STR time integration
 
     //! @name Global matrixes
 

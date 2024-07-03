@@ -30,7 +30,7 @@ namespace NOX
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace STR
+namespace Solid
 {
   class Integrator;
   namespace TimeInt
@@ -58,11 +58,11 @@ namespace STR
         virtual ~Generic() = default;
 
         //! initialization
-        virtual void init(const Teuchos::RCP<STR::TimeInt::BaseDataGlobalState>& gstate,
-            const Teuchos::RCP<STR::TimeInt::BaseDataSDyn>& sdyn,
-            const Teuchos::RCP<STR::TimeInt::NoxInterface>& noxinterface,
-            const Teuchos::RCP<STR::Integrator>& integrator,
-            const Teuchos::RCP<const STR::TimeInt::Base>& timint);
+        virtual void init(const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate,
+            const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& sdyn,
+            const Teuchos::RCP<Solid::TimeInt::NoxInterface>& noxinterface,
+            const Teuchos::RCP<Solid::Integrator>& integrator,
+            const Teuchos::RCP<const Solid::TimeInt::Base>& timint);
 
         //! Setup the nonlinear solver configuration
         virtual void setup() = 0;
@@ -77,7 +77,7 @@ namespace STR
         virtual void reset() = 0;
 
         //! Solve the non-linear problem
-        virtual Inpar::STR::ConvergenceStatus Solve() = 0;
+        virtual Inpar::Solid::ConvergenceStatus Solve() = 0;
 
         /*! returns the nox group for external and internal use
          *
@@ -106,82 +106,82 @@ namespace STR
         void check_init() const { FOUR_C_ASSERT(is_init(), "You have to call init() first!"); }
 
         //! Returns the global state data container pointer
-        Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> data_global_state_ptr()
+        Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> data_global_state_ptr()
         {
           check_init();
           return gstate_ptr_;
         }
 
         //! Returns the global state data container (read-only)
-        const STR::TimeInt::BaseDataGlobalState& data_global_state() const
+        const Solid::TimeInt::BaseDataGlobalState& data_global_state() const
         {
           check_init();
           return *gstate_ptr_;
         }
 
         //! Returns the global state data container (read and write)
-        STR::TimeInt::BaseDataGlobalState& data_global_state()
+        Solid::TimeInt::BaseDataGlobalState& data_global_state()
         {
           check_init();
           return *gstate_ptr_;
         }
 
         //! Returns the structural dynamics data container pointer
-        Teuchos::RCP<STR::TimeInt::BaseDataSDyn> data_s_dyn_ptr()
+        Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> data_s_dyn_ptr()
         {
           check_init();
           return sdyn_ptr_;
         }
 
         //! Returns the structural dynamics data container (read-only)
-        const STR::TimeInt::BaseDataSDyn& data_s_dyn() const
+        const Solid::TimeInt::BaseDataSDyn& data_s_dyn() const
         {
           check_init();
           return *sdyn_ptr_;
         }
 
         //! Returns the structural dynamics data container (read and write)
-        STR::TimeInt::BaseDataSDyn& data_sdyn()
+        Solid::TimeInt::BaseDataSDyn& data_sdyn()
         {
           check_init();
           return *sdyn_ptr_;
         }
 
         //! Returns the non-linear solver implicit time integration interface pointer
-        Teuchos::RCP<STR::TimeInt::NoxInterface> nox_interface_ptr()
+        Teuchos::RCP<Solid::TimeInt::NoxInterface> nox_interface_ptr()
         {
           check_init();
           return noxinterface_ptr_;
         }
 
         //! Returns the non-linear solver implicit time integration interface (read-only)
-        const STR::TimeInt::NoxInterface& nox_interface() const
+        const Solid::TimeInt::NoxInterface& nox_interface() const
         {
           check_init();
           return *noxinterface_ptr_;
         }
 
         //! Returns the non-linear solver implicit time integration interface (read and write)
-        STR::TimeInt::NoxInterface& nox_interface()
+        Solid::TimeInt::NoxInterface& nox_interface()
         {
           check_init();
           return *noxinterface_ptr_;
         }
 
-        STR::Integrator& integrator()
+        Solid::Integrator& integrator()
         {
           check_init();
           return *int_ptr_;
         }
 
-        const STR::Integrator& integrator() const
+        const Solid::Integrator& integrator() const
         {
           check_init();
           return *int_ptr_;
         }
 
         //! Returns the underlying time integration strategy
-        const STR::TimeInt::Base& tim_int() const
+        const Solid::TimeInt::Base& tim_int() const
         {
           check_init();
           return *timint_ptr_;
@@ -202,19 +202,19 @@ namespace STR
 
        private:
         //! global state data container of the time integrator
-        Teuchos::RCP<STR::TimeInt::BaseDataGlobalState> gstate_ptr_;
+        Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
         //! structural dynamics data container of the time integrator
-        Teuchos::RCP<STR::TimeInt::BaseDataSDyn> sdyn_ptr_;
+        Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
         //! required interface pointer to the implicit time integrator (call back)
-        Teuchos::RCP<STR::TimeInt::NoxInterface> noxinterface_ptr_;
+        Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr_;
 
         //! pointer to the current time integrator
-        Teuchos::RCP<STR::Integrator> int_ptr_;
+        Teuchos::RCP<Solid::Integrator> int_ptr_;
 
         //! pointer to the time integration strategy
-        Teuchos::RCP<const STR::TimeInt::Base> timint_ptr_;
+        Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
 
         //! nox group
         Teuchos::RCP<::NOX::Abstract::Group> group_ptr_;
@@ -222,7 +222,7 @@ namespace STR
       };  // namespace SOLVER
     }     // namespace SOLVER
   }       // namespace Nln
-}  // namespace STR
+}  // namespace Solid
 
 FOUR_C_NAMESPACE_CLOSE
 

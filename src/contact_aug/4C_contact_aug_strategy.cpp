@@ -1636,7 +1636,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::Aug::Strategy::get_matrix_bloc
     }
     default:
     {
-      FOUR_C_THROW("Unknown STR::MatBlockType!");
+      FOUR_C_THROW("Unknown Solid::MatBlockType!");
       break;
     }
   }

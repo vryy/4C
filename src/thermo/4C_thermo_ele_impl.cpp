@@ -423,15 +423,15 @@ int Discret::ELEMENTS::TemperImpl<distype>::evaluate(const Core::Elements::Eleme
 
     // if ele is a thermo element --> the THR element method KinType() exists
     const auto* therm = dynamic_cast<const Discret::ELEMENTS::Thermo*>(ele);
-    const Inpar::STR::KinemType kintype = therm->KinType();
+    const Inpar::Solid::KinemType kintype = therm->KinType();
     // thermal problem or geometrically linear TSI problem
-    if (kintype == Inpar::STR::KinemType::linear)
+    if (kintype == Inpar::Solid::KinemType::linear)
     {
       linear_heatflux_tempgrad(ele, &eheatflux, &etempgrad);
-    }  // TSI: (kintype_ == Inpar::STR::KinemType::linear)
+    }  // TSI: (kintype_ == Inpar::Solid::KinemType::linear)
 
     // geometrically nonlinear TSI problem
-    if (kintype == Inpar::STR::KinemType::nonlinearTotLag)
+    if (kintype == Inpar::Solid::KinemType::nonlinearTotLag)
     {
       // if it's a TSI problem and there are current displacements/velocities
       if (la.Size() > 1)
@@ -684,7 +684,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1>* efint, Teuchos::ParameterList& params)
 {
   const auto* therm = dynamic_cast<const Discret::ELEMENTS::Thermo*>(ele);
-  const Inpar::STR::KinemType kintype = therm->KinType();
+  const Inpar::Solid::KinemType kintype = therm->KinType();
 
   // initialise the vectors
   // evaluate() is called the first time in ThermoBaseAlgorithm: at this stage
@@ -700,7 +700,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
   }  // la.Size>1
 
   // geometrically linear TSI problem
-  if ((kintype == Inpar::STR::KinemType::linear))
+  if ((kintype == Inpar::Solid::KinemType::linear))
   {
     // purely thermal contributions
     linear_thermo_contribution(ele, time, etang,
@@ -717,10 +717,10 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
       // A_k * a_k - (d^2 psi / dT da_k) * a_k'
       if (plasticmat_) linear_dissipation_fint(ele, efint, params);
     }
-  }  // TSI: (kintype_ == Inpar::STR::KinemType::linear)
+  }  // TSI: (kintype_ == Inpar::Solid::KinemType::linear)
 
   // geometrically nonlinear TSI problem
-  else if (kintype == Inpar::STR::KinemType::nonlinearTotLag)
+  else if (kintype == Inpar::Solid::KinemType::nonlinearTotLag)
   {
     nonlinear_thermo_disp_contribution(
         ele, time, mydisp, myvel, etang, ecapa, ecapalin, efint, params);
@@ -730,7 +730,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_tang_capa_fint(
 #endif
 
     if (plasticmat_) nonlinear_dissipation_fint_tang(ele, mydisp, etang, efint, params);
-  }  // TSI: (kintype_ == Inpar::STR::KinemType::nonlinearTotLag)
+  }  // TSI: (kintype_ == Inpar::Solid::KinemType::nonlinearTotLag)
 }
 
 template <Core::FE::CellType distype>
@@ -741,7 +741,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(
     Teuchos::ParameterList& params)
 {
   const auto* therm = dynamic_cast<const Discret::ELEMENTS::Thermo*>(ele);
-  const Inpar::STR::KinemType kintype = therm->KinType();
+  const Inpar::Solid::KinemType kintype = therm->KinType();
 
   if (la.Size() > 1)
   {
@@ -754,7 +754,7 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(
     // --> calculate coupling stiffness term in case of monolithic TSI
 
     // geometrically linear TSI problem
-    if (kintype == Inpar::STR::KinemType::linear)
+    if (kintype == Inpar::Solid::KinemType::linear)
     {
       linear_coupled_tang(ele, mydisp, myvel, etangcoupl, params);
 
@@ -762,10 +762,10 @@ void Discret::ELEMENTS::TemperImpl<distype>::evaluate_coupled_tang(
       if (plasticmat_) linear_dissipation_coupled_tang(ele, etangcoupl, params);
       // --> be careful: so far only implicit Euler for time integration
       //                 of the evolution equation available!!!
-    }  // TSI: (kintype_ == Inpar::STR::KinemType::linear)
+    }  // TSI: (kintype_ == Inpar::Solid::KinemType::linear)
 
     // geometrically nonlinear TSI problem
-    if (kintype == Inpar::STR::KinemType::nonlinearTotLag)
+    if (kintype == Inpar::Solid::KinemType::nonlinearTotLag)
     {
       nonlinear_coupled_tang(ele, mydisp, myvel, etangcoupl, params);
 
@@ -1659,22 +1659,22 @@ void Discret::ELEMENTS::TemperImpl<distype>::nonlinear_coupled_tang(
   }  // end of switch(timint)
 
   const auto s_timint =
-      Core::UTILS::GetAsEnum<Inpar::STR::DynamicType>(params, "structural time integrator");
+      Core::UTILS::GetAsEnum<Inpar::Solid::DynamicType>(params, "structural time integrator");
   switch (s_timint)
   {
-    case Inpar::STR::dyna_statics:
+    case Inpar::Solid::dyna_statics:
     {
       timefac_d = 1.0 / stepsize;
       break;
     }
-    case Inpar::STR::dyna_genalpha:
+    case Inpar::Solid::dyna_genalpha:
     {
       const double str_beta = params.get<double>("str_beta");
       const double str_gamma = params.get<double>("str_gamma");
       timefac_d = str_gamma / (str_beta * stepsize);
       break;
     }
-    case Inpar::STR::dyna_onesteptheta:
+    case Inpar::Solid::dyna_onesteptheta:
     {
       const double str_theta = params.get<double>("str_theta");
       timefac_d = 1.0 / (stepsize * str_theta);

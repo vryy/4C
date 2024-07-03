@@ -248,7 +248,7 @@ namespace MultiScale
     double time_;
     double timen_;
 
-    Inpar::STR::PredEnum pred_;  //!< predictor
+    Inpar::Solid::PredEnum pred_;  //!< predictor
 
     bool isadapttol_;
     double adaptolbetter_;
@@ -261,24 +261,24 @@ namespace MultiScale
 
     bool iodisp_;
     int resevrydisp_;
-    Inpar::STR::StressType iostress_;
+    Inpar::Solid::StressType iostress_;
     int resevrystrs_;
-    Inpar::STR::StrainType iostrain_;
-    Inpar::STR::StrainType ioplstrain_;
+    Inpar::Solid::StrainType iostrain_;
+    Inpar::Solid::StrainType ioplstrain_;
     bool iosurfactant_;
     int restart_;
     int restartevry_;
     int printscreen_;
 
-    Inpar::STR::VectorNorm iternorm_;
+    Inpar::Solid::VectorNorm iternorm_;
     double tolfres_;
     double toldisi_;
 
 
-    enum Inpar::STR::BinaryOp combdisifres_;  //!< binary operator to
-                                              // combine displacement and forces
-    enum Inpar::STR::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
-    enum Inpar::STR::ConvNorm normtypefres_;  //!< convergence check for residual forces
+    enum Inpar::Solid::BinaryOp combdisifres_;  //!< binary operator to
+                                                // combine displacement and forces
+    enum Inpar::Solid::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
+    enum Inpar::Solid::ConvNorm normtypefres_;  //!< convergence check for residual forces
     double normcharforce_;
     double normfres_;
     double normchardis_;

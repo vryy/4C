@@ -289,7 +289,7 @@ namespace TSI
     //@}
 
     //! enum for STR time integartion
-    enum Inpar::STR::DynamicType strmethodname_;
+    enum Inpar::Solid::DynamicType strmethodname_;
 
     //! apply structural displacements and velocities on thermo discretization
     void apply_struct_coupling_state(
@@ -329,12 +329,12 @@ namespace TSI
     enum Inpar::TSI::NlnSolTech soltech_;  //!< kind of iteration technique or
                                            //!< nonlinear solution technique
 
-    enum Inpar::TSI::ConvNorm normtypeinc_;     //!< convergence check for increments
-    enum Inpar::TSI::ConvNorm normtyperhs_;     //!< convergence check for residual forces
-    enum Inpar::STR::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
-    enum Inpar::STR::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
-    enum Inpar::THR::ConvNorm normtypetempi_;   //!< convergence check for residual temperatures
-    enum Inpar::THR::ConvNorm normtypethrrhs_;  //!< convergence check for residual thermal forces
+    enum Inpar::TSI::ConvNorm normtypeinc_;       //!< convergence check for increments
+    enum Inpar::TSI::ConvNorm normtyperhs_;       //!< convergence check for residual forces
+    enum Inpar::Solid::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
+    enum Inpar::Solid::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
+    enum Inpar::THR::ConvNorm normtypetempi_;     //!< convergence check for residual temperatures
+    enum Inpar::THR::ConvNorm normtypethrrhs_;    //!< convergence check for residual thermal forces
 
     enum Inpar::TSI::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces
 

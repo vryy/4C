@@ -240,9 +240,9 @@ namespace Discret
           Core::LinAlg::Matrix<NUMDOF_SOH8, 1>* force_str,  // element structural force vector
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress,  ///< stresses at GP
           Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestrain,  ///< strains at GP
-          Teuchos::ParameterList& params,          ///< algorithmic parameters e.g. time
-          const Inpar::STR::StressType iostress,   ///< stress output option
-          const Inpar::STR::StrainType iostrain);  ///< strain output option
+          Teuchos::ParameterList& params,            ///< algorithmic parameters e.g. time
+          const Inpar::Solid::StressType iostress,   ///< stress output option
+          const Inpar::Solid::StrainType iostrain);  ///< strain output option
 
       //! Evaluate all ANS related data at the ANS sampling points
       void sosh8_anssetup(
@@ -275,7 +275,7 @@ namespace Discret
 
       //! Calculate the STC matrix
       virtual void do_calc_stc_matrix(Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
-          const Inpar::STR::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
+          const Inpar::Solid::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
           Core::FE::Discretization& discretization, bool calcinverse);
 
       //! Find parametric co-ordinate which directs in enforced thickness direction
