@@ -19,7 +19,6 @@
 #include "4C_adapter_ale_wear.hpp"
 #include "4C_adapter_str_fsiwrapper.hpp"
 #include "4C_adapter_str_structure.hpp"
-#include "4C_contact_aug_interface.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_lagrange_strategy_wear.hpp"

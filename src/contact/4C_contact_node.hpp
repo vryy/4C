@@ -12,7 +12,6 @@
 
 #include "4C_config.hpp"
 
-#include "4C_contact_aug_utils.hpp"
 #include "4C_mortar_node.hpp"
 
 #include <unordered_map>
@@ -398,277 +397,6 @@ namespace CONTACT
     NodeDataContainer(const NodeDataContainer& old) = delete;
   };
 
-  namespace Aug
-  {
-    /** \brief Nodal data container for all contact contributions related to the
-     *  augmented framework
-     *
-     *  \author hiermeier \date 02/18 */
-    class NodeDataContainer
-    {
-     public:
-      enum SideType
-      {
-        slave,
-        master
-      };
-
-      /// @name General methods
-      /// @{
-
-      /// constructor
-      NodeDataContainer(Node& parentNode);
-
-      /// constructor
-      NodeDataContainer(
-          Node& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster);
-
-      virtual ~NodeDataContainer() = default;
-
-      void setup();
-
-      /*! \brief Pack this class so that it can be communicated
-       *
-       *  This function packs the datacontainer. This is only called
-       *  when the class has been initialized and the pointer to this
-       *  class exists. */
-      void pack(Core::Communication::PackBuffer& data) const;
-
-      /*! \brief Unpack data from a vector into this class
-       *
-       *  This function unpacks the data container. This is only called
-       *  when the class has been initialized and the pointer to this
-       *  class exists. */
-      void unpack(std::vector<char>::size_type& position, const std::vector<char>& data);
-
-      void Complete();
-      /// @}
-
-      /// @name accessors
-      /// @{
-
-      /*! \brief Return the weighted gap (scalar) of this node */
-      inline double& GetWGap() { return w_gap_; }
-      inline double GetWGap() const { return w_gap_; }
-
-      /*! \brief Return the scaling factor kappa for this node
-       *
-       *  This factor is equivalent to the tributary area of the (potentially)
-       *  active nodes. The term is evaluated for all found slave and master
-       *  element pairs. Therefore, contributions of non-projectable GP are
-       *  missing. This stands in contrast to the augA quantities!*/
-      inline double& GetKappa() { return kappa_; }
-      inline double GetKappa() const { return kappa_; }
-
-      /*! \brief Return the linearization of the scaling factor kappa
-       *
-       *  Only potentially active parts are considered. See note for
-       *  GetKappa(). */
-      inline Deriv1stMap& GetDeriv1st_Kappa() { return d_kappa_; }
-      inline const Deriv1stMap& GetDeriv1st_Kappa() const { return d_kappa_; }
-
-      /*! \brief Return the 2-nd order derivative of the tributary area
-       *
-       *  Only potentially active parts are considered. See note for
-       *  GetKappa(). */
-      inline Deriv2ndMap& GetDeriv2nd_Kappa() { return dd_kappa_; }
-      inline const Deriv2ndMap& GetDeriv2nd_Kappa() const { return dd_kappa_; }
-
-      /*! \brief Return the scaling factor augA
-       *
-       *  Integration over the whole slave interface, without consideration of
-       *  the segments or projections. */
-      inline double& GetAugdata() { return aug_a_; }
-      inline double GetAugdata() const { return aug_a_; }
-
-      /*! \brief Return the first order derivative of the scaling factor augA
-       *
-       *  Integration over the whole slave interface, without consideration of
-       *  the segments or projections. */
-      inline Deriv1stMap& GetDeriv1st_data() { return d_aug_a_; }
-      inline const Deriv1stMap& GetDeriv1st_data() const { return d_aug_a_; }
-
-      /*! \brief Return the second order derivative of the scaling factor augA
-       *
-       *  Integration over the whole slave interface, without consideration of
-       *  the segments or projections. */
-      inline Deriv2ndMap& GetDeriv2nd_data() { return dd_aug_a_; }
-      inline const Deriv2ndMap& GetDeriv2nd_data() const { return dd_aug_a_; }
-
-      /*! \brief Return the 1-st order derivative of smooth averaged unit normal */
-      inline Deriv1stVecMap& GetDeriv1st_N() { return d_avg_unit_normal_; }
-      inline const Deriv1stVecMap& GetDeriv1st_N() const { return d_avg_unit_normal_; }
-
-      /*! \brief Return the 2-nd order derivative of smooth averaged unit normal */
-      inline Deriv2ndVecMap& GetDeriv2nd_N() { return dd_avg_unit_normal_; }
-      inline const Deriv2ndVecMap& GetDeriv2nd_N() const { return dd_avg_unit_normal_; }
-
-      /// @}
-
-      inline Deriv1stMap& GetDeriv1st_WGapSl() { return d_wgap_sl_; }
-      inline const Deriv1stMap& GetDeriv1st_WGapSl() const { return d_wgap_sl_; }
-
-      inline Deriv1stMap& GetDeriv1st_WGapMa() { return d_wgap_ma_; }
-      inline const Deriv1stMap& GetDeriv1st_WGapMa() const { return d_wgap_ma_; }
-
-      inline Teuchos::RCP<Deriv1stMap>& get_deriv1st_w_gap_sl_complete_ptr()
-      {
-        return d_wgap_sl_complete_;
-      }
-
-      inline Deriv1stMap& get_deriv1st_w_gap_sl_complete()
-      {
-        if (d_wgap_sl_complete_.is_null())
-          FOUR_C_THROW(
-              "The complete 1-st order derivative of the weighted gap "
-              "(slave) is not initialized! [nullptr pointer]");
-        return *d_wgap_sl_complete_;
-      }
-
-      inline const Deriv1stMap& get_deriv1st_w_gap_sl_complete() const
-      {
-        if (d_wgap_sl_complete_.is_null())
-          FOUR_C_THROW(
-              "The complete 1-st order derivative of the weighted gap "
-              "(slave) is not initialized! [nullptr pointer]");
-        return *d_wgap_sl_complete_;
-      }
-
-      inline Teuchos::RCP<Deriv1stMap>& get_deriv1st_w_gap_ma_complete_ptr()
-      {
-        return d_wgap_ma_complete_;
-      }
-
-      inline Deriv1stMap& get_deriv1st_w_gap_ma_complete()
-      {
-        if (d_wgap_ma_complete_.is_null())
-          FOUR_C_THROW(
-              "The complete 1-st order derivative of the weighted gap "
-              "(master) is not initialized! [nullptr pointer]");
-        return *d_wgap_ma_complete_;
-      }
-
-      inline const Deriv1stMap& get_deriv1st_w_gap_ma_complete() const
-      {
-        if (d_wgap_ma_complete_.is_null())
-          FOUR_C_THROW(
-              "The complete 1-st order derivative of the weighted gap "
-              "(master) is not initialized! [nullptr pointer]");
-        return *d_wgap_ma_complete_;
-      }
-
-      inline Deriv2ndMap& GetDeriv2nd_WGapSl() { return dd_wgap_sl_; }
-      inline const Deriv2ndMap& GetDeriv2nd_WGapSl() const { return dd_wgap_sl_; }
-
-      inline Deriv2ndMap& GetDeriv2nd_WGapMa() { return dd_wgap_ma_; }
-      inline const Deriv2ndMap& GetDeriv2nd_WGapMa() const { return dd_wgap_ma_; }
-
-      /// @name Debug nodal values
-      /// @{
-
-      inline std::pair<int, double>& Get_Debug() { return debug_.x_; }
-      inline const std::pair<int, double>& Get_Debug() const { return debug_.x_; }
-
-      inline std::vector<std::pair<int, double>>& Get_DebugVec() { return debug_.x_vec_; }
-      inline const std::vector<std::pair<int, double>>& Get_DebugVec() const
-      {
-        return debug_.x_vec_;
-      }
-
-      inline Deriv1stMap& GetDeriv1st_Debug() { return debug_.d_; }
-      inline const Deriv1stMap& GetDeriv1st_Debug() const { return debug_.d_; }
-
-      inline Deriv2ndMap& GetDeriv2nd_Debug() { return debug_.dd_; }
-      inline const Deriv2ndMap& GetDeriv2nd_Debug() const { return debug_.dd_; }
-
-      inline Deriv1stVecMap& get_deriv1st_debug_vec() { return debug_.d_vec_; }
-      inline const Deriv1stVecMap& get_deriv1st_debug_vec() const { return debug_.d_vec_; }
-
-      inline Deriv2ndVecMap& get_deriv2nd_debug_vec() { return debug_.dd_vec_; }
-      inline const Deriv2ndVecMap& get_deriv2nd_debug_vec() const { return debug_.dd_vec_; }
-
-      /// @}
-
-      inline int GetNumMEntries() const { return mentries_; }
-
-      inline void SetNumMEntries(int mentries) { mentries_ = mentries; }
-
-     private:
-      int approximate_m_entries(
-          const int slMaElementAreaRatio, const bool isTriangleOnMaster) const;
-
-     private:
-      // *** Augmented Lagrangian formulation ********************
-      int mentries_;
-
-      // nodal scalar values
-      double kappa_;  ///< gap-scaling factor kappa
-      double w_gap_;  ///< nodal entry of weighted gap vector
-      double aug_a_;  ///< nodal scaling factor
-
-      /// @name Linearization
-      /// @{
-
-      /// 1-st order derivative of the tributary area (active part)
-      Deriv1stMap d_kappa_;
-
-      /// 2-nd order derivative of the tributary area (active part)
-      Deriv2ndMap dd_kappa_;
-
-      /// 1-st order derivative of the tributary area (inactive part)
-      Deriv1stMap d_aug_a_;
-
-      /// 2-nd order derivative of the tributary area (inactive part)
-      Deriv2ndMap dd_aug_a_;
-
-      // 1-st derivative of the smooth averaged nodal unit normal
-      Deriv1stVecMap d_avg_unit_normal_;
-
-      // 2-nd derivative of the smooth averaged nodal unit normal
-      Deriv2ndVecMap dd_avg_unit_normal_;
-
-      /// @}
-
-      /** In correspondence with the chosen integration strategy this variable
-       *  contains the complete or the incomplete contributions of the slave side
-       *  to the weighted gap */
-      Deriv1stMap d_wgap_sl_;
-      Deriv1stMap d_wgap_ma_;
-
-      /** This variable contains always the complete contributions of the slave
-       *  side to the weighted gap */
-      Teuchos::RCP<Deriv1stMap> d_wgap_sl_complete_;
-      Teuchos::RCP<Deriv1stMap> d_wgap_ma_complete_;
-
-      Deriv2ndMap dd_wgap_sl_;
-      Deriv2ndMap dd_wgap_ma_;
-
-      /// internal debug data structure, holding debug information only
-      struct Debug
-      {
-        Debug() : d_(0), dd_(0), d_vec_(0), dd_vec_(0){};
-
-        void Complete();
-
-        std::pair<int, double> x_;
-        std::vector<std::pair<int, double>> x_vec_;
-
-        Deriv1stMap d_;
-        Deriv2ndMap dd_;
-
-        Deriv1stVecMap d_vec_;
-        Deriv2ndVecMap dd_vec_;
-      };
-
-      Debug debug_;
-
-      /// constant reference to the parent node
-      const Node& parent_node_;
-
-    };  // class NodeDataContainer
-  }     // namespace Aug
-
-  // class NodeDataContainer
 
   /*!
   \brief A class containing additional data from poro contact nodes
@@ -1084,23 +812,6 @@ namespace CONTACT
     inline CONTACT::NodeDataContainer& Data() { return *codata_; }
     inline CONTACT::NodeDataContainer& Data() const { return *codata_; }
 
-    /*! \brief Return data container of this augmented contact node
-     *
-     *  This method returns the data container of this node where additional
-     *  augmented contact specific quantities/information are stored.
-     *
-     *  \author hiermeier \date 03/17 */
-    inline CONTACT::Aug::NodeDataContainer& AugData()
-    {
-      if (augdata_.is_null()) FOUR_C_THROW("There are no augmented contact node data available!");
-      return *augdata_;
-    };
-    inline const CONTACT::Aug::NodeDataContainer& AugData() const
-    {
-      if (augdata_.is_null()) FOUR_C_THROW("There are no augmented contact node data available!");
-      return *augdata_;
-    };
-
     inline CONTACT::NodePoroDataContainer& PoroData() { return *coporodata_; }
     inline CONTACT::NodeTSIDataContainer& TSIData() { return *cTSIdata_; }
     inline CONTACT::NodeEhlDataContainer& EhlData() { return *cEHLdata_; }
@@ -1152,26 +863,6 @@ namespace CONTACT
      */
     void AddltlJumpValue(double* val);
 
-    /*!
-    \brief Add a value to the weighted gap of this node (augmented Lagrange)
-
-    This value is later assembled to the averaged weighted gap vector.
-    Note that grow_ here is a scalar.
-
-    \param val : value to be added
-
-    */
-    void AddWGapValue(const double val);
-
-    /*!
-    \brief Add a value to the scaling factor kappa of this node (augmented Lagrange)
-
-    This value is later assembled needed during the assembling of the averaged
-    weighted gap. Note that kappa_ is a scalar.
-
-    \param val : value to be added
-    */
-    void AddKappaValue(double& val);
 
     /*!
     \brief Add a value to the map of LM derivatives of this node
@@ -1215,15 +906,6 @@ namespace CONTACT
      */
     void initialize_data_container() override;
 
-    /*!
-     \brief Initializes the data container of the augmented contact node
-
-     With this function, the container with augmented contact specific
-     quantities/information is initialized.
-
-     */
-    void initialize_aug_data_container(
-        const int slMaElementAreaRatio, const bool isTriangleOnMaster);
 
     /*!
     \brief Initializes the poro data container of the node
@@ -1318,9 +1000,6 @@ namespace CONTACT
 
     //! Additional information of proc's contact nodes
     Teuchos::RCP<CONTACT::NodeDataContainer> codata_;
-
-    //! Additional information of proc's augmented contact nodes
-    Teuchos::RCP<CONTACT::Aug::NodeDataContainer> augdata_;
 
     //! Additional information of proc's poro contact nodes
     Teuchos::RCP<CONTACT::NodePoroDataContainer> coporodata_;

@@ -12,7 +12,6 @@
 
 #include "4C_structure_new_model_evaluator_meshtying.hpp"
 
-#include "4C_contact_aug_strategy.hpp"
 #include "4C_contact_meshtying_abstract_strategy.hpp"
 #include "4C_contact_meshtying_noxinterface.hpp"
 #include "4C_contact_meshtying_strategy_factory.hpp"

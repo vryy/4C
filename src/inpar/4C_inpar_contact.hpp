@@ -44,19 +44,12 @@ namespace Inpar
     /// (this enum represents the input file parameter STRATEGY)
     enum SolvingStrategy : int
     {
-      solution_vague,              ///< no solving strategy defined
-      solution_lagmult,            ///< method of Lagrange multipliers
-      solution_penalty,            ///< penalty approach
-      solution_uzawa,              ///< Uzawa augmented Lagrange approach
-      solution_combo,              ///< combination of multiple augmented solving strategies
-      solution_augmented,          ///< augmented Lagrange approach
-      solution_steepest_ascent,    /**< condensed steepest ascent approach (based on the augmented
-                                    *   formulation) */
-      solution_steepest_ascent_sp, /**< steepest ascent approach as saddlepoint formulation
-                                    *   (based on the augmented formulation) */
-      solution_std_lagrange,       ///< lagrange strategy (based on the augmented formulation)
-      solution_nitsche,            ///< Nitsche contact solution method
-      solution_ehl,                ///< method for elasto-hydrodynamic lubrication
+      solution_vague,      ///< no solving strategy defined
+      solution_lagmult,    ///< method of Lagrange multipliers
+      solution_penalty,    ///< penalty approach
+      solution_uzawa,      ///< Uzawa augmented Lagrange approach
+      solution_nitsche,    ///< Nitsche contact solution method
+      solution_ehl,        ///< method for elasto-hydrodynamic lubrication
       solution_multiscale  ///< method for contact of rough surfaces with a multi scale approach
     };
 
@@ -72,16 +65,6 @@ namespace Inpar
           return "solution_penalty";
         case solution_uzawa:
           return "solution_uzawa";
-        case solution_combo:
-          return "solution_combo";
-        case solution_augmented:
-          return "solution_augmented";
-        case solution_steepest_ascent:
-          return "solution_steepest_ascent";
-        case solution_steepest_ascent_sp:
-          return "solution_steepest_ascent_sp";
-        case solution_std_lagrange:
-          return "solution_std_lagrange";
         case solution_nitsche:
           return "solution_nitsche";
         default:

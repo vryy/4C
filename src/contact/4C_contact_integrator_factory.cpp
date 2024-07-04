@@ -10,7 +10,6 @@
 
 #include "4C_contact_integrator_factory.hpp"
 
-#include "4C_contact_aug_integrator.hpp"
 #include "4C_contact_ehl_integrator.hpp"
 #include "4C_contact_nitsche_integrator.hpp"
 #include "4C_contact_nitsche_integrator_fpi.hpp"
@@ -31,16 +30,6 @@ Teuchos::RCP<CONTACT::Integrator> CONTACT::INTEGRATOR::Factory::BuildIntegrator(
   Teuchos::RCP<CONTACT::Integrator> integrator = Teuchos::null;
   switch (sol_type)
   {
-    case Inpar::CONTACT::solution_augmented:
-    case Inpar::CONTACT::solution_std_lagrange:
-    case Inpar::CONTACT::solution_steepest_ascent:
-    case Inpar::CONTACT::solution_steepest_ascent_sp:
-    case Inpar::CONTACT::solution_combo:
-    {
-      integrator = Teuchos::rcp<CONTACT::Integrator>(
-          new CONTACT::Aug::IntegrationWrapper(mortar_params, slave_type, comm));
-      break;
-    }
     case Inpar::CONTACT::solution_nitsche:
     {
       if (mortar_params.get<int>("PROBTYPE") == Inpar::CONTACT::tsi)

@@ -14,7 +14,7 @@
 
 #include "4C_cardiovascular0d_nox_nln_linearsystem.hpp"
 #include "4C_constraint_nox_nln_lagpenconstraint_linearsystem.hpp"
-#include "4C_contact_aug_nox_nln_contact_linearsystem.hpp"
+#include "4C_contact_nox_nln_contact_linearsystem.hpp"
 #include "4C_contact_nox_nln_meshtying_linearsystem.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 #include "4C_linear_solver_method_linalg.hpp"

@@ -1262,16 +1262,13 @@ bool Solid::TimIntImpl::Converged()
         Core::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
-    if (cmtbridge_->HaveContact() &&
-        (stype == Inpar::CONTACT::solution_lagmult ||
-            stype == Inpar::CONTACT::solution_augmented) &&
-        semismooth)
+    if (cmtbridge_->HaveContact() && (stype == Inpar::CONTACT::solution_lagmult) && semismooth)
       ccontact = cmtbridge_->GetStrategy().active_set_semi_smooth_converged();
 
     // add convergence check for saddlepoint formulations
     // use separate convergence checks for contact constraints and
     // LM increments
-    if ((stype == Inpar::CONTACT::solution_lagmult || stype == Inpar::CONTACT::solution_augmented))
+    if (stype == Inpar::CONTACT::solution_lagmult)
     {
       bool convDispLagrIncr = false;
       bool convDispWIncr = false;
@@ -1616,19 +1613,16 @@ int Solid::TimIntImpl::NewtonFull()
 
     // decide which norms have to be evaluated
     bool bPressure = pressure_ != Teuchos::null;
-    bool bContactSP = (have_contact_meshtying() &&
-                       ((Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
-                             cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
-                                Inpar::CONTACT::solution_lagmult &&
-                            (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
-                                 cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
-                                    Inpar::CONTACT::system_condensed ||
-                                Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
-                                    cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
-                                    Inpar::CONTACT::system_condensed_lagmult)) ||
-                           (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
-                                cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
-                               Inpar::CONTACT::solution_augmented)));
+    bool bContactSP =
+        (have_contact_meshtying() && ((Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
+                                           cmtbridge_->GetStrategy().Params(), "STRATEGY") ==
+                                             Inpar::CONTACT::solution_lagmult &&
+                                         (Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+                                              cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
+                                                 Inpar::CONTACT::system_condensed ||
+                                             Core::UTILS::IntegralValue<Inpar::CONTACT::SystemType>(
+                                                 cmtbridge_->GetStrategy().Params(), "SYSTEM") !=
+                                                 Inpar::CONTACT::system_condensed_lagmult))));
 
     if (bPressure && bContactSP)
       FOUR_C_THROW(
@@ -3028,28 +3022,6 @@ int Solid::TimIntImpl::CmtNonlinearSolve()
       if (error) return error;
     }
   }
-  //********************************************************************
-  // 4) AUGMENTED SEMI-SMOOTH NEWTON FOR CONTACT
-  // The search for the correct active set (=contact nonlinearity) and
-  // the large deformation linearization (=geometrical nonlinearity) are
-  // merged into one semi-smooth Newton method and solved within ONE
-  // iteration loop (which is then basically a standard Newton).
-  // TODO EXTENSION TO A SMOOTH NEWTON APPROACH ARE UNDER CONSIDERATION
-  //********************************************************************
-  else if (soltype == Inpar::CONTACT::solution_augmented)
-  {
-    if (cmtbridge_->HaveContact() && semismooth)
-    {
-      int error = 0;
-      // nonlinear iteration
-      if (itertype_ == Inpar::Solid::soltech_newtonfull)
-        error = NewtonFull();
-      else if (itertype_ == Inpar::Solid::soltech_newtonls)
-        error = NewtonLS();
-
-      if (error) return error;
-    }
-  }
 
   //********************************************************************
   // Solving Strategy using Regularization Techniques (Penalty Method)
@@ -3198,8 +3170,7 @@ void Solid::TimIntImpl::CmtLinearSolve()
   //**********************************************************************
   solver_params.refactor = true;
   solver_params.reset = iter_ == 1;
-  if ((soltype == Inpar::CONTACT::solution_lagmult ||
-          soltype == Inpar::CONTACT::solution_augmented) &&
+  if (soltype == Inpar::CONTACT::solution_lagmult &&
       (systype != Inpar::CONTACT::system_condensed &&
           systype != Inpar::CONTACT::system_condensed_lagmult))
   {
@@ -3751,8 +3722,7 @@ void Solid::TimIntImpl::print_newton_iter_header(FILE* ofile)
     Inpar::Wear::WearSide wside = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(
         cmtbridge_->GetStrategy().Params(), "WEAR_SIDE");
 
-    if ((soltype == Inpar::CONTACT::solution_lagmult ||
-            soltype == Inpar::CONTACT::solution_augmented) &&
+    if (soltype == Inpar::CONTACT::solution_lagmult &&
         (systype != Inpar::CONTACT::system_condensed &&
             systype != Inpar::CONTACT::system_condensed_lagmult))
     {
@@ -3934,8 +3904,7 @@ void Solid::TimIntImpl::print_newton_iter_text(FILE* ofile)
     Inpar::Wear::WearSide wside = Core::UTILS::IntegralValue<Inpar::Wear::WearSide>(
         cmtbridge_->GetStrategy().Params(), "WEAR_SIDE");
 
-    if ((soltype == Inpar::CONTACT::solution_lagmult ||
-            soltype == Inpar::CONTACT::solution_augmented) &&
+    if (soltype == Inpar::CONTACT::solution_lagmult &&
         (systype != Inpar::CONTACT::system_condensed &&
             systype != Inpar::CONTACT::system_condensed_lagmult))
     {
@@ -3988,25 +3957,9 @@ void Solid::TimIntImpl::print_newton_iter_text(FILE* ofile)
   if (have_contact_meshtying())
   {
     // only print something for contact, not for meshtying
-    Inpar::CONTACT::SolvingStrategy soltype =
-        Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(
-            cmtbridge_->GetStrategy().Params(), "STRATEGY");
-    bool semismooth =
-        Core::UTILS::IntegralValue<int>(cmtbridge_->GetStrategy().Params(), "SEMI_SMOOTH_NEWTON");
     if (cmtbridge_->HaveContact())
     {
-      if (soltype == Inpar::CONTACT::solution_augmented && semismooth)
-      {
-        bool ccontact = cmtbridge_->GetStrategy().active_set_semi_smooth_converged();
-        // active set changed
-        if (!ccontact)
-          oss << std::setw(8) << cmtbridge_->GetStrategy().number_of_active_nodes() << "(c)";
-        // active set didnot change
-        else
-          oss << std::setw(8) << cmtbridge_->GetStrategy().number_of_active_nodes() << "(-)";
-      }
-      else
-        oss << std::setw(11) << cmtbridge_->GetStrategy().number_of_active_nodes();
+      oss << std::setw(11) << cmtbridge_->GetStrategy().number_of_active_nodes();
       if (cmtbridge_->GetStrategy().is_friction())
         oss << std::setw(10) << cmtbridge_->GetStrategy().number_of_slip_nodes();
     }

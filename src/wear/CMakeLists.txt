@@ -6,7 +6,6 @@ set(_dependencies
     ale
     config
     contact
-    contact_aug
     core
     fs3i
     fsi

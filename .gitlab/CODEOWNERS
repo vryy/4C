@@ -102,8 +102,6 @@ contact/4C_contact_nitsche_integrator_poro*  @baci/team_poro @baci/team_contact
 contact/4C_contact_nitsche_strategy_poro*    @baci/team_poro @baci/team_contact
 contact/4C_contact_lagrange_strategy_poro*   @baci/team_poro @baci/team_contact
 
-contact_aug/               @baci/team_contact
-
 contact_constitutivelaw/   @baci/team_contact
 
 core/*                     @baci/team_infrastructure

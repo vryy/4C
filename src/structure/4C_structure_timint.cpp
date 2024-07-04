@@ -731,18 +731,6 @@ void Solid::TimInt::prepare_contact_meshtying(const Teuchos::ParameterList& sdyn
             std::cout << "================================================================\n"
                       << std::endl;
           }
-          else if (soltype == Inpar::CONTACT::solution_augmented &&
-                   shapefcn == Inpar::Mortar::shape_standard)
-          {
-            std::cout << "================================================================"
-                      << std::endl;
-            std::cout << "===== Augmented Lagrange strategy =============================="
-                      << std::endl;
-            std::cout << "===== (Saddle point formulation) ==============================="
-                      << std::endl;
-            std::cout << "================================================================\n"
-                      << std::endl;
-          }
           else
             FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
         }

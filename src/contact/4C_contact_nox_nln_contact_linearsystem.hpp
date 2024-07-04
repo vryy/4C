@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------*/
-#ifndef FOUR_C_CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_HPP
-#define FOUR_C_CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_HPP
+#ifndef FOUR_C_CONTACT_NOX_NLN_CONTACT_LINEARSYSTEM_HPP
+#define FOUR_C_CONTACT_NOX_NLN_CONTACT_LINEARSYSTEM_HPP
 
 #include "4C_config.hpp"
 

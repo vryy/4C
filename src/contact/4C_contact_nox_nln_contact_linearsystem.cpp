@@ -7,7 +7,7 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "4C_contact_aug_nox_nln_contact_linearsystem.hpp"  // base class
+#include "4C_contact_nox_nln_contact_linearsystem.hpp"  // base class
 
 #include "4C_contact_abstract_strategy.hpp"
 #include "4C_inpar_contact.hpp"
