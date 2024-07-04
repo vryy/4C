@@ -53,7 +53,7 @@ NAME                            Sca_Tra_Solver
 SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          MueLu
-MUELU_XML_FILE                  xml/multigrid/scatra1D_template.xml
+MUELU_XML_FILE                  xml/multigrid/scatra_template.xml
 AZTOL                           1.0E-9
 AZCONV                          AZ_r0
 -------------------------------------------------------------------MATERIALS

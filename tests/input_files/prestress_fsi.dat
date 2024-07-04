@@ -94,7 +94,7 @@ NAME                            Ale_Solver
 SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          MueLu
-MUELU_XML_FILE                  xml/multigrid/elasticity3D_template.xml
+MUELU_XML_FILE                  xml/multigrid/elasticity_template.xml
 AZREUSE                         0
 AZITER                          1000
 AZOUTPUT                        1000
@@ -106,7 +106,7 @@ NAME                            Struct_Solver
 SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          MueLu
-MUELU_XML_FILE                  xml/multigrid/elasticity3D_template.xml
+MUELU_XML_FILE                  xml/multigrid/elasticity_template.xml
 AZREUSE                         0
 AZITER                          1000
 AZOUTPUT                        1000

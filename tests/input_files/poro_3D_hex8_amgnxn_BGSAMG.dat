@@ -81,13 +81,13 @@ NAME                           solidsolver
 SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
-MUELU_XML_FILE                 xml/multigrid/elasticity3D_template.xml
+MUELU_XML_FILE                 xml/multigrid/elasticity_template.xml
 -----------------------------------------------------------SOLVER 3
 NAME                           fluidsolver
 SOLVER                         Belos
 AZSOLVE                        GMRES
 AZPREC                         MueLu
-MUELU_XML_FILE                 xml/multigrid/fluid3D_template.xml
+MUELU_XML_FILE                 xml/multigrid/fluid_template.xml
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 5 INITPOROSITY 0.8
 MAT 5 MAT_PoroLawNeoHooke BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001
