@@ -18,8 +18,8 @@ Additionally, |FOURC| can be compiled under Windows using the WSL (Windows Subsy
 which provides a complete Linux Environment within the Windows operating system.
 
 You'll find more information about the |FOURC| installation in the
-`README.md <https://gitlab.lrz.de/baci/baci/blob/master/README.md>`_ and the
-`CONTRIBUTING.md <https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md>`_
+`README.md <https://gitlab.lrz.de/baci/baci/blob/main/README.md>`_ and the
+`CONTRIBUTING.md <https://gitlab.lrz.de/baci/baci/blob/main/CONTRIBUTING.md>`_
 files located in the |FOURC| root directory.
 
 Besides the basic setup of the software, the following topics are of particular interest for **all** developers:
@@ -166,7 +166,7 @@ Set-up your Gitlab account
 
 The tool `GitLab <https://gitlab.lrz.de/>`_ is a web-based service to manage Git repositories.
 In addition to hosting the actual repositories, GitLab provides wikis, issue tracking,
-and an easy and transparent way for code review via `merge requests <https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md#merging-changes-into-master>`_.
+and an easy and transparent way for code review via `merge requests <https://gitlab.lrz.de/baci/baci/blob/main/CONTRIBUTING.md#merging-changes-into-main>`_.
 The GitLab instance we are using is hosted by the Leibniz-Rechenzentrum (`LRZ <https://www.lrz.de/>`_).
 Before you start working in the |FOURC| GitLab repository, set up your account according to the instructions below.
 
@@ -458,7 +458,7 @@ To enable the code indexer, right-click on the project and select :menuselection
 
 *Source code*
 
-|FOURC| uses a mandatory code style defined as a `.clang-format style file <https://gitlab.lrz.de/baci/baci/blob/master/.clang-format>`_.
+|FOURC| uses a mandatory code style defined as a `.clang-format style file <https://gitlab.lrz.de/baci/baci/blob/main/.clang-format>`_.
 Adherence to this code style will be checked on each commit as well as on each merge request.
 To a priori conform to the codes style and avoid issues in your daily workflow,
 you can configure Eclipse to apply the code style to your source code at every file save.
