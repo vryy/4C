@@ -44,9 +44,8 @@ repos:
         name: Trim trailing whitespace
         # Do not modify reference vtu files, since we generate these and do not hand-edit them.
         exclude: 'vtu$'
-        # Prevents committing to `master` and `main` branches by default.
       - id: no-commit-to-branch
-        name: Don't commit to master
+        name: Don't commit to main
 
   - repo: local
     hooks:

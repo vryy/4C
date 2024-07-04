@@ -264,7 +264,7 @@ Any time you need to grab the latest from 4C:
 
 ```bash
 cd <someBaseDir>/<sourceDir>
-git checkout master
+git checkout main
 git pull
 ```
 
@@ -282,7 +282,7 @@ pre-populate the *Description* field, giving you instructions on submitting the 
 
 If you're interested in contributing to 4C, we welcome your collaboration. Before your start, configure
 your [local Git](#set-up-git) and your [LRZ GitLab account](#set-up-lrz-gitlab).
-Read [our contributing guidelines](https://gitlab.lrz.de/baci/baci/blob/master/CONTRIBUTING.md) carefully for details on
+Read [our contributing guidelines](https://gitlab.lrz.de/baci/baci/blob/main/CONTRIBUTING.md) carefully for details on
 our workflow, submitting merge-requests, etc.
 
 [↑ Contents](#contents)

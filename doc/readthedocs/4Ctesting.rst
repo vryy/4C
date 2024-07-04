@@ -85,7 +85,7 @@ Tests fall into these categories:
 
 |FOURC| tests can be triggered through various mechanisms:
 
-- On Gitlab, we use GitLab's CI pipelines. We run those pipelines every night, on every merge request, and on every change in master. In addition, they can be triggered manually.
+- On Gitlab, we use GitLab's CI pipelines. We run those pipelines every night, on every merge request, and on every change in main. In addition, they can be triggered manually.
 - Locally, one can trigger ctest to run all or some tests.
 
     - filter tests by adding ``-R <regex>``. Only tests including ``<regex>`` in their names are performed
@@ -103,7 +103,7 @@ Pipelines
 ~~~~~~~~~
 
 Details on the pipeline configuration can be found in our
-`README on test configurations <https://gitlab.lrz.de/baci/baci/blob/master/tests/testconfig/README.md>`_.
+`README on test configurations <https://gitlab.lrz.de/baci/baci/blob/main/tests/testconfig/README.md>`_.
 In GitLab CI Pipeline Settings you find information on how to start tailored pipelines.
 
 Guidelines for |FOURC| input files
@@ -128,12 +128,12 @@ How to deal with failing tests
 
 - Merge request testing:
   If pipelines fail during merge request testing, just address the error.
-  Note that you can only merge to the master branch if the pipeline succeeds.
+  Note that you can only merge to the main branch if the pipeline succeeds.
 - Nightly tests:
-  If nightly tests on the master branch fail, open a `new issue <https://gitlab.lrz.de/baci/baci/issues/new>`_
+  If nightly tests on the main branch fail, open a `new issue <https://gitlab.lrz.de/baci/baci/issues/new>`_
   based on the issue template ``TEST_FAILING.md`` to report the failing pipeline
   and test and to provide a forum to discuss possible fixed and track progress.
-- Minimal tests after merge into the master branch:
+- Minimal tests after merge into the main branch:
   Follow the same strategy as for a failing nightly test pipelines.
 
 .. _unittesting:
@@ -184,7 +184,7 @@ Also refer to the :ref:`F.I.R.S.T. principles for writing clean tests <firstprin
 Executing |FOURC| unit tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Configure and build |FOURC| as described in `README <https://gitlab.lrz.de/baci/baci/blob/master/README.md>`_.
+Configure and build |FOURC| as described in `README <https://gitlab.lrz.de/baci/baci/blob/main/README.md>`_.
 In the |FOURC| build directory ``<builddir>`` a subfolder ``unittests`` with executable unittests inside is generated.
 
     Note: in order to execute the following commands, change to build directory <builddir>
