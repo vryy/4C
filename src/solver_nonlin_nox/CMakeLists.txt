@@ -6,7 +6,6 @@ set(_dependencies
     config
     constraint
     contact
-    contact_aug
     core
     inpar
     structure_new

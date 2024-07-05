@@ -10,8 +10,6 @@
 
 #include "4C_contact_manager.hpp"
 
-#include "4C_contact_aug_interface.hpp"
-#include "4C_contact_aug_strategy.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_interface.hpp"
@@ -610,12 +608,6 @@ CONTACT::Manager::Manager(Core::FE::Discretization& discret, double alphaf)
           Discret().NodeRowMap(), contactParams, interfaces, dim, comm_, alphaf, maxdof));
     }
   }
-  else if (stype == Inpar::CONTACT::solution_augmented)
-  {
-    FOUR_C_THROW(
-        "The augmented contact formulation is no longer supported in the"
-        " old structural time integrator!");
-  }
   else
   {
     FOUR_C_THROW("Unrecognized contact strategy");
@@ -768,11 +760,6 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
       contact.get<double>("SEMI_SMOOTH_CT") == 0.0)
     FOUR_C_THROW("Parameter ct = 0, must be greater than 0 for frictional contact");
 
-  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
-          Inpar::CONTACT::solution_augmented &&
-      contact.get<double>("SEMI_SMOOTH_CN") <= 0.0)
-    FOUR_C_THROW("Regularization parameter cn, must be greater than 0 for contact problems");
-
   if (Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(contact, "FRICTION") ==
           Inpar::CONTACT::friction_tresca &&
       dim == 3 &&
@@ -784,13 +771,6 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
           Inpar::CONTACT::friction_none &&
       Core::UTILS::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON") != 1 && dim == 3)
     FOUR_C_THROW("3D frictional contact only implemented with Semi-smooth Newton");
-
-  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
-          Inpar::CONTACT::solution_augmented &&
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(contact, "FRICTION") !=
-          Inpar::CONTACT::friction_none)
-    FOUR_C_THROW(
-        "Frictional contact is for the augmented Lagrange formulation not yet implemented!");
 
   if (Core::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true && dim == 3)
     FOUR_C_THROW("Crosspoints / edge node modification not yet implemented for 3D");
@@ -920,15 +900,6 @@ bool CONTACT::Manager::read_and_check_input(Teuchos::ParameterList& cparams)
     if (problemtype != Core::ProblemType::ehl &&
         Core::UTILS::IntegralValue<int>(contact, "REGULARIZED_NORMAL_CONTACT") == true)
       FOUR_C_THROW("Regularized normal contact only implemented for EHL");
-
-    // *********************************************************************
-    // Augmented Lagrangian strategy
-    // *********************************************************************
-    if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
-        Inpar::CONTACT::solution_augmented)
-    {
-      FOUR_C_THROW("No longer supported!");
-    }
 
     // *********************************************************************
     // thermal-structure-interaction contact

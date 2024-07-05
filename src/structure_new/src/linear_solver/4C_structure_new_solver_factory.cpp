@@ -227,22 +227,6 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
   if (mtcond.size() != 0 and ccond.size() == 0) onlymeshtying = true;
   if (mtcond.size() == 0 and ccond.size() != 0) onlycontact = true;
 
-  // handle some special cases
-  switch (sol_type)
-  {
-    // treat the steepest ascent strategy as a condensed system
-    case Inpar::CONTACT::solution_steepest_ascent:
-      sys_type = Inpar::CONTACT::system_condensed;
-      break;
-    // in case of the combo strategy, the actual linear solver can change during
-    // the simulation and is therefore provided by the strategy
-    case Inpar::CONTACT::solution_combo:
-      return Teuchos::null;
-    default:
-      // do nothing
-      break;
-  }
-
   switch (sys_type)
   {
     case Inpar::CONTACT::system_saddlepoint:
@@ -297,10 +281,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
             "this cannot be: no saddlepoint problem for beamcontact "
             "or pure structure problem.");
 
-      if (sol_type == Inpar::CONTACT::solution_lagmult or
-          sol_type == Inpar::CONTACT::solution_augmented or
-          sol_type == Inpar::CONTACT::solution_std_lagrange or
-          sol_type == Inpar::CONTACT::solution_steepest_ascent_sp)
+      if (sol_type == Inpar::CONTACT::solution_lagmult)
       {
         // provide null space information
         if (prec == Core::LinearSolver::PreconditionerType::cheap_simple)

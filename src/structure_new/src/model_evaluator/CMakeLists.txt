@@ -11,7 +11,6 @@ set(_dependencies
     constraint
     constraint_framework
     contact
-    contact_aug
     core
     global_data
     inpar

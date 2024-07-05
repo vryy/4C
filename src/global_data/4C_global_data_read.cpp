@@ -1897,11 +1897,6 @@ void Global::ReadParameter(Global::Problem& problem, Core::IO::DatFileReader& re
   reader.ReadSection("--MORTAR COUPLING", *list);
   reader.ReadSection("--MORTAR COUPLING/PARALLEL REDISTRIBUTION", *list);
   reader.ReadSection("--CONTACT DYNAMIC", *list);
-  reader.ReadSection("--CONTACT DYNAMIC/AUGMENTED", *list);
-  reader.ReadSection("--CONTACT DYNAMIC/AUGMENTED/COMBO", *list);
-  reader.ReadSection("--CONTACT DYNAMIC/AUGMENTED/STEEPESTASCENT", *list);
-  reader.ReadSection("--CONTACT DYNAMIC/AUGMENTED/LAGRANGE_MULTIPLIER_FUNCTION", *list);
-  reader.ReadSection("--CONTACT DYNAMIC/AUGMENTED/PLOT", *list);
   reader.ReadSection("--CARDIOVASCULAR 0D-STRUCTURE COUPLING", *list);
   reader.ReadSection(
       "--CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS", *list);

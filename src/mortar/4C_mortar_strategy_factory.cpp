@@ -284,34 +284,6 @@ void Mortar::STRATEGY::Factory::PrintStrategyBanner(
           Core::IO::cout << "===== (Pure displacement formulation) ==========================\n";
           Core::IO::cout << "================================================================\n\n";
         }
-        else if (soltype == Inpar::CONTACT::solution_combo)
-        {
-          Core::IO::cout << "================================================================\n";
-          Core::IO::cout << "===== Combination of different Solving Strategies ==============\n";
-          Core::IO::cout << "================================================================\n\n";
-        }
-        else if (soltype == Inpar::CONTACT::solution_augmented)
-        {
-          Core::IO::cout << "================================================================\n";
-          Core::IO::cout << "===== Augmented Lagrange strategy ==============================\n";
-          Core::IO::cout << "===== (Saddle point formulation) ===============================\n";
-          Core::IO::cout << "================================================================\n\n";
-        }
-        else if (soltype == Inpar::CONTACT::solution_std_lagrange)
-        {
-          Core::IO::cout << "================================================================\n";
-          Core::IO::cout << "===== Standard Lagrange strategy ===============================\n";
-          Core::IO::cout << "===== Derived from the Augmented formulation ===================\n";
-          Core::IO::cout << "===== (Saddle point formulation) ===============================\n";
-          Core::IO::cout << "================================================================\n\n";
-        }
-        else if (soltype == Inpar::CONTACT::solution_steepest_ascent)
-        {
-          Core::IO::cout << "================================================================\n";
-          Core::IO::cout << "===== Steepest Ascent strategy =================================\n";
-          Core::IO::cout << "===== (Condensed formulation) ==================================\n";
-          Core::IO::cout << "================================================================\n\n";
-        }
         else
           FOUR_C_THROW("Invalid strategy or shape function type for contact/meshtying");
       }

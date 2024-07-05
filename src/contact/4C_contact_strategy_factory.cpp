@@ -10,12 +10,6 @@
 
 #include "4C_contact_strategy_factory.hpp"
 
-#include "4C_contact_aug_combo_strategy.hpp"
-#include "4C_contact_aug_interface.hpp"
-#include "4C_contact_aug_lagrange_interface.hpp"
-#include "4C_contact_aug_lagrange_strategy.hpp"
-#include "4C_contact_aug_steepest_ascent_interface.hpp"
-#include "4C_contact_aug_steepest_ascent_strategy.hpp"
 #include "4C_contact_constitutivelaw_bundle.hpp"
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "4C_contact_constitutivelaw_interface.hpp"
@@ -182,11 +176,6 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
       contact.get<double>("SEMI_SMOOTH_CT") == 0.0)
     FOUR_C_THROW("Parameter ct = 0, must be greater than 0 for frictional contact");
 
-  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
-          Inpar::CONTACT::solution_augmented &&
-      contact.get<double>("SEMI_SMOOTH_CN") <= 0.0)
-    FOUR_C_THROW("Regularization parameter cn, must be greater than 0 for contact problems");
-
   if (Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(contact, "FRICTION") ==
           Inpar::CONTACT::friction_tresca &&
       dim == 3 &&
@@ -199,13 +188,6 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
           Inpar::CONTACT::friction_none &&
       Core::UTILS::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON") != 1 && dim == 3)
     FOUR_C_THROW("3D frictional contact only implemented with Semi-smooth Newton");
-
-  if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
-          Inpar::CONTACT::solution_augmented &&
-      Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(contact, "FRICTION") !=
-          Inpar::CONTACT::friction_none)
-    FOUR_C_THROW(
-        "Frictional contact is for the augmented Lagrange formulation not yet implemented!");
 
   if (Core::UTILS::IntegralValue<int>(mortar, "CROSSPOINTS") == true && dim == 3)
     FOUR_C_THROW("Crosspoints / edge node modification not yet implemented for 3D");
@@ -294,12 +276,6 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
           "element-based integration.");
     }
 
-    if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
-            Inpar::CONTACT::solution_augmented &&
-        Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
-            Inpar::Mortar::shape_dual)
-      FOUR_C_THROW("The augmented Lagrange formulation does not support dual shape functions.");
-
     // ---------------------------------------------------------------------
     // not (yet) implemented combinations
     // ---------------------------------------------------------------------
@@ -348,27 +324,6 @@ void CONTACT::STRATEGY::Factory::read_and_check_input(Teuchos::ParameterList& pa
         Core::UTILS::IntegralValue<int>(contact, "REGULARIZED_NORMAL_CONTACT") == true)
       FOUR_C_THROW("Regularized normal contact only implemented for EHL");
 
-    // ---------------------------------------------------------------------
-    // Augmented Lagrangian strategy
-    // ---------------------------------------------------------------------
-    if (Core::UTILS::IntegralValue<Inpar::CONTACT::SolvingStrategy>(contact, "STRATEGY") ==
-        Inpar::CONTACT::solution_augmented)
-    {
-      if (Core::UTILS::IntegralValue<Inpar::Mortar::ShapeFcn>(mortar, "LM_SHAPEFCN") ==
-          Inpar::Mortar::shape_dual)
-        FOUR_C_THROW("AUGEMENTED LAGRANGIAN STRATEGY: No support for dual shape functions.");
-
-      if (not Core::UTILS::IntegralValue<int>(contact, "SEMI_SMOOTH_NEWTON"))
-      {
-        FOUR_C_THROW(
-            "AUGEMENTED LAGRANGIAN STRATEGY: Support ony for the semi-smooth Newton "
-            "case at the moment!");
-      }
-
-      if (Core::UTILS::IntegralValue<Inpar::CONTACT::FrictionType>(contact, "FRICTION") ==
-          Inpar::CONTACT::friction_tresca)
-        FOUR_C_THROW("AUGEMENTED LAGRANGIAN STRATEGY: No frictional contact support!");
-    }
 
     // ---------------------------------------------------------------------
     // thermal-structure-interaction contact
@@ -1333,95 +1288,6 @@ Teuchos::RCP<CONTACT::Interface> CONTACT::STRATEGY::Factory::CreateInterface(
 
   switch (stype)
   {
-    // ------------------------------------------------------------------------
-    // Create an augmented contact interface
-    // ------------------------------------------------------------------------
-    case Inpar::CONTACT::solution_augmented:
-    case Inpar::CONTACT::solution_combo:
-    {
-      if (interface_data_ptr.is_null())
-      {
-        interface_data_ptr = Teuchos::rcp(new CONTACT::Aug::InterfaceDataContainer());
-
-        newinterface = Teuchos::rcp(
-            new CONTACT::Aug::Interface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
-      }
-      else
-      {
-        Teuchos::RCP<CONTACT::Aug::InterfaceDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::Aug::InterfaceDataContainer>(
-                interface_data_ptr, true);
-        newinterface = Teuchos::rcp(new CONTACT::Aug::Interface(iaugdata_ptr));
-      }
-
-      break;
-    }
-    // ------------------------------------------------------------------------
-    // Create an augmented steepest ascent contact interface
-    // ------------------------------------------------------------------------
-    case Inpar::CONTACT::solution_steepest_ascent:
-    {
-      if (interface_data_ptr.is_null())
-      {
-        interface_data_ptr = Teuchos::rcp(new CONTACT::Aug::InterfaceDataContainer());
-
-        newinterface = Teuchos::rcp(new CONTACT::Aug::SteepestAscent::Interface(
-            interface_data_ptr, id, comm, dim, icparams, selfcontact));
-      }
-      else
-      {
-        Teuchos::RCP<CONTACT::Aug::InterfaceDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::Aug::InterfaceDataContainer>(
-                interface_data_ptr, true);
-        newinterface = Teuchos::rcp(new CONTACT::Aug::SteepestAscent::Interface(iaugdata_ptr));
-      }
-
-      break;
-    }
-    // ------------------------------------------------------------------------
-    // Create an augmented steepest ascent contact interface (saddlepoint)
-    // ------------------------------------------------------------------------
-    case Inpar::CONTACT::solution_steepest_ascent_sp:
-    {
-      if (interface_data_ptr.is_null())
-      {
-        interface_data_ptr = Teuchos::rcp(new CONTACT::Aug::InterfaceDataContainer());
-
-        newinterface = Teuchos::rcp(new CONTACT::Aug::Lagrange::Interface(
-            interface_data_ptr, id, comm, dim, icparams, selfcontact));
-      }
-      else
-      {
-        Teuchos::RCP<CONTACT::Aug::InterfaceDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::Aug::InterfaceDataContainer>(
-                interface_data_ptr, true);
-        newinterface = Teuchos::rcp(new CONTACT::Aug::Lagrange::Interface(iaugdata_ptr));
-      }
-
-      break;
-    }
-    // ------------------------------------------------------------------------
-    // Create a lagrange contact interface (based on the augmented formulation)
-    // ------------------------------------------------------------------------
-    case Inpar::CONTACT::solution_std_lagrange:
-    {
-      if (interface_data_ptr.is_null())
-      {
-        interface_data_ptr = Teuchos::rcp(new CONTACT::Aug::InterfaceDataContainer());
-
-        newinterface = Teuchos::rcp(new CONTACT::Aug::Lagrange::Interface(
-            interface_data_ptr, id, comm, dim, icparams, selfcontact));
-      }
-      else
-      {
-        Teuchos::RCP<CONTACT::Aug::InterfaceDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::Aug::InterfaceDataContainer>(
-                interface_data_ptr, true);
-        newinterface = Teuchos::rcp(new CONTACT::Aug::Lagrange::Interface(iaugdata_ptr));
-      }
-
-      break;
-    }
     case Inpar::CONTACT::solution_multiscale:
       interface_data_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
       newinterface = Teuchos::rcp(new CONTACT::ConstitutivelawInterface(
@@ -1743,41 +1609,6 @@ Teuchos::RCP<CONTACT::AbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrateg
     //        comm_ptr,
     //        maxdof));
   }
-  else if (stype == Inpar::CONTACT::solution_combo)
-  {
-    data_ptr = Teuchos::rcp(new Aug::DataContainer());
-
-    strategy_ptr = Aug::ComboStrategy::Create(data_ptr, dof_row_map, node_row_map, params,
-        interfaces, dim, comm_ptr, dof_offset, cparams_interface);
-  }
-  else if (stype == Inpar::CONTACT::solution_augmented)
-  {
-    if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new Aug::DataContainer());
-
-    strategy_ptr = Teuchos::rcp(new Aug::Strategy(
-        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
-  }
-  else if (stype == Inpar::CONTACT::solution_steepest_ascent)
-  {
-    if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new Aug::DataContainer());
-
-    strategy_ptr = Teuchos::rcp(new Aug::SteepestAscent::Strategy(
-        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
-  }
-  else if (stype == Inpar::CONTACT::solution_steepest_ascent_sp)
-  {
-    if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new Aug::DataContainer());
-
-    strategy_ptr = Teuchos::rcp(new Aug::SteepestAscentSaddlePoint::Strategy(
-        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
-  }
-  else if (stype == Inpar::CONTACT::solution_std_lagrange)
-  {
-    if (data_ptr.is_null()) data_ptr = Teuchos::rcp(new Aug::DataContainer());
-
-    strategy_ptr = Teuchos::rcp(new Aug::Lagrange::Strategy(
-        data_ptr, dof_row_map, node_row_map, params, interfaces, dim, comm_ptr, dof_offset));
-  }
   else if (algo == Inpar::Mortar::algorithm_gpts &&
            (stype == Inpar::CONTACT::solution_nitsche || stype == Inpar::CONTACT::solution_penalty))
   {
@@ -1964,41 +1795,6 @@ void CONTACT::STRATEGY::Factory::PrintStrategyBanner(
           Core::IO::cout << "================================================================\n";
           Core::IO::cout << "===== Dual Uzawa Augmented Lagrange strategy ===================\n";
           Core::IO::cout << "===== (Pure displacement formulation) ==========================\n";
-          Core::IO::cout << "================================================================\n\n";
-        }
-        else if (soltype == Inpar::CONTACT::solution_combo)
-        {
-          Core::IO::cout << "================================================================\n";
-          Core::IO::cout << "===== Combination of different Solving Strategies ==============\n";
-          Core::IO::cout << "================================================================\n\n";
-        }
-        else if (soltype == Inpar::CONTACT::solution_augmented)
-        {
-          Core::IO::cout << "================================================================\n";
-          Core::IO::cout << "===== Augmented Lagrange strategy ==============================\n";
-          Core::IO::cout << "===== (Saddle point formulation) ===============================\n";
-          Core::IO::cout << "================================================================\n\n";
-        }
-        else if (soltype == Inpar::CONTACT::solution_std_lagrange)
-        {
-          Core::IO::cout << "================================================================\n";
-          Core::IO::cout << "===== Standard Lagrange strategy ===============================\n";
-          Core::IO::cout << "===== Derived from the Augmented formulation ===================\n";
-          Core::IO::cout << "===== (Saddle point formulation) ===============================\n";
-          Core::IO::cout << "================================================================\n\n";
-        }
-        else if (soltype == Inpar::CONTACT::solution_steepest_ascent)
-        {
-          Core::IO::cout << "================================================================\n";
-          Core::IO::cout << "===== Steepest Ascent strategy =================================\n";
-          Core::IO::cout << "===== (Condensed formulation) ==================================\n";
-          Core::IO::cout << "================================================================\n\n";
-        }
-        else if (soltype == Inpar::CONTACT::solution_steepest_ascent_sp)
-        {
-          Core::IO::cout << "================================================================\n";
-          Core::IO::cout << "===== Steepest Ascent strategy =================================\n";
-          Core::IO::cout << "===== (Saddle point formulation) ===============================\n";
           Core::IO::cout << "================================================================\n\n";
         }
         else

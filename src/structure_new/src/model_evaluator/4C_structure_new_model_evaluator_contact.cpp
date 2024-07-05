@@ -10,8 +10,6 @@
 
 #include "4C_structure_new_model_evaluator_contact.hpp"
 
-#include "4C_contact_aug_plot.hpp"
-#include "4C_contact_aug_strategy.hpp"
 #include "4C_contact_lagrange_strategy_poro.hpp"
 #include "4C_contact_strategy_factory.hpp"
 #include "4C_global_data.hpp"
@@ -102,22 +100,7 @@ void Solid::MODELEVALUATOR::Contact::setup()
  *----------------------------------------------------------------------*/
 void Solid::MODELEVALUATOR::Contact::post_setup(Teuchos::ParameterList& cparams)
 {
-  if (dynamic_cast<CONTACT::Aug::Strategy*>(strategy_ptr_.get()))
-  {
-    Teuchos::ParameterList& aug_params = cparams.sublist("AUGMENTED");
-    Teuchos::ParameterList& plot_params = aug_params.sublist("PLOT");
-    plot_params.set<const int*>("CURRENT_STEP", &global_state().get_step_np());
-    plot_params.set<std::string>(
-        "OUTPUT_FILE_NAME", global_in_output().get_output_ptr()->output()->file_name());
-    plot_params.set<std::string>(
-        "INPUT_FILE_NAME", global_in_output().get_output_ptr()->output()->input_file_name());
-    plot_params.set<const Core::FE::Discretization*>(
-        "DISCRETIZATION", global_state().get_discret().get());
-    plot_params.set<Solid::MODELEVALUATOR::Contact*>("MODELEVALUATOR", this);
-
-    Solid::IMPLICIT::Generic& impl = dynamic_cast<Solid::IMPLICIT::Generic&>(integrator());
-    CONTACT::Aug::Plot::Create(impl.get_nox_params(), plot_params, strategy_ptr_.get());
-  }
+  // do nothing
 }
 
 /*----------------------------------------------------------------------*

@@ -3,7 +3,6 @@ four_c_auto_define_module()
 set(_dependencies
     # cmake-format: sortable
     config
-    contact_aug
     contact_constitutivelaw
     core
     global_data

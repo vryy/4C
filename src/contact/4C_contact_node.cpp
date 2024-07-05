@@ -9,7 +9,6 @@
 
 #include "4C_contact_node.hpp"
 
-#include "4C_contact_aug_contact_integrator_utils.hpp"
 #include "4C_contact_defines.hpp"
 #include "4C_contact_element.hpp"
 #include "4C_linalg_serialdensevector.hpp"
@@ -105,162 +104,6 @@ void CONTACT::NodeDataContainer::unpack(
   return;
 }
 
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-CONTACT::Aug::NodeDataContainer::NodeDataContainer(Node& parentNode)
-    : mentries_(-1),
-      kappa_(1.0e12),
-      w_gap_(1.0e12),
-      aug_a_(1.0e12),
-      d_aug_a_(0),
-      parent_node_(parentNode)
-{
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-CONTACT::Aug::NodeDataContainer::NodeDataContainer(
-    Node& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster)
-    : kappa_(1.0e12), w_gap_(1.0e12), aug_a_(1.0e12), parent_node_(parentNode)
-{
-  mentries_ = approximate_m_entries(slMaElementAreaRatio, isTriangleOnMaster);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-int CONTACT::Aug::NodeDataContainer::approximate_m_entries(
-    const int slMaElementAreaRatio, const bool isTriangleOnMaster) const
-{
-  // number of adjacent slave elements
-  // The max function catches the rare case of a pure ghost node, i.e. the node
-  // belongs to a different proc than all surrounding elements/nodes on this proc
-  const int numSlEle = std::max(parent_node_.NumElement(), 1);
-
-  // numSlEle slave elements project approximately into numMaEle if there is no
-  // off-set
-  int numMaEle = numSlEle * slMaElementAreaRatio;
-
-  /* These numMaEle elements are approximately surrounded by numSurround
-   * elements + numCorner elements */
-  int numMaSurrounding = -1;
-  int numCorner = -1;
-  if (isTriangleOnMaster)
-  {
-    numMaSurrounding = 4 * std::ceil(std::sqrt(static_cast<double>(numMaEle) / 2.0));
-    numCorner = 2;
-  }
-  else
-  {
-    numMaSurrounding = 2 * std::ceil(std::sqrt(static_cast<double>(numMaEle)));
-    numCorner = 1;
-  }
-
-  // approximate number of relevant master elements
-  numMaEle += numMaSurrounding + numCorner;
-
-  // approximate number of dentries per element
-  const int dentries_per_element = parent_node_.GetNumDentries() / numSlEle;
-
-  // approximate number of mentries
-  double mentries = dentries_per_element * numMaEle;
-
-  double exp2 = std::ceil(std::log(mentries) / std::log(2.0));
-  exp2 = std::max(exp2, 1.0);
-
-  return static_cast<int>(std::pow(2.0, exp2));
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::Aug::NodeDataContainer::setup()
-{
-  if (mentries_ == -1) FOUR_C_THROW("mentries_ must be initialized!");
-
-  //  const int linsize = parentNode_.GetLinsize();
-  const int dentries = parent_node_.GetNumDentries();
-
-  d_aug_a_.resize(dentries);
-  d_kappa_.resize(dentries);
-
-  Core::Gen::reset(dentries, dd_aug_a_);
-  Core::Gen::reset(dentries, dd_kappa_);
-
-  d_wgap_sl_.resize(dentries);
-  d_wgap_ma_.resize(mentries_);
-
-  d_wgap_sl_complete_ = Teuchos::rcp(new Deriv1stMap(dentries));
-  d_wgap_ma_complete_ = Teuchos::rcp(new Deriv1stMap(mentries_));
-
-  Core::Gen::reset(dentries, dd_wgap_sl_);
-  Core::Gen::reset(mentries_, dd_wgap_ma_);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::Aug::NodeDataContainer::pack(Core::Communication::PackBuffer& data) const
-{
-  // add maxNumMasterElements
-  Core::Communication::ParObject::add_to_pack(data, mentries_);
-  // add kappa_
-  Core::Communication::ParObject::add_to_pack(data, kappa_);
-  // add grow_
-  Core::Communication::ParObject::add_to_pack(data, w_gap_);
-  // add augA_
-  Core::Communication::ParObject::add_to_pack(data, aug_a_);
-
-  // no need to pack derivs_
-  // (these will evaluated new anyway)
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::Aug::NodeDataContainer::unpack(
-    std::vector<char>::size_type& position, const std::vector<char>& data)
-{
-  // maxNumMasterElements
-  Core::Communication::ParObject::extract_from_pack(position, data, mentries_);
-  // kappa_
-  Core::Communication::ParObject::extract_from_pack(position, data, kappa_);
-  // grow_
-  Core::Communication::ParObject::extract_from_pack(position, data, w_gap_);
-  // augA_
-  Core::Communication::ParObject::extract_from_pack(position, data, aug_a_);
-
-  return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::Aug::NodeDataContainer::Complete()
-{
-  GetDeriv1st_WGapSl().complete();
-  GetDeriv1st_WGapMa().complete();
-
-  GetDeriv2nd_WGapSl().complete();
-  GetDeriv2nd_WGapMa().complete();
-
-  get_deriv1st_w_gap_sl_complete().complete();
-  get_deriv1st_w_gap_ma_complete().complete();
-
-  GetDeriv1st_Kappa().complete();
-  GetDeriv2nd_Kappa().complete();
-  GetDeriv1st_data().complete();
-
-  debug_.Complete();
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::Aug::NodeDataContainer::Debug::Complete()
-{
-  d_.complete();
-  dd_.complete();
-
-  Core::Gen::complete(d_vec_);
-  Core::Gen::complete(dd_vec_);
-}
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ager 08/14|
@@ -379,7 +222,6 @@ CONTACT::Node::Node(int id, const std::vector<double>& coords, const int owner,
       involvedm_(false),
       linsize_(0),  // length of linearization
       codata_(Teuchos::null),
-      augdata_(Teuchos::null),
       coporodata_(Teuchos::null),
       cTSIdata_(Teuchos::null)
 {
@@ -395,7 +237,6 @@ CONTACT::Node::Node(const CONTACT::Node& old)
       involvedm_(false),
       linsize_(0),
       codata_(Teuchos::null),
-      augdata_(Teuchos::null),
       coporodata_(Teuchos::null),
       cTSIdata_(Teuchos::null)
 {
@@ -465,11 +306,6 @@ void CONTACT::Node::pack(Core::Communication::PackBuffer& data) const
   add_to_pack(data, hasdata);
   if (hasdata) codata_->pack(data);
 
-  // add augdata_
-  bool hasdataaug = (augdata_ != Teuchos::null);
-  add_to_pack(data, hasdataaug);
-  if (hasdataaug) augdata_->pack(data);
-
   // add porodata_
   bool hasdataporo = (coporodata_ != Teuchos::null);
   add_to_pack(data, hasdataporo);
@@ -520,17 +356,6 @@ void CONTACT::Node::unpack(const std::vector<char>& data)
     codata_ = Teuchos::null;
   }
 
-  // augdata_
-  bool hasdataaug = extract_int(position, data);
-  if (hasdataaug)
-  {
-    augdata_ = Teuchos::rcp(new CONTACT::Aug::NodeDataContainer(*this));
-    augdata_->unpack(position, data);
-    augdata_->setup();
-  }
-  else
-    augdata_ = Teuchos::null;
-
   // porodata_
   bool hasdataporo = extract_int(position, data);
   if (hasdataporo)
@@ -576,24 +401,6 @@ void CONTACT::Node::AddgValue(double& val)
   return;
 }
 
-
-/*----------------------------------------------------------------------*
- |  Add a value to the weighted gap                      hiermeier 04/14|
- *----------------------------------------------------------------------*/
-void CONTACT::Node::AddWGapValue(const double val)
-{
-  // check if this is a master node or slave boundary node
-  if (IsSlave() == false) FOUR_C_THROW("AddWGapValue: function called for master node %i", Id());
-  if (IsOnBound() == true) FOUR_C_THROW("AddWGapValue: function called for boundary node %i", Id());
-
-  // initialize if called for the first time
-  if (AugData().GetWGap() == 1.0e12) AugData().GetWGap() = 0;
-
-  // add given value to wGap_
-  AugData().GetWGap() += val;
-
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  Add a value to the nts gap                               farah 01/16|
@@ -678,25 +485,6 @@ void CONTACT::Node::AddltlJumpValue(double* val)
 
 
 /*----------------------------------------------------------------------*
- |  Add a value to scaling factor kappa                  hiermeier 04/14|
- *----------------------------------------------------------------------*/
-void CONTACT::Node::AddKappaValue(double& val)
-{
-  // check if this is a master node or slave boundary node
-  if (IsSlave() == false) FOUR_C_THROW("AddKappaValue: function called for master node %i", Id());
-  if (IsOnBound() == true)
-    FOUR_C_THROW("AddKappaValue: function called for boundary node %i", Id());
-
-  // initialize if called for the first time
-  if (AugData().GetKappa() == 1.0e12) AugData().GetKappa() = 0.0;
-
-  // add given value to kappa_
-  AugData().GetKappa() += val;
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Add a value to the 'DerivZ' map                           popp 06/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Node::AddDerivZValue(int& row, const int& col, double val)
@@ -761,21 +549,6 @@ void CONTACT::Node::initialize_data_container()
   }
 
   return;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-void CONTACT::Node::initialize_aug_data_container(
-    const int slMaElementAreaRatio, const bool isTriangleOnMaster)
-{
-  // Do it only, if the container has not been initialized, yet.
-  if (augdata_.is_null())
-  {
-    augdata_ = Teuchos::rcp(
-        new CONTACT::Aug::NodeDataContainer(*this, slMaElementAreaRatio, isTriangleOnMaster));
-
-    augdata_->setup();
-  }
 }
 
 /*-----------------------------------------------------------------------*

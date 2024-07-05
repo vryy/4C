@@ -1,5 +1,10 @@
 List of major features that were removed from 4C, including date and revision where code was removed
 
+Augmented Lagrangian contact formulation (Contact::Aug)
+- removed in commit 2329d32cf3b614ab00c6811adeede2415bcb0472
+- reasons: unused and unmaintained, no active research, interferes with refactoring effort in time integration
+- removed by Sebastian Proell
+
 GEMM ("Generalized energy momentum method")
 - removed in commit c010a388759acd3496601ed847b55168939b56d6 on 30/04/2024
 - reasons: needs special implementations on the element and material level, not actively used
