@@ -41,13 +41,13 @@ namespace NOX
             virtual ~Required() = default;
 
             //! Get the number of inner-loop nonlinear iterations (e.g. line search iterations)
-            virtual int GetNumIterations() const = 0;
+            virtual int get_num_iterations() const = 0;
 
             //! Get the objective or meritfunction
-            virtual const ::NOX::MeritFunction::Generic& GetMeritFunction() const = 0;
+            virtual const ::NOX::MeritFunction::Generic& get_merit_function() const = 0;
 
             //! Execute the inner status test
-            virtual NOX::Nln::Inner::StatusTest::StatusType CheckInnerStatus(
+            virtual NOX::Nln::Inner::StatusTest::StatusType check_inner_status(
                 const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
                 ::NOX::StatusTest::CheckType checkType) const = 0;
           };  // class Required

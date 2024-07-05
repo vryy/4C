@@ -116,13 +116,14 @@ namespace NOX
       bool computeJacobian(const ::NOX::Epetra::Vector& x) override;
 
       //! Evaluate the Jacobian and the right hand side based on the solution vector x at once.
-      virtual bool computeFandJacobian(const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs);
+      virtual bool compute_f_and_jacobian(
+          const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs);
 
       bool compute_correction_system(const enum NOX::Nln::CorrectionType type,
           const ::NOX::Abstract::Group& grp, const ::NOX::Epetra::Vector& x,
           ::NOX::Epetra::Vector& rhs);
 
-      bool applyJacobianBlock(const ::NOX::Epetra::Vector& input,
+      bool apply_jacobian_block(const ::NOX::Epetra::Vector& input,
           Teuchos::RCP<::NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
 
       bool applyJacobian(
@@ -152,19 +153,20 @@ namespace NOX
       Teuchos::RCP<const ::NOX::Epetra::Interface::Jacobian> get_jacobian_interface() const;
 
       //! ::NOX::Epetra::Interface::Preconditioner accessor
-      Teuchos::RCP<const ::NOX::Epetra::Interface::Preconditioner> getPrecInterface() const;
+      Teuchos::RCP<const ::NOX::Epetra::Interface::Preconditioner> get_preconditioner_interface()
+          const;
 
       /** \brief return the Jacobian range map
        *
        *  \param rbid  row block id
        *  \param cbid  column block id */
-      const Epetra_Map& getJacobianRangeMap(unsigned rbid, unsigned cbid) const;
+      const Epetra_Map& get_jacobian_range_map(unsigned rbid, unsigned cbid) const;
 
       /** \brief access the Jacobian block
        *
        *  \param rbid  row block id
        *  \param cbid  column block id */
-      const Core::LinAlg::SparseMatrix& getJacobianBlock(unsigned rbid, unsigned cbid) const;
+      const Core::LinAlg::SparseMatrix& get_jacobian_block(unsigned rbid, unsigned cbid) const;
 
       /** \brief get a copy of the block diagonal
        *
@@ -217,7 +219,7 @@ namespace NOX
       void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp) override;
 
       //! destroy the jacobian ptr
-      bool DestroyJacobian();
+      bool destroy_jacobian();
 
       //! compute the eigenvalues of the jacobian operator in serial mode
       /**

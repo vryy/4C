@@ -60,10 +60,10 @@ namespace NOX
         //@{
         //! Returns the value of the F-norm of the corresponding quantity computed in the last call
         //! to checkStatus.
-        virtual double GetNormF(const NOX::Nln::StatusTest::QuantityType& qType) const;
+        virtual double get_norm_f(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Returns the true tolerance of the corresponding quantity.
-        virtual double GetTrueTolerance(const NOX::Nln::StatusTest::QuantityType& qType) const;
+        virtual double get_true_tolerance(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Returns the specified tolerance set in the constructor for the corresponding quantity.
         virtual double get_specified_tolerance(
@@ -75,10 +75,10 @@ namespace NOX
         /*! \brief Returns the norm type as <int> of the desired quantity
          *
          *  If the given quantity cannot be found a default value of -100 is returned. */
-        int GetNormType(const NOX::Nln::StatusTest::QuantityType& qType) const;
+        int get_norm_type(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Check for the given quantity
-        bool IsQuantity(const NOX::Nln::StatusTest::QuantityType& qType) const;
+        bool is_quantity(const NOX::Nln::StatusTest::QuantityType& qType) const;
         //@}
 
         ::NOX::StatusTest::StatusType checkStatus(

@@ -59,7 +59,7 @@ Teuchos::RCP<::NOX::Solver::Generic> NOX::Nln::Solver::Factory::BuildSolver(
   {
     solver = Teuchos::rcp(new NOX::Nln::Solver::SingleStep(grp, innerTests, params));
   }
-  else if (not nlnGlobalData->GetIsConstrained())
+  else if (not nlnGlobalData->is_constrained())
   {
     // unconstrained problems are able to call the standard nox factory
     solver = ::NOX::Solver::buildSolver(grp, outerTests, params);

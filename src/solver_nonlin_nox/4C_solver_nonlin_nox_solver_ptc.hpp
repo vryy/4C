@@ -372,9 +372,9 @@ namespace NOX
         //! The current model reduction ratio.
         double modelReductionRatio_;
         //@}
-
       };  // class PseudoTransient
     }     // namespace Solver
+
     namespace LinSystem
     {
       namespace PrePostOp
@@ -394,7 +394,6 @@ namespace NOX
           PseudoTransient(Teuchos::RCP<Epetra_Vector>& scalingDiagOp,
               Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr,
               const NOX::Nln::Solver::PseudoTransient& ptcsolver);
-
 
           void run_post_compute_jacobian(Core::LinAlg::SparseOperator& jac, const Epetra_Vector& x,
               const NOX::Nln::LinearSystem& linsys) override;
@@ -419,6 +418,7 @@ namespace NOX
         };  // class PseudoTransient
       }     // namespace PrePostOp
     }       // namespace LinSystem
+
     namespace GROUP
     {
       namespace PrePostOp
@@ -437,9 +437,9 @@ namespace NOX
               const NOX::Nln::Solver::PseudoTransient& ptcsolver);
 
 
-          void runPreComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
+          void run_pre_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
 
-          void runPostComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
+          void run_post_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
 
          protected:
           Teuchos::RCP<::NOX::Epetra::Vector> eval_pseudo_transient_f_update(

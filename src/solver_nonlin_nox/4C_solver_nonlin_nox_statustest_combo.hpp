@@ -46,14 +46,15 @@ namespace NOX
 
         //! Add another test to this combination.
         /*!
-          Calls isSafe() to determine if it is safe to add \c a to the combination.
+          Calls is_safe() to determine if it is safe to add \c a to the combination.
         */
         Combo& addStatusTest(const Teuchos::RCP<::NOX::StatusTest::Generic>& a) override;
 
-        virtual Combo& addStatusTest(
+        virtual Combo& add_status_test(
             const Teuchos::RCP<::NOX::StatusTest::Generic>& a, const bool& init);
 
-        virtual const std::vector<Teuchos::RCP<::NOX::StatusTest::Generic>>& GetTestVector() const;
+        virtual const std::vector<Teuchos::RCP<::NOX::StatusTest::Generic>>& get_test_vector()
+            const;
 
        protected:
         //! Check whether or not it is safe to add a to this list of tests.

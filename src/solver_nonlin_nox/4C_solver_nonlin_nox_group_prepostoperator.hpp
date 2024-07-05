@@ -83,7 +83,7 @@ namespace NOX
          * \param F        : full access to the right hand side vector of the NOX::Nln::Group.
          * \param grp      : read only access to the NOX::Nln::Group object.
          */
-        virtual void runPreComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp);
+        virtual void run_pre_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp);
 
         /** User defined method that will be executed at the end of a call to
          * NOX::Nln::Group::computeF().
@@ -91,7 +91,7 @@ namespace NOX
          * \param F        : full access to the right hand side vector of the NOX::Nln::Group.
          * \param grp      : read only access to the NOX::Nln::Group object.
          */
-        virtual void runPostComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp);
+        virtual void run_post_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp);
 
         /** User defined method that will be executed at the start of a call to
          * NOX::Nln::Group::computeX().
@@ -158,25 +158,25 @@ namespace NOX
   }      // namespace Nln
 }  // namespace NOX
 
-inline void NOX::Nln::GROUP::PrePostOperator::runPreComputeF(
+inline void NOX::Nln::GROUP::PrePostOperator::run_pre_compute_f(
     Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
   if (havePrePostOperator_)
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPreComputeF(F, grp);
+      it->second->run_pre_compute_f(F, grp);
   }
 }
 
-inline void NOX::Nln::GROUP::PrePostOperator::runPostComputeF(
+inline void NOX::Nln::GROUP::PrePostOperator::run_post_compute_f(
     Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
   if (havePrePostOperator_)
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPostComputeF(F, grp);
+      it->second->run_post_compute_f(F, grp);
   }
 }
 
@@ -187,7 +187,7 @@ inline void NOX::Nln::GROUP::PrePostOperator::runPreComputeX(const NOX::Nln::Gro
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPreComputeX(input_grp, dir, step, curr_grp);
+      it->second->run_pre_compute_x(input_grp, dir, step, curr_grp);
   }
 }
 
@@ -198,7 +198,7 @@ inline void NOX::Nln::GROUP::PrePostOperator::runPostComputeX(const NOX::Nln::Gr
   {
     Map::iterator it;
     for (it = prePostOperatorMapPtr_->begin(); it != prePostOperatorMapPtr_->end(); ++it)
-      it->second->runPostComputeX(input_grp, dir, step, curr_grp);
+      it->second->run_post_compute_x(input_grp, dir, step, curr_grp);
   }
 }
 

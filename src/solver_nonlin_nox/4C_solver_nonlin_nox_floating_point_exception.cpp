@@ -41,7 +41,7 @@ void NOX::Nln::FloatingPointException::clear() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::Nln::FloatingPointException::checkAndPrint(std::ostream& os)
+int NOX::Nln::FloatingPointException::check_and_print(std::ostream& os)
 {
   int exception_occurred = 0;
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -82,7 +82,7 @@ void NOX::Nln::FloatingPointException::precompute() const { disable(); }
  *----------------------------------------------------------------------------*/
 int NOX::Nln::FloatingPointException::postcompute(std::ostream& os) const
 {
-  const int err = checkAndPrint(os);
+  const int err = check_and_print(os);
   if (err)
     os << ::NOX::Utils::fill(40, '-') << "\n"
        << "Caught floating point exceptions = " << err << std::endl;

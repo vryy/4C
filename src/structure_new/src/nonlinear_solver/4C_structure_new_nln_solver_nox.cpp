@@ -109,13 +109,13 @@ void Solid::Nln::SOLVER::Nox::setup()
   // -------------------------------------------------------------------------
   /* use NOX::Nln::Group to enable access to time integration
    * use NOX::Nln::Constraint::Group to enable access to the constraint data*/
-  group_ptr() = problem_->CreateGroup(linsys_);
+  group_ptr() = problem_->create_group(linsys_);
 
   // -------------------------------------------------------------------------
   // Create NOX status test
   // -------------------------------------------------------------------------
   // get the stopping criteria from the nox parameter list
-  problem_->CreateStatusTests(ostatus_, istatus_);
+  problem_->create_status_tests(ostatus_, istatus_);
 
   // set flag
   issetup_ = true;
@@ -152,7 +152,7 @@ void Solid::Nln::SOLVER::Nox::reset_params()
   check_init_setup();
 
   const Teuchos::ParameterList& pdir =
-      nlnglobaldata_->GetNlnParameterList().sublist("Direction", true);
+      nlnglobaldata_->get_nln_parameter_list().sublist("Direction", true);
   std::string method = pdir.get<std::string>("Method");
 
   if (method == "User Defined") method = pdir.get<std::string>("User Defined Method");
@@ -160,7 +160,7 @@ void Solid::Nln::SOLVER::Nox::reset_params()
   if (method == "Newton" or method == "Modified Newton")
   {
     // get the linear solver sub-sub-sub-list
-    Teuchos::ParameterList& lsparams = nlnglobaldata_->GetNlnParameterList()
+    Teuchos::ParameterList& lsparams = nlnglobaldata_->get_nln_parameter_list()
                                            .sublist("Direction", true)
                                            .sublist("Newton", true)
                                            .sublist("Linear Solver", true);
@@ -171,7 +171,7 @@ void Solid::Nln::SOLVER::Nox::reset_params()
   else if (method == "Single Step")
   {
     // get the linear solver sub-sub-list
-    Teuchos::ParameterList& lsparams = nlnglobaldata_->GetNlnParameterList()
+    Teuchos::ParameterList& lsparams = nlnglobaldata_->get_nln_parameter_list()
                                            .sublist("Single Step Solver", true)
                                            .sublist("Linear Solver", true);
 
@@ -193,7 +193,7 @@ enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::Solve()
   // Check if we do something special if the non-linear solver fails,
   // otherwise an error is thrown.
   if (data_sdyn().get_divergence_action() == Inpar::Solid::divcont_stop)
-    problem_->CheckFinalStatus(finalstatus);
+    problem_->check_final_status(finalstatus);
 
   // copy the solution group into the class variable
   group() = nlnsolver_->getSolutionGroup();

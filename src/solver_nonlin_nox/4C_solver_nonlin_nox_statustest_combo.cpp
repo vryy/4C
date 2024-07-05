@@ -45,7 +45,7 @@ NOX::Nln::StatusTest::Combo::Combo(ComboType t, const Teuchos::RCP<Generic>& a,
   tests_.push_back(a);
   // Be careful, because the test b was already added to
   // the base class tests vector during the construction call!
-  this->addStatusTest(b, true);
+  this->add_status_test(b, true);
 }
 
 /*----------------------------------------------------------------------------*
@@ -53,12 +53,12 @@ NOX::Nln::StatusTest::Combo::Combo(ComboType t, const Teuchos::RCP<Generic>& a,
 NOX::Nln::StatusTest::Combo& NOX::Nln::StatusTest::Combo::addStatusTest(
     const Teuchos::RCP<::NOX::StatusTest::Generic>& a)
 {
-  return addStatusTest(a, false);
+  return add_status_test(a, false);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::StatusTest::Combo& NOX::Nln::StatusTest::Combo::addStatusTest(
+NOX::Nln::StatusTest::Combo& NOX::Nln::StatusTest::Combo::add_status_test(
     const Teuchos::RCP<::NOX::StatusTest::Generic>& a, const bool& init)
 {
   if (isSafe(*(a.get())))
@@ -105,7 +105,7 @@ bool NOX::Nln::StatusTest::Combo::isSafe(::NOX::StatusTest::Generic& a)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 const std::vector<Teuchos::RCP<::NOX::StatusTest::Generic>>&
-NOX::Nln::StatusTest::Combo::GetTestVector() const
+NOX::Nln::StatusTest::Combo::get_test_vector() const
 {
   return tests_;
 }

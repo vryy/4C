@@ -61,7 +61,7 @@ namespace NOX
         ::NOX::Abstract::Group& operator=(const ::NOX::Epetra::Group& source) override;
 
         //! Returns the interface map
-        const ReqInterfaceMap& GetConstrInterfaces() const;
+        const ReqInterfaceMap& get_constraint_interfaces() const;
 
         //! Returns a pointer to the given soltype. If the solution type is not found an error is
         //! thrown.
@@ -76,8 +76,7 @@ namespace NOX
         // @name "Get" functions
         //@{
 
-        double GetModelValue(
-            const enum NOX::Nln::MeritFunction::MeritFctName merit_func_type) const override;
+        double get_model_value(const MeritFunction::MeritFctName merit_func_type) const override;
 
         double get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
             const enum NOX::Nln::MeritFunction::MeritFctName merit_func_type,
@@ -85,10 +84,10 @@ namespace NOX
             const enum NOX::Nln::MeritFunction::LinType lintype) const override;
 
         //! Returns the right-hand-side norms of the primary and constraint quantities
-        Teuchos::RCP<const std::vector<double>> GetRHSNorms(
+        Teuchos::RCP<const std::vector<double>> get_rhs_norms(
             const std::vector<::NOX::Abstract::Vector::NormType>& type,
             const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
-            const Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale =
+            Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale =
                 Teuchos::null) const override;
 
         //! Returns the root mean square norm of the primary and Lagrange multiplier updates
@@ -124,11 +123,11 @@ namespace NOX
 
         //! Returns the active set map of the previous Newton step (only needed for inequality
         //! constraint problems)
-        Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
+        Teuchos::RCP<const Epetra_Map> get_old_active_set_map(
             const enum NOX::Nln::StatusTest::QuantityType& qtype) const;
 
         //! Returns basic information about the active set status (no Epetra_Maps needed!)
-        enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
+        enum ::NOX::StatusTest::StatusType get_active_set_info(
             const enum NOX::Nln::StatusTest::QuantityType& qtype, int& activeset_size) const;
 
         //@}

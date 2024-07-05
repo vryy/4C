@@ -77,7 +77,7 @@ namespace Solid
 
       /*! compute right hand side and jacobian
        *  (derived from NOX::Nln::Interface::Jacobian) */
-      bool computeFandJacobian(
+      bool compute_f_and_jacobian(
           const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac) override;
 
       bool compute_correction_system(const enum NOX::Nln::CorrectionType type,

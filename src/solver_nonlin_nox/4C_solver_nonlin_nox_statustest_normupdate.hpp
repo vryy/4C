@@ -88,10 +88,10 @@ namespace NOX
         /*! \brief Returns the norm type as <int> of the desired quantity
          *
          *  If the given quantity cannot be found a default value of -100 is returned. */
-        int GetNormType(const NOX::Nln::StatusTest::QuantityType& qType) const;
+        int get_norm_type(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! Check for the given quantity
-        bool IsQuantity(const NOX::Nln::StatusTest::QuantityType& qType) const;
+        bool is_quantity(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         //! NOTE: returns the global status of all normF tests
         ::NOX::StatusTest::StatusType getStatus() const override;

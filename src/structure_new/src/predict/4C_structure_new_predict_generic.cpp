@@ -104,7 +104,7 @@ void Solid::Predict::Generic::post_predict(::NOX::Abstract::Group& grp)
   FOUR_C_ASSERT(nlngrp_ptr != nullptr, "Group cast failed!");
   // evaluate the right hand side and the jacobian
   implint_ptr_->set_is_predictor_state(true);
-  nlngrp_ptr->computeFandJacobian();
+  nlngrp_ptr->compute_f_and_jacobian();
   implint_ptr_->set_is_predictor_state(false);
 }
 

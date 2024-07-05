@@ -257,7 +257,7 @@ void NOX::Nln::GlobalData::set_solver_option_parameters()
   /* We use the parameter list to define a PrePostOperator class for the
    * non-linear iteration process. */
   pre_post_op_ptr_ = Teuchos::rcp(new NOX::Nln::Solver::PrePostOp::Generic());
-  NOX::Nln::Aux::AddToPrePostOpVector(solverOptionsList, pre_post_op_ptr_);
+  NOX::Nln::Aux::add_to_pre_post_op_vector(solverOptionsList, pre_post_op_ptr_);
 
   return;
 }
@@ -327,7 +327,7 @@ void NOX::Nln::GlobalData::set_status_test_parameters()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::Utils& NOX::Nln::GlobalData::GetNoxUtils() const
+const ::NOX::Utils& NOX::Nln::GlobalData::get_NOX_utils() const
 {
   if (nox_utils_.is_null()) FOUR_C_THROW("noxUtils_ was not initialized!");
 
@@ -336,7 +336,7 @@ const ::NOX::Utils& NOX::Nln::GlobalData::GetNoxUtils() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<::NOX::Utils>& NOX::Nln::GlobalData::GetNoxUtilsPtr() const
+const Teuchos::RCP<::NOX::Utils>& NOX::Nln::GlobalData::get_NOX_utils_ptr() const
 {
   if (nox_utils_.is_null()) FOUR_C_THROW("noxUtils_ was not initialized!");
 
@@ -345,7 +345,7 @@ const Teuchos::RCP<::NOX::Utils>& NOX::Nln::GlobalData::GetNoxUtilsPtr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::ParameterList& NOX::Nln::GlobalData::GetNlnParameterList() const
+const Teuchos::ParameterList& NOX::Nln::GlobalData::get_nln_parameter_list() const
 {
   if (nlnparams_.is_null()) FOUR_C_THROW("nlnparams_ was not initialized!");
 
@@ -354,7 +354,7 @@ const Teuchos::ParameterList& NOX::Nln::GlobalData::GetNlnParameterList() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::ParameterList& NOX::Nln::GlobalData::GetNlnParameterList()
+Teuchos::ParameterList& NOX::Nln::GlobalData::get_nln_parameter_list()
 {
   if (nlnparams_.is_null()) FOUR_C_THROW("nlnparams_ was not initialized!");
 
@@ -372,7 +372,7 @@ const Teuchos::RCP<Teuchos::ParameterList>& NOX::Nln::GlobalData::get_nln_parame
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Epetra_Comm& NOX::Nln::GlobalData::GetComm() const
+const Epetra_Comm& NOX::Nln::GlobalData::get_comm() const
 {
   if (comm_.is_null()) FOUR_C_THROW("comm_ was not initialized!");
 
@@ -381,7 +381,7 @@ const Epetra_Comm& NOX::Nln::GlobalData::GetComm() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::Nln::LinearSystem::SolverMap& NOX::Nln::GlobalData::GetLinSolvers()
+const NOX::Nln::LinearSystem::SolverMap& NOX::Nln::GlobalData::get_linear_solvers()
 {
   return lin_solvers_;
 }
@@ -436,11 +436,11 @@ const NOX::Nln::CONSTRAINT::PrecInterfaceMap& NOX::Nln::GlobalData::get_constrai
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const bool& NOX::Nln::GlobalData::GetIsConstrained() const { return is_constrained_; }
+bool NOX::Nln::GlobalData::is_constrained() const { return is_constrained_; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<::NOX::Epetra::Scaling>& NOX::Nln::GlobalData::GetScalingObject()
+const Teuchos::RCP<::NOX::Epetra::Scaling>& NOX::Nln::GlobalData::get_scaling_object()
 {
   return i_scale_;
 }

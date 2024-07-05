@@ -133,7 +133,7 @@ bool NOX::Nln::Direction::ModifiedNewton::compute(
 
   // special treatment for correction steps
   NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(grp);
-  NOX::Nln::CorrectionType corr_type = nln_grp.GetCorrectionType();
+  NOX::Nln::CorrectionType corr_type = nln_grp.get_correction_type();
   if (corr_type != NOX::Nln::CorrectionType::vague)
   {
     const bool corr_status = compute_correction_direction(dir, grp, solver, corr_type);
@@ -197,22 +197,6 @@ Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::ModifiedNewton::get_diagonal(
 {
   // fill the diagonal
   Teuchos::RCP<Epetra_Vector> diagonal = Teuchos::null;
-  //  for ( auto& dstest : dstests_ )
-  //  {
-  //    if ( diagonal.is_null() )
-  //      diagonal = dstest->getCurrentDiagonal( grp );
-  //    else
-  //      dstest->fillDiagonal( *diagonal );
-  //  }
-  //
-  //  // debugging
-  //  if ( not diagonal.is_null() )
-  //  {
-  //    double num_non_zeros = 0;
-  //    diagonal->Norm2( &num_non_zeros );
-  //    utils_->out() << "The diagonal of the jacobian is going to be modified at "
-  //        << num_non_zeros*num_non_zeros << " entries!\n";
-  //  }
 
   return diagonal;
 }
@@ -227,9 +211,9 @@ bool NOX::Nln::Direction::ModifiedNewton::test_default_step_quality(::NOX::Abstr
   for (auto& dstest : dstests_)
   {
     if (first_test)
-      status = dstest->initAndCheckTest(dir, grp);
+      status = dstest->init_and_check_test(dir, grp);
     else
-      status = dstest->checkTest(dir, grp);
+      status = dstest->check_test(dir, grp);
     if (not status) break;
   }
 
@@ -248,7 +232,7 @@ bool NOX::Nln::Direction::ModifiedNewton::compute_modified_newton(::NOX::Abstrac
 {
   // Compute F and Jacobian at current solution.
   NOX::Nln::Group& nln_grp = dynamic_cast<NOX::Nln::Group&>(grp);
-  ::NOX::Abstract::Group::ReturnType status = nln_grp.computeFandJacobian();
+  ::NOX::Abstract::Group::ReturnType status = nln_grp.compute_f_and_jacobian();
   if (status != ::NOX::Abstract::Group::Ok)
     throw_error(__LINE__, "compute", "Unable to compute F and/or Jacobian");
 
@@ -277,7 +261,7 @@ bool NOX::Nln::Direction::ModifiedNewton::solve_modified_system(
   }
 
   // reset the IsValid flag of the previous Newton solver attempt
-  dynamic_cast<NOX::Nln::Group&>(grp).resetIsValidNewton();
+  dynamic_cast<NOX::Nln::Group&>(grp).reset_is_valid_newton();
 
   Teuchos::ParameterList& plinsolver =
       params_->sublist("Newton", true).sublist("Linear Solver", true);

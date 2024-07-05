@@ -81,7 +81,7 @@ namespace NOX
               std::vector<Teuchos::RCP<Epetra_Map>>& maps) const = 0;
 
           //! Get the corresponding linear solver (optional)
-          virtual Core::LinAlg::Solver* GetLinearSolver() const { return nullptr; };
+          virtual Core::LinAlg::Solver* get_linear_solver() const { return nullptr; };
         };
       }  // namespace Interface
     }    // namespace CONSTRAINT

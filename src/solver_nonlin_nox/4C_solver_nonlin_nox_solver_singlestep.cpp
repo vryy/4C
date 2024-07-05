@@ -55,7 +55,7 @@ void NOX::Nln::Solver::SingleStep::init(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::Utils& NOX::Nln::Solver::SingleStep::GetUtils() const { return *utilsPtr; }
+const ::NOX::Utils& NOX::Nln::Solver::SingleStep::get_utils() const { return *utilsPtr; }
 
 
 /*----------------------------------------------------------------------------*

@@ -53,7 +53,6 @@ namespace NOX
         /// constructor
         ModifiedNewton(const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& p);
 
-
         bool compute(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp,
             const ::NOX::Solver::Generic& solver) override;
 

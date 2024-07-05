@@ -121,7 +121,7 @@ namespace NOX
             const Epetra_Vector& x, const NOX::Nln::LinearSystem& linsys);
 
         /** User defined method that will be executed at the start of a call to
-         * NOX::Nln::LinearSystem::computeFandJacobian().
+         * NOX::Nln::LinearSystem::compute_f_and_jacobian().
          *
          * \param rhs    : full access to the right-hand-side vector
          * \param jac    : full access to the jacobian operator
@@ -133,7 +133,7 @@ namespace NOX
             const NOX::Nln::LinearSystem& linsys);
 
         /** User defined method that will be executed at the end of a call to
-         * NOX::Nln::LinearSystem::computeFandJacobian().
+         * NOX::Nln::LinearSystem::compute_f_and_jacobian().
          *
          * \param rhs    : full access to the right-hand-side vector
          * \param jac    : full access to the jacobian operator

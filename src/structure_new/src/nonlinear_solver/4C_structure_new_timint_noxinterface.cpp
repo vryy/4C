@@ -127,7 +127,7 @@ bool Solid::TimeInt::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Solid::TimeInt::NoxInterface::computeFandJacobian(
+bool Solid::TimeInt::NoxInterface::compute_f_and_jacobian(
     const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac)
 {
   check_init_setup();
@@ -266,7 +266,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
       gstate_ptr_->remove_element_technologies(model_xnew_ptr);
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
-      rms = NOX::Nln::Aux::RootMeanSquareNorm(
+      rms = NOX::Nln::Aux::root_mean_square_norm(
           atol, rtol, model_xnew_ptr, model_incr_ptr, disable_implicit_weighting);
 
       break;
@@ -285,7 +285,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
           NOX::Nln::StatusTest::quantity_pressure, model_xnew_ptr);
 
       model_incr_ptr->Update(1.0, *model_xnew_ptr, -1.0);
-      rms = NOX::Nln::Aux::RootMeanSquareNorm(
+      rms = NOX::Nln::Aux::root_mean_square_norm(
           atol, rtol, model_xnew_ptr, model_incr_ptr, disable_implicit_weighting);
       break;
     }
@@ -582,7 +582,7 @@ void Solid::TimeInt::NoxInterface::find_constraint_models(const ::NOX::Abstract:
   if (not constr_grp) return;
 
   // find the constraint model types
-  const auto& imap = constr_grp->GetConstrInterfaces();
+  const auto& imap = constr_grp->get_constraint_interfaces();
   constraint_models.reserve(imap.size());
 
   for (auto cit = imap.begin(); cit != imap.end(); ++cit)

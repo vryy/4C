@@ -148,12 +148,12 @@ Teuchos::RCP<const Epetra_Vector> Solid::MODELEVALUATOR::PartitionedFSI::solve_r
   ti_impl->dbc_ptr()->ApplyDirichletToRhs(interface_force_np_ptr_);
   Teuchos::RCP<::NOX::Epetra::Vector> nox_force =
       Teuchos::rcp(new ::NOX::Epetra::Vector(interface_force_np_ptr_));
-  grp_ptr->setF(nox_force);
+  grp_ptr->set_f(nox_force);
 
   // ---------------------------------------------------------------------------
   // Check if we are using a Newton direction
   // ---------------------------------------------------------------------------
-  const std::string dir_str(NOX::Nln::Aux::GetDirectionMethodListName(noxparams));
+  const std::string dir_str(NOX::Nln::Aux::get_direction_method_list_name(noxparams));
   if (dir_str != "Newton")
     FOUR_C_THROW(
         "The RelaxationSolve is currently only working for the direction-"

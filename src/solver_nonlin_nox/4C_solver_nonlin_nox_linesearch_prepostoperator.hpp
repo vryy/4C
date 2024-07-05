@@ -52,7 +52,7 @@ namespace NOX
          *  sublist. If the corresponding parameter called "User Defined Pre/Post Operator"
          *  is not yet defined, a empty std::map is generated and set into the
          *  parameter list first. */
-        static map& GetMap(Teuchos::ParameterList& p_ls_list);
+        static map& get_map(Teuchos::ParameterList& p_ls_list);
 
         /** User defined method that will be executed before the step is modified in
          *  the line search routine.

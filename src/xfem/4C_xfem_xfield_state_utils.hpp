@@ -41,7 +41,7 @@ namespace XFEM
       if (mat.strong_count() == 1)
       {
         // which operator type do we have?
-        NOX::Nln::LinSystem::OperatorType optype = NOX::Nln::Aux::GetOperatorType(*mat);
+        NOX::Nln::LinSystem::OperatorType optype = NOX::Nln::Aux::get_operator_type(*mat);
         // destroy underlying Epetra objects of the reference-counted object
         switch (optype)
         {

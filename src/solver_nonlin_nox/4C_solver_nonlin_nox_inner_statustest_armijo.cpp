@@ -43,13 +43,13 @@ NOX::Nln::Inner::StatusTest::Armijo::Armijo(
 bool NOX::Nln::Inner::StatusTest::Armijo::setup(
     const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Abstract::Group& grp)
 {
-  const ::NOX::MeritFunction::Generic& mrtFct = linesearch.GetMeritFunction();
+  const ::NOX::MeritFunction::Generic& mrtFct = linesearch.get_merit_function();
 
   // get the reference merit function value
   fref_ = mrtFct.computef(grp);
 
   // get the slope once (doesn't change during the inner iteration)
-  slope_ = mrtFct.computeSlope(linesearch.GetSearchDirection(), grp);
+  slope_ = mrtFct.computeSlope(linesearch.get_search_direction(), grp);
 
   // return false if the search direction is no descent direction
   if (slope_ >= 0.0) return false;
@@ -80,10 +80,9 @@ bool NOX::Nln::Inner::StatusTest::Armijo::setup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::CheckStatus(
-    const NOX::Nln::Inner::StatusTest::Interface::Required& interface,
-    const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
-    ::NOX::StatusTest::CheckType checkType)
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::check_status(
+    const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
+    const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
   // check if it is a line search object
   // Amrijo rule plays only a role as inner status test for line search solvers
@@ -94,11 +93,11 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::Che
     std::ostringstream msg;
     msg << "Dynamic cast to NOX::Nln::LineSearch::Generic failed!\n\n"
         << "The Armijo rule status test supports only Line Search problems!";
-    throw_error("CheckStatus", msg.str());
+    throw_error("check_status", msg.str());
   }
 
   // setup for the current line search loop
-  if (interface.GetNumIterations() == 0)
+  if (interface.get_num_iterations() == 0)
   {
     // If the search direction is no descent direction,
     // this function detects it and returns the corresponding
@@ -118,11 +117,11 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::Che
   // fail anyway.
   else if (status_ != status_no_descent_direction)
   {
-    const ::NOX::MeritFunction::Generic& mrtFct = linesearch->GetMeritFunction();
+    const ::NOX::MeritFunction::Generic& mrtFct = linesearch->get_merit_function();
 
     fcurr_ = mrtFct.computef(grp);
 
-    step_ = linesearch->GetStepLength();
+    step_ = linesearch->get_step_length();
 
     // check the Armijo rule
     status_ = (fcurr_ < fref_ + c_1_ * step_ * slope_) ? status_converged : status_step_too_long;
@@ -133,7 +132,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::Che
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::GetStatus() const
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Armijo::get_status() const
 {
   return status_;
 }

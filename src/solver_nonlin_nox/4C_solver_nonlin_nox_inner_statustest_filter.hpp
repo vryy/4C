@@ -162,12 +162,12 @@ namespace NOX
            *  The test can (and should, if possible) be skipped if
            *  checkType is NOX::StatusType::None.  If the test is skipped, then
            *  the status should be set to ::NOX::StatusTest::Unevaluated. */
-          StatusType CheckStatus(const Interface::Required& interface,
+          StatusType check_status(const Interface::Required& interface,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent inner checkStatus call
-          StatusType GetStatus() const override;
+          StatusType get_status() const override;
 
           //! Output formatted description of inner stopping test to output stream.
           std::ostream& print(std::ostream& stream, int indent = 0) const override;
@@ -371,7 +371,7 @@ namespace NOX
                 const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
                 ::NOX::StatusTest::CheckType checkType)
             {
-              return filter_.GetStatus();
+              return filter_.get_status();
             };
 
            protected:

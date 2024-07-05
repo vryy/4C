@@ -67,11 +67,11 @@ namespace NOX
           VolumeChange(const VolumeChangeParams& params, const ::NOX::Utils& u)
               : params_(params), utils_(u){};
 
-          StatusType CheckStatus(const Interface::Required& interface,
+          StatusType check_status(const Interface::Required& interface,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType) override;
 
-          StatusType GetStatus() const override;
+          StatusType get_status() const override;
 
           std::ostream& print(std::ostream& stream, int indent = 0) const override;
 

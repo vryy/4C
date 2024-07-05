@@ -51,12 +51,12 @@ NOX::Nln::Inner::StatusTest::Combo::Combo(::NOX::StatusTest::Combo::ComboType t,
   tests_.push_back(a);
   // Be careful, because the test b was already added to
   // the base class tests vector during the construction call!
-  this->addStatusTest(b);
+  this->add_status_test(b);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Combo::CheckStatus(
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Combo::check_status(
     const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
@@ -70,7 +70,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Combo::Chec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Combo::GetStatus() const
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Combo::get_status() const
 {
   return status_;
 }
@@ -91,7 +91,7 @@ void NOX::Nln::Inner::StatusTest::Combo::or_op(const Interface::Required& interf
   for (const auto& test : tests_)
   {
     NOX::Nln::Inner::StatusTest::StatusType s =
-        test->CheckStatus(interface, solver, grp, checkType);
+        test->check_status(interface, solver, grp, checkType);
 
     if (unconverged_.find(status_) != unconverged_.end() and
         unconverged_.find(s) == unconverged_.end())
@@ -122,7 +122,7 @@ void NOX::Nln::Inner::StatusTest::Combo::and_op(const Interface::Required& inter
   for (const auto& test : tests_)
   {
     NOX::Nln::Inner::StatusTest::StatusType s =
-        test->CheckStatus(interface, solver, grp, checkType);
+        test->check_status(interface, solver, grp, checkType);
 
     // If any of the tests are unconverged, then the AND test is
     // unconverged.
@@ -148,7 +148,7 @@ void NOX::Nln::Inner::StatusTest::Combo::and_op(const Interface::Required& inter
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::Combo& NOX::Nln::Inner::StatusTest::Combo::addStatusTest(
+NOX::Nln::Inner::StatusTest::Combo& NOX::Nln::Inner::StatusTest::Combo::add_status_test(
     const Teuchos::RCP<Generic>& a)
 {
   if (is_safe(*a))

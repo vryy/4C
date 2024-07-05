@@ -59,7 +59,7 @@ void Solid::IMPLICIT::Generic::setup()
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& p_sol_opt = sdyn().get_nox_params().sublist("Solver Options");
 
-  NOX::Nln::Aux::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
+  NOX::Nln::Aux::add_to_pre_post_op_vector(p_sol_opt, prepost_generic_ptr);
 
   // No issetup_ = true, since the setup() functions of the derived classes
   // have to be called and finished first!
@@ -182,7 +182,7 @@ void Solid::IMPLICIT::Generic::condition_number(const NOX::Nln::Group& grp) cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::PrePostOp::IMPLICIT::Generic::runPreComputeX(const NOX::Nln::Group& input_grp,
+void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_pre_compute_x(const NOX::Nln::Group& input_grp,
     const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // set the evaluation parameters
@@ -196,7 +196,7 @@ void NOX::Nln::PrePostOp::IMPLICIT::Generic::runPreComputeX(const NOX::Nln::Grou
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::PrePostOp::IMPLICIT::Generic::runPostComputeX(const NOX::Nln::Group& input_grp,
+void NOX::Nln::PrePostOp::IMPLICIT::Generic::run_post_compute_x(const NOX::Nln::Group& input_grp,
     const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // set the evaluation parameters

@@ -46,15 +46,14 @@ double NOX::Nln::Inner::StatusTest::UpperBound::get_search_direction_length(
 {
   const NOX::Nln::Group& nln_grp = dynamic_cast<const NOX::Nln::Group&>(grp);
 
-  return nln_grp.GetTrialUpdateNorm(linesearch.GetSearchDirection(), normtype_, qtype_);
+  return nln_grp.get_trial_update_norm(linesearch.get_search_direction(), normtype_, qtype_);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound::CheckStatus(
-    const NOX::Nln::Inner::StatusTest::Interface::Required& interface,
-    const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
-    ::NOX::StatusTest::CheckType checkType)
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound::check_status(
+    const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
+    const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
   /* check if it is a line search object: upper bound for Newton step size only
    * makes sense as inner status test for line search solvers */
@@ -65,15 +64,15 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound:
     std::ostringstream msg;
     msg << "Dynamic cast to NOX::Nln::LineSearch::Generic failed!\n\n"
         << "The UpperBound rule status test supports only Line Search problems!";
-    throw_error("CheckStatus", msg.str());
+    throw_error("check_status", msg.str());
   }
 
   /* we reduce the step length according to the upper bound criterion in the first
    * line search (i.e. inner) iteration and do nothing in all following iterations */
-  if (interface.GetNumIterations() == 0)
+  if (interface.get_num_iterations() == 0)
   {
     const double dir_length = get_search_direction_length(*linesearch, solver, grp);
-    double steplength = linesearch->GetStepLength();
+    double steplength = linesearch->get_step_length();
 
     // compute specified norm
     stepmaxval_ = steplength * dir_length;
@@ -97,7 +96,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound:
           std::pow(0.5, std::ceil(std::log(stepmaxval_ / upperboundval_) / std::log(2)));
 
       steplength *= reduction_fac_;
-      linesearch_mutable->SetStepLength(steplength);
+      linesearch_mutable->set_step_length(steplength);
 
       // adapt the stepmaxval_ variable accordingly to get correct output from print()
       stepmaxval_ *= reduction_fac_;
@@ -123,7 +122,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound::GetStatus() const
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::UpperBound::get_status() const
 {
   return status_;
 }

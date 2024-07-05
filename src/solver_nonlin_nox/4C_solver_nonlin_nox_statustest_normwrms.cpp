@@ -175,7 +175,7 @@ NOX::Nln::StatusTest::NormWRMS::NormWRMS(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::Nln::StatusTest::NormWRMS::IsQuantity(
+bool NOX::Nln::StatusTest::NormWRMS::is_quantity(
     const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < n_checks_; ++i)

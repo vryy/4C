@@ -84,8 +84,6 @@ namespace NOX
         void set_type(const std::string& type_name);
 
        private:
-        //    const ::NOX::Utils& utils_;
-
         enum MeritFctName infeasibility_type_;
 
         std::string merit_function_name_;

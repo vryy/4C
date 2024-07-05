@@ -294,26 +294,26 @@ void Solid::MODELEVALUATOR::Data::fill_norm_type_maps()
     for (qiter = qtypes.begin(); qiter != qtypes.end(); ++qiter)
     {
       // fill the normtype_force map
-      int inormtype = NOX::Nln::Aux::GetNormType<NOX::Nln::StatusTest::NormF>(ostatus, *qiter);
+      int inormtype = NOX::Nln::Aux::get_norm_type<NOX::Nln::StatusTest::NormF>(ostatus, *qiter);
       if (inormtype != -100)
         normtype_force_[*qiter] = static_cast<::NOX::Abstract::Vector::NormType>(inormtype);
       // fill the normtype_update map
-      inormtype = NOX::Nln::Aux::GetNormType<NOX::Nln::StatusTest::NormUpdate>(ostatus, *qiter);
+      inormtype = NOX::Nln::Aux::get_norm_type<NOX::Nln::StatusTest::NormUpdate>(ostatus, *qiter);
       if (inormtype != -100)
         normtype_update_[*qiter] = static_cast<::NOX::Abstract::Vector::NormType>(inormtype);
 
       // check for the root mean square test (wrms)
-      if (NOX::Nln::Aux::IsQuantity<NOX::Nln::StatusTest::NormWRMS>(ostatus, *qiter))
+      if (NOX::Nln::Aux::is_quantity<NOX::Nln::StatusTest::NormWRMS>(ostatus, *qiter))
       {
         /* get the absolute and relative tolerances, since we have to use them
          * during the summation. */
-        double atol = NOX::Nln::Aux::GetNormWRMSClassVariable(ostatus, *qiter, "ATOL");
+        double atol = NOX::Nln::Aux::get_norm_wrms_class_variable(ostatus, *qiter, "ATOL");
         if (atol < 0.0)
           FOUR_C_THROW("The absolute wrms tolerance of the quantity %s is missing.",
               NOX::Nln::StatusTest::QuantityType2String(*qiter).c_str());
         else
           atol_wrms_[*qiter] = atol;
-        double rtol = NOX::Nln::Aux::GetNormWRMSClassVariable(ostatus, *qiter, "RTOL");
+        double rtol = NOX::Nln::Aux::get_norm_wrms_class_variable(ostatus, *qiter, "RTOL");
         if (rtol < 0.0)
           FOUR_C_THROW("The relative wrms tolerance of the quantity %s is missing.",
               NOX::Nln::StatusTest::QuantityType2String(*qiter).c_str());

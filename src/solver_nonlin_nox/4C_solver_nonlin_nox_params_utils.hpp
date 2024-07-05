@@ -33,7 +33,7 @@ namespace NOX
        *
        *  \author hiermeier \date 02/18 */
       template <typename IntegralType>
-      IntegralType SetAndValidate(Teuchos::ParameterList& p, const std::string& param_name,
+      IntegralType set_and_validate(Teuchos::ParameterList& p, const std::string& param_name,
           const std::string& default_value, const std::string& documentation,
           const Teuchos::ArrayView<std::string>& value_list,
           const Teuchos::ArrayView<IntegralType>& ivalue_list)

@@ -1206,7 +1206,7 @@ NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::RotVecUpdater(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::runPreComputeX(
+void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::run_pre_compute_x(
     const NOX::Nln::Group& input_grp, const Epetra_Vector& dir, const double& step,
     const NOX::Nln::Group& curr_grp)
 {
@@ -1259,7 +1259,7 @@ void NOX::Nln::GROUP::PrePostOp::TimeInt::RotVecUpdater::runPreComputeX(
 
   /* tell the NOX::Nln::Group that the x vector has already been updated in
    * this preComputeX operator call */
-  curr_grp_mutable.setSkipUpdateX(true);
+  curr_grp_mutable.set_skip_update_x(true);
 }
 
 FOUR_C_NAMESPACE_CLOSE

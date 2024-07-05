@@ -55,7 +55,7 @@ void Solid::EXPLICIT::Generic::setup()
   // ---------------------------------------------------------------------------
   Teuchos::ParameterList& p_sol_opt = sdyn().get_nox_params().sublist("Solver Options");
 
-  NOX::Nln::Aux::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
+  NOX::Nln::Aux::add_to_pre_post_op_vector(p_sol_opt, prepost_generic_ptr);
 
   // No issetup_ = true, since the setup() functions of the derived classes
   // have to be called and finished first!
@@ -201,7 +201,7 @@ void NOX::Nln::PrePostOp::EXPLICIT::Generic::runPreSolve(const ::NOX::Solver::Ge
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::PrePostOp::EXPLICIT::Generic::runPreComputeX(const NOX::Nln::Group& input_grp,
+void NOX::Nln::PrePostOp::EXPLICIT::Generic::run_pre_compute_x(const NOX::Nln::Group& input_grp,
     const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // For explicit integration this action simply does nothing.
@@ -209,7 +209,7 @@ void NOX::Nln::PrePostOp::EXPLICIT::Generic::runPreComputeX(const NOX::Nln::Grou
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::PrePostOp::EXPLICIT::Generic::runPostComputeX(const NOX::Nln::Group& input_grp,
+void NOX::Nln::PrePostOp::EXPLICIT::Generic::run_post_compute_x(const NOX::Nln::Group& input_grp,
     const Epetra_Vector& dir, const double& step, const NOX::Nln::Group& curr_grp)
 {
   // For explicit integration this action simply does nothing.

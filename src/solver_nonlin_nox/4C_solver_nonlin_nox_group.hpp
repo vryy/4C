@@ -87,13 +87,13 @@ namespace NOX
           const ::NOX::Epetra::Vector& input, ::NOX::Epetra::Vector& result) const override;
 
       /// apply one block of the jacobian to a vector
-      ::NOX::Abstract::Group::ReturnType applyJacobianBlock(const ::NOX::Epetra::Vector& input,
+      ::NOX::Abstract::Group::ReturnType apply_jacobian_block(const ::NOX::Epetra::Vector& input,
           Teuchos::RCP<::NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
 
       //! Compute and store \f$F(x)\f$ and the jacobian \f$\frac{\partial F(x)}{\partial x}\f$ at
       //! the same time. This can result in a huge performance gain in some special cases, e.g.
       //! contact problems.
-      virtual ::NOX::Abstract::Group::ReturnType computeFandJacobian();
+      virtual ::NOX::Abstract::Group::ReturnType compute_f_and_jacobian();
 
       //! ToDo Move this into an extra interface
       //! @{
@@ -104,7 +104,7 @@ namespace NOX
 
       /*! get the nodal dofs from the elements corresponding to the provided
        *  global element ids */
-      void getDofsFromElements(
+      void get_dofs_from_elements(
           const std::vector<int>& my_ele_gids, std::set<int>& my_ele_dofs) const;
 
       /// compute trial element volumes
@@ -119,18 +119,18 @@ namespace NOX
           const enum NOX::Nln::CorrectionType type);
 
       //! set right hand side
-      ::NOX::Abstract::Group::ReturnType setF(Teuchos::RCP<::NOX::Epetra::Vector> Fptr);
+      ::NOX::Abstract::Group::ReturnType set_f(Teuchos::RCP<::NOX::Epetra::Vector> Fptr);
 
       //! set jacobian operator
-      ::NOX::Abstract::Group::ReturnType setJacobianOperator(
+      ::NOX::Abstract::Group::ReturnType set_jacobian_operator(
           const Teuchos::RCP<const Epetra_Operator> jacOperator);
 
       //! set the solution vector to zero
-      void resetX();
+      void reset_x();
 
       //! set flag whether update of x vector should be skipped (because it has already be done in
       //! preComputeX)
-      void setSkipUpdateX(bool skipUpdateX);
+      void set_skip_update_x(bool skipUpdateX);
 
       /* Check the isValidJacobian flag and the ownership of the linear system
        * separately and get the ownership, if necessary. This prevents unnecessary
@@ -139,9 +139,9 @@ namespace NOX
       bool isJacobian() const override;
 
       /// are the eigenvalues valid?
-      virtual bool isEigenvalues() const;
+      virtual bool is_eigenvalues() const;
 
-      inline NOX::Nln::CorrectionType GetCorrectionType() const { return corr_type_; }
+      inline NOX::Nln::CorrectionType get_correction_type() const { return corr_type_; }
 
       /// @name access the eigenvalue data
       /// @{
@@ -157,7 +157,7 @@ namespace NOX
       Teuchos::RCP<const NOX::Nln::Interface::Required> get_nln_req_interface_ptr() const;
 
       //! returns the primary rhs norms
-      virtual Teuchos::RCP<const std::vector<double>> GetRHSNorms(
+      virtual Teuchos::RCP<const std::vector<double>> get_rhs_norms(
           const std::vector<::NOX::Abstract::Vector::NormType>& type,
           const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
           Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale =
@@ -170,7 +170,7 @@ namespace NOX
           const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
           const std::vector<bool>& disable_implicit_weighting) const;
 
-      double GetTrialUpdateNorm(const ::NOX::Abstract::Vector& dir,
+      double get_trial_update_norm(const ::NOX::Abstract::Vector& dir,
           const ::NOX::Abstract::Vector::NormType normtype, const StatusTest::QuantityType quantity,
           const StatusTest::NormUpdate::ScaleType scale = StatusTest::NormUpdate::Unscaled) const;
 
@@ -190,7 +190,7 @@ namespace NOX
           Teuchos::RCP<const std::vector<StatusTest::NormUpdate::ScaleType>> scale) const;
 
       //! create a backup state
-      void CreateBackupState(const ::NOX::Abstract::Vector& dir) const;
+      void create_backup_state(const ::NOX::Abstract::Vector& dir) const;
 
       //! recover from stored backup state
       void recover_from_backup_state();
@@ -247,12 +247,12 @@ namespace NOX
       //! @{
 
       //! destroy the jacobian ptr in the linear system
-      bool DestroyJacobian();
+      bool destroy_jacobian();
 
       //! @}
 
       //! compute and return some energy representative
-      virtual double GetModelValue(const enum MeritFunction::MeritFctName merit_func_type) const;
+      virtual double get_model_value(const enum MeritFunction::MeritFctName merit_func_type) const;
 
       //! compute contributions to a linear model
       virtual double get_linearized_model_terms(const ::NOX::Abstract::Vector& dir,
@@ -261,10 +261,10 @@ namespace NOX
           enum NOX::Nln::MeritFunction::LinType lintype) const;
 
       /// return the DOF map of the solution vector
-      const Epetra_BlockMap& getDofMap() const;
+      const Epetra_BlockMap& get_dof_map() const;
 
       /// get jacobian range map from row/column block rbid/cbid
-      const Epetra_Map& getJacobianRangeMap(unsigned rbid, unsigned cbid) const;
+      const Epetra_Map& get_jacobian_range_map(unsigned rbid, unsigned cbid) const;
 
       /// return a copy of the Jacobian diagonal block \c diag_bid
       Teuchos::RCP<Epetra_Vector> get_diagonal_of_jacobian(unsigned diag_bid) const;
@@ -280,13 +280,13 @@ namespace NOX
       ::NOX::Abstract::Group::ReturnType compute_serial_jacobian_eigenvalues(bool printOutput);
 
       /// reset is valid Newton member
-      inline void resetIsValidNewton() { isValidNewton = false; };
+      inline void reset_is_valid_newton() { isValidNewton = false; };
 
       /// allow to set isValidNewton manually
-      inline void setIsValidNewton(const bool value) { isValidNewton = value; };
+      inline void set_is_valid_newton(const bool value) { isValidNewton = value; };
 
       /// allow to set isValidRHS manually
-      inline void setIsValidRHS(const bool value) { isValidRHS = value; };
+      inline void set_is_valid_rhs(const bool value) { isValidRHS = value; };
 
      protected:
       //! resets the isValid flags to false

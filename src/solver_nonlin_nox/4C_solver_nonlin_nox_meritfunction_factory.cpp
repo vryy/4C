@@ -29,17 +29,17 @@ NOX::Nln::MeritFunction::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::Nln::MeritFunction::Factory::BuildMeritFunction(
+Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::Nln::MeritFunction::Factory::build_merit_function(
     const NOX::Nln::GlobalData& noxNlnGlobalData) const
 {
   Teuchos::RCP<::NOX::MeritFunction::Generic> mrtFctPtr;
 
   const Teuchos::ParameterList& solverOptionsList =
-      noxNlnGlobalData.GetNlnParameterList().sublist("Solver Options");
+      noxNlnGlobalData.get_nln_parameter_list().sublist("Solver Options");
 
   const std::string& mftype = solverOptionsList.get<std::string>("Merit Function");
 
-  if (noxNlnGlobalData.GetIsConstrained())
+  if (noxNlnGlobalData.is_constrained())
     mrtFctPtr = build_constrained_merit_function(mftype, noxNlnGlobalData);
   else
     mrtFctPtr = build_unconstrained_merit_function(mftype, noxNlnGlobalData);
@@ -89,7 +89,7 @@ NOX::Nln::MeritFunction::Factory::build_constrained_merit_function(
   }
   else if (mftype.substr(0, 10) == "Lagrangian")
   {
-    mrtFctPtr = Teuchos::rcp(new Lagrangian(mftype, noxNlnGlobalData.GetNoxUtilsPtr()));
+    mrtFctPtr = Teuchos::rcp(new Lagrangian(mftype, noxNlnGlobalData.get_NOX_utils_ptr()));
   }
   else
   {
@@ -111,7 +111,7 @@ Teuchos::RCP<::NOX::MeritFunction::Generic> NOX::Nln::MeritFunction::BuildMeritF
     const NOX::Nln::GlobalData& noxNlnGlobalData)
 {
   const Factory factory;
-  return factory.BuildMeritFunction(noxNlnGlobalData);
+  return factory.build_merit_function(noxNlnGlobalData);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -234,7 +234,7 @@ namespace NOX
            *  step.
            *
            *  \author hiermeier \date 03/17 */
-          void runPreComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+          void run_pre_compute_x(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
               const double& step, const NOX::Nln::Group& curr_grp) override;
 
           /*! \brief Derived function, which is called at the end of a call to
@@ -248,7 +248,7 @@ namespace NOX
            *  mortar dual strategies.
            *
            *  \author hiermeier \date 07/16 */
-          void runPostComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+          void run_post_compute_x(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
               const double& step, const NOX::Nln::Group& curr_grp) override;
 
           /*! \brief Derived function, which is called at the very end of a call to

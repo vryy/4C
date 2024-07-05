@@ -230,7 +230,7 @@ bool Solid::MODELEVALUATOR::Generic::eval_error_check() const
 {
   // --- Did an exception occur during the evaluation process? -----------------
   bool ok = true;
-  int fp_err = NOX::Nln::FloatingPointException::checkAndPrint(std::cout);
+  int fp_err = NOX::Nln::FloatingPointException::check_and_print(std::cout);
   if (fp_err)
   {
     ok = false;

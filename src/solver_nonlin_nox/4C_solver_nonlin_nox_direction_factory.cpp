@@ -49,7 +49,7 @@ Teuchos::RCP<::NOX::Direction::Generic> NOX::Nln::Direction::Factory::buildDirec
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Direction::Generic> NOX::Nln::Direction::BuildDirection(
+Teuchos::RCP<::NOX::Direction::Generic> NOX::Nln::Direction::build_direction(
     const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params)
 {
   Factory factory;

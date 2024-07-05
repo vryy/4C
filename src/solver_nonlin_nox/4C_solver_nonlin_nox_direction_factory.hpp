@@ -63,7 +63,7 @@ namespace NOX
       \relates NOX::Nln::Direction::Factory
 
       */
-      Teuchos::RCP<::NOX::Direction::Generic> BuildDirection(
+      Teuchos::RCP<::NOX::Direction::Generic> build_direction(
           const Teuchos::RCP<::NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
     }  // namespace Direction

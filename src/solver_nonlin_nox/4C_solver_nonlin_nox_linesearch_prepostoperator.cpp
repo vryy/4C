@@ -40,7 +40,7 @@ void NOX::Nln::LineSearch::PrePostOperator::reset(Teuchos::ParameterList& linese
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::LineSearch::PrePostOperator::map& NOX::Nln::LineSearch::PrePostOperator::GetMap(
+NOX::Nln::LineSearch::PrePostOperator::map& NOX::Nln::LineSearch::PrePostOperator::get_map(
     Teuchos::ParameterList& p_ls_list)
 {
   Teuchos::RCP<map>& mapptr =

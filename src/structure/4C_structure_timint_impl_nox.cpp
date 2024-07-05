@@ -196,9 +196,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> Solid::TimIntImpl::NoxCreateStatusTest(
   else if (normtypedisi_ == Inpar::Solid::convnorm_mix)
   {
     // mixed
-    // Teuchos::RCP<::NOX::StatusTest::Combo> combo3
-    //  = Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::AND));
-    // combo2->addStatusTest(combo3);
     // absolute test
     Teuchos::RCP<::NOX::StatusTest::NormUpdate> statusTestNormDisi =
         Teuchos::rcp(new ::NOX::StatusTest::NormUpdate(toldisi_, norm, scaledisi));
