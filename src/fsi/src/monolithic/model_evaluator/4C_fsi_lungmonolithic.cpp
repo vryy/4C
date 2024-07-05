@@ -641,13 +641,8 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
   Teuchos::RCP<::NOX::StatusTest::FiniteValue> fv =
       Teuchos::rcp(new ::NOX::StatusTest::FiniteValue);
 
-  //   Teuchos::RCP<::NOX::StatusTest::NormUpdate> update =
-  //   Teuchos::rcp(new ::NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
-  //   combo->addStatusTest(update);
-
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
-  //   combo->addStatusTest(update);
   combo->addStatusTest(maxiters);
 
   // require one solve
@@ -667,7 +662,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
 
   add_status_test(structureDisp);
   structcombo->addStatusTest(structureDisp);
-  // structcombo->addStatusTest(structureDispUpdate);
 
   converged->addStatusTest(structcombo);
 
@@ -690,7 +684,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
 
   add_status_test(interfaceTest);
   interfacecombo->addStatusTest(interfaceTest);
-  // interfacecombo->addStatusTest(interfaceTestUpdate);
 
   converged->addStatusTest(interfacecombo);
 
@@ -713,7 +706,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
 
   add_status_test(innerFluidVel);
   fluidvelcombo->addStatusTest(innerFluidVel);
-  // fluidvelcombo->addStatusTest(innerFluidVelUpdate);
 
   converged->addStatusTest(fluidvelcombo);
 
@@ -736,10 +728,8 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
 
   add_status_test(fluidPress);
   fluidpresscombo->addStatusTest(fluidPress);
-  // fluidpresscombo->addStatusTest(fluidPressUpdate);
 
   converged->addStatusTest(fluidpresscombo);
-
 
   // setup tests for volume constraint
 
@@ -760,8 +750,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::LungMonolithic::create_status_test(
 
   add_status_test(VolConstr);
   volconstrcombo->addStatusTest(VolConstr);
-  // volconstrcombo->addStatusTest(VolConstrUpdate);
-
 
   converged->addStatusTest(volconstrcombo);
 

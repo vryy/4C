@@ -65,7 +65,7 @@ NOX::Nln::StatusTest::ActiveSet::ActiveSet(
       if (cnlngrp == nullptr) FOUR_C_THROW("NOX::Nln::CONSTRAINT::Group cast failed");
 
       // do the actual active set check
-      status_ = cnlngrp->GetActiveSetInfo(qtype_, activesetsize_);
+      status_ = cnlngrp->get_active_set_info(qtype_, activesetsize_);
       // check for cycling of the active set
       /* NOTE: This is just working, if you use Epetra_Map s to store your
        * active set informations! */
@@ -74,7 +74,7 @@ NOX::Nln::StatusTest::ActiveSet::ActiveSet(
         // get the current active set
         Teuchos::RCP<const Epetra_Map> activeset = cnlngrp->get_current_active_set_map(qtype_);
         // add a new map a the beginning of the deque
-        cycling_maps_.push_front(cnlngrp->GetOldActiveSetMap(qtype_));
+        cycling_maps_.push_front(cnlngrp->get_old_active_set_map(qtype_));
         // remove the last entry of the deque, if the max_cycle_size_ is exceeded
         if (cycling_maps_.size() > static_cast<std::size_t>(max_cycle_size_))
           cycling_maps_.pop_back();

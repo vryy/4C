@@ -87,7 +87,7 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::StatusTest::NormF::compute_nor
   }
 
   Teuchos::RCP<const std::vector<double>> norms =
-      nlnGrp->GetRHSNorms(normType_, checkList_, Teuchos::rcp(&scaleType_, false));
+      nlnGrp->get_rhs_norms(normType_, checkList_, Teuchos::rcp(&scaleType_, false));
 
   return norms;
 }
@@ -131,7 +131,8 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::StatusTest::NormF::compute_nor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::Nln::StatusTest::NormF::GetNormF(const NOX::Nln::StatusTest::QuantityType& qType) const
+double NOX::Nln::StatusTest::NormF::get_norm_f(
+    const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
     if (checkList_[i] == qType) return (*normF_)[i];
@@ -142,7 +143,7 @@ double NOX::Nln::StatusTest::NormF::GetNormF(const NOX::Nln::StatusTest::Quantit
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::Nln::StatusTest::NormF::GetTrueTolerance(
+double NOX::Nln::StatusTest::NormF::get_true_tolerance(
     const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
@@ -178,7 +179,8 @@ double NOX::Nln::StatusTest::NormF::GetInitialTolerance(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::Nln::StatusTest::NormF::GetNormType(const NOX::Nln::StatusTest::QuantityType& qType) const
+int NOX::Nln::StatusTest::NormF::get_norm_type(
+    const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
     if (checkList_[i] == qType) return normType_[i];
@@ -189,7 +191,7 @@ int NOX::Nln::StatusTest::NormF::GetNormType(const NOX::Nln::StatusTest::Quantit
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::Nln::StatusTest::NormF::IsQuantity(const NOX::Nln::StatusTest::QuantityType& qType) const
+bool NOX::Nln::StatusTest::NormF::is_quantity(const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
     if (checkList_[i] == qType) return true;

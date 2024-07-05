@@ -126,7 +126,7 @@ void Solid::TimeInt::Explicit::evaluate()
   grp_ptr->setX(grp_ptr->getX());
 
   // compute the rhs vector and the stiffness matrix
-  grp_ptr->computeFandJacobian();
+  grp_ptr->compute_f_and_jacobian();
 }
 
 /*----------------------------------------------------------------------------*

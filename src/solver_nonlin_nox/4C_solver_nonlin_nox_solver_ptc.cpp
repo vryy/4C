@@ -85,7 +85,7 @@ void NOX::Nln::Solver::PseudoTransient::init()
   const std::string& control_str = p_ptc.get<std::string>("Time Step Control");
   tscType_ = String2TSCType(control_str);
   const std::string& norm_str = p_ptc.get<std::string>("Norm Type for TSC");
-  normType_ = NOX::Nln::Aux::String2NormType(norm_str);
+  normType_ = NOX::Nln::Aux::string_to_norm_type(norm_str);
 
   // get the scaling operator type
   const std::string& scaleop_str = p_ptc.get<std::string>("Scaling Type");
@@ -199,7 +199,7 @@ void NOX::Nln::Solver::PseudoTransient::create_lin_system_pre_post_operator()
       scalingDiagOpPtr_, scalingMatrixOpPtr_, *this));
 
   // The name of the direction method and the corresponding sublist has to match!
-  const std::string dir_str(NOX::Nln::Aux::GetDirectionMethodListName(*paramsPtr));
+  const std::string dir_str(NOX::Nln::Aux::get_direction_method_list_name(*paramsPtr));
   if (paramsPtr->sublist("Direction").isSublist(dir_str))
   {
     // set the new pre/post operator for the linear system in the parameter list
@@ -575,7 +575,7 @@ void NOX::Nln::Solver::PseudoTransient::update_pseudo_time_step()
            * the pseudo time step.
            * This is meant to speed up the convergence close to the solution. */
           if (stepSize == 1.0 and
-              GetStatus<NOX::Nln::StatusTest::NormF>() == ::NOX::StatusTest::Converged)
+              get_status<NOX::Nln::StatusTest::NormF>() == ::NOX::StatusTest::Converged)
             muinv *= 4.0;
           /* if the model performed badly: reduce the pseudo time step by a
            * factor tau_red, where 0.25 <= tau_red <= 0.8.
@@ -956,7 +956,7 @@ NOX::Nln::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Nln::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
+void NOX::Nln::GROUP::PrePostOp::PseudoTransient::run_post_compute_f(
     Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
   if (not ptcsolver_.isPtcSolve()) return;
@@ -980,7 +980,7 @@ void NOX::Nln::GROUP::PrePostOp::PseudoTransient::runPostComputeF(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Nln::GROUP::PrePostOp::PseudoTransient::runPreComputeF(
+void NOX::Nln::GROUP::PrePostOp::PseudoTransient::run_pre_compute_f(
     Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
   if (not ptcsolver_.isPtcSolve()) return;

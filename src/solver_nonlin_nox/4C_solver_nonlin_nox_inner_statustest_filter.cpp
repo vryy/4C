@@ -436,7 +436,7 @@ void NOX::Nln::Inner::StatusTest::Filter::init_points(const Interface::Required&
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp)
 {
   const int iter_newton = solver.getNumIterations();
-  const ::NOX::MeritFunction::Generic& merit_func = interface.GetMeritFunction();
+  const ::NOX::MeritFunction::Generic& merit_func = interface.get_merit_function();
 
   switch (iter_newton)
   {
@@ -478,7 +478,7 @@ void NOX::Nln::Inner::StatusTest::Filter::init_points(const Interface::Required&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::CheckStatus(
+enum NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::check_status(
     const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
@@ -488,10 +488,10 @@ enum NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter
   const NOX::Nln::LineSearch::Generic& linesearch = *linesearch_ptr;
 
   // do stuff at the beginning of a line search call
-  const int iter_ls = interface.GetNumIterations();
+  const int iter_ls = interface.get_num_iterations();
   if (iter_ls == 0)
   {
-    const ::NOX::Abstract::Vector& dir = linesearch.GetSearchDirection();
+    const ::NOX::Abstract::Vector& dir = linesearch.get_search_direction();
 
     init_points(interface, solver, grp);
 
@@ -502,7 +502,7 @@ enum NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter
     compute_minimal_step_length_estimates();
 
     // setup armijo test
-    armijo_test_->CheckStatus(interface, solver, grp, checkType);
+    armijo_test_->check_status(interface, solver, grp, checkType);
 
     // create a back-up of the last accepted state
     backup_.create(grp, dir);
@@ -539,7 +539,7 @@ void NOX::Nln::Inner::StatusTest::Filter::execute_check_status(
     const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
-  const ::NOX::MeritFunction::Generic& merit_func = linesearch.GetMeritFunction();
+  const ::NOX::MeritFunction::Generic& merit_func = linesearch.get_merit_function();
 
   // reset the f-type flag
   is_ftype_step_ = false;
@@ -552,7 +552,7 @@ void NOX::Nln::Inner::StatusTest::Filter::execute_check_status(
   filter_status_ = acceptability_check(trial_fp);
 
   // get current step length
-  const double step = linesearch.GetStepLength();
+  const double step = linesearch.get_step_length();
 
   switch (filter_status_)
   {
@@ -566,7 +566,7 @@ void NOX::Nln::Inner::StatusTest::Filter::execute_check_status(
       if (check_f_type_switching_condition(step))
       {
         is_ftype_step_ = true;
-        status_ = armijo_test_->CheckStatus(linesearch, solver, grp, checkType);
+        status_ = armijo_test_->check_status(linesearch, solver, grp, checkType);
       }
       // ------------------------------------------
       // Final filter check
@@ -618,7 +618,7 @@ double NOX::Nln::Inner::StatusTest::Filter::get_constraint_tolerance(
   if (normf_test)
   {
     const double true_tol = dynamic_cast<NOX::Nln::StatusTest::NormF&>(*normf_test)
-                                .GetTrueTolerance(NOX::Nln::StatusTest::quantity_contact_normal);
+                                .get_true_tolerance(NOX::Nln::StatusTest::quantity_contact_normal);
     if (true_tol < 0.0) FOUR_C_THROW("Something went wrong!");
 
     utils_.out(::NOX::Utils::Debug)
@@ -642,9 +642,9 @@ void NOX::Nln::Inner::StatusTest::Filter::Blocking::Check(
 
   // Would the filter point be theoretically accepted by the inner filter test
   StatusType trial_status = status_unevaluated;
-  if (filter_.check_f_type_switching_condition(linesearch.GetStepLength()))
+  if (filter_.check_f_type_switching_condition(linesearch.get_step_length()))
     trial_status =
-        filter_.armijo_test_->CheckStatus(linesearch, solver, grp, ::NOX::StatusTest::Complete);
+        filter_.armijo_test_->check_status(linesearch, solver, grp, ::NOX::StatusTest::Complete);
   else
     trial_status = filter_.sufficient_reduction_check(rejected_fp);
 
@@ -732,7 +732,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::pos
     const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
-  const int iter_ls = linesearch.GetNumIterations();
+  const int iter_ls = linesearch.get_num_iterations();
   if (iter_ls == 1 and status_ == status_step_too_long)
   {
     return soc_->execute(linesearch, solver, grp, checkType);
@@ -754,7 +754,7 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::pos
 void NOX::Nln::Inner::StatusTest::Filter::throw_if_step_too_short(
     const NOX::Nln::LineSearch::Generic& linesearch, const ::NOX::Solver::Generic& solver) const
 {
-  const double& step = linesearch.GetStepLength();
+  const double& step = linesearch.get_step_length();
   const enum ::NOX::StatusTest::StatusType active_set_status = get_active_set_status(solver);
 
   if (status_ == status_step_too_short)
@@ -774,7 +774,7 @@ NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::execute(
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
   // avoid recursive execution calls
-  if (issoc_) return filter_.GetStatus();
+  if (issoc_) return filter_.get_status();
   issoc_ = true;
 
   ::NOX::Abstract::Group& mutable_grp = const_cast<::NOX::Abstract::Group&>(grp);
@@ -864,7 +864,7 @@ void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::postprocess(
     grp.computeF();
     // Note that this tests more than just the filter method. Also all
     // pre-testings will be executed.
-    soc_status_ = linesearch.CheckInnerStatus(solver, grp, checkType);
+    soc_status_ = linesearch.check_inner_status(solver, grp, checkType);
   }
   catch (const char* e)
   {
@@ -907,12 +907,12 @@ void NOX::Nln::Inner::StatusTest::Filter::SecondOrderCorrection::solve(
   // compute the new direction
   const NOX::Nln::Solver::LineSearchBased& nln_solver =
       dynamic_cast<const NOX::Nln::Solver::LineSearchBased&>(solver);
-  ::NOX::Direction::Generic& direction = nln_solver.GetDirection();
+  ::NOX::Direction::Generic& direction = nln_solver.get_direction();
   bool success = direction.compute(*nox_dir, grp, solver);
   if (not success) FOUR_C_THROW("Solving of the SOC system failed!");
 
   // update the state in the group object
-  grp.computeX(grp, *nox_dir, linesearch.GetStepLength());
+  grp.computeX(grp, *nox_dir, linesearch.get_step_length());
 }
 
 /*----------------------------------------------------------------------------*
@@ -956,7 +956,7 @@ void NOX::Nln::Inner::StatusTest::Filter::BackupState::create(
 
   normf_ = grp.getF().norm(::NOX::Abstract::Vector::TwoNorm);
 
-  nln_grp_ptr->CreateBackupState(dir);
+  nln_grp_ptr->create_backup_state(dir);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1020,7 +1020,7 @@ enum ::NOX::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::get_acti
   if (not ls_solver) FOUR_C_THROW("The given non-linear solver is not line search based!");
 
   ::NOX::StatusTest::Generic* active_set_test =
-      ls_solver->GetOuterStatusTest<NOX::Nln::StatusTest::ActiveSet>();
+      ls_solver->get_outer_status_test<NOX::Nln::StatusTest::ActiveSet>();
 
   if (not active_set_test) return ::NOX::StatusTest::Unevaluated;
 
@@ -1213,14 +1213,14 @@ void NOX::Nln::Inner::StatusTest::Filter::identify_non_dominated_filter_points(
 void NOX::Nln::Inner::StatusTest::Filter::setup_model_terms(const ::NOX::Abstract::Vector& dir,
     const ::NOX::Abstract::Group& grp, const Interface::Required& interface)
 {
-  const ::NOX::MeritFunction::Generic& merit_func = interface.GetMeritFunction();
+  const ::NOX::MeritFunction::Generic& merit_func = interface.get_merit_function();
   if (dynamic_cast<const MeritFunction::Lagrangian*>(&merit_func))
   {
     const NOX::Nln::MeritFunction::Lagrangian& lagrangian =
         dynamic_cast<const NOX::Nln::MeritFunction::Lagrangian&>(merit_func);
 
     model_lin_terms_(0) = lagrangian.computeSlope(dir, grp);
-    model_mixed_terms_(0) = lagrangian.compute_mixed2nd_order_terms(dir, grp);
+    model_mixed_terms_(0) = lagrangian.compute_mixed_2nd_order_terms(dir, grp);
   }
   else
     FOUR_C_THROW("Currently unsupported merit function type: \"%s\"", merit_func.name().c_str());
@@ -1520,7 +1520,7 @@ void NOX::Nln::Inner::StatusTest::Filter::Infeasibility::compute_mixed2nd_order_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::GetStatus() const
+enum NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::Filter::get_status() const
 {
   return status_;
 }

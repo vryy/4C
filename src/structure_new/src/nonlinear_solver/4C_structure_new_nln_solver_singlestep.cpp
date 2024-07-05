@@ -101,7 +101,7 @@ void Solid::Nln::SOLVER::SingleStep::set_single_step_params(Teuchos::ParameterLi
  *----------------------------------------------------------------------------*/
 void Solid::Nln::SOLVER::SingleStep::reset_params()
 {
-  set_single_step_params(nlnglobaldata_->GetNlnParameterList());
+  set_single_step_params(nlnglobaldata_->get_nln_parameter_list());
 }
 
 
@@ -115,9 +115,9 @@ enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::SingleStep::Solve()
 
   const auto& x_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(group().getX());
 
-  nln_group.setIsValidNewton(true);  // to circumvent the check in ::NOX::Solver::SingleStep
-  nln_group.setIsValidRHS(false);    // force to compute the RHS
-  nln_group.resetX();                // to initialize the solution vector to zero
+  nln_group.set_is_valid_newton(true);  // to circumvent the check in ::NOX::Solver::SingleStep
+  nln_group.set_is_valid_rhs(false);    // force to compute the RHS
+  nln_group.reset_x();                  // to initialize the solution vector to zero
 
   //// do one non-linear step using solve
   ::NOX::StatusTest::StatusType stepstatus = nlnsolver_->solve();

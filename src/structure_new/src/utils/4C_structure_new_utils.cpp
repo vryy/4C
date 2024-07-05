@@ -199,7 +199,7 @@ enum Inpar::Solid::ModelType Solid::Nln::ConvertSolType2ModelType(
 enum Inpar::Solid::ModelType Solid::Nln::ConvertQuantityType2ModelType(
     const enum NOX::Nln::StatusTest::QuantityType& qtype, const bool& do_check)
 {
-  const NOX::Nln::SolutionType st = NOX::Nln::Aux::ConvertQuantityType2SolutionType(qtype);
+  const NOX::Nln::SolutionType st = NOX::Nln::Aux::convert_quantity_type_to_solution_type(qtype);
   return ConvertSolType2ModelType(st, do_check);
 }
 

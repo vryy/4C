@@ -45,21 +45,21 @@ namespace NOX
           Combo(::NOX::StatusTest::Combo::ComboType t, const Teuchos::RCP<Generic>& a,
               const Teuchos::RCP<Generic>& b, const ::NOX::Utils* u = nullptr);
 
-          StatusType CheckStatus(const Interface::Required& interface,
+          StatusType check_status(const Interface::Required& interface,
               const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
               ::NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent inner checkStatus call
-          StatusType GetStatus() const override;
+          StatusType get_status() const override;
 
           //! Output formatted description of inner stopping test to output stream.
           std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
           //! Add another test to this combination.
           /*!
-            Calls isSafe() to determine if it is safe to add \c a to the combination.
+            Calls is_safe() to determine if it is safe to add \c a to the combination.
           */
-          Combo& addStatusTest(const Teuchos::RCP<Generic>& a);
+          Combo& add_status_test(const Teuchos::RCP<Generic>& a);
 
           const std::vector<Teuchos::RCP<Generic>>& GetTestVector() const;
 

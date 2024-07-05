@@ -68,22 +68,22 @@ namespace NOX
       virtual Teuchos::RCP<::NOX::Epetra::LinearSystem> create_linear_system() const;
 
       //! create a nox group
-      virtual Teuchos::RCP<::NOX::Abstract::Group> CreateGroup(
+      virtual Teuchos::RCP<::NOX::Abstract::Group> create_group(
           const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys) const;
 
       void create_outer_status_test(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const;
 
-      virtual void CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTest,
+      virtual void create_status_tests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTest,
           Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTest) const;
 
       //! check final status of the non-linear solving procedure
-      virtual void CheckFinalStatus(const ::NOX::StatusTest::StatusType& finalStatus) const;
+      virtual void check_final_status(const ::NOX::StatusTest::StatusType& finalStatus) const;
 
       /// access the global data object
-      NOX::Nln::GlobalData& NlnGlobalData() { return *noxNlnGlobalData_; }
+      NOX::Nln::GlobalData& nln_global_data() { return *noxNlnGlobalData_; }
 
       /// access the global data object ptr
-      Teuchos::RCP<NOX::Nln::GlobalData> NlnGlobalDataPtr() { return noxNlnGlobalData_; }
+      Teuchos::RCP<NOX::Nln::GlobalData> nln_global_data_ptr() { return noxNlnGlobalData_; }
 
      protected:
       inline void check_init() const
@@ -94,7 +94,7 @@ namespace NOX
               " function!");
       }
 
-      inline const bool& is_jac() const { return isjac_; };
+      inline bool is_jacobian() const { return isjac_; };
 
      protected:
       bool isinit_;

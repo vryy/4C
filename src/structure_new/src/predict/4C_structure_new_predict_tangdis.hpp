@@ -84,7 +84,7 @@ namespace NOX
           TangDis(const Teuchos::RCP<const Solid::Predict::TangDis>& tang_predict_ptr);
 
           //! add the linear reaction forces
-          void runPostComputeF(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
+          void run_post_compute_f(Epetra_Vector& F, const NOX::Nln::Group& grp) override;
 
          private:
           //! pointer to the tangdis object (read-only)

@@ -40,13 +40,13 @@ namespace NOX
         //! @name NOX::Nln::LineSearch::Generic
         //! @{
         //! returns the slope in the current search direction
-        virtual const ::NOX::Abstract::Vector& GetSearchDirection() const = 0;
+        virtual const ::NOX::Abstract::Vector& get_search_direction() const = 0;
 
         //! returns the stepSize
-        virtual double GetStepLength() const = 0;
+        virtual double get_step_length() const = 0;
 
         //! sets the stepSize
-        virtual void SetStepLength(double step) = 0;
+        virtual void set_step_length(double step) = 0;
         //! @}
 
         //! @name ::NOX::LineSearch::Generic
@@ -58,10 +58,10 @@ namespace NOX
         //! @name NOX::Nln::Inner::StatusTest::Interface::Required
         //! @{
         //! get the number of line search iterations
-        int GetNumIterations() const override = 0;
+        int get_num_iterations() const override = 0;
 
         //! get the merit function
-        const ::NOX::MeritFunction::Generic& GetMeritFunction() const override = 0;
+        const ::NOX::MeritFunction::Generic& get_merit_function() const override = 0;
         //! @}
 
        protected:

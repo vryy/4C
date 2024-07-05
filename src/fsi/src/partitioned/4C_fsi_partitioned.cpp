@@ -754,9 +754,6 @@ void FSI::Partitioned::create_status_test(Teuchos::ParameterList& nlParams,
         Teuchos::rcp(new ::NOX::StatusTest::NormF(*grp.get(), nlParams.get("Norm rel F", 1.0e-2)));
     converged->addStatusTest(relresid);
   }
-
-  // Teuchos::RCP<::NOX::StatusTest::NormWRMS> wrms     = Teuchos::rcp(new
-  // ::NOX::StatusTest::NormWRMS(1.0e-2, 1.0e-8)); converged->addStatusTest(wrms);
 }
 
 

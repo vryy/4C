@@ -90,7 +90,7 @@ void Solid::Predict::TangDis::Compute(::NOX::Abstract::Group& grp)
   // Dirichlet boundary conditions.
   // ---------------------------------------------------------------------------
   apply_linear_reaction_forces_ = true;
-  grp_ptr->computeFandJacobian();
+  grp_ptr->compute_f_and_jacobian();
   apply_linear_reaction_forces_ = false;
 
   // ---------------------------------------------------------------------------
@@ -182,7 +182,7 @@ NOX::Nln::GROUP::PrePostOp::TangDis::TangDis(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::GROUP::PrePostOp::TangDis::runPostComputeF(
+void NOX::Nln::GROUP::PrePostOp::TangDis::run_post_compute_f(
     Epetra_Vector& F, const NOX::Nln::Group& grp)
 {
   // If we do not want to apply linear reaction forces due to changing Dirichlet

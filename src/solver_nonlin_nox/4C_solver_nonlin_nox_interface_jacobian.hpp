@@ -46,7 +46,7 @@ namespace NOX
         /*! \brief Compute RHS and Jacobian at once.
          *
          *  \return TRUE if computation was successful. */
-        virtual bool computeFandJacobian(
+        virtual bool compute_f_and_jacobian(
             const Epetra_Vector& x, Epetra_Vector& rhs, Epetra_Operator& jac) = 0;
 
         /*! \brief Compute the correction system of given type.

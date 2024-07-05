@@ -66,7 +66,7 @@ NOX::Nln::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       jac_ptr_(jacobian_op)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::Nln::Aux::GetOperatorType(jacobian());
+  jacType_ = NOX::Nln::Aux::get_operator_type(jacobian());
 
   reset(linearSolverParams);
 }
@@ -101,7 +101,7 @@ NOX::Nln::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       jac_ptr_(jacobian_op)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::Nln::Aux::GetOperatorType(jacobian());
+  jacType_ = NOX::Nln::Aux::get_operator_type(jacobian());
 
   reset(linearSolverParams);
 }
@@ -135,7 +135,7 @@ NOX::Nln::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       jac_ptr_(jacobian_op)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::Nln::Aux::GetOperatorType(jacobian());
+  jacType_ = NOX::Nln::Aux::get_operator_type(jacobian());
 
   reset(linearSolverParams);
 }
@@ -168,7 +168,7 @@ NOX::Nln::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       jac_ptr_(jacobian_op)
 {
   // Jacobian operator is supplied
-  jacType_ = NOX::Nln::Aux::GetOperatorType(jacobian());
+  jacType_ = NOX::Nln::Aux::get_operator_type(jacobian());
 
   reset(linearSolverParams);
 }
@@ -201,10 +201,10 @@ void NOX::Nln::LinearSystem::reset_pre_post_operator(Teuchos::ParameterList& p)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::Nln::LinearSystem::applyJacobianBlock(const ::NOX::Epetra::Vector& input,
+bool NOX::Nln::LinearSystem::apply_jacobian_block(const ::NOX::Epetra::Vector& input,
     Teuchos::RCP<::NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const
 {
-  const Core::LinAlg::SparseMatrix& blockc = getJacobianBlock(rbid, cbid);
+  const Core::LinAlg::SparseMatrix& blockc = get_jacobian_block(rbid, cbid);
   Core::LinAlg::SparseMatrix& block = const_cast<Core::LinAlg::SparseMatrix&>(blockc);
   const Epetra_Map& domainmap = block.DomainMap();
   const Epetra_Map& rangemap = block.RangeMap();
@@ -374,7 +374,7 @@ bool NOX::Nln::LinearSystem::computeJacobian(const ::NOX::Epetra::Vector& x)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::Nln::LinearSystem::computeFandJacobian(
+bool NOX::Nln::LinearSystem::compute_f_and_jacobian(
     const ::NOX::Epetra::Vector& x, ::NOX::Epetra::Vector& rhs)
 {
   prePostOperatorPtr_->run_pre_compute_fand_jacobian(
@@ -382,7 +382,7 @@ bool NOX::Nln::LinearSystem::computeFandJacobian(
 
   const bool success =
       Teuchos::rcp_dynamic_cast<NOX::Nln::Interface::Jacobian>(jacInterfacePtr_, true)
-          ->computeFandJacobian(x.getEpetraVector(), rhs.getEpetraVector(), jacobian());
+          ->compute_f_and_jacobian(x.getEpetraVector(), rhs.getEpetraVector(), jacobian());
 
   prePostOperatorPtr_->run_post_compute_fand_jacobian(
       rhs.getEpetraVector(), jacobian(), x.getEpetraVector(), *this);
@@ -518,7 +518,7 @@ NOX::Nln::LinearSystem::get_jacobian_interface() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const ::NOX::Epetra::Interface::Preconditioner>
-NOX::Nln::LinearSystem::getPrecInterface() const
+NOX::Nln::LinearSystem::get_preconditioner_interface() const
 {
   return precInterfacePtr_;
 }
@@ -564,7 +564,7 @@ void NOX::Nln::LinearSystem::setJacobianOperatorForSolve(
 void NOX::Nln::LinearSystem::set_jacobian_operator_for_solve(
     const Teuchos::RCP<const Core::LinAlg::SparseOperator>& solveJacOp)
 {
-  if (jacType_ != NOX::Nln::Aux::GetOperatorType(*solveJacOp))
+  if (jacType_ != NOX::Nln::Aux::get_operator_type(*solveJacOp))
     throw_error("set_jacobian_operator_for_solve", "wrong operator type!");
 
   jac_ptr_ = Teuchos::rcp_const_cast<Core::LinAlg::SparseOperator>(solveJacOp);
@@ -632,7 +632,7 @@ void NOX::Nln::LinearSystem::setPrecOperatorForSolve(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool NOX::Nln::LinearSystem::DestroyJacobian()
+bool NOX::Nln::LinearSystem::destroy_jacobian()
 {
   jac_ptr_ = Teuchos::null;
   return true;
@@ -640,7 +640,7 @@ bool NOX::Nln::LinearSystem::DestroyJacobian()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Core::LinAlg::SparseMatrix& NOX::Nln::LinearSystem::getJacobianBlock(
+const Core::LinAlg::SparseMatrix& NOX::Nln::LinearSystem::get_jacobian_block(
     unsigned rbid, unsigned cbid) const
 {
   switch (jacType_)
@@ -679,9 +679,9 @@ const Core::LinAlg::SparseMatrix& NOX::Nln::LinearSystem::getJacobianBlock(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Epetra_Map& NOX::Nln::LinearSystem::getJacobianRangeMap(unsigned rbid, unsigned cbid) const
+const Epetra_Map& NOX::Nln::LinearSystem::get_jacobian_range_map(unsigned rbid, unsigned cbid) const
 {
-  return getJacobianBlock(rbid, cbid).RangeMap();
+  return get_jacobian_block(rbid, cbid).RangeMap();
 }
 
 /*----------------------------------------------------------------------*
@@ -689,7 +689,7 @@ const Epetra_Map& NOX::Nln::LinearSystem::getJacobianRangeMap(unsigned rbid, uns
 Teuchos::RCP<Epetra_Vector> NOX::Nln::LinearSystem::get_diagonal_of_jacobian(
     unsigned diag_bid) const
 {
-  const Core::LinAlg::SparseMatrix& diag_block = getJacobianBlock(diag_bid, diag_bid);
+  const Core::LinAlg::SparseMatrix& diag_block = get_jacobian_block(diag_bid, diag_bid);
   const Epetra_Map& rmap = diag_block.RangeMap();
 
   Teuchos::RCP<Epetra_Vector> diag_copy = Teuchos::rcp(new Epetra_Vector(rmap, true));
@@ -704,7 +704,7 @@ Teuchos::RCP<Epetra_Vector> NOX::Nln::LinearSystem::get_diagonal_of_jacobian(
 void NOX::Nln::LinearSystem::replace_diagonal_of_jacobian(
     const Epetra_Vector& new_diag, unsigned diag_bid)
 {
-  const Core::LinAlg::SparseMatrix& diag_block = getJacobianBlock(diag_bid, diag_bid);
+  const Core::LinAlg::SparseMatrix& diag_block = get_jacobian_block(diag_bid, diag_bid);
   Core::LinAlg::SparseMatrix& mod_diag_block = const_cast<Core::LinAlg::SparseMatrix&>(diag_block);
 
   CATCH_EPETRA_ERROR(mod_diag_block.replace_diagonal_values(new_diag));

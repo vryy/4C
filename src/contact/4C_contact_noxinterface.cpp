@@ -163,7 +163,7 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_rms(const Epetra_Ve
     }
   }
 
-  rms = NOX::Nln::Aux::RootMeanSquareNorm(aTol, rTol, strategy().lagrange_multiplier_np(true),
+  rms = NOX::Nln::Aux::root_mean_square_norm(aTol, rTol, strategy().lagrange_multiplier_np(true),
       strategy().lagrange_multiplier_increment(), disable_implicit_weighting);
 
   return rms;
@@ -276,7 +276,7 @@ double CONTACT::NoxInterface::get_previous_lagrange_multiplier_norms(const Epetr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-enum ::NOX::StatusTest::StatusType CONTACT::NoxInterface::GetActiveSetInfo(
+enum ::NOX::StatusTest::StatusType CONTACT::NoxInterface::get_active_set_info(
     NOX::Nln::StatusTest::QuantityType checkQuantity, int& activesetsize) const
 {
   bool semismooth = Core::UTILS::IntegralValue<int>(strategy().Params(), "SEMI_SMOOTH_NEWTON");
@@ -341,7 +341,7 @@ Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::get_current_active_set_map
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetOldActiveSetMap(
+Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::get_old_active_set_map(
     enum NOX::Nln::StatusTest::QuantityType checkQuantity) const
 {
   switch (checkQuantity)
@@ -368,7 +368,7 @@ Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetOldActiveSetMap(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double CONTACT::NoxInterface::GetModelValue(NOX::Nln::MeritFunction::MeritFctName name) const
+double CONTACT::NoxInterface::get_model_value(NOX::Nln::MeritFunction::MeritFctName name) const
 {
   switch (name)
   {
@@ -418,7 +418,7 @@ double CONTACT::NoxInterface::get_linearized_model_terms(const Epetra_Vector& di
     {
       double lin_val =
           strategy().get_linearized_potential_value_terms(dir, name, linorder, lintype);
-      const double modelvalue = GetModelValue(name);
+      const double modelvalue = get_model_value(name);
       if (modelvalue != 0.0) lin_val /= modelvalue;
 
       return lin_val;

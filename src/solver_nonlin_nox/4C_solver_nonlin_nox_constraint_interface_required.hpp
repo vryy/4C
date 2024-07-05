@@ -61,10 +61,9 @@ namespace NOX
            *  which we try to minimize and the subjected constraint equations.
            *  Typical examples are the Lagrangian function value and the augmented Lagrangian
            *  function value. */
-          virtual double GetModelValue(NOX::Nln::MeritFunction::MeritFctName name) const
+          virtual double get_model_value(NOX::Nln::MeritFunction::MeritFctName name) const
           {
-            FOUR_C_THROW("GetObjectiveModelValue() is not implemented!");
-            exit(EXIT_FAILURE);
+            FOUR_C_THROW("get_model_value() is not implemented!");
           };
 
           //! Get the desired linearization terms of the objective model
@@ -73,8 +72,7 @@ namespace NOX
               const enum NOX::Nln::MeritFunction::LinOrder order,
               const enum NOX::Nln::MeritFunction::LinType type) const
           {
-            FOUR_C_THROW("GetLinearizedObjectiveModelTerms() is not implemented!");
-            exit(EXIT_FAILURE);
+            FOUR_C_THROW("get_linearized_model_terms() is not implemented!");
           };
 
           //! @}
@@ -124,7 +122,7 @@ namespace NOX
           /*! @name Handle active set changes.
            *  This is optional and only relevant for inequality constraint problems. */
           //! @{
-          virtual enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
+          virtual enum ::NOX::StatusTest::StatusType get_active_set_info(
               enum NOX::Nln::StatusTest::QuantityType qt, int& activeset_size) const
           {
             activeset_size = -1;
@@ -137,7 +135,7 @@ namespace NOX
             return Teuchos::null;
           };
 
-          virtual Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
+          virtual Teuchos::RCP<const Epetra_Map> get_old_active_set_map(
               enum NOX::Nln::StatusTest::QuantityType qt) const
           {
             return Teuchos::null;

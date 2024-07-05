@@ -96,29 +96,29 @@ namespace NOX
       virtual ~GlobalData() = default;
 
       //! return the nox_utils class
-      const ::NOX::Utils& GetNoxUtils() const;
+      const ::NOX::Utils& get_NOX_utils() const;
 
       //! return the nox_utils class pointer
-      const Teuchos::RCP<::NOX::Utils>& GetNoxUtilsPtr() const;
+      const Teuchos::RCP<::NOX::Utils>& get_NOX_utils_ptr() const;
 
       //! return the nln parameter list
-      const Teuchos::ParameterList& GetNlnParameterList() const;
-      Teuchos::ParameterList& GetNlnParameterList();
+      const Teuchos::ParameterList& get_nln_parameter_list() const;
+      Teuchos::ParameterList& get_nln_parameter_list();
 
       //! return the pointer to the parameter list
       const Teuchos::RCP<Teuchos::ParameterList>& get_nln_parameter_list_ptr();
 
       //! return underlying discretization Epetra_Comm
-      const Epetra_Comm& GetComm() const;
+      const Epetra_Comm& get_comm() const;
 
       //! return the isConstrained boolean
       //! true if in/equality constrained optimization problem
       //! false if unconstrained optimization problem
-      const bool& GetIsConstrained() const;
+      bool is_constrained() const;
 
       // return linear solver vector
       const std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>&
-      GetLinSolvers();
+      get_linear_solvers();
 
       //! return the user-defined preconditioner interface
       Teuchos::RCP<::NOX::Epetra::Interface::Required> get_required_interface();
@@ -136,7 +136,7 @@ namespace NOX
       const NOX::Nln::CONSTRAINT::PrecInterfaceMap& get_constraint_prec_interfaces();
 
       //! return linear system scaling object
-      const Teuchos::RCP<::NOX::Epetra::Scaling>& GetScalingObject();
+      const Teuchos::RCP<::NOX::Epetra::Scaling>& get_scaling_object();
 
      private:
       //! setup the nln_utils class

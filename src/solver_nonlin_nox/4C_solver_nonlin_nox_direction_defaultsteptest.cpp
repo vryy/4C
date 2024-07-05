@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::Nln::Direction::Test::VolumeChange::checkTest(
+bool NOX::Nln::Direction::Test::VolumeChange::check_test(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp)
 {
   compute_element_volumes(dir, grp);
@@ -37,11 +37,11 @@ bool NOX::Nln::Direction::Test::VolumeChange::checkTest(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::Nln::Direction::Test::VolumeChange::initAndCheckTest(
+bool NOX::Nln::Direction::Test::VolumeChange::init_and_check_test(
     ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp)
 {
   my_bad_dofs_.clear();
-  return checkTest(dir, grp);
+  return check_test(dir, grp);
 }
 
 /*----------------------------------------------------------------------------*
@@ -71,16 +71,16 @@ void NOX::Nln::Direction::Test::VolumeChange::compute_primal_direction_measures(
   const ::NOX::Epetra::Vector& dir_epetra = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
 
   // range map and domain map are expected to coincide
-  const Epetra_Map& rangemap = nln_grp.getJacobianRangeMap(0, 0);
+  const Epetra_Map& rangemap = nln_grp.get_jacobian_range_map(0, 0);
   Teuchos::RCP<Epetra_Vector> primal_dir =
       Core::LinAlg::ExtractMyVector(dir_epetra.getEpetraVector(), rangemap);
   ::NOX::Epetra::Vector nox_primal_dir(primal_dir, ::NOX::Epetra::Vector::CreateView);
 
   Teuchos::RCP<::NOX::Epetra::Vector> result_ptr;
   ::NOX::Abstract::Group::ReturnType status =
-      nln_grp.applyJacobianBlock(nox_primal_dir, result_ptr, 0, 0);
+      nln_grp.apply_jacobian_block(nox_primal_dir, result_ptr, 0, 0);
 
-  if (status != ::NOX::Abstract::Group::Ok) FOUR_C_THROW("applyJacobianBlock failed");
+  if (status != ::NOX::Abstract::Group::Ok) FOUR_C_THROW("apply_jacobian_block failed");
 
   dirdir_ = nox_primal_dir.innerProduct(nox_primal_dir);
   dirres_ = nox_primal_dir.innerProduct(*result_ptr);
@@ -121,15 +121,15 @@ void NOX::Nln::Direction::Test::VolumeChange::identify_bad_elements(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::Test::VolumeChange::getCurrentDiagonal(
+Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::Test::VolumeChange::get_current_diagonal(
     const ::NOX::Abstract::Group& grp) const
 {
-  return getCurrentDiagonal(dynamic_cast<const Nln::Group&>(grp));
+  return get_current_diagonal(dynamic_cast<const Nln::Group&>(grp));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::Test::VolumeChange::getCurrentDiagonal(
+Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::Test::VolumeChange::get_current_diagonal(
     const NOX::Nln::Group& grp) const
 {
   Teuchos::RCP<Epetra_Vector> diagonal = get_empty_diagonal(grp);
@@ -157,7 +157,7 @@ void NOX::Nln::Direction::Test::VolumeChange::fill_diagonal_at_bad_dofs(
 Teuchos::RCP<Epetra_Vector> NOX::Nln::Direction::Test::VolumeChange::get_empty_diagonal(
     const NOX::Nln::Group& grp) const
 {
-  const Epetra_Map& jac_rmap = grp.getJacobianRangeMap(0, 0);
+  const Epetra_Map& jac_rmap = grp.get_jacobian_range_map(0, 0);
   Teuchos::RCP<Epetra_Vector> diagonal = Teuchos::rcp(new Epetra_Vector(jac_rmap, true));
 
   return diagonal;
@@ -192,7 +192,7 @@ int NOX::Nln::Direction::Test::VolumeChange::fill_my_bad_dofs(NOX::Nln::Group& g
   int gnew_num_bad_eles = 0;
   comm.SumAll(&lnew_num_bad_eles, &gnew_num_bad_eles, 1);
 
-  grp.getDofsFromElements(my_bad_elements, my_bad_dofs_);
+  grp.get_dofs_from_elements(my_bad_elements, my_bad_dofs_);
 
   return gnew_num_bad_eles;
 }

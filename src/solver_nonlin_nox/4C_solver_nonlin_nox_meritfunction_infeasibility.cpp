@@ -91,7 +91,7 @@ double NOX::Nln::MeritFunction::Infeasibility::computef(const ::NOX::Abstract::G
       dynamic_cast<const NOX::Nln::CONSTRAINT::Group*>(&grp);
   if (not constr_grp_ptr) FOUR_C_THROW("Dynamic cast to NOX::Nln::Constraint::Group failed!");
 
-  return constr_grp_ptr->GetModelValue(Type());
+  return constr_grp_ptr->get_model_value(Type());
 }
 
 /*----------------------------------------------------------------------------*

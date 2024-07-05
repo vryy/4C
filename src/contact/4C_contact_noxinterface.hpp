@@ -61,7 +61,7 @@ namespace CONTACT
         bool isScaled) const override;
 
     /// Returns the active set info [derived]
-    enum ::NOX::StatusTest::StatusType GetActiveSetInfo(
+    enum ::NOX::StatusTest::StatusType get_active_set_info(
         enum NOX::Nln::StatusTest::QuantityType checkQuantity, int& activesetsize) const override;
 
     /// Returns the current active set map
@@ -69,14 +69,14 @@ namespace CONTACT
         enum NOX::Nln::StatusTest::QuantityType checkQuantity) const override;
 
     /// Returns the old active set map of the previous Newton step
-    Teuchos::RCP<const Epetra_Map> GetOldActiveSetMap(
+    Teuchos::RCP<const Epetra_Map> get_old_active_set_map(
         enum NOX::Nln::StatusTest::QuantityType checkQuantity) const override;
     /// @}
 
     /// @name Merit function support functions
     /// @{
 
-    double GetModelValue(NOX::Nln::MeritFunction::MeritFctName name) const override;
+    double get_model_value(NOX::Nln::MeritFunction::MeritFctName name) const override;
 
     double get_linearized_model_terms(const Epetra_Vector& dir,
         const enum NOX::Nln::MeritFunction::MeritFctName name,

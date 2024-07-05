@@ -49,11 +49,10 @@ namespace NOX
             const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests,
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
-
         [[nodiscard]] ::NOX::StatusTest::StatusType getStatus() const override;
 
         //! Returns the ::NOX::Utils object
-        [[nodiscard]] const ::NOX::Utils& GetUtils() const;
+        [[nodiscard]] const ::NOX::Utils& get_utils() const;
 
        protected:
         //! initialize additional variables after base class initialization

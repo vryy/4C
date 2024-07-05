@@ -58,7 +58,7 @@ namespace NOX
         double computeSlope(
             const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const override;
 
-        double compute_mixed2nd_order_terms(
+        double compute_mixed_2nd_order_terms(
             const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const;
 
         /** \brief Computes the quadratic model.

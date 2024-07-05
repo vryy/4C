@@ -31,30 +31,31 @@ NOX::Nln::LineSearch::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::LineSearch::Generic> NOX::Nln::LineSearch::Factory::BuildLineSearch(
+Teuchos::RCP<::NOX::LineSearch::Generic> NOX::Nln::LineSearch::Factory::build_line_search(
     const Teuchos::RCP<::NOX::GlobalData>& gd,
     const Teuchos::RCP<::NOX::StatusTest::Generic> outerTests,
     const Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> innerTests,
-    Teuchos::ParameterList& lsparams)
+    Teuchos::ParameterList& params) const
 {
   Teuchos::RCP<::NOX::LineSearch::Generic> line_search;
 
-  std::string method = lsparams.get("Method", "Full Step");
+  std::string method = params.get("Method", "Full Step");
 
   // If we use not the full step method, a inner status test has to be provided!
   if (method != "Full Step") inner_status_test_is_required(innerTests);
 
   if (method == "Full Step")
-    line_search = Teuchos::rcp(new ::NOX::LineSearch::FullStep(gd, lsparams));
+    line_search = Teuchos::rcp(new ::NOX::LineSearch::FullStep(gd, params));
   else if (method == "Backtrack")
   {
     line_search =
-        Teuchos::rcp(new NOX::Nln::LineSearch::Backtrack(gd, outerTests, innerTests, lsparams));
+        Teuchos::rcp(new NOX::Nln::LineSearch::Backtrack(gd, outerTests, innerTests, params));
   }
   else
   {
     std::ostringstream msg;
-    msg << "Error - NOX::Nln::LineSearch::Factory::BuildLineSearch() - The \"Method\" parameter \""
+    msg << "Error - NOX::Nln::LineSearch::Factory::build_line_search() - The \"Method\" parameter "
+           "\""
         << method << "\" is not a valid linesearch option. " << std::endl
         << "Please fix your parameter list!" << std::endl;
     FOUR_C_THROW(msg.str());
@@ -83,7 +84,7 @@ Teuchos::RCP<::NOX::LineSearch::Generic> NOX::Nln::LineSearch::BuildLineSearch(
     Teuchos::ParameterList& lsparams)
 {
   Factory factory;
-  return factory.BuildLineSearch(gd, outerTests, innerTests, lsparams);
+  return factory.build_line_search(gd, outerTests, innerTests, lsparams);
 }
 
 FOUR_C_NAMESPACE_CLOSE

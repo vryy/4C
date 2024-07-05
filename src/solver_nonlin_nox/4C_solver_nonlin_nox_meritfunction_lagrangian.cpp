@@ -53,7 +53,7 @@ double NOX::Nln::MeritFunction::Lagrangian::computef(const ::NOX::Abstract::Grou
   }
 
   // Get the primary contribution and constraint contributions
-  return constr_grp_ptr->GetModelValue(Type());
+  return constr_grp_ptr->get_model_value(Type());
 }
 
 /*----------------------------------------------------------------------------*
@@ -80,7 +80,7 @@ double NOX::Nln::MeritFunction::Lagrangian::computeSlope(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::Nln::MeritFunction::Lagrangian::compute_mixed2nd_order_terms(
+double NOX::Nln::MeritFunction::Lagrangian::compute_mixed_2nd_order_terms(
     const ::NOX::Abstract::Vector& dir, const ::NOX::Abstract::Group& grp) const
 {
   if (!grp.isF())

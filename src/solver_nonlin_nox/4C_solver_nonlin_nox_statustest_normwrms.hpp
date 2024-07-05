@@ -47,7 +47,7 @@ namespace NOX
             const ::NOX::Solver::Generic& problem, ::NOX::StatusTest::CheckType checkType) override;
 
         //! Check for the given quantity
-        bool IsQuantity(const NOX::Nln::StatusTest::QuantityType& qType) const;
+        bool is_quantity(const NOX::Nln::StatusTest::QuantityType& qType) const;
 
         ::NOX::StatusTest::StatusType getStatus() const override;
 

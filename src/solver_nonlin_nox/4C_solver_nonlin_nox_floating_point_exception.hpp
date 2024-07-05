@@ -59,7 +59,7 @@ namespace NOX
       /** \brief Check for any set floating point exception flags
        *
        *  \author hiermeier \date 08/18 */
-      static int checkAndPrint(std::ostream& os);
+      static int check_and_print(std::ostream& os);
 
       /** \brief Clear all potentially set floating point flags
        *

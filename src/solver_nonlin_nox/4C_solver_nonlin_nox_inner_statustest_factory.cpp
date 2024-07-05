@@ -167,7 +167,7 @@ NOX::Nln::Inner::StatusTest::Factory::build_filter_test(
   {
     // setup validator
     fparams.soc_type_ =
-        NOX::Nln::ParameterUtils::SetAndValidate<NOX::Nln::CorrectionType>(p, "SOC Type", "auto",
+        NOX::Nln::ParameterUtils::set_and_validate<NOX::Nln::CorrectionType>(p, "SOC Type", "auto",
             "Second order correction type. Per default the "
             "SOC type is set to \"auto\".",
             Teuchos::tuple<std::string>("auto", "cheap", "full"),
@@ -263,8 +263,8 @@ NOX::Nln::Inner::StatusTest::Factory::build_combo_test(Teuchos::ParameterList& p
 
 
   ::NOX::StatusTest::Combo::ComboType combo_type =
-      NOX::Nln::ParameterUtils::SetAndValidate<::NOX::StatusTest::Combo::ComboType>(p, "Combo Type",
-          "AND",
+      NOX::Nln::ParameterUtils::set_and_validate<::NOX::StatusTest::Combo::ComboType>(p,
+          "Combo Type", "AND",
           "Combination type to combine multiple inner "
           "status tests. Possible choices are AND and OR.",
           Teuchos::tuple<std::string>("AND", "OR"),
@@ -284,7 +284,7 @@ NOX::Nln::Inner::StatusTest::Factory::build_combo_test(Teuchos::ParameterList& p
     Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic> subtest =
         this->build_inner_status_tests(subtest_list, u, tagged_tests);
 
-    combo_test->addStatusTest(subtest);
+    combo_test->add_status_test(subtest);
 
     // increase iterator
     ++i;

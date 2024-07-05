@@ -93,7 +93,7 @@ double CONTACT::MtNoxInterface::get_lagrange_multiplier_update_rms(const Epetra_
   Teuchos::RCP<const ::NOX::Epetra::Vector> lagincr_nox_ptr =
       Teuchos::rcp(new ::NOX::Epetra::Vector(lagincr_ptr, ::NOX::Epetra::Vector::CreateView));
 
-  rms = NOX::Nln::Aux::RootMeanSquareNorm(
+  rms = NOX::Nln::Aux::root_mean_square_norm(
       aTol, rTol, lagnew_ptr, lagincr_ptr, disable_implicit_weighting);
 
   return rms;

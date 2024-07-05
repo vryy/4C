@@ -152,11 +152,11 @@ namespace NOX
           void runPreSolve(const ::NOX::Solver::Generic& nlnSolver) override;
 
           //! derived
-          void runPreComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+          void run_pre_compute_x(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
               const double& step, const NOX::Nln::Group& curr_grp) override;
 
           //! derived
-          void runPostComputeX(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
+          void run_post_compute_x(const NOX::Nln::Group& input_grp, const Epetra_Vector& dir,
               const double& step, const NOX::Nln::Group& curr_grp) override;
 
          private:

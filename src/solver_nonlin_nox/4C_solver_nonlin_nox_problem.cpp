@@ -90,14 +90,14 @@ void NOX::Nln::Problem::initialize(const Teuchos::RCP<::NOX::Epetra::Vector>& x,
 Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::Problem::create_linear_system() const
 {
   check_init();
-  if (not is_jac())
+  if (not is_jacobian())
     FOUR_C_THROW(
         "You have to set a jacobian first, before you can create a "
         "linear system!");
 
   const NOX::Nln::LinSystem::LinearSystemType linsystype =
-      NOX::Nln::Aux::GetLinearSystemType(noxNlnGlobalData_->GetLinSolvers());
-  Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = noxNlnGlobalData_->GetScalingObject();
+      NOX::Nln::Aux::get_linear_system_type(noxNlnGlobalData_->get_linear_solvers());
+  Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject = noxNlnGlobalData_->get_scaling_object();
 
   // build the linear system --> factory call
   return NOX::Nln::LinSystem::BuildLinearSystem(
@@ -106,17 +106,17 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::Problem::create_linear_syste
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::Problem::CreateGroup(
+Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::Problem::create_group(
     const Teuchos::RCP<::NOX::Epetra::LinearSystem>& linSys) const
 {
   check_init();
   Teuchos::RCP<::NOX::Abstract::Group> noxgrp = Teuchos::null;
 
-  Teuchos::ParameterList& params = noxNlnGlobalData_->GetNlnParameterList();
+  Teuchos::ParameterList& params = noxNlnGlobalData_->get_nln_parameter_list();
   const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq =
       noxNlnGlobalData_->get_required_interface();
   const std::string nlnSolver = params.get<std::string>("Nonlinear Solver", "");
-  if (noxNlnGlobalData_->GetIsConstrained())
+  if (noxNlnGlobalData_->is_constrained())
   {
     const NOX::Nln::CONSTRAINT::ReqInterfaceMap& iconstr =
         noxNlnGlobalData_->get_constraint_interfaces();
@@ -143,31 +143,31 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::Problem::CreateGroup(
 void NOX::Nln::Problem::create_outer_status_test(
     Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests) const
 {
-  Teuchos::ParameterList& p = noxNlnGlobalData_->GetNlnParameterList();
+  Teuchos::ParameterList& p = noxNlnGlobalData_->get_nln_parameter_list();
 
   // A "Outer Status Test" has to be supplied by the user
   Teuchos::ParameterList& oParams =
       p.sublist("Status Test", true).sublist("Outer Status Test", true);
   outerTests =
-      NOX::Nln::StatusTest::build_outer_status_tests(oParams, noxNlnGlobalData_->GetNoxUtils());
+      NOX::Nln::StatusTest::build_outer_status_tests(oParams, noxNlnGlobalData_->get_NOX_utils());
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::Problem::CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTests,
-    Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTests) const
+void NOX::Nln::Problem::create_status_tests(Teuchos::RCP<::NOX::StatusTest::Generic>& outerTest,
+    Teuchos::RCP<NOX::Nln::Inner::StatusTest::Generic>& innerTest) const
 {
-  create_outer_status_test(outerTests);
+  create_outer_status_test(outerTest);
 
   // A "Inner Status Test" is optional in some cases.
   // Check if there is a "Inner Status Test" sublist and if it is filled.
-  Teuchos::ParameterList& p = noxNlnGlobalData_->GetNlnParameterList();
+  Teuchos::ParameterList& p = noxNlnGlobalData_->get_nln_parameter_list();
   if (p.sublist("Status Test", true).isSublist("Inner Status Test") and
       p.sublist("Status Test").sublist("Inner Status Test").numParams() != 0)
   {
     Teuchos::ParameterList& iParams = p.sublist("Status Test", true).sublist("Inner Status Test");
-    innerTests = NOX::Nln::Inner::StatusTest::build_inner_status_tests(
-        iParams, noxNlnGlobalData_->GetNoxUtils());
+    innerTest = NOX::Nln::Inner::StatusTest::build_inner_status_tests(
+        iParams, noxNlnGlobalData_->get_NOX_utils());
   }
 
   return;
@@ -175,7 +175,7 @@ void NOX::Nln::Problem::CreateStatusTests(Teuchos::RCP<::NOX::StatusTest::Generi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void NOX::Nln::Problem::CheckFinalStatus(const ::NOX::StatusTest::StatusType& finalStatus) const
+void NOX::Nln::Problem::check_final_status(const ::NOX::StatusTest::StatusType& finalStatus) const
 {
   if (finalStatus != ::NOX::StatusTest::Converged)
   {

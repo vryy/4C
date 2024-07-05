@@ -68,8 +68,8 @@ Teuchos::RCP<::NOX::Abstract::Group> NOX::Nln::CONSTRAINT::Group::clone(::NOX::C
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const NOX::Nln::CONSTRAINT::ReqInterfaceMap& NOX::Nln::CONSTRAINT::Group::GetConstrInterfaces()
-    const
+const NOX::Nln::CONSTRAINT::ReqInterfaceMap&
+NOX::Nln::CONSTRAINT::Group::get_constraint_interfaces() const
 {
   return user_constraint_interfaces_;
 }
@@ -107,15 +107,15 @@ NOX::Nln::CONSTRAINT::Group::get_constraint_interface_ptr(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double NOX::Nln::CONSTRAINT::Group::GetModelValue(
-    const enum NOX::Nln::MeritFunction::MeritFctName merit_func_type) const
+double NOX::Nln::CONSTRAINT::Group::get_model_value(
+    const MeritFunction::MeritFctName merit_func_type) const
 {
-  double mrtFctVal = NOX::Nln::Group::GetModelValue(merit_func_type);
+  double mrtFctVal = NOX::Nln::Group::get_model_value(merit_func_type);
 
   // constraint contributions
   double constr_contr = 0.0;
   for (const auto& constr_iter : user_constraint_interfaces_)
-    constr_contr += constr_iter.second->GetModelValue(merit_func_type);
+    constr_contr += constr_iter.second->get_model_value(merit_func_type);
 
   return mrtFctVal + constr_contr;
 }
@@ -144,7 +144,7 @@ double NOX::Nln::CONSTRAINT::Group::get_linearized_model_terms(const ::NOX::Abst
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const std::vector<double>> NOX::Nln::CONSTRAINT::Group::GetRHSNorms(
+Teuchos::RCP<const std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_rhs_norms(
     const std::vector<::NOX::Abstract::Vector::NormType>& type,
     const std::vector<NOX::Nln::StatusTest::QuantityType>& chQ,
     Teuchos::RCP<const std::vector<::NOX::StatusTest::NormF::ScaleType>> scale) const
@@ -169,7 +169,8 @@ Teuchos::RCP<const std::vector<double>> NOX::Nln::CONSTRAINT::Group::GetRHSNorms
     // avoid the execution of this block for NaN and Inf return values
     if (rval < 0.0)
     {
-      enum NOX::Nln::SolutionType soltype = NOX::Nln::Aux::ConvertQuantityType2SolutionType(chQ[i]);
+      enum NOX::Nln::SolutionType soltype =
+          NOX::Nln::Aux::convert_quantity_type_to_solution_type(chQ[i]);
       Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> constrptr =
           get_constraint_interface_ptr(soltype, false);
       if (constrptr != Teuchos::null)
@@ -225,7 +226,8 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_solution_upda
       norms->push_back(rval);
       continue;
     }
-    enum NOX::Nln::SolutionType soltype = NOX::Nln::Aux::ConvertQuantityType2SolutionType(chQ[i]);
+    enum NOX::Nln::SolutionType soltype =
+        NOX::Nln::Aux::convert_quantity_type_to_solution_type(chQ[i]);
     Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> constrptr =
         get_constraint_interface_ptr(soltype);
     rval = constrptr->get_lagrange_multiplier_update_norms(xVector.getEpetraVector(),
@@ -273,7 +275,8 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_previous_solu
       norms->push_back(rval);
       continue;
     }
-    enum NOX::Nln::SolutionType soltype = NOX::Nln::Aux::ConvertQuantityType2SolutionType(chQ[i]);
+    enum NOX::Nln::SolutionType soltype =
+        NOX::Nln::Aux::convert_quantity_type_to_solution_type(chQ[i]);
     Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> constrptr =
         get_constraint_interface_ptr(soltype);
     rval = constrptr->get_previous_lagrange_multiplier_norms(xOldEpetra.getEpetraVector(), chQ[i],
@@ -316,7 +319,8 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_solution_upda
       continue;
     }
 
-    enum NOX::Nln::SolutionType soltype = NOX::Nln::Aux::ConvertQuantityType2SolutionType(chQ[i]);
+    enum NOX::Nln::SolutionType soltype =
+        NOX::Nln::Aux::convert_quantity_type_to_solution_type(chQ[i]);
     Teuchos::RCP<const NOX::Nln::CONSTRAINT::Interface::Required> constrptr =
         get_constraint_interface_ptr(soltype);
 
@@ -343,29 +347,31 @@ Teuchos::RCP<std::vector<double>> NOX::Nln::CONSTRAINT::Group::get_solution_upda
 Teuchos::RCP<const Epetra_Map> NOX::Nln::CONSTRAINT::Group::get_current_active_set_map(
     const enum NOX::Nln::StatusTest::QuantityType& qt) const
 {
-  enum NOX::Nln::SolutionType soltype = NOX::Nln::Aux::ConvertQuantityType2SolutionType(qt);
+  enum NOX::Nln::SolutionType soltype = NOX::Nln::Aux::convert_quantity_type_to_solution_type(qt);
 
   return get_constraint_interface_ptr(soltype)->get_current_active_set_map(qt);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> NOX::Nln::CONSTRAINT::Group::GetOldActiveSetMap(
-    const enum NOX::Nln::StatusTest::QuantityType& qt) const
+Teuchos::RCP<const Epetra_Map> NOX::Nln::CONSTRAINT::Group::get_old_active_set_map(
+    const enum NOX::Nln::StatusTest::QuantityType& qtype) const
 {
-  enum NOX::Nln::SolutionType soltype = NOX::Nln::Aux::ConvertQuantityType2SolutionType(qt);
+  enum NOX::Nln::SolutionType soltype =
+      NOX::Nln::Aux::convert_quantity_type_to_solution_type(qtype);
 
-  return get_constraint_interface_ptr(soltype)->GetOldActiveSetMap(qt);
+  return get_constraint_interface_ptr(soltype)->get_old_active_set_map(qtype);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-enum ::NOX::StatusTest::StatusType NOX::Nln::CONSTRAINT::Group::GetActiveSetInfo(
-    const enum NOX::Nln::StatusTest::QuantityType& qt, int& activeset_size) const
+enum ::NOX::StatusTest::StatusType NOX::Nln::CONSTRAINT::Group::get_active_set_info(
+    const enum NOX::Nln::StatusTest::QuantityType& qtype, int& activeset_size) const
 {
-  enum NOX::Nln::SolutionType soltype = NOX::Nln::Aux::ConvertQuantityType2SolutionType(qt);
+  enum NOX::Nln::SolutionType soltype =
+      NOX::Nln::Aux::convert_quantity_type_to_solution_type(qtype);
 
-  return get_constraint_interface_ptr(soltype)->GetActiveSetInfo(qt, activeset_size);
+  return get_constraint_interface_ptr(soltype)->get_active_set_info(qtype, activeset_size);
 }
 
 /*----------------------------------------------------------------------*

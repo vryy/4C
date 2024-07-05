@@ -40,8 +40,8 @@ void NOX::Nln::Solver::PrePostOp::Generic::runPreIterate(const ::NOX::Solver::Ge
   {
     // Set the current number of nonlinear iterations
     // this is necessary for the linear solver in some cases (e.g. contact)
-    const Teuchos::RCP<Teuchos::ParameterList>& params = lsSolver->GetListPtr();
-    const std::string dir_method_str(NOX::Nln::Aux::GetDirectionMethodListName(*params));
+    const Teuchos::RCP<Teuchos::ParameterList>& params = lsSolver->get_list_ptr();
+    const std::string dir_method_str(NOX::Nln::Aux::get_direction_method_list_name(*params));
     if (params->sublist("Direction").isSublist(dir_method_str))
     {
       if (params->sublist("Direction").sublist(dir_method_str).isSublist("Linear Solver"))
@@ -66,8 +66,8 @@ void NOX::Nln::Solver::PrePostOp::Generic::runPreSolve(const ::NOX::Solver::Gene
   if (lsSolver != nullptr)
   {
     // set the wanted tolerance for the linear solver
-    const Teuchos::RCP<Teuchos::ParameterList>& params = lsSolver->GetListPtr();
-    const std::string dir_method_str(NOX::Nln::Aux::GetDirectionMethodListName(*params));
+    const Teuchos::RCP<Teuchos::ParameterList>& params = lsSolver->get_list_ptr();
+    const std::string dir_method_str(NOX::Nln::Aux::get_direction_method_list_name(*params));
     if (params->sublist("Direction").isSublist(dir_method_str))
     {
       if (params->sublist("Direction").sublist(dir_method_str).isSublist("Linear Solver"))
@@ -77,18 +77,18 @@ void NOX::Nln::Solver::PrePostOp::Generic::runPreSolve(const ::NOX::Solver::Gene
 
         // Find and get the "specified tolerance" of the structural normF test in the statusTest
         // object
-        const ::NOX::StatusTest::Generic& statusTest = lsSolver->GetOuterStatusTest();
-        double specified_tol = NOX::Nln::Aux::GetNormFClassVariable(
+        const ::NOX::StatusTest::Generic& statusTest = lsSolver->get_outer_status_test();
+        double specified_tol = NOX::Nln::Aux::get_norm_f_class_variable(
             statusTest, NOX::Nln::StatusTest::quantity_structure, "SpecifiedTolerance");
         if (specified_tol == -1.0)
-          specified_tol = NOX::Nln::Aux::GetNormFClassVariable(
+          specified_tol = NOX::Nln::Aux::get_norm_f_class_variable(
               statusTest, NOX::Nln::StatusTest::quantity_levelset_reinit, "SpecifiedTolerance");
 
         if (specified_tol == -1.0)
         {
-          if (lsSolver->GetUtils().isPrintType(::NOX::Utils::Warning))
+          if (lsSolver->get_utils().isPrintType(::NOX::Utils::Warning))
           {
-            lsSolver->GetUtils().out()
+            lsSolver->get_utils().out()
                 << "\n*** WARNING ***\n"
                 << "There is no NOX::Nln::StatusTest::NormF test for the primal field \n"
                 << "components. The \"Wanted Tolerance\" for the sublist\n"

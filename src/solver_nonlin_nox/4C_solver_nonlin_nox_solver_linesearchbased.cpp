@@ -129,7 +129,7 @@ void NOX::Nln::Solver::LineSearchBased::printUpdate()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::StatusTest::Generic& NOX::Nln::Solver::LineSearchBased::GetOuterStatusTest() const
+const ::NOX::StatusTest::Generic& NOX::Nln::Solver::LineSearchBased::get_outer_status_test() const
 {
   if (testPtr.is_null())
   {
@@ -143,7 +143,7 @@ const ::NOX::StatusTest::Generic& NOX::Nln::Solver::LineSearchBased::GetOuterSta
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-::NOX::StatusTest::Generic* NOX::Nln::Solver::LineSearchBased::GetOuterStatusTest() const
+::NOX::StatusTest::Generic* NOX::Nln::Solver::LineSearchBased::get_outer_status_test() const
 {
   if (testPtr.is_null())
   {
@@ -151,7 +151,7 @@ template <class T>
     throw "NOX Error";
   }
 
-  return NOX::Nln::Aux::GetOuterStatusTest<T>(*testPtr);
+  return NOX::Nln::Aux::get_outer_status_test<T>(*testPtr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -179,10 +179,10 @@ template <class T>
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template <class T>
-::NOX::StatusTest::StatusType NOX::Nln::Solver::LineSearchBased::GetStatus() const
+::NOX::StatusTest::StatusType NOX::Nln::Solver::LineSearchBased::get_status() const
 {
   ::NOX::StatusTest::StatusType gstatus = ::NOX::StatusTest::Unevaluated;
-  int status = NOX::Nln::Aux::GetOuterStatus<T>(*testPtr);
+  int status = NOX::Nln::Aux::get_outer_status<T>(*testPtr);
   if (status != -100) gstatus = static_cast<::NOX::StatusTest::StatusType>(status);
 
   return gstatus;
@@ -190,11 +190,11 @@ template <class T>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const ::NOX::Utils& NOX::Nln::Solver::LineSearchBased::GetUtils() const { return *utilsPtr; }
+const ::NOX::Utils& NOX::Nln::Solver::LineSearchBased::get_utils() const { return *utilsPtr; }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-::NOX::Direction::Generic& NOX::Nln::Solver::LineSearchBased::GetDirection() const
+::NOX::Direction::Generic& NOX::Nln::Solver::LineSearchBased::get_direction() const
 {
   if (directionPtr.is_null())
     FOUR_C_THROW("nullptr ptr: The direction pointer is not yet initialized.");
@@ -205,16 +205,16 @@ const ::NOX::Utils& NOX::Nln::Solver::LineSearchBased::GetUtils() const { return
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 template ::NOX::StatusTest::StatusType
-NOX::Nln::Solver::LineSearchBased::GetStatus<NOX::Nln::StatusTest::NormF>() const;
+NOX::Nln::Solver::LineSearchBased::get_status<NOX::Nln::StatusTest::NormF>() const;
 template ::NOX::StatusTest::StatusType
-NOX::Nln::Solver::LineSearchBased::GetStatus<NOX::Nln::StatusTest::NormUpdate>() const;
+NOX::Nln::Solver::LineSearchBased::get_status<NOX::Nln::StatusTest::NormUpdate>() const;
 template ::NOX::StatusTest::StatusType
-NOX::Nln::Solver::LineSearchBased::GetStatus<NOX::Nln::StatusTest::NormWRMS>() const;
+NOX::Nln::Solver::LineSearchBased::get_status<NOX::Nln::StatusTest::NormWRMS>() const;
 template ::NOX::StatusTest::StatusType
-NOX::Nln::Solver::LineSearchBased::GetStatus<NOX::Nln::StatusTest::ActiveSet>() const;
+NOX::Nln::Solver::LineSearchBased::get_status<NOX::Nln::StatusTest::ActiveSet>() const;
 
 template ::NOX::StatusTest::Generic*
-NOX::Nln::Solver::LineSearchBased::GetOuterStatusTest<NOX::Nln::StatusTest::ActiveSet>() const;
+NOX::Nln::Solver::LineSearchBased::get_outer_status_test<NOX::Nln::StatusTest::ActiveSet>() const;
 template ::NOX::StatusTest::Generic*
 NOX::Nln::Solver::LineSearchBased::get_outer_status_test_with_quantity<NOX::Nln::StatusTest::NormF>(
     const NOX::Nln::StatusTest::QuantityType qtype) const;

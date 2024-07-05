@@ -42,22 +42,22 @@ namespace NOX
           virtual ~Generic() = default;
 
           /// this routine is called in the first attempt
-          virtual bool initAndCheckTest(
+          virtual bool init_and_check_test(
               ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) = 0;
 
           /// this routine is called in all follow-up checking attempts
-          virtual bool checkTest(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) = 0;
+          virtual bool check_test(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) = 0;
 
           /** \brief return diagonal vector
            *
            *  The method offers the possibility to return a diagonal vector which
            *  is specifically created based on the information collect throughout
            *  the test. */
-          virtual Teuchos::RCP<Epetra_Vector> getCurrentDiagonal(
+          virtual Teuchos::RCP<Epetra_Vector> get_current_diagonal(
               const ::NOX::Abstract::Group& grp) const = 0;
 
           /// fill diagonal vector
-          virtual void fillDiagonal(Epetra_Vector& diagonal) const = 0;
+          virtual void fill_diagonal(Epetra_Vector& diagonal) const = 0;
 
          protected:
           /// output object
@@ -92,7 +92,8 @@ namespace NOX
           bool is_accepted();
 
           /// reset class members and perform the default check
-          bool initAndCheckTest(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) override;
+          bool init_and_check_test(
+              ::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) override;
 
           /** \brief perform the check
            *
@@ -100,15 +101,15 @@ namespace NOX
            *  2) compute different scalar quality quantities based on the direction vector
            *     and the system matrix.
            *  3) Test for acceptance */
-          bool checkTest(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) override;
+          bool check_test(::NOX::Abstract::Vector& dir, ::NOX::Abstract::Group& grp) override;
 
           /// return diagonal with the value one at the location of bad element DOFs
-          Teuchos::RCP<Epetra_Vector> getCurrentDiagonal(
+          Teuchos::RCP<Epetra_Vector> get_current_diagonal(
               const ::NOX::Abstract::Group& grp) const override;
-          Teuchos::RCP<Epetra_Vector> getCurrentDiagonal(const NOX::Nln::Group& grp) const;
+          Teuchos::RCP<Epetra_Vector> get_current_diagonal(const NOX::Nln::Group& grp) const;
 
           /// fill the diagonal with the value one at the location of bad element DOFs
-          inline void fillDiagonal(Epetra_Vector& diagonal) const override
+          inline void fill_diagonal(Epetra_Vector& diagonal) const override
           {
             fill_diagonal_at_bad_dofs(diagonal);
           }

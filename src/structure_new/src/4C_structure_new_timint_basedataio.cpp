@@ -177,14 +177,14 @@ void Solid::TimeInt::BaseDataIO::init_setup_every_iteration_writer(
   Teuchos::RCP<::NOX::Observer> prepost_solver_ptr = Teuchos::rcp(
       new NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration(*writer_every_iter_));
 
-  NOX::Nln::Aux::AddToPrePostOpVector(p_sol_opt, prepost_solver_ptr);
+  NOX::Nln::Aux::add_to_pre_post_op_vector(p_sol_opt, prepost_solver_ptr);
 
   // insert the every_iter output writer as ppo for the linesearch object
   Teuchos::ParameterList& p_linesearch = p_nox.sublist("Line Search");
 
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::Nln::LineSearch::PrePostOperator::map& prepostls_map =
-      NOX::Nln::LineSearch::PrePostOperator::GetMap(p_linesearch);
+      NOX::Nln::LineSearch::PrePostOperator::get_map(p_linesearch);
 
   // insert/replace the old pointer in the map
   prepostls_map[NOX::Nln::LineSearch::prepost_output_every_iter] =
@@ -316,7 +316,7 @@ void NOX::Nln::Solver::PrePostOp::TimeInt::WriteOutputEveryIteration::run_pre_mo
 {
   const int newton_iteration = solver.getNumIterations();
   const int ls_iteration =
-      dynamic_cast<const NOX::Nln::LineSearch::Generic&>(linesearch).GetNumIterations();
+      dynamic_cast<const NOX::Nln::LineSearch::Generic&>(linesearch).get_num_iterations();
   every_iter_writer_.add_line_search_iteration(newton_iteration, ls_iteration);
 }
 

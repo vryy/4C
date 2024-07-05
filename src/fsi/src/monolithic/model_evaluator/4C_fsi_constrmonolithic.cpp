@@ -138,9 +138,6 @@ void FSI::ConstrMonolithic::GeneralSetup()
   {
     FOUR_C_THROW("Creation of FSI Dirichlet map extractor failed.");
   }
-  // ---------------------------------------------------------------------------
-
-  return;
 }
 
 
@@ -381,37 +378,8 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
 
   add_status_test(structureDisp);
   structcombo->addStatusTest(structureDisp);
-  // structcombo->addStatusTest(structureDispUpdate);
 
   converged->addStatusTest(structcombo);
-
-  //  // setup tests for interface
-  //
-  //  std::vector<Teuchos::RCP<const Epetra_Map> > interface;
-  //  interface.push_back(fluid_field()->Interface()->fsi_cond_map());
-  //  interface.push_back(Teuchos::null);
-  //  Core::LinAlg::MultiMapExtractor interfaceextract(*dof_row_map(),interface);
-  //
-  //  Teuchos::RCP<::NOX::StatusTest::Combo> interfacecombo =
-  //    Teuchos::rcp(new ::NOX::StatusTest::Combo(::NOX::StatusTest::Combo::OR));
-  //
-  //  Teuchos::RCP<NOX::FSI::PartialNormF> interfaceTest =
-  //    Teuchos::rcp(new NOX::FSI::PartialNormF("interface",
-  //                                            interfaceextract,0,
-  //                                            nlParams.get("Norm abs vel", 1.0e-6),
-  //                                            ::NOX::Abstract::Vector::TwoNorm,
-  //                                            NOX::FSI::PartialNormF::Scaled));
-  //  Teuchos::RCP<NOX::FSI::PartialNormUpdate> interfaceTestUpdate =
-  //    Teuchos::rcp(new NOX::FSI::PartialNormUpdate("interface update",
-  //                                                 interfaceextract,0,
-  //                                                 nlParams.get("Norm abs vel", 1.0e-6),
-  //                                                 NOX::FSI::PartialNormUpdate::Scaled));
-  //
-  //  add_status_test(interfaceTest);
-  //  interfacecombo->addStatusTest(interfaceTest);
-  //  //interfacecombo->addStatusTest(interfaceTestUpdate);
-  //
-  //  converged->addStatusTest(interfacecombo);
 
   // setup tests for fluid velocities
 
@@ -432,7 +400,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
 
   add_status_test(innerFluidVel);
   fluidvelcombo->addStatusTest(innerFluidVel);
-  // fluidvelcombo->addStatusTest(innerFluidVelUpdate);
 
   converged->addStatusTest(fluidvelcombo);
 
@@ -455,7 +422,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
 
   add_status_test(fluidPress);
   fluidpresscombo->addStatusTest(fluidPress);
-  // fluidpresscombo->addStatusTest(fluidPressUpdate);
 
   // setup tests for volume constraint
 
@@ -476,11 +442,8 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::ConstrMonolithic::create_status_test
 
   add_status_test(VolConstr);
   volconstrcombo->addStatusTest(VolConstr);
-  // volconstrcombo->addStatusTest(VolConstrUpdate);
-
 
   converged->addStatusTest(volconstrcombo);
-
 
   return combo;
 }

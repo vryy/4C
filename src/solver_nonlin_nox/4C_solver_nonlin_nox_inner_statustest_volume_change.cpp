@@ -24,12 +24,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::VolumeChange::CheckStatus(
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::VolumeChange::check_status(
     const Interface::Required& interface, const ::NOX::Solver::Generic& solver,
     const ::NOX::Abstract::Group& grp, ::NOX::StatusTest::CheckType checkType)
 {
   status_ = status_unevaluated;
-  const int iter_ls = interface.GetNumIterations();
+  const int iter_ls = interface.get_num_iterations();
 
   if (iter_ls == 0)
   {
@@ -58,7 +58,8 @@ NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::VolumeChang
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::VolumeChange::GetStatus() const
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::Inner::StatusTest::VolumeChange::get_status()
+    const
 {
   return status_;
 }

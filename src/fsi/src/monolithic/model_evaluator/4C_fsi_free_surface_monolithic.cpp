@@ -868,7 +868,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicFS::create_status_test(
 
   add_status_test(interfaceTest);
   interfacecombo->addStatusTest(interfaceTest);
-  // interfacecombo->addStatusTest(interfaceTestUpdate);
 
   converged->addStatusTest(interfacecombo);
 
@@ -891,7 +890,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicFS::create_status_test(
 
   add_status_test(innerFluidVel);
   fluidvelcombo->addStatusTest(innerFluidVel);
-  // fluidvelcombo->addStatusTest(innerFluidVelUpdate);
 
   converged->addStatusTest(fluidvelcombo);
 
@@ -914,7 +912,6 @@ Teuchos::RCP<::NOX::StatusTest::Combo> FSI::MonolithicFS::create_status_test(
 
   add_status_test(fluidPress);
   fluidpresscombo->addStatusTest(fluidPress);
-  // fluidpresscombo->addStatusTest(fluidPressUpdate);
 
   converged->addStatusTest(fluidpresscombo);
 

@@ -252,7 +252,7 @@ Teuchos::RCP<Core::LinAlg::Solver> NOX::Nln::CONTACT::LinearSystem::get_linear_c
    * strategy for a meaningful linear solver. This is a small work around
    * to enable different linear solvers for changing contact solving strategies.
    *                                                       06/18 -- hiermeier */
-  Core::LinAlg::Solver* linsolver = i_constr_prec_.begin()->second->GetLinearSolver();
+  Core::LinAlg::Solver* linsolver = i_constr_prec_.begin()->second->get_linear_solver();
 
   if (not linsolver)
     FOUR_C_THROW(

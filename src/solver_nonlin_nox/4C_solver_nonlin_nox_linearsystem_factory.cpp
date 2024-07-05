@@ -50,7 +50,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::BuildLin
   Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys = Teuchos::null;
 
   // extract some stuff from the NOX::Nln::GlobalData object
-  const NOX::Nln::LinearSystem::SolverMap& linSolvers = noxNlnGlobalData.GetLinSolvers();
+  const NOX::Nln::LinearSystem::SolverMap& linSolvers = noxNlnGlobalData.get_linear_solvers();
   const Teuchos::RCP<::NOX::Epetra::Interface::Required>& iReq =
       noxNlnGlobalData.get_required_interface();
   const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac =
@@ -58,7 +58,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> NOX::Nln::LinSystem::Factory::BuildLin
   const Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner>& iPrec =
       noxNlnGlobalData.get_preconditioner_interface();
 
-  Teuchos::ParameterList& params = noxNlnGlobalData.GetNlnParameterList();
+  Teuchos::ParameterList& params = noxNlnGlobalData.get_nln_parameter_list();
   // printing parameters
   Teuchos::ParameterList& printParams = params.sublist("Printing", true);
   // linear solver parameters

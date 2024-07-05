@@ -39,7 +39,7 @@ namespace NOX
         /** \brief get a valid merit function pointer
          *
          *  choose between constraint and unconstraint */
-        Teuchos::RCP<::NOX::MeritFunction::Generic> BuildMeritFunction(
+        Teuchos::RCP<::NOX::MeritFunction::Generic> build_merit_function(
             const NOX::Nln::GlobalData& noxNlnGlobalData) const;
 
        private:

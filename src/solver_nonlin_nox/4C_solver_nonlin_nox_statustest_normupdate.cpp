@@ -206,7 +206,7 @@ void NOX::Nln::StatusTest::NormUpdate::compute_norm(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-int NOX::Nln::StatusTest::NormUpdate::GetNormType(
+int NOX::Nln::StatusTest::NormUpdate::get_norm_type(
     const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)
@@ -219,7 +219,7 @@ int NOX::Nln::StatusTest::NormUpdate::GetNormType(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool NOX::Nln::StatusTest::NormUpdate::IsQuantity(
+bool NOX::Nln::StatusTest::NormUpdate::is_quantity(
     const NOX::Nln::StatusTest::QuantityType& qType) const
 {
   for (std::size_t i = 0; i < nChecks_; ++i)

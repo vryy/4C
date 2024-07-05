@@ -122,7 +122,7 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     throw_error("compute()", "Ownership changed unexpectedly!");
 
   /* Setup the inner status test */
-  status_ = inner_tests_ptr_->CheckStatus(*this, s, oldGrp, check_type_);
+  status_ = inner_tests_ptr_->check_status(*this, s, oldGrp, check_type_);
 
   // increase iteration counter after initialization
   ++ls_iters_;
@@ -150,7 +150,8 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     const NOX::Nln::Solver::LineSearchBased& lsSolver =
         static_cast<const NOX::Nln::Solver::LineSearchBased&>(s);
 
-    const ::NOX::StatusTest::StatusType ostatus = lsSolver.GetStatus<NOX::Nln::StatusTest::NormF>();
+    const ::NOX::StatusTest::StatusType ostatus =
+        lsSolver.get_status<NOX::Nln::StatusTest::NormF>();
 
     /* Skip the inner status test, if the outer NormF test is
      * already converged! */
@@ -183,7 +184,7 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
 
   if (not failed)
   {
-    status_ = inner_tests_ptr_->CheckStatus(*this, s, grp, check_type_);
+    status_ = inner_tests_ptr_->check_status(*this, s, grp, check_type_);
     print_update(utils_->out(::NOX::Utils::InnerIteration));
   }
   // -------------------------------------------------
@@ -208,7 +209,7 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
     {
       rtype = grp.computeF();
       if (rtype != ::NOX::Abstract::Group::Ok) throw_error("compute", "Unable to compute F!");
-      status_ = inner_tests_ptr_->CheckStatus(*this, s, grp, check_type_);
+      status_ = inner_tests_ptr_->check_status(*this, s, grp, check_type_);
       print_update(utils_->out(::NOX::Utils::InnerIteration));
     }
     // catch error of the computeF method
@@ -243,24 +244,24 @@ bool NOX::Nln::LineSearch::Backtrack::compute(::NOX::Abstract::Group& grp, doubl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int NOX::Nln::LineSearch::Backtrack::GetNumIterations() const { return ls_iters_; }
+int NOX::Nln::LineSearch::Backtrack::get_num_iterations() const { return ls_iters_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const ::NOX::MeritFunction::Generic& NOX::Nln::LineSearch::Backtrack::GetMeritFunction() const
+const ::NOX::MeritFunction::Generic& NOX::Nln::LineSearch::Backtrack::get_merit_function() const
 {
   if (merit_function_ptr_.is_null())
-    throw_error("GetMeritFunction", "The merit function pointer is not initialized!");
+    throw_error("get_merit_function", "The merit function pointer is not initialized!");
 
   return *merit_function_ptr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const ::NOX::Abstract::Vector& NOX::Nln::LineSearch::Backtrack::GetSearchDirection() const
+const ::NOX::Abstract::Vector& NOX::Nln::LineSearch::Backtrack::get_search_direction() const
 {
   if (search_direction_ptr_.is_null())
-    throw_error("GetSearchDirection", "The search direction ptr is not initialized!");
+    throw_error("get_search_direction", "The search direction ptr is not initialized!");
 
   return *search_direction_ptr_;
 }
@@ -269,7 +270,7 @@ const ::NOX::Abstract::Vector& NOX::Nln::LineSearch::Backtrack::GetSearchDirecti
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double NOX::Nln::LineSearch::Backtrack::GetStepLength() const
+double NOX::Nln::LineSearch::Backtrack::get_step_length() const
 {
   if (step_ptr_ == nullptr) throw_error("get_step_length", "Step pointer is nullptr!");
 
@@ -278,7 +279,7 @@ double NOX::Nln::LineSearch::Backtrack::GetStepLength() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void NOX::Nln::LineSearch::Backtrack::SetStepLength(double step)
+void NOX::Nln::LineSearch::Backtrack::set_step_length(double step)
 {
   if (step_ptr_ == nullptr) throw_error("set_step_length", "Step pointer is nullptr!");
 
@@ -287,11 +288,11 @@ void NOX::Nln::LineSearch::Backtrack::SetStepLength(double step)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::LineSearch::Backtrack::CheckInnerStatus(
+NOX::Nln::Inner::StatusTest::StatusType NOX::Nln::LineSearch::Backtrack::check_inner_status(
     const ::NOX::Solver::Generic& solver, const ::NOX::Abstract::Group& grp,
     ::NOX::StatusTest::CheckType checkType) const
 {
-  return inner_tests_ptr_->CheckStatus(*this, solver, grp, checkType);
+  return inner_tests_ptr_->check_status(*this, solver, grp, checkType);
 }
 
 /*----------------------------------------------------------------------*

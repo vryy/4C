@@ -45,10 +45,10 @@ namespace NOX
       /*! \brief Returns the type of operator that is passed in.
        *
        *   Uses dynamic casting to identify the underlying object type. */
-      NOX::Nln::LinSystem::OperatorType GetOperatorType(const Core::LinAlg::SparseOperator& op);
+      NOX::Nln::LinSystem::OperatorType get_operator_type(const Core::LinAlg::SparseOperator& op);
 
       /// return linear system type
-      NOX::Nln::LinSystem::LinearSystemType GetLinearSystemType(
+      NOX::Nln::LinSystem::LinearSystemType get_linear_system_type(
           const std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>&
               linsolvers);
 
@@ -62,7 +62,7 @@ namespace NOX
        *  \param xnew  : new / current iterate $x_{i}^{k}$
        *  \param xincr : current step increment $x_{i}^{k} - x_{i}^{k-1}$
        */
-      double RootMeanSquareNorm(const double& atol, const double& rtol,
+      double root_mean_square_norm(const double& atol, const double& rtol,
           Teuchos::RCP<const Epetra_Vector> xnew, Teuchos::RCP<const Epetra_Vector> xincr,
           const bool& disable_implicit_weighting = false);
 
@@ -73,7 +73,7 @@ namespace NOX
        * \param qType             : Quantity type of the NormWRMS test which we are looking for.
        * \param classVariableName : Name of the class variable which will be returned. (Type:
        * double) */
-      double GetNormWRMSClassVariable(const ::NOX::StatusTest::Generic& test,
+      double get_norm_wrms_class_variable(const ::NOX::StatusTest::Generic& test,
           const NOX::Nln::StatusTest::QuantityType& qType, const std::string& classVariableName);
 
       /*! \brief Do a recursive search for a NOX::Nln::StatusTest::NormF object in the StatusTest
@@ -83,7 +83,7 @@ namespace NOX
        * \param qType             : Quantity type of the NormF test which we are looking for.
        * \param classVariableName : Name of the class variable which will be returned. (Type:
        * double) */
-      double GetNormFClassVariable(const ::NOX::StatusTest::Generic& test,
+      double get_norm_f_class_variable(const ::NOX::StatusTest::Generic& test,
           const NOX::Nln::StatusTest::QuantityType& qType, const std::string& classVariableName);
 
       /*! Do a recursive search for a <T> status test and the given quantity
@@ -91,7 +91,7 @@ namespace NOX
        *  True is returned as soon as a status test of type <T> is found, which
        *  holds the given quantity. */
       template <class T>
-      bool IsQuantity(
+      bool is_quantity(
           const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype);
 
       /*! \brief Do a recursive search for a <T> status test class and return the NormType of the
@@ -100,12 +100,12 @@ namespace NOX
        *  If there are more than one status tests of the type <T> which hold the given quantity, the
        * normtype of the first we can find, will be returned! */
       template <class T>
-      int GetNormType(
+      int get_norm_type(
           const ::NOX::StatusTest::Generic& test, const NOX::Nln::StatusTest::QuantityType& qtype);
 
       /// \brief Do a recursive search for a <T> status test class.
       template <class T>
-      ::NOX::StatusTest::Generic* GetOuterStatusTest(::NOX::StatusTest::Generic& full_otest);
+      ::NOX::StatusTest::Generic* get_outer_status_test(::NOX::StatusTest::Generic& full_otest);
 
       /** \brief Do a recursive search for a <T> status test class containing
        *  the given quantity. */
@@ -123,27 +123,27 @@ namespace NOX
        * \param test (in) : StatusTest object which will be scanned.
        */
       template <class T>
-      int GetOuterStatus(const ::NOX::StatusTest::Generic& test);
+      int get_outer_status(const ::NOX::StatusTest::Generic& test);
 
       /*! \brief Convert the quantity type to a solution type
        *
        * \param qtype : Quantity type which has to be converted.
        */
-      enum NOX::Nln::SolutionType ConvertQuantityType2SolutionType(
+      enum NOX::Nln::SolutionType convert_quantity_type_to_solution_type(
           const enum NOX::Nln::StatusTest::QuantityType& qtype);
 
       /*! \brief Map norm type stl_string to norm type enum
        *
        * \param name : Name of the vector norm type.
        */
-      enum ::NOX::Abstract::Vector::NormType String2NormType(const std::string& name);
+      enum ::NOX::Abstract::Vector::NormType string_to_norm_type(const std::string& name);
 
       /// add pre/post operator to pre/post operator vector
-      void AddToPrePostOpVector(
+      void add_to_pre_post_op_vector(
           Teuchos::ParameterList& p_nox_opt, const Teuchos::RCP<::NOX::Observer>& ppo_ptr);
 
       /// return the name of the parameter list corresponding to the set direction method
-      std::string GetDirectionMethodListName(const Teuchos::ParameterList& p);
+      std::string get_direction_method_list_name(const Teuchos::ParameterList& p);
 
     }  // namespace Aux
   }    // namespace Nln
