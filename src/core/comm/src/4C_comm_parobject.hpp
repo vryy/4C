@@ -18,7 +18,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
-#include "4C_utils_pairedmatrix.hpp"
+#include "4C_utils_pairedvector.hpp"
 
 #include <array>
 #include <map>
@@ -363,30 +363,6 @@ namespace Core::Communication
       for (auto& paired_vec : stuff)
       {
         add_to_pack(data, paired_vec);
-        ++i;
-      }
-
-      if (i != numentries) FOUR_C_THROW("Something wrong with number of elements");
-    }
-
-    /*!
-     * \brief Add stuff to the end of a char vector data first
-     *
-     * This method is a template for std::vector< pairedmatrix<Ts...> >
-     * \param[in,out] data char string stuff shall be added to
-     * \param[in] stuff std::vector<pairedmatrix<Ts...> > that get's added to stuff
-     */
-    template <typename... Ts>
-    static void add_to_pack(
-        PackBuffer& data, const std::vector<Core::Gen::Pairedmatrix<Ts...>>& stuff)
-    {
-      int numentries = (int)stuff.size();
-      add_to_pack(data, numentries);
-
-      int i = 0;
-      for (const typename Core::Gen::PairedmatrixBase<Ts...>::type& paired_mat : stuff)
-      {
-        add_to_pack(data, paired_mat);
         ++i;
       }
 
@@ -775,36 +751,6 @@ namespace Core::Communication
 
         // add to map
         stuff[i] = paired_vec;
-      }
-    }
-
-    /*!
-     * \brief Extract stuff from a char vector data and increment position
-     *
-     * This method is templated for stuff of type std::vector< pairedmatrix<Ts...> >
-     *
-     * \param[in,out] position place in data where to extract stuff. Position will be incremented
-     * by this method
-     * \param[in] data char vector where stuff is extracted from
-     * \param[out] stuff std::vector< pairedmatrix<Ts...> > to extract from data
-     */
-    template <typename... Ts>
-    static void extract_from_pack(std::vector<char>::size_type& position,
-        const std::vector<char>& data, std::vector<Core::Gen::Pairedmatrix<Ts...>>& stuff)
-    {
-      int numentries = 0;
-      extract_from_pack(position, data, numentries);
-
-      stuff.clear();
-      stuff.resize(numentries);
-
-      typename Core::Gen::PairedmatrixBase<Ts...>::type paired_mat;
-      for (int i = 0; i < numentries; i++)
-      {
-        extract_from_pack(position, data, paired_mat);
-
-        // add to map
-        stuff[i] = paired_mat;
       }
     }
 
